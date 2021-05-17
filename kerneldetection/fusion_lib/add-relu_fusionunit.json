@@ -1,0 +1,20 @@
+{
+    "add_1": {
+        "attr": {
+            "type": "Add",
+            "attr": {}
+        },
+        "inbounds": [
+        ]
+    },
+
+    "relu_2": {
+        "attr": {
+            "type": "ReLU",
+            "attr": {}
+        },
+        "inbounds": [
+            "add_1"
+        ]
+    }
+}

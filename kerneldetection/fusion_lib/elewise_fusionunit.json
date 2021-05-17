@@ -1,0 +1,20 @@
+{
+    "Elewise_1": {
+        "attr": {
+            "type": "Elewise",
+            "attr": {}
+        },
+        "inbounds": [
+        ]
+    },
+
+    "Elewise_2": {
+        "attr": {
+            "type": "Elewise",
+            "attr": {}
+        },
+        "inbounds": [
+            "Elewise_1"
+        ]
+    }
+}

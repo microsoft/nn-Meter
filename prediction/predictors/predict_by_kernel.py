@@ -1,5 +1,5 @@
 import sys
-sys.path.append("Latencypredictor")
+sys.path.append("prediction")
 from predictors.utils import*
 from predictors.extract_feature import*
 

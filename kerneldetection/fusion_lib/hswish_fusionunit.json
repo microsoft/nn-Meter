@@ -1,0 +1,53 @@
+{
+    "conv1.hswish.hswish/Relu6": {
+        "attr": {
+            "attr": {},
+            "type": "Relu6"
+        },
+        "inbounds": [
+            "conv1.hswish.hswish/add"
+        ],
+        "outbounds": [
+            "conv1.hswish.hswish/mul"
+        ]
+    },
+    "conv1.hswish.hswish/add": {
+        "attr": {
+            "attr": {
+                "weight_shape": null
+            },
+            "node": null,
+            "shape": [],
+            "type": "Add"
+        },
+        "inbounds": [
+        ],
+        "outbounds": [
+            "conv1.hswish.hswish/Relu6"
+        ]
+    },
+    "conv1.hswish.hswish/mul": {
+        "attr": {
+            "attr": {},
+            "type": "Mul"
+        },
+        "inbounds": [
+            "conv1.hswish.hswish/Relu6"
+        ],
+        "outbounds": [
+            "conv1.hswish.hswish/mul_1"
+        ]
+    },
+    "conv1.hswish.hswish/mul_1": {
+        "attr": {
+            "attr": {},
+            "type": "Mul"
+        },
+        "inbounds": [
+            "conv1.hswish.hswish/mul"
+        ],
+        "outbounds": [
+            "layer2.1.conv/Conv2D"
+        ]
+    }
+}

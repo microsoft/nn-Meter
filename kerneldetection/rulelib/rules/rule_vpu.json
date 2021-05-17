@@ -1,0 +1,713 @@
+{
+  "RBC": {
+   "latency": {},
+   "obey": null
+  },
+  "CBC": {
+   "latency": {},
+   "obey": null
+  },
+  "BF_conv_bn": {
+    "obey": true
+  },
+  "BF_dwconv_bn": {
+    "obey": true
+  },
+  "BF_conv_bn_relu": {
+   "obey": true
+  },
+  "BF_dwconv_bn_relu": {
+   "obey": true
+  },
+  "BF_se_relu": {
+   "latency": {
+    "se": "0.236 +- 0.0",
+    "relu": "0.029 +- 0",
+    "block": "0.23399999999999999 +- 0.0",
+    "ops": "0.265 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_conv_se": {
+   "latency": {
+    "conv": "0.072 +- 0",
+    "se": "0.236 +- 0.0",
+    "block": "0.30000000000000004 +- 0.0",
+    "ops": "0.308 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_conv_hswish": {
+   "latency": {
+    "conv": "0.069 +- 0",
+    "hswish": "0.08499999999999999 +- 0.0",
+    "block": "0.11099999999999999 +- 0.0",
+    "ops": "0.154 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_pooling_pooling": {
+   "latency": {
+    "pooling_1": "0.013 +- 0",
+    "pooling_2": "0.01 +- 0",
+    "block": "0.019 +- 0.0",
+    "ops": "0.023 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_pooling_convtrans": {
+   "latency": {
+    "pooling": "0.014 +- 0",
+    "convtrans": "0.08 +- 0",
+    "block": "0.098 +- 0.0",
+    "ops": "0.094 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_pooling_concat": {
+   "latency": {
+    "pooling": "0.014 +- 0",
+    "concat": "0.0 +- 0",
+    "block": "0.035 +- 0.0",
+    "ops": "0.014 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_pooling_conv": {
+   "latency": {
+    "pooling": "0.013 +- 0",
+    "conv": "0.028 +- 0",
+    "block": "0.038 +- 0.0",
+    "ops": "0.041 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_pooling_add": {
+   "latency": {
+    "pooling": "0.014 +- 0",
+    "add": "0.096 +- 0",
+    "block": "0.10200000000000001 +- 0.0",
+    "ops": "0.11 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_pooling_relu": {
+   "latency": {
+    "pooling": "0.013 +- 0",
+    "relu": "0.026 +- 0",
+    "block": "0.016 +- 0.0",
+    "ops": "0.039 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_pooling_dwconv": {
+   "latency": {
+    "pooling": "0.013 +- 0",
+    "dwconv": "0.042 +- 0",
+    "block": "0.056 +- 0.0",
+    "ops": "0.055 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_pooling_reshape": {
+   "latency": {
+    "pooling": "0.013 +- 0",
+    "reshape": "0.117 +- 0.0",
+    "block": "0.152 +- 0.0",
+    "ops": "0.13 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dense_dense": {
+   "latency": {
+    "dense_1": "0.118 +- 0",
+    "dense_2": "0.125 +- 0",
+    "block": "0.218 +- 0.0",
+    "ops": "0.243 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dense_concat": {
+   "latency": {
+    "dense": "0.127 +- 0",
+    "concat": "0.0 +- 0",
+    "block": "0.134 +- 0.0",
+    "ops": "0.127 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dense_add": {
+   "latency": {
+    "dense": "0.119 +- 0",
+    "add": "0.093 +- 0",
+    "block": "0.188 +- 0.0",
+    "ops": "0.212 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dense_relu": {
+   "latency": {
+    "dense": "0.119 +- 0",
+    "relu": "0.039 +- 0",
+    "block": "0.158 +- 0.0",
+    "ops": "0.158 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dense_reshape": {
+   "latency": {
+    "dense": "0.121 +- 0",
+    "reshape": "0.046 +- 0.0",
+    "block": "0.17099999999999999 +- 0.0",
+    "ops": "0.16699999999999998 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_convtrans_pooling": {
+   "latency": {
+    "convtrans": "0.184 +- 0",
+    "pooling": "0.014 +- 0",
+    "block": "0.199 +- 0.0",
+    "ops": "0.198 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_convtrans_convtrans": {
+   "latency": {
+    "convtrans_1": "0.185 +- 0",
+    "convtrans_2": "0.185 +- 0",
+    "block": "0.364 +- 0.0",
+    "ops": "0.37 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_convtrans_concat": {
+   "latency": {
+    "convtrans": "0.187 +- 0",
+    "concat": "0.0 +- 0",
+    "block": "0.184 +- 0.0",
+    "ops": "0.187 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_convtrans_conv": {
+   "latency": {
+    "convtrans": "0.185 +- 0",
+    "conv": "0.069 +- 0",
+    "block": "0.253 +- 0.0",
+    "ops": "0.254 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_convtrans_add": {
+   "latency": {
+    "convtrans": "0.185 +- 0",
+    "add": "0.099 +- 0",
+    "block": "0.249 +- 0.0",
+    "ops": "0.28400000000000003 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_convtrans_relu": {
+   "latency": {
+    "convtrans": "0.185 +- 0",
+    "relu": "0.031 +- 0",
+    "block": "0.193 +- 0.0",
+    "ops": "0.216 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_convtrans_dwconv": {
+   "latency": {
+    "convtrans": "0.186 +- 0",
+    "dwconv": "0.114 +- 0",
+    "block": "0.28600000000000003 +- 0.0",
+    "ops": "0.3 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_convtrans_reshape": {
+   "latency": {
+    "convtrans": "0.183 +- 0",
+    "reshape": "0.16899999999999998 +- 0.0",
+    "block": "0.441 +- 0.0",
+    "ops": "0.352 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_concat_pooling": {
+   "latency": {
+    "concat": "0.0 +- 0",
+    "pooling": "0.019 +- 0",
+    "block": "0.019 +- 0.0",
+    "ops": "0.019 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_concat_dense": {
+   "latency": {
+    "concat": "0 +- 0",
+    "dense": "0.345 +- 0",
+    "block": "0.336 +- 0.0",
+    "ops": "0.345 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_concat_convtrans": {
+   "latency": {
+    "concat": "0.0 +- 0",
+    "convtrans": "0.301 +- 0",
+    "block": "0.301 +- 0.0",
+    "ops": "0.301 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_concat_concat": {
+   "latency": {
+    "concat_1": "0.0 +- 0",
+    "concat_2": "0.0 +- 0",
+    "block": "0.0 +- 0.0",
+    "ops": "0.0 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_concat_conv": {
+   "latency": {
+    "concat": "0.0 +- 0",
+    "conv": "0.092 +- 0",
+    "block": "0.092 +- 0.0",
+    "ops": "0.092 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_concat_add": {
+   "latency": {
+    "concat": "0.0 +- 0",
+    "add": "0.103 +- 0",
+    "block": "0.104 +- 0.0",
+    "ops": "0.103 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_concat_relu": {
+   "latency": {
+    "concat": "0.0 +- 0",
+    "relu": "0.035 +- 0",
+    "block": "0.057 +- 0.0",
+    "ops": "0.035 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_concat_dwconv": {
+   "latency": {
+    "concat": "0.0 +- 0",
+    "dwconv": "0.137 +- 0",
+    "block": "0.135 +- 0.0",
+    "ops": "0.137 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_concat_reshape": {
+   "latency": {
+    "concat": "0.0 +- 0",
+    "reshape": "0.23099999999999998 +- 0.0",
+    "block": "0.23199999999999998 +- 0.0",
+    "ops": "0.23099999999999998 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_conv_pooling": {
+   "latency": {
+    "conv": "0.072 +- 0",
+    "pooling": "0.014 +- 0",
+    "block": "0.078 +- 0.0",
+    "ops": "0.086 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_conv_convtrans": {
+   "latency": {
+    "conv": "0.069 +- 0",
+    "convtrans": "0.185 +- 0",
+    "block": "0.258 +- 0.0",
+    "ops": "0.254 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_conv_concat": {
+   "latency": {
+    "conv": "0.069 +- 0",
+    "concat": "0.0 +- 0",
+    "block": "0.069 +- 0.0",
+    "ops": "0.069 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_conv_conv": {
+   "latency": {
+    "conv_1": "0.072 +- 0",
+    "conv_2": "0.068 +- 0",
+    "block": "0.136 +- 0.0",
+    "ops": "0.14 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_conv_add": {
+   "latency": {
+    "conv": "0.069 +- 0",
+    "add": "0.1 +- 0",
+    "block": "0.146 +- 0.0",
+    "ops": "0.169 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_conv_relu": {
+   "latency": {
+    "conv": "0.073 +- 0",
+    "relu": "0.029 +- 0",
+    "block": "0.074 +- 0.0",
+    "ops": "0.102 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_conv_dwconv": {
+   "latency": {
+    "conv": "0.071 +- 0",
+    "dwconv": "0.115 +- 0",
+    "block": "0.177 +- 0.0",
+    "ops": "0.186 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_conv_reshape": {
+   "latency": {
+    "conv": "0.069 +- 0",
+    "reshape": "0.17099999999999999 +- 0.0",
+    "block": "0.336 +- 0.0",
+    "ops": "0.24 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_add_pooling": {
+   "latency": {
+    "add": "0.098 +- 0",
+    "pooling": "0.013 +- 0",
+    "block": "0.088 +- 0.0",
+    "ops": "0.111 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_add_dense": {
+   "latency": {
+    "add": "0.092 +- 0",
+    "dense": "0.122 +- 0",
+    "block": "0.215 +- 0.0",
+    "ops": "0.214 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_add_convtrans": {
+   "latency": {
+    "add": "0.096 +- 0",
+    "convtrans": "0.184 +- 0",
+    "block": "0.271 +- 0.0",
+    "ops": "0.28 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_add_concat": {
+   "latency": {
+    "add": "0.096 +- 0",
+    "concat": "0.0 +- 0",
+    "block": "0.102 +- 0.0",
+    "ops": "0.096 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_add_conv": {
+   "latency": {
+    "add": "0.096 +- 0",
+    "conv": "0.069 +- 0",
+    "block": "0.14400000000000002 +- 0.0",
+    "ops": "0.165 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_add_add": {
+   "latency": {
+    "add_1": "0.097 +- 0",
+    "add_2": "0.097 +- 0",
+    "block": "0.16899999999999998 +- 0.0",
+    "ops": "0.194 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_add_relu": {
+   "latency": {
+    "add": "0.099 +- 0",
+    "relu": "0.03 +- 0",
+    "block": "0.1 +- 0.0",
+    "ops": "0.129 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_add_dwconv": {
+   "latency": {
+    "add": "0.096 +- 0",
+    "dwconv": "0.114 +- 0",
+    "block": "0.216 +- 0.0",
+    "ops": "0.21000000000000002 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_add_reshape": {
+   "latency": {
+    "add": "0.099 +- 0",
+    "reshape": "0.172 +- 0.0",
+    "block": "0.253 +- 0.0",
+    "ops": "0.271 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_pooling": {
+   "latency": {
+    "relu": "0.031 +- 0",
+    "pooling": "0.014 +- 0",
+    "block": "0.046 +- 0.0",
+    "ops": "0.045 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_dense": {
+   "latency": {
+    "relu": "0.039 +- 0",
+    "dense": "0.121 +- 0",
+    "block": "0.158 +- 0.0",
+    "ops": "0.16 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_convtrans": {
+   "latency": {
+    "relu": "0.03 +- 0",
+    "convtrans": "0.184 +- 0",
+    "block": "0.215 +- 0.0",
+    "ops": "0.214 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_concat": {
+   "latency": {
+    "relu": "0.03 +- 0",
+    "concat": "0.0 +- 0",
+    "block": "0.03 +- 0.0",
+    "ops": "0.03 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_conv": {
+   "latency": {
+    "relu": "0.03 +- 0",
+    "conv": "0.069 +- 0",
+    "block": "0.1 +- 0.0",
+    "ops": "0.099 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_add": {
+   "latency": {
+    "relu": "0.031 +- 0",
+    "add": "0.096 +- 0",
+    "block": "0.13 +- 0.0",
+    "ops": "0.127 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_relu": {
+   "latency": {
+    "relu_1": "0.03 +- 0",
+    "relu_2": "0.03 +- 0",
+    "block": "0.054 +- 0.0",
+    "ops": "0.06 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_dwconv": {
+   "latency": {
+    "relu": "0.031 +- 0",
+    "dwconv": "0.115 +- 0",
+    "block": "0.14500000000000002 +- 0.0",
+    "ops": "0.14600000000000002 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_relu_reshape": {
+   "latency": {
+    "relu": "0.031 +- 0",
+    "reshape": "0.16699999999999998 +- 0.0",
+    "block": "0.201 +- 0.0",
+    "ops": "0.19799999999999998 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dwconv_pooling": {
+   "latency": {
+    "dwconv": "0.113 +- 0",
+    "pooling": "0.014 +- 0",
+    "block": "0.125 +- 0.0",
+    "ops": "0.127 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dwconv_convtrans": {
+   "latency": {
+    "dwconv": "0.114 +- 0",
+    "convtrans": "0.185 +- 0",
+    "block": "0.307 +- 0.0",
+    "ops": "0.299 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dwconv_concat": {
+   "latency": {
+    "dwconv": "0.115 +- 0",
+    "concat": "0.0 +- 0",
+    "block": "0.107 +- 0.0",
+    "ops": "0.115 +- 0.0"
+   },
+   "obey": true
+  },
+  "BF_dwconv_conv": {
+   "latency": {
+    "dwconv": "0.115 +- 0",
+    "conv": "0.071 +- 0",
+    "block": "0.18 +- 0.0",
+    "ops": "0.186 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dwconv_add": {
+   "latency": {
+    "dwconv": "0.114 +- 0",
+    "add": "0.097 +- 0",
+    "block": "0.191 +- 0.0",
+    "ops": "0.21100000000000002 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dwconv_relu": {
+   "latency": {
+    "dwconv": "0.114 +- 0",
+    "relu": "0.03 +- 0",
+    "block": "0.125 +- 0.0",
+    "ops": "0.14400000000000002 +- 0.0"
+   },
+   "obey": true
+  },
+  "MON": {
+   "latency": {},
+   "obey": null
+  },
+  "RT": {
+   "obey": false
+  },
+  "BF_dwconv_dwconv": {
+   "latency": {
+    "dwconv_1": "0.114 +- 0",
+    "dwconv_2": "0.115 +- 0",
+    "block": "0.221 +- 0.0",
+    "ops": "0.229 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_dwconv_reshape": {
+   "latency": {
+    "dwconv": "0.112 +- 0",
+    "reshape": "0.16999999999999998 +- 0.0",
+    "block": "0.28500000000000003 +- 0.0",
+    "ops": "0.282 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_pooling": {
+   "latency": {
+    "reshape": "0.16999999999999998 +- 0.0",
+    "pooling": "0.016 +- 0",
+    "block": "0.252 +- 0.0",
+    "ops": "0.186 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_dense": {
+   "latency": {
+    "reshape": "0.046 +- 0.0",
+    "dense": "0.14600000000000002 +- 0.0",
+    "block": "0.093 +- 0.0",
+    "ops": "0.192 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_convtrans": {
+   "latency": {
+    "reshape": "0.17099999999999999 +- 0.0",
+    "convtrans": "0.183 +- 0",
+    "block": "0.34099999999999997 +- 0.0",
+    "ops": "0.354 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_concat": {
+   "latency": {
+    "reshape": "0.16799999999999998 +- 0.0",
+    "concat": "0.0 +- 0",
+    "block": "0.16899999999999998 +- 0.0",
+    "ops": "0.16799999999999998 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_conv": {
+   "latency": {
+    "reshape": "0.16899999999999998 +- 0.0",
+    "conv": "0.061 +- 0",
+    "block": "0.23099999999999998 +- 0.0",
+    "ops": "0.22999999999999998 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_add": {
+   "latency": {
+    "reshape": "0.178 +- 0.0",
+    "add": "0.097 +- 0",
+    "block": "0.252 +- 0.0",
+    "ops": "0.275 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_relu": {
+   "latency": {
+    "reshape": "0.16999999999999998 +- 0.0",
+    "relu": "0.031 +- 0",
+    "block": "0.20299999999999999 +- 0.0",
+    "ops": "0.20099999999999998 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_dwconv": {
+   "latency": {
+    "reshape": "0.16799999999999998 +- 0.0",
+    "dwconv": "0.115 +- 0",
+    "block": "0.27999999999999997 +- 0.0",
+    "ops": "0.283 +- 0.0"
+   },
+   "obey": false
+  },
+  "BF_reshape_reshape": {
+   "latency": {
+    "reshape_1": "0.16999999999999998 +- 0.0",
+    "reshape_2": "0.172 +- 0.0",
+    "block": "0.172 +- 0.0",
+    "ops": "0.34199999999999997 +- 0.0"
+   },
+   "obey": true
+  }
+}
