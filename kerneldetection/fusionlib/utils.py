@@ -1,5 +1,5 @@
 import os
-from grapher_tool import Grapher
+from utils.grapher_tool import Grapher
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

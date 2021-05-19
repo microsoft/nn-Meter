@@ -1,47 +1,11 @@
-import sys
-sys.path.append("kerneldetection")
-from rulelib.rule_reader import RuleReader
-from rulelib.rule_splitter import RuleSplitter
-from frozenpb_parser import FrozenPbParser
-from grapher_tool import Grapher
+from kerneldetection.rulelib.rule_reader import RuleReader
+from kerneldetection.rulelib.rule_splitter import RuleSplitter
 import json
 import os
 import pandas as pd
 import argparse
 import copy
 from itertools import groupby
-backend_maps = {
-  "cpu":"tflite_cpu",
-  "gpu":"tflite_gpu",
-  "vpu":"vpu"
-}
-
-dummy_types = [
-    'Const',
-    'Identity',
-    'Placeholder',
-]
-
-op_alias = {
-    'Relu6': 'relu',
-    'Relu': 'relu',
-    'Add': 'add',
-    'Biasadd': 'add',
-    'Conv2D': 'conv',
-    'Reshape': 'reshape',
-    'FusedBatchNorm': 'bn',
-    'FusedBatchNormV3': 'bn',
-    'MatMul': 'fc',
-    'MaxPool': 'maxpool',
-    'AvgPool': 'avgpool',
-    'Mean': 'gap',
-    'Mul': 'mul',
-    'DepthwiseConv2dNative': 'dwconv',
-    'ConcatV2': 'concat',
-    'Split': 'split',
-    
-
-}
 
 
 fusion_map = {
@@ -49,28 +13,8 @@ fusion_map = {
     'hswish': 'relu-mul-mul-add',
     'bn':"bnV3",
     'channelshuffle': 'reshape-Transpose-reshape-Pack-StridedSlice-Pack-StridedSlice',
-     'global-avgpool': 'gap-reshape',
-    
+    'global-avgpool': 'gap-reshape',
 }
-def get_input_tensors(node, graph):
-    input_tensors = []
-    for inbound in graph.get_node_inbounds(node):
-        try:
-            shape = graph.get_node_attr(inbound)['output_shape']
-            type = graph.get_node_type(node)
-            if shape and type not in dummy_types:
-                if graph.get_node_type(inbound) == 'Split':
-                    outbounds = graph.get_node_outbounds(inbound)
-                    shapes = shape
-                    for outbound, shape in zip(outbounds, shapes):
-                        if outbound == node:
-                            input_tensors.append(shape)
-                else:
-                    input_tensors.append(shape)
-        except:
-            pass
-    return input_tensors
-
 
 
 def bb_to_kernel(bb, graph):
@@ -81,7 +25,7 @@ def bb_to_kernel(bb, graph):
     for old, new in op_alias.items():
         for i in range(len(types)):
             types[i] = types[i].replace(old, new)
-            
+
 
     if types:
         type = '-'.join(types)
@@ -123,8 +67,8 @@ def bb_to_kernel(bb, graph):
             kernel['cout'] = shape[-1]
 
         input_tensors = get_input_tensors(layer, graph)
-        kernel['input_tensors'] = input_tensors   
-        #print(type,input_tensors)    
+        kernel['input_tensors'] = input_tensors
+        #print(type,input_tensors)
         if type not in ['relu','bn', 'fc', 'reshape',  'Pack', 'StridedSlice','split']:
             input_shape = input_tensors[0]
             kernel['inputh'] = input_shape[1]
@@ -132,7 +76,7 @@ def bb_to_kernel(bb, graph):
         elif type in ['fc']:
             input_shape = input_tensors[0]
             kernel['cin']=input_shape[1]
-    
+
         if type == 'split':
             kernel['split_dim'] = attr['split_dim']
             kernel['output_tensors'] = shape
@@ -140,29 +84,6 @@ def bb_to_kernel(bb, graph):
     else:
         return None
 
-def merge_split(graph: Grapher):
-    split_nodes = [node for node in graph.get_graph().keys() if graph.get_node_type(node) == 'Split']
-
-    for name, group in groupby(split_nodes, lambda name: name.split('/')[0]):
-        group = list(group)
-        group.sort(key=lambda name: name.split('/')[1])
-
-        split_dim = graph.get_node_attr(group[0])['attr']['split_dim']
-        inbounds = graph.get_node_inbounds(group[0])
-        output_shapes = [graph.get_node_attr(node)['output_shape'] for node in group]
-
-        # assert
-        for i, node in enumerate(group):
-            assert graph.get_node_attr(node)['attr']['idx'] == i
-            assert graph.get_node_inbounds(node) == inbounds
-            assert graph.get_node_attr(node)['attr']['split_dim'] == split_dim
-
-        graph.fuse(group, 'Split', name, {
-            'attr': {
-                'split_dim': split_dim,
-            },
-            'output_shape': output_shapes,
-        }, is_block=False)
 
 def split_model_into_kernels(input_models,hardware,save_dir,rule_dir='data/fusionrules'):
 
@@ -172,15 +93,15 @@ def split_model_into_kernels(input_models,hardware,save_dir,rule_dir='data/fusio
         raise ValueError('Unsupported hardware')
     splitter = RuleSplitter(RuleReader())
     kernel_types = {}
-    print(input_models)   
+    print(input_models)
     mname=input_models.split('/')[-1].replace(".json","")
     input_models=json.load(open(input_models,'r'))
 
-   
-    
+
+
 
     with pd.ExcelWriter(save_dir+'/'+mname+'_result.xlsx', engine='xlsxwriter', mode='w') as writer:
-              
+
             indexes = []
             counts = []
             kernel_types[backend] = set({})
@@ -188,8 +109,8 @@ def split_model_into_kernels(input_models,hardware,save_dir,rule_dir='data/fusio
             splitter = RuleSplitter(reader)
             mdicts={}
             for mid in input_models:
-                model_name=mid                
-                fname=mid.split('_')[0]                
+                model_name=mid
+                fname=mid.split('_')[0]
                 model=input_models[model_name]
                 graph = Grapher(graph=model)
                 merge_split(graph)
@@ -204,11 +125,11 @@ def split_model_into_kernels(input_models,hardware,save_dir,rule_dir='data/fusio
                         bb_types[type] = bb_types.get(type, 0) + 1
                         kernels.append(kernel)
 
-                
+
                 output = {model_name: kernels}
 
-                
-            
+
+
                 mdicts[model_name]=kernels
 
                 for type, count in bb_types.items():

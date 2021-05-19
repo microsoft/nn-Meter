@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 
-from .grapher_tool import Grapher
+from utils.grapher_tool import Grapher
 from .frozenpb_parser import FrozenPbParser
 from .shape_inference import ShapeInference
 

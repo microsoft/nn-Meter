@@ -1,4 +1,4 @@
-from grapher_tool import Grapher
+from utils.grapher_tool import Grapher
 from .union_find import UF
 import networkx as nx
 
@@ -73,8 +73,7 @@ class FusionAwareGraph:
 
         for i in range(0, len(self)):
             root = self._uf.find(i)
-            for node in self._graph.get_primitive_nodes(self[i]):
-                bbs[root].append(node)
+            bbs[root].append(self[i])
 
         bbs = [bb for bb in bbs if bb]
         return bbs

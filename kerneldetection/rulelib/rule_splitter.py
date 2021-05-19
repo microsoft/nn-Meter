@@ -1,10 +1,7 @@
-from re import A
-from typing import Match
-from grapher_tool import Grapher
-import networkx as nx
 from .rule_reader import RuleReader
-from utils.fusio_aware_graph import FusionAwareGraph
-from match_helper import MatchHelper
+from utils.grapher_tool import Grapher
+from kerneldetection.utils.match_helper import MatchHelper
+from kerneldetection.utils.fusion_aware_graph import FusionAwareGraph
 
 
 class RuleSplitter:

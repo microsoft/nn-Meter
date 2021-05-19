@@ -1,5 +1,15 @@
-import json
+import numpy as np
 import copy
+import json
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, (bytes, bytearray)):
+            return obj.decode('utf-8')
+        return json.JSONEncoder.default(self, obj)
 
 
 class Grapher:
@@ -10,8 +20,6 @@ class Grapher:
             self.graph = copy.deepcopy(graph)
         else:
             self.graph = {}
-
-        self.refresh()
 
     def node(self, name, inbound_nodes=None):
         self.graph[name] = {}
@@ -29,19 +37,25 @@ class Grapher:
             self.graph[name]['outbounds'] = []
 
         for name in self.graph.keys():
-            if 'inbounds' not in self.graph[name].keys():
-                self.graph[name]['inbounds'] = []
-            inbounds = self.graph[name]['inbounds'][:]
-            for node in inbounds:
-                if node not in self.graph.keys():
-                    while node in self.graph[name]['inbounds']:
-                        self.graph[name]['inbounds'].remove(node)
-                    print(node)
-                else:
-                    if 'outbounds' not in self.graph[node].keys():
-                        self.graph[node]['outbounds'] = []
+            if 'inbounds' in self.graph[name].keys():
+                for node in self.graph[name]['inbounds']:
+                    if node not in self.graph.keys():
+                        while node in self.graph[name]['inbounds']:
+                            self.graph[name]['inbounds'].remove(node)
+                    else:
+                        if 'outbounds' not in self.graph[node].keys():
+                            self.graph[node]['outbounds'] = []
 
-                    self.graph[node]['outbounds'].append(name)
+                        self.graph[node]['outbounds'].append(name)
+
+        spare_nodes = []
+        for name in self.graph.keys():
+            if len(self.graph[name]['outbounds']) == 0 and \
+                    len(self.graph[name]['inbounds']) == 0:
+                spare_nodes.append(name)
+
+        for removing_node_name in spare_nodes:
+            del self.graph[removing_node_name]
 
     def get_graph(self):
         return self.graph
@@ -65,40 +79,32 @@ class Grapher:
         self.graph[name]['outbounds'] = outbounds
 
     def remove_node_inbounds(self, name, inbound):
-        try:
+        if inbound in self.graph[name]['inbounds']:
             self.graph[name]['inbounds'].remove(inbound)
-        except (ValueError, KeyError):
-            pass
 
     def remove_node_outbounds(self, name, outbound):
-        try:
+        if outbound in self.graph[name]['outbound']:
             self.graph[name]['outbounds'].remove(outbound)
-        except (ValueError, KeyError):
-            pass
 
     def add_node_inbounds(self, name, inbound):
-        try:
-            self.graph[name]['inbounds'].append(inbound)
-        except (ValueError, KeyError):
-            pass
+        self.graph[name]['inbounds'].append(inbound)
 
     def add_node_outbounds(self, name, outbound):
-        try:
-            self.graph[name]['outbounds'].append(outbound)
-        except (ValueError, KeyError):
-            pass
+        self.graph[name]['outbounds'].append(outbound)
 
-    def get_graph_heads(self):
+    def get_graph_head(self):
         self.heads = []
         for (key, value) in self.graph.items():
-            if "graph_head" in value['attr']['attr']:
+            if 'inbounds' not in value.keys()\
+                    or len(value['inbounds']) == 0:
                 self.heads.append(key)
         return self.heads
 
-    def get_graph_tails(self):
+    def get_graph_tail(self):
         self.tails = []
         for (key, value) in self.graph.items():
-             if "graph_tail" in value['attr']['attr']:
+            if 'outbounds' not in value.keys()\
+                    or len(value['outbounds']) == 0:
                 self.tails.append(key)
         return self.tails
 
@@ -119,18 +125,23 @@ class Grapher:
             return None
 
     def get_node_type(self, name):
-        try:
-            if name in self.graph.keys():
-                return self.graph[name]['attr']['type']
-            else:
-                return None
-        except:
+        if name in self.graph.keys() and 'attr' in self.graph[name].keys():
+            return self.graph[name]['attr']['type']
+        else:
+            print(name, self.graph[name])
             return None
 
-    def set_node_type(self, name, type):
-        if name not in self.graph.keys():
-            self.graph[name] = {}
-        self.graph[name]['attr']['type'] = type
+    def get_root_node(self, subgraph):
+        root = subgraph[0]
+
+        flag = True
+        while flag:
+            flag = False
+            for inbound in self.get_node_inbounds(root):
+                if inbound in subgraph:
+                    flag = True
+                    root = inbound
+                    break
 
     def fuse(self, subgraph, type, name=None, attr=None, is_block=True):
         '''
@@ -145,7 +156,8 @@ class Grapher:
             name = ';'.join(subgraph)
 
         if attr is None:
-            attr = {'attr': {}}
+            root_node = self.get_root_node(subgraph)
+            attr = self.get_node_attr(root_node)
         attr['type'] = type
         if is_block:
             attr['attr']['primitive_nodes'] = list(subgraph)
@@ -177,12 +189,6 @@ class Grapher:
 
         return True
 
-    def get_primitive_nodes(self, name):
-        try:
-            return self.graph[name]['attr']['attr']['primitive_nodes']
-        except KeyError:
-            return [name]
-
     def plot_graphs(self, comment='Network Grapher View'):
         from graphviz import Digraph
 
@@ -191,7 +197,8 @@ class Grapher:
             dot.node(key, key)
             if 'inbounds' in value.keys():
                 for node in value['inbounds']:
-                    dot.edge(node, key, label=', '.join(str(x) for x in value['attr']['shape']))
+                    dot.edge(node, key, label=', '.join(str(x)
+                                                        for x in value['attr']['output_shape']))
         dot.render('graph.gv', view=False)
 
     def plot_networkx_graph(self):
@@ -199,20 +206,23 @@ class Grapher:
         import networkx as nx
 
         plt.subplot(121)
-        nx.draw(self.get_networkx_graph(), with_labels=True, font_weight='bold')
+        nx.draw(
+            self.get_networkx_graph(),
+            with_labels=True,
+            font_weight='bold')
         plt.show()
 
     def get_networkx_graph(self):
         import networkx as nx
         G = nx.MultiDiGraph()
         for (key, value) in self.graph.items():
-            try:
-                G.add_node(key, type=value['attr']['type'], **value['attr']['attr'])
-                if 'inbounds' in value.keys():
-                    for node in value['inbounds']:
-                        G.add_edge(node, key)
-            except:
-                continue
+            G.add_node(
+                key,
+                type=value['attr']['type'],
+                **value['attr']['attr'])
+            if 'inbounds' in value.keys():
+                for node in value['inbounds']:
+                    G.add_edge(node, key)
         self.graphx = G
         return G
 
@@ -222,31 +232,28 @@ class Grapher:
     def find_subgraphs(self, sub_graph, match_func):
         from networkx.algorithms import isomorphism as iso
 
-        GM = iso.MultiDiGraphMatcher(self.get_networkx_graph(), sub_graph.get_networkx_graph(), node_match=match_func)
-        matches = []
-        for match in GM.subgraph_isomorphisms_iter():
-            matches.append({
-                key: value
-                for key, value in match.items()
-                if sub_graph.get_node_type(value) != 'dummy'
-            })
-        return matches
+        GM = iso.MultiDiGraphMatcher(
+            self.get_networkx_graph(),
+            sub_graph.get_networkx_graph(),
+            node_match=match_func)
+        return list(GM.subgraph_isomorphisms_iter())
 
     def find_weight_roots(self, layer_name):
         weight_roots = []
         weights_nodes = []
         for inbound in self.graph[layer_name]['inbounds']:
             if self.graph[inbound]['attr']['type'] == 'Identity' \
-                        and len(self.graph[inbound]['inbounds']) == 1:
-                if self.graph[self.graph[inbound]['inbounds'][0]]['attr']['type'] == 'Const':
+                    and len(self.graph[inbound]['inbounds']) == 1:
+                if self.graph[self.graph[inbound]['inbounds']
+                              [0]]['attr']['type'] == 'Const':
                     weight_roots.append(inbound)
                     weights_nodes.append(inbound)
                     weights_nodes.append(self.graph[inbound]['inbounds'][0])
 
             if self.graph[inbound]['attr']['type'] == 'Const' \
-                        and len(self.graph[inbound]['inbounds']) == 0:
-                    weight_roots.append(inbound)
-                    weights_nodes.append(inbound)
+                    and len(self.graph[inbound]['inbounds']) == 0:
+                weight_roots.append(inbound)
+                weights_nodes.append(inbound)
 
         return weight_roots, weights_nodes
 
@@ -261,16 +268,19 @@ class Grapher:
 
             for op_entry in sub_fetch_graph.keys():
                 # --- Repleace dummy op ---
-                if sub_graph.get_graph()[sub_fetch_graph[op_entry]]['attr']['type'] == 'dummy':
+                if sub_graph.get_graph()[
+                        sub_fetch_graph[op_entry]]['attr']['type'] == 'dummy':
                     dummy_op = tar_sub_graphs[-1].node.add()
                     dummy_op.op = "Identity"
                     dummy_op.name = sub_fetch_graph[op_entry]
-                    dummy_op.input.extend(sub_graph.get_graph()[sub_fetch_graph[op_entry]]['inbounds'])
+                    dummy_op.input.extend(
+                        sub_graph.get_graph()[
+                            sub_fetch_graph[op_entry]]['inbounds'])
                     dummy_op.attr['T'].type = 1
                     # if 'graph_head' in sub_graph.get_graph()[sub_fetch_graph[op_entry]]['attr']['attr']:
                     #     dummy_op.attr['shape'] = []
                     #     dummy_op.attr['shape'].dim = list(map(int, sub_graph.get_graph()[sub_fetch_graph[op_entry]]['attr']['attr']['graph_head'].split(',')))
-                    print(dummy_op)
+                    # print(dummy_op)
                 else:
                     # --- Fetch the main op ---
                     node = copy.deepcopy(self.graph[op_entry]['attr']['node'])
@@ -278,14 +288,17 @@ class Grapher:
                     node.name = sub_fetch_graph[op_entry]
 
                     del node.input[:]
-                    node.input.extend(sub_graph.get_graph()[sub_fetch_graph[op_entry]]['inbounds'])
+                    node.input.extend(
+                        sub_graph.get_graph()[
+                            sub_fetch_graph[op_entry]]['inbounds'])
                     # --- Fetch the constant op ---
                     roots, nodes = self.find_weight_roots(op_entry)
                     for weight_root in roots:
                         node.input.append(weight_root)
 
                     for weight_node in nodes:
-                        tar_sub_graphs[-1].node.append(self.graph[weight_node]['attr']['node'])
+                        tar_sub_graphs[-1].node.append(
+                            self.graph[weight_node]['attr']['node'])
 
                     tar_sub_graphs[-1].node.append(node)
 
@@ -294,8 +307,10 @@ class Grapher:
 
     def dump_json(self, filename):
         with open(filename, 'w+') as fp:
-            try:
-                json.dump(self.graph, fp, indent=4, sort_keys=True)
-            except:
-                print('Find unsupport field when dumping to json, skipped.')
-                json.dump(self.graph, fp, indent=4, skipkeys=True, sort_keys=True)
+            json.dump(
+                self.graph,
+                fp,
+                indent=4,
+                skipkeys=True,
+                sort_keys=True,
+                cls=NumpyEncoder)

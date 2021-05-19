@@ -1,20 +1,9 @@
 import json
-from match_helper import MatchHelper
-from fusion_lib.utils import get_fusion_unit
-from grapher_tool import Grapher
+from utils.grapher_tool import Grapher
+from kerneldetection.fusionlib import get_fusion_unit
 
 
 class RuleReader:
-    op_map = {
-        'relu': 'ReLU',
-        'reshape': 'Reshape',
-        'conv': 'Conv2D',
-        'dwconv': 'DepthwiseConv2D',
-        'dense': 'FC',
-        'add': 'TwoInputElementWise',
-        'bn': 'BatchNorm',
-    }
-
     rules_default = {
         'MON': 0,
         'RT': True,
@@ -32,9 +21,7 @@ class RuleReader:
         self._parse_multiop_block()
 
     def is_fusible(self, node_type, outnode_type):
-        node_base_type = MatchHelper.get_base_type(node_type)
-        outnode_base_type = MatchHelper.get_base_type(outnode_type)
-        return (node_base_type, outnode_base_type) in self.fusible
+        return (node_type, outnode_type) in self.fusible
 
     def query_rule(self, rule):
         if rule not in self.rules or self.rules[rule]['obey'] is None:
@@ -49,14 +36,14 @@ class RuleReader:
             if rule['obey'] and name.startswith('BF'):
                 ops = name.split('_')[1:]
                 if len(ops) == 2:
-                    self.fusible.append((self.op_map.get(ops[0], ops[0]), self.op_map.get(ops[1], ops[1])))
+                    self.fusible.append((ops[0], ops[1]))
                 elif len(ops) > 2:
                     fusion_unit = {}
                     get_name = lambda i: f'{ops[i]}_{i}'
                     for i in range(0, len(ops)):
                         fusion_unit[get_name(i)] = {
                             'attr': {
-                                'type': self.op_map.get(ops[i], ops[i]),
+                                'type': ops[i],
                                 'attr': {},
                             },
                             'inbounds': [get_name(i - 1)] if i > 0 else [],

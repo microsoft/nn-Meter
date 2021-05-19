@@ -1,6 +1,6 @@
 import onnx
-from onnx_converter import OnnxConverter
-from frozenpb_converter import FrozenPbConverter
+from .onnx_converter import OnnxConverter
+from .frozenpb_converter import FrozenPbConverter
 
 
 def model_to_grapher(model, model_type=None):
