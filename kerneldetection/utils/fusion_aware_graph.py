@@ -43,7 +43,6 @@ class FusionAwareGraph:
         else:
             self._outbounds[node].update(self._outbounds[outnode])
 
-
     def mark_ready(self, node):
         self._ready[node] = True
 
