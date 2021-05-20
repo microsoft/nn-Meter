@@ -83,7 +83,7 @@ class Grapher:
             self.graph[name]['inbounds'].remove(inbound)
 
     def remove_node_outbounds(self, name, outbound):
-        if outbound in self.graph[name]['outbound']:
+        if outbound in self.graph[name]['outbounds']:
             self.graph[name]['outbounds'].remove(outbound)
 
     def add_node_inbounds(self, name, inbound):
@@ -132,7 +132,7 @@ class Grapher:
             return None
 
     def get_root_node(self, subgraph):
-        root = subgraph[0]
+        root = next(iter(subgraph))
 
         flag = True
         while flag:
@@ -142,6 +142,8 @@ class Grapher:
                     flag = True
                     root = inbound
                     break
+
+        return root
 
     def fuse(self, subgraph, type, name=None, attr=None, is_block=True):
         '''

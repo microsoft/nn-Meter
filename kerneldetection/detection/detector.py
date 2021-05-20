@@ -1,7 +1,8 @@
 from kerneldetection.rulelib.rule_reader import RuleReader
 from kerneldetection.rulelib.rule_splitter import RuleSplitter
 from utils.grapher_tool import Grapher
-from .constants import DUMMY_TYPES
+from kerneldetection.utils.constants import *
+from kerneldetection.utils.ir_tools import convert_nodes
 
 
 class KernelDetector:
@@ -12,7 +13,8 @@ class KernelDetector:
         self.bbs = []
 
     def load_graph(self, graph):
-        self.graph = Grapher(graph=graph)
+        new_graph = convert_nodes(graph)
+        self.graph = Grapher(graph=new_graph)
         self.bbs = self.splitter.split(self.graph)
 
     @property
@@ -43,35 +45,25 @@ class KernelDetector:
             attr = self.graph.get_node_attr(layer)['attr']
             input_shape = self.graph.get_node_attr(layer)['input_shape']
             output_shape = self.graph.get_node_attr(layer)['output_shape']
-            if type in ['conv', 'dwconv']:
-                kernel['ks'] = attr['ks']
-                kernel['cin'] = input_shape[0][3]
-                kernel['cout'] = output_shape[0][3]
-                kernel['strides'] = attr['strides']
-                if type == 'dwconv':
-                    kernel['cout'] = kernel['cin']
-            elif type in ['maxpool', 'avgpool']:
-                kernel['ks'] = attr['ksize']
-                kernel['cin'] = input_shape[0][3]
-                kernel['cout'] = output_shape[0][3]
-                kernel['strides'] = attr['strides']
-            elif type == 'fc':
-                kernel['cin'] = input_shape[0][1]
-                kernel['cout'] = output_shape[0][1]
-            elif type == 'gap':
-                kernel['cin'] = input_shape[0][3]
-                kernel['cout'] = output_shape[0][3]
-            elif type in ['relu','hswish']:
-                kernel['cin'] = input_shape[-1]
-                kernel['cout'] = output_shape[-1]
 
             kernel['input_tensors'] = input_shape
-            if type not in ['relu','bn', 'fc', 'reshape',  'Pack', 'StridedSlice','split']:
-                kernel['inputh'] = input_shape[0][1]
-                kernel['inputw'] = input_shape[0][2]
 
-            if type == 'split':
+            if 'ks' in attr:
+                kernel['ks'] = attr['ks']
+            if 'strides' in attr:
+                kernel['strides'] = attr['strides']
+            if 'split_dim' in attr:
                 kernel['split_dim'] = attr['split_dim']
+
+            if len(input_shape) == 1:
+                if len(input_shape[0]) == 4:
+                    kernel['inputh'] = input_shape[0][1]
+                    kernel['inputw'] = input_shape[0][2]
+                kernel['cin'] = input_shape[0][-1]
+
+            if len(output_shape) == 1:
+                kernel['cout'] = output_shape[0][-1]
+            elif len(output_shape) > 1:
                 kernel['output_tensors'] = output_shape
 
             return kernel

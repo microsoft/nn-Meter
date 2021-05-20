@@ -1,5 +1,5 @@
 import networkx as nx
-from .utils import get_tensor_shape, convert_attr
+from .utils import get_tensor_shape
 from .constants import *
 from itertools import chain
 import logging
@@ -75,11 +75,8 @@ class OnnxConverter:
         if len(input_tensors) == 0 or len(input_tensors[0]) <= 1 or len(output_tensors) == 0 or len(output_tensors[0]) <= 1:
             return attrs
 
-        if node.op_type not in OP_ALIAS:
-            logging.warning(f'Unsupported OP: {node.op_type}')
-
         attrs['attr'] = {}
-        attrs['type'] = OP_ALIAS.get(node.op_type, node.op_type)
+        attrs['type'] = node.op_type
         attrs['input_shape'] = input_tensors
         attrs['output_shape'] = output_tensors
         for attr in node.attribute:
@@ -103,7 +100,6 @@ class OnnxConverter:
             node_attrs = self.G.nodes[node]
             if node in self.tensors or not node_attrs:
                 continue
-            node_attrs['attr'] = convert_attr(node_attrs['attr'], node_attrs['type'])
 
             outbounds = []
             inbounds = []
