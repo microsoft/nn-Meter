@@ -1,0 +1,8 @@
+networkx==2.4
+tensorflow==1.15.0
+matplotlib==2.2.2
+onnx==1.7.0
+numpy==1.18.5
+graphviz==0.14
+protobuf==3.17.0
+scikit_learn==0.24.2
