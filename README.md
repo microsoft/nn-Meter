@@ -10,6 +10,16 @@ As the maintainer of this project, please make a few updates:
 - Understanding the security reporting process in SECURITY.MD
 - Remove this section from the README
 
+## Installation
+
+To install nn-meter, please first install python3. The test environment uses anaconda python 3.6.10. Install the dependencies via: 
+`pip3 install -r requirements.txt`
+Please also check the versions of numpy, scikit_learn. The different versions may change the prediction accuracy of kernel predictors. 
+
+## Usage
+
+To run the latency predictor, we support two input formats. 
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
