@@ -6,12 +6,13 @@ import sys
 
 def converter(input_model, output_path):
     result = model_file_to_grapher(input_model)
+    results={input_model.split('/')[-1].replace(".onnx","").replace(".pb",""):result}
 
     if output_path:
         with open(output_path, 'w') as fp:
-            json.dump(result, fp, indent=4)
+            json.dump(results, fp, indent=4)
     else:
-        json.dump(result, sys.stdout, indent=4)
+        json.dump(results, sys.stdout, indent=4)
     return result
 
 

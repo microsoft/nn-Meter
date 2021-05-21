@@ -177,6 +177,7 @@ def read_model_latency(configs,latency_file):
    # configs=json.load(open(jsonfile,'r'))
     f=open(latency_file,'r')
     #print(latency_file,jsonfile)
+    #print(configs)
     cins=[]
     couts=[]
     cs=[]
@@ -184,6 +185,7 @@ def read_model_latency(configs,latency_file):
     Y={}
     hws=[]
     mdicts={}
+    
     while True:
         line=f.readline()
         if not line:
@@ -191,20 +193,19 @@ def read_model_latency(configs,latency_file):
         content=line.strip().split(',')   
         model=content[1]      
         latency=float(content[2])
+        #print(content)
         if latency>0 and model in configs:
             config=configs[model]
             c=""
             fc=[]
             
-            mdicts[model]={}
-
-            
-            
+            mdicts[model]={}           
             layer=0
             for item in config:
                 op=item['op']
-                #print(item)
-                if op not in ['split','channelshuffle','concat','bn','hswish','relu','channel_shuffle','fc-relu','add','bn-relu','add-relu','global-avgpool','fc','SE-relu','SE','add-add']:
+                #print('here',item)
+            #print(item)
+                if op not in ['reshape','split','channelshuffle','concat','bn','hswish','relu','channel_shuffle','fc-relu','add','bn-relu','add-relu','global-avgpool','fc','SE-relu','SE','add-add']:
                     cout=item['cout']
                     cin=item['cin']
                     ks=item['ks'][1]

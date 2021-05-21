@@ -53,7 +53,7 @@ def main_kernel_predict(hardware,mf,configs,latencyfile):
     pY=[]#
     f=open("results/result-"+hardware+'-'+mf+'.csv','w')
     Y1=[]
-    #print(len(X))
+    print(len(X))
     count=0
     for index in X:
        #if index in ['mobilenetv1_0']:
