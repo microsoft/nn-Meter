@@ -239,11 +239,19 @@ class ShapeInference:
         else:
             wpad = 0
             hpad = 0
+
         padded_shape = [
             ph.get_w(input_shape) + wpad,
             ph.get_h(input_shape) + hpad]
         logging.info('Op:%s, kernel_extent:%s, padding:%s, padded shape:%s.' % (node['attr']['name'], str(
             [kernel_extent_w, kernel_extent_h]), str([wpad, hpad]), str(padded_shape)))
+
+        node['attr']['attr']['kernel_shape'] = copy.deepcopy(k_size)
+        node['attr']['attr']['dilations'] = copy.deepcopy(node['attr']['attr']['dilations'][1:-1])
+        node['attr']['attr']['strides'] = copy.deepcopy(node['attr']['attr']['strides'][1:-1])
+
+        # FIXME: Not match with onnx
+        # node['attr']['attr']['pads'] = [wpad, wpad, hpad, hpad] 
 
         outw = int(ph.get_w(input_shape) - kernel_extent_w) / \
             ph.get_w(strides) + 1
@@ -325,6 +333,13 @@ class ShapeInference:
             ph.get_h(input_shape) + hpad]
         logging.info('Op:%s, kernel_extent:%s, padding:%s, padded shape:%s.' % (node['attr']['name'], str(
             [kernel_extent_w, kernel_extent_h]), str([wpad, hpad]), str(padded_shape)))
+
+        node['attr']['attr']['kernel_shape'] = copy.deepcopy(k_size)
+        node['attr']['attr']['dilations'] = copy.deepcopy(node['attr']['attr']['dilations'][1:-1])
+        node['attr']['attr']['strides'] = copy.deepcopy(node['attr']['attr']['strides'][1:-1])
+
+        # FIXME: Not match with onnx
+        # node['attr']['attr']['pads'] = [wpad, wpad, hpad, hpad]
 
         outw = int(ph.get_w(input_shape) - kernel_extent_w) / \
             ph.get_w(strides) + 1
@@ -480,9 +495,9 @@ class ShapeInference:
                 input_shape, output_shape = eval(
                     'self.' + node_get_shape_name)(graph, graph[node_name])
                 if output_shape is not None:
-                    graph[node_name]['attr']['output_shape'] = output_shape
+                    graph[node_name]['attr']['output_shape'] = copy.deepcopy(output_shape)
                 if input_shape is not None:
-                    graph[node_name]['attr']['input_shape'] = input_shape
+                    graph[node_name]['attr']['input_shape'] = copy.deepcopy(input_shape)
                 logging.info(
                     'Input shape of %s op is %s.' %
                     (node_name, str(input_shape)))
