@@ -27,7 +27,9 @@ def predict_model(model,hardware):
          
     for op in dicts:
            # print('op',op)
+            print(op,dicts[op])
             pys=get_kernel_latency(op,dicts[op],hardware)
+            
             
             if len(pys)!=0:
                 py+=sum(pys)

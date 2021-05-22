@@ -13,7 +13,7 @@ def main(hardware, model, rule_file, mf, level, latency_file):
     print(model)
     mid=model.split('/')[-1].replace(".onnx","").replace(".pb","")
     kernel_result={mid:kd.kernels}
-    print(kernel_result)
+    #print(kernel_result)
 
     if level == 'kernel':
         rmse, rmspe, error, acc5, acc10 = main_kernel_predict(hardware, mf, kernel_result, latency_file)

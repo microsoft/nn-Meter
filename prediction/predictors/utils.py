@@ -49,7 +49,7 @@ def get_kernel_name(optype,hardware):
         optype='maxpool'
     if optype=='avg-pool':
         optype='avgpool'
-    if optype=='global-pool':
+    if optype in ['global-pool','gap']:
         optype='global-avgpool'
     if optype=='channel_shuffle':
         optype='channelshuffle'
@@ -62,7 +62,7 @@ def get_kernel_name(optype,hardware):
     
        # print('here')
         
-    if optype in ['SE','SE-relu']:
+    if optype in ['SE','SE-relu','se','se-relu']:
         optype='se'
    # print(hardware,optype)
     return optype

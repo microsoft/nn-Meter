@@ -185,6 +185,9 @@ def read_model_latency(configs,latency_file):
     Y={}
     hws=[]
     mdicts={}
+    for mid in configs:
+        for item in configs[mid]:
+            print(mid,item)
     
     while True:
         line=f.readline()
@@ -204,8 +207,8 @@ def read_model_latency(configs,latency_file):
             for item in config:
                 op=item['op']
                 #print('here',item)
-            #print(item)
-                if op not in ['reshape','split','channelshuffle','concat','bn','hswish','relu','channel_shuffle','fc-relu','add','bn-relu','add-relu','global-avgpool','fc','SE-relu','SE','add-add']:
+                print(item)
+                if op not in ['reshape','split','channelshuffle','concat','bn','hswish','relu','channel_shuffle','fc-relu','add','bn-relu','add-relu','gap','global-avgpool','fc','se-relu','se','add-add']:
                     cout=item['cout']
                     cin=item['cin']
                     ks=item['ks'][1]
@@ -247,7 +250,7 @@ def read_model_latency(configs,latency_file):
                     features=[inputh,cin,cout,ks,s]
                     mdicts[model][layer]={}
                     mdicts[model][layer][op]=features
-                elif 'global-pool' in op or 'global-avgpool' in op:
+                elif 'global-pool' in op or 'global-avgpool' in op or op in 'gap':
                     inputh=1
                     cin=item['cin']
 
