@@ -8,6 +8,7 @@ import os
 
 def main(hardware, model, rule_file, mf, level, latency_file):
     graph = model_file_to_grapher(model)
+    print(graph)
     kd = KernelDetector(rule_file)
     kd.load_graph(graph)
     print(model)
@@ -17,6 +18,7 @@ def main(hardware, model, rule_file, mf, level, latency_file):
 
     if level == 'kernel':
         rmse, rmspe, error, acc5, acc10 = main_kernel_predict(hardware, mf, kernel_result, latency_file)
+
 
 
 if __name__ == '__main__':
@@ -29,8 +31,11 @@ if __name__ == '__main__':
     parser.add_argument('-lf', '--latency_file', type=str)
 
     args=parser.parse_args()
+    mf=args.input_model.split('/')[-1].replace("_0.pb","").replace("small","").replace("large","")
+    mf=mf.replace("11","").replace("13","").replace("16","").replace("19","")
+    mf=mf.replace("18","").replace("34","").replace("50","")
 
     rule_file = args.rule_file or BACKENDS[args.hardware]
-    latency_file = args.latency_file or f'data/model_latency/{args.hardware}/{args.mf}-log.csv'
+    latency_file = args.latency_file or f'data/model_latency/{args.hardware}/{mf}-log.csv'
    
-    main(args.hardware, args.input_model, rule_file, args.mf, args.level, latency_file)
+    main(args.hardware, args.input_model, rule_file, mf, args.level, latency_file)
