@@ -62,7 +62,7 @@ class ShapeInference:
         return input_shape_list, [target_shape]
 
     @staticmethod
-    def get_padding_shape(input_shape, k_size, strides, padding):
+    def get_padding_shape(input_shape, cout, k_size, strides, padding):
         
         logging.info('Calculating padding shape, input shape: %s, kernel size: %s, strides: %s, padding: %s.' % (str(input_shape), str(k_size), str(strides), str(padding)))
 
@@ -92,7 +92,7 @@ class ShapeInference:
             return None, None
         
         output_shape = list(
-            map(int, [input_shape[0], outh, outw, input_shape[3]]))
+            map(int, [input_shape[0], outh, outw, cout]))
         return copy.deepcopy(output_shape), copy.deepcopy(pad_size)
 
     @staticmethod
@@ -166,7 +166,7 @@ class ShapeInference:
         logging.info('Op:%s, stride:%s, padding:%s.' %
                      (node['attr']['name'], str(strides), str(padding)))
 
-        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, k_size, strides, padding)
+        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, input_shape[3],k_size, strides, padding)
 
         node['attr']['attr']['ksize'] = copy.deepcopy(node['attr']['attr']['ksize'][1:-1])
         node['attr']['attr']['strides'] = copy.deepcopy(node['attr']['attr']['strides'][1:-1])
@@ -254,7 +254,7 @@ class ShapeInference:
         kernel_extent_w = ph.get_w(dilation) * (ph.get_w(strides) - 1) + 1
         kernel_extent_h = ph.get_h(dilation) * (ph.get_h(strides) - 1) + 1
 
-        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, [kernel_extent_w, kernel_extent_h], strides, padding)
+        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, cout, [kernel_extent_w, kernel_extent_h], strides, padding)
     
         node['attr']['attr']['kernel_shape'] = copy.deepcopy(k_size)
         node['attr']['attr']['dilations'] = copy.deepcopy(node['attr']['attr']['dilations'][1:-1])
@@ -324,7 +324,7 @@ class ShapeInference:
         kernel_extent_w = ph.get_w(dilation) * (ph.get_w(strides) - 1) + 1
         kernel_extent_h = ph.get_h(dilation) * (ph.get_h(strides) - 1) + 1
 
-        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, [kernel_extent_w, kernel_extent_h], strides, padding)
+        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, cin, [kernel_extent_w, kernel_extent_h], strides, padding)
 
         node['attr']['attr']['kernel_shape'] = copy.deepcopy(k_size)
         node['attr']['attr']['dilations'] = copy.deepcopy(node['attr']['attr']['dilations'][1:-1])
