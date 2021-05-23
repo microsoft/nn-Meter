@@ -238,7 +238,15 @@ class Grapher:
             self.get_networkx_graph(),
             sub_graph.get_networkx_graph(),
             node_match=match_func)
-        return list(GM.subgraph_isomorphisms_iter())
+
+        matches = []
+        for match in GM.subgraph_isomorphisms_iter():
+            matches.append({
+                key: value
+                for key, value in match.items()
+                if sub_graph.get_node_type(value) != 'dummy'
+            })
+        return matches
 
     def find_weight_roots(self, layer_name):
         weight_roots = []
