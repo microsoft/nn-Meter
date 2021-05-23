@@ -1,7 +1,9 @@
 from .protobuf_helper import ProtobufHelper as ph
 from functools import reduce
 import copy
+import math
 import logging
+logging.basicConfig(level=logging.DEBUG)
 logging = logging.getLogger(__name__)
 
 
@@ -13,7 +15,7 @@ class ShapeInference:
         if len(input_nodes) < 2:
             logging.warn(
                 'Invalid input op num for prodcast op %s' %
-                (node['name']))
+                (node['attr']['name']))
             if len(input_nodes) == 1:
                 return grapher[node['inbounds'][0]]['attr']['output_shape'][0]
             else:
@@ -58,6 +60,40 @@ class ShapeInference:
         #         return None
 
         return input_shape_list, [target_shape]
+
+    @staticmethod
+    def get_padding_shape(input_shape, k_size, strides, padding):
+        
+        logging.info('Calculating padding shape, input shape: %s, kernel size: %s, strides: %s, padding: %s.' % (str(input_shape), str(k_size), str(strides), str(padding)))
+
+        if padding == 'SAME':
+            outh = math.ceil(ph.get_h(input_shape) / ph.get_h(strides))
+            outw  = math.ceil(ph.get_w(input_shape) / ph.get_w(strides))
+
+            padh = max((outh - 1) * ph.get_h(strides) +
+                    ph.get_h(k_size) - ph.get_h(input_shape), 0)
+            padw = max((outw - 1) * ph.get_w(strides) +
+                ph.get_w(k_size) - ph.get_w(input_shape), 0)
+
+            pad_top = padh // 2
+            pad_bottom = padh - pad_top
+            pad_left = padw // 2
+            pad_right = padw - pad_left
+
+            pad_size = [pad_top, pad_bottom, pad_left, pad_right]
+        elif padding == 'VALID':
+            outh = math.ceil((ph.get_h(input_shape) - ph.get_h(k_size) + 1) / ph.get_h(strides))
+            outw  = math.ceil((ph.get_h(input_shape) - ph.get_h(k_size) + 1) / ph.get_w(strides))
+
+            pad_size =[0, 0, 0, 0]
+        else:
+            logging.error('Unexpected padding format %s find in %s.' 
+                % (padding, node['attr'['name']]))
+            return None, None
+        
+        output_shape = list(
+            map(int, [input_shape[0], outh, outw, input_shape[3]]))
+        return copy.deepcopy(output_shape), copy.deepcopy(pad_size)
 
     @staticmethod
     def Const_get_shape(grapher, node):
@@ -109,7 +145,7 @@ class ShapeInference:
             logging.info(node)
             return
 
-        input_shape = grapher[node['inbounds'][0]]['attr']['output_shape'][0]
+        input_shape = copy.deepcopy(grapher[node['inbounds'][0]]['attr']['output_shape'][0])
         logging.info(
             'Get input shape of %s from %s, input shape:%s.' %
             (node['attr']['name'], node['inbounds'][0], input_shape))
@@ -130,26 +166,13 @@ class ShapeInference:
         logging.info('Op:%s, stride:%s, padding:%s.' %
                      (node['attr']['name'], str(strides), str(padding)))
 
-        if padding == 'SAME':
-            wpad = ph.get_w(strides) - 1
-            hpad = ph.get_h(strides) - 1
-        else:
-            wpad = 0
-            hpad = 0
-        padded_shape = [
-            ph.get_w(input_shape) + wpad,
-            ph.get_h(input_shape) + hpad]
-        logging.info('Op:%s, padding:%s, padded shape:%s.' %
-                     (node['attr']['name'], str([wpad, hpad]), str(padded_shape)))
+        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, k_size, strides, padding)
 
-        outw = int(ph.get_w(input_shape) - ph.get_w(k_size)) / \
-            ph.get_w(strides) + 1
-        outh = int(ph.get_h(input_shape) - ph.get_w(k_size)) / \
-            ph.get_h(strides) + 1
+        node['attr']['attr']['ksize'] = copy.deepcopy(node['attr']['attr']['ksize'][1:-1])
+        node['attr']['attr']['strides'] = copy.deepcopy(node['attr']['attr']['strides'][1:-1])
+        node['attr']['attr']['pads'] = copy.deepcopy(padding_shape)
 
-        output_shape = list(
-            map(int, [input_shape[0], outh, outw, input_shape[3]]))
-        return [input_shape], [output_shape]
+        return [input_shape], [out_shape]
 
     @staticmethod
     def AvgPool_get_shape(grapher, node):
@@ -191,7 +214,7 @@ class ShapeInference:
             logging.info(node)
             return
 
-        input_shape = grapher[input_node[0]]['attr']['output_shape'][0]
+        input_shape = copy.deepcopy(grapher[input_node[0]]['attr']['output_shape'][0])
         logging.info(
             'Get input shape of %s from %s, input shape:%s.' %
             (node['attr']['name'], input_node[0], input_shape))
@@ -231,35 +254,15 @@ class ShapeInference:
         kernel_extent_w = ph.get_w(dilation) * (ph.get_w(strides) - 1) + 1
         kernel_extent_h = ph.get_h(dilation) * (ph.get_h(strides) - 1) + 1
 
-        if padding == 'SAME':
-            wpad = kernel_extent_w + int((ph.get_w(input_shape) - 1) / ph.get_w(
-                dilation)) * ph.get_w(dilation) - ph.get_w(input_shape)
-            hpad = kernel_extent_h + int((ph.get_h(input_shape) - 1) / ph.get_h(
-                dilation)) * ph.get_h(dilation) - ph.get_h(input_shape)
-        else:
-            wpad = 0
-            hpad = 0
-
-        padded_shape = [
-            ph.get_w(input_shape) + wpad,
-            ph.get_h(input_shape) + hpad]
-        logging.info('Op:%s, kernel_extent:%s, padding:%s, padded shape:%s.' % (node['attr']['name'], str(
-            [kernel_extent_w, kernel_extent_h]), str([wpad, hpad]), str(padded_shape)))
-
+        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, [kernel_extent_w, kernel_extent_h], strides, padding)
+    
         node['attr']['attr']['kernel_shape'] = copy.deepcopy(k_size)
         node['attr']['attr']['dilations'] = copy.deepcopy(node['attr']['attr']['dilations'][1:-1])
         node['attr']['attr']['strides'] = copy.deepcopy(node['attr']['attr']['strides'][1:-1])
+        node['attr']['attr']['weight_shape'] = copy.deepcopy(weight_shape)
+        node['attr']['attr']['pads'] = padding_shape
 
-        # FIXME: Not match with onnx
-        # node['attr']['attr']['pads'] = [wpad, wpad, hpad, hpad] 
-
-        outw = int(ph.get_w(input_shape) - kernel_extent_w) / \
-            ph.get_w(strides) + 1
-        outh = int(ph.get_h(input_shape) - kernel_extent_h) / \
-            ph.get_h(strides) + 1
-
-        output_shape = list(map(int, [input_shape[0], outh, outw, cout]))
-        return [input_shape], [output_shape]
+        return [input_shape], [out_shape]
 
     @staticmethod
     def DepthwiseConv2dNative_get_shape(grapher, node):
@@ -281,7 +284,7 @@ class ShapeInference:
             logging.info(node)
             return
 
-        input_shape = grapher[input_node[0]]['attr']['output_shape'][0]
+        input_shape = copy.deepcopy(grapher[input_node[0]]['attr']['output_shape'][0])
         logging.info(
             'Get input shape of %s from %s, input shape:%s.' %
             (node['attr']['name'], input_node[0], input_shape))
@@ -313,6 +316,7 @@ class ShapeInference:
         strides = node['attr']['attr']['strides']
         dilation = node['attr']['attr']['dilations']
         padding = node['attr']['attr']['padding'].decode('utf-8')
+
         logging.info(
             'Op:%s, stride:%s, dilation:%s, padding:%s.' %
             (node['attr']['name'], str(strides), str(dilation), str(padding)))
@@ -320,34 +324,15 @@ class ShapeInference:
         kernel_extent_w = ph.get_w(dilation) * (ph.get_w(strides) - 1) + 1
         kernel_extent_h = ph.get_h(dilation) * (ph.get_h(strides) - 1) + 1
 
-        if padding == 'SAME':
-            wpad = kernel_extent_w + int((ph.get_w(input_shape) - 1) / ph.get_w(
-                dilation)) * ph.get_w(dilation) - ph.get_w(input_shape)
-            hpad = kernel_extent_h + int((ph.get_h(input_shape) - 1) / ph.get_h(
-                dilation)) * ph.get_h(dilation) - ph.get_h(input_shape)
-        else:
-            wpad = 0
-            hpad = 0
-        padded_shape = [
-            ph.get_w(input_shape) + wpad,
-            ph.get_h(input_shape) + hpad]
-        logging.info('Op:%s, kernel_extent:%s, padding:%s, padded shape:%s.' % (node['attr']['name'], str(
-            [kernel_extent_w, kernel_extent_h]), str([wpad, hpad]), str(padded_shape)))
+        out_shape, padding_shape = ShapeInference.get_padding_shape(input_shape, [kernel_extent_w, kernel_extent_h], strides, padding)
 
         node['attr']['attr']['kernel_shape'] = copy.deepcopy(k_size)
         node['attr']['attr']['dilations'] = copy.deepcopy(node['attr']['attr']['dilations'][1:-1])
         node['attr']['attr']['strides'] = copy.deepcopy(node['attr']['attr']['strides'][1:-1])
+        node['attr']['attr']['weight_shape'] = copy.deepcopy(weight_shape)
+        node['attr']['attr']['pads'] = padding_shape
 
-        # FIXME: Not match with onnx
-        # node['attr']['attr']['pads'] = [wpad, wpad, hpad, hpad]
-
-        outw = int(ph.get_w(input_shape) - kernel_extent_w) / \
-            ph.get_w(strides) + 1
-        outh = int(ph.get_h(input_shape) - kernel_extent_h) / \
-            ph.get_h(strides) + 1
-
-        output_shape = list(map(int, [input_shape[0], outh, outw, cin]))
-        return [input_shape], [output_shape]
+        return [input_shape], [out_shape]
 
     @staticmethod
     def Reduce_get_shape(grapher, node):
@@ -434,8 +419,22 @@ class ShapeInference:
 
     @staticmethod
     def Reshape_get_shape(grapher, node):
-        input_shape = grapher[node['inbounds'][0]]['attr']['output_shape'][0]
-        exp_output_shape = node['attr']['attr']['shape']
+        if 'shape' in node['attr']['attr'].keys():
+            logging.info('Shape attr find in %s op, propogate with normal.'
+                , node['attr']['name'])
+            input_shape = copy.deepcopy(grapher[node['inbounds'][0]]['attr']['output_shape'][0])
+            exp_output_shape = copy.deepcopy(node['attr']['attr']['shape'])
+        else:
+            logging.info('Shape attr not find in %s op, try finding the shape node.'
+                , node['attr']['name'])
+            for in_node in node['inbounds']:
+                if grapher[in_node]['attr']['type'] == 'Const':
+                    exp_output_shape = copy.deepcopy(grapher[in_node]['attr']['constant'])
+                elif grapher[in_node]['attr']['type'] == 'Pack':
+                    exp_output_shape = [1] + [it for sl in grapher[in_node]['attr']['attr']['constant'] for it in sl]
+                    logging.info('Fetched expected output shape from Pack op %s' % str(exp_output_shape))
+                else:
+                    input_shape = copy.deepcopy(grapher[in_node]['attr']['output_shape'][0])
 
         input_elements = abs(reduce(lambda x, y: x * y, input_shape))
         exp_output_shape_elements = abs(
@@ -443,7 +442,7 @@ class ShapeInference:
 
         if input_elements != exp_output_shape_elements:
             logging.warning('Input shape %s and output shape %s not matched for %s.' % (
-                str(input_shape, str(output_shape), node['attr']['name'])))
+                str(input_shape), str(exp_output_shape), node['attr']['name']))
 
         return [input_shape], [exp_output_shape]
 
@@ -456,14 +455,13 @@ class ShapeInference:
                 input_shape.append(in_shape)
                 logging.info('Get input shape of %s from %s, input shape:%s.' % (
                     node['attr']['name'], in_node, input_shape[-1]))
-
         axis = node['attr']['attr']['axis'][0]
 
         output_shape = copy.deepcopy(input_shape[0])
         for in_shape in input_shape[1:]:
             output_shape[axis] += in_shape[axis]
 
-        return [input_shape], [output_shape]
+        return copy.deepcopy(input_shape), [output_shape]
 
     @staticmethod
     def Concatenate_get_shape(grapher, node):
@@ -475,15 +473,42 @@ class ShapeInference:
 
     @staticmethod
     def Split_get_shape(grapher, node):
-        raise NotImplementedError
+        for in_node in node['inbounds']:
+            if grapher[in_node]['attr']['type'] == 'Const':
+                pass
+            elif grapher[in_node]['attr']['type'] == 'Pack':
+                pass
+            else:
+                input_shape = copy.deepcopy(grapher[in_node]['attr']['output_shape'][0])
+        
+        split_dim = node['attr']['attr']['split_dim'][0]
+        logging.info('Fetched Split dim for %s is %s.', node['attr']['name'], split_dim)
+        output_node_cnt = len(node['outbounds'])
+
+        output_shape = copy.deepcopy(input_shape)
+        output_shape[split_dim] = output_shape[split_dim] // output_node_cnt
+        output_shape = copy.deepcopy([output_shape]) * output_node_cnt
+
+        return [copy.deepcopy(input_shape)], output_shape
 
     @staticmethod
-    def StridedSlice_get_shape(grapher, node):
-        return None, None
+    def Transpose_get_shape(grapher, node):
+        for in_node in node['inbounds']:
+            if grapher[in_node]['attr']['type'] == 'Const':
+                perm = copy.deepcopy(grapher[in_node]['attr']['attr']['constant'])
+                logging.info('Fetched perm sequence from Const op %s' % str(perm))
+            elif grapher[in_node]['attr']['type'] == 'Pack':
+                perm = [1] + [it for sl in grapher[in_node]['attr']['attr']['constant'] for it in sl]
+                logging.info('Fetched perm sequence from Pack op %s' % str(perm))
+            else:
+                input_shape = copy.deepcopy(grapher[in_node]['attr']['output_shape'][0])
+                logging.info('Fetched input shape from %s,  %s' % (in_node, str(input_shape)))
 
-    @staticmethod
-    def Pack_get_shape(grapher, node):
-        return None, None
+        exp_output_shape = []
+        for i in range(len(perm)):
+            exp_output_shape.append(input_shape[perm[i]])
+
+        return [input_shape], [exp_output_shape]
 
     def __init__(self, grapher):
         seq = ph.get_graph_seq(grapher)
@@ -505,6 +530,7 @@ class ShapeInference:
                     'Output shape of %s op is %s.' %
                     (node_name, str(output_shape)))
             else:
-                logging.warning(
-                    'Op %s is not support, ignored!' %
-                    grapher.get_node_type(node_name))
+                logging.error('%s not support yet.' % grapher.get_node_type(node_name))
+                logging.info('------ node content --------')
+                logging.info(graph[node_name])
+                logging.info('----------------------------')
