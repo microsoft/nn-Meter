@@ -28,6 +28,6 @@ def convert_nodes(graph):
 
         if new_type == 'split' and 'axis' in attr:
             attr['split_dim'] = attr['axis']
-            del attr['split_dim']
+            del attr['axis']
 
     return new_graph
