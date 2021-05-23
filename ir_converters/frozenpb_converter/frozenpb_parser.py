@@ -20,6 +20,7 @@ class FrozenPbParser:
 
     @staticmethod
     def strip_useless_nodes(graph_helper):
+        stripped_nodes_type_all = ['Pack', 'StridedSlice']
         stripped_nodes_type = ['Const', 'Identity']
         stripped_nodes_keywords = ['/weight', '/weight/read',
                                    '/ReadVariableOp',
@@ -37,6 +38,8 @@ class FrozenPbParser:
                         if kw in key:
                             removed_node.append(key)
                             break
+                if value['attr']['type'] in stripped_nodes_type_all:
+                    removed_node.append(key)
 
         for key in removed_node:
             del graph[key]
