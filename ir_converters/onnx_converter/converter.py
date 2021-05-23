@@ -103,16 +103,12 @@ class OnnxConverter:
 
             outbounds = []
             inbounds = []
-            for successor in self.G.successors(node):
-                try:
-                    outbounds.append(next(self.G.successors(successor)))
-                except StopIteration:
-                    pass
-            for predecessor in self.G.predecessors(node):
-                try:
-                    inbounds.append(next(self.G.predecessors(predecessor)))
-                except StopIteration:
-                    pass
+            for succ in self.G.successors(node):
+                for succ_succ in self.G.successors(succ):
+                    outbounds.append(succ_succ)
+            for pred in self.G.predecessors(node):
+                for pred_pred in self.G.predecessors(pred):
+                    inbounds.append(pred_pred)
 
             result[node] = {
                 'attr': node_attrs,
