@@ -114,6 +114,12 @@ class FrozenPbParser:
                 'node_name': lambda x: x,
                 'attr_name': 'constant',
                 'node_value': lambda x: ProtobufHelper.get_tensor_value(x)
+            },
+            'Pack': {
+                'node_name': lambda x: x + r'/(\d)',
+                'regex': True,
+                'attr_name': 'constant',
+                'node_value': lambda x: ProtobufHelper.get_tensor_value(x)
             }
         }
 
@@ -146,17 +152,27 @@ class FrozenPbParser:
 
         if node.op in attr_as_node.keys():
             for target_node in self.graph.node:
-                if target_node.name == attr_as_node[node.op]['node_name'](
-                        node.name):
-                    for attr_name in target_node.attr.keys():
-                        if attr_name == 'value' and 'weight' not in node.name and 'BatchNorm' not in node.name and 'kernel' not in node.name:
-                            # print(target_node.attr[attr_name].tensor)
-                            attr_dict[attr_as_node[node.op]['attr_name']] = \
-                                attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor)
+                if 'regex' in attr_as_node[node.op].keys():
+                    node_attr = re.findall(attr_as_node[node.op]['node_name'](node.name), target_node.name)
+                    if(len(node_attr) > 0):
+                        logging.info('Find regex matching node %s' % node.name)
+                        for attr_name in target_node.attr.keys():
+                            if attr_name == 'value' and 'weight' not in node.name and 'BatchNorm' not in node.name and 'kernel' not in node.name:
+                                node_attr_name = attr_as_node[node.op]['attr_name']
+                                if node_attr_name not in attr_dict.keys():
+                                    attr_dict[node_attr_name] = []
+                                attr_dict[node_attr_name].append(copy.deepcopy(attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor)))
+                else:
+                    if target_node.name == attr_as_node[node.op]['node_name'](
+                            node.name):
+                        for attr_name in target_node.attr.keys():
+                            if attr_name == 'value' and 'weight' not in node.name and 'BatchNorm' not in node.name and 'kernel' not in node.name:
+                                attr_dict[attr_as_node[node.op]['attr_name']] = \
+                                    copy.deepcopy(attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor))
+                            if node.name == 'Const':
+                                print(node)
+                                print('>', attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor))
 
-        # # attr_dict['weight_shape'] = self.find_weights_root(node, shape_fetcher)
-        # print(node.name, attr_dict)
-        # print('------------------')
         return attr_dict
 
     def parse_graph(
@@ -177,5 +193,3 @@ class FrozenPbParser:
                     'attr': self.fetch_attr_to_dict(node, shape_fetcher if required_shape else None),
                     # 'node': node if insert_node else None
                 })
-
-        # return shape_fetcher

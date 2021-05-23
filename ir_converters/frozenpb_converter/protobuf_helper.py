@@ -97,7 +97,11 @@ class ProtobufHelper:
     @staticmethod
     def get_tensor_value(x):
         DTYPE_ENUM = {
+            0: lambda x: list(map(float, x.float_val)),
             1: lambda x: list(map(float, x.float_val)),
             3: lambda x: list(map(int, x.int_val))
         }
-        return DTYPE_ENUM[x.dtype](x)
+        data = DTYPE_ENUM[x.dtype](x)
+        if len(data) == 0:
+            data = ProtobufHelper.pkg42dec(x.tensor_content)
+        return data
