@@ -1,145 +1,230 @@
-{
-    "dummy_input": {
-        "attr": {
-            "attr": {},
-            "type": "dummy"
-        },
-        "inbounds": [],
-        "outbounds": [
-            "mul_1",
-            "SE/AvgPool"
-        ]
-    },
-    "Add_1": {
-        "attr": {
+[
+    {
+        "dummy_input": {
             "attr": {
-                "weight_shape": null
+                "attr": {},
+                "type": "dummy"
             },
-            "node": null,
-            "type": "Add"
+            "inbounds": [],
+            "outbounds": [
+                "mul_1",
+                "SE/AvgPool"
+            ]
         },
-        "inbounds": [
-            "SE/conv2d_1/BiasAdd"
-        ],
-        "outbounds": [
-            "Relu6"
-        ]
-    },
-    "Relu6": {
-        "attr": {
+        "Add_1": {
             "attr": {
-                "weight_shape": null
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "type": "Add"
             },
-            "node": null,
-            "type": "Relu6"
+            "inbounds": [
+                "SE/conv2d_1/BiasAdd"
+            ],
+            "outbounds": [
+                "Relu6"
+            ]
         },
-        "inbounds": [
-            "Add_1"
-        ],
-        "outbounds": [
-            "mul"
-        ]
-    },
-    "mul": {
-        "attr": {
+        "Relu6": {
             "attr": {
-                "weight_shape": null
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "type": "Relu6"
             },
-            "node": null,
-            "type": "Mul"
+            "inbounds": [
+                "Add_1"
+            ],
+            "outbounds": [
+                "mul"
+            ]
         },
-        "inbounds": [
-            "Relu6"
-        ],
-        "outbounds": [
-            "mul_1"
-        ]
-    },
-    "mul_1": {
-        "attr": {
+        "mul": {
             "attr": {
-                "weight_shape": null
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "type": "Mul"
             },
-            "node": null,
-            "type": "Mul"
+            "inbounds": [
+                "Relu6"
+            ],
+            "outbounds": [
+                "mul_1"
+            ]
         },
-        "inbounds": [
-            "mul",
-            "dummy_input"
-        ],
-        "outbounds": [
-        ]
+        "mul_1": {
+            "attr": {
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "type": "Mul"
+            },
+            "inbounds": [
+                "mul",
+                "dummy_input"
+            ],
+            "outbounds": [
+            ]
+        },
+        "SE/AvgPool": {
+            "attr": {
+                "attr": {},
+                "type": "AvgPool"
+            },
+            "inbounds": [
+                "dummy_input"
+            ],
+            "outbounds": [
+                "SE/conv2d/Conv2D"
+            ]
+        },
+        "SE/Relu": {
+            "attr": {
+                "attr": {},
+                "type": "Relu"
+            },
+            "inbounds": [
+                "SE/conv2d/BiasAdd"
+            ],
+            "outbounds": [
+                "SE/conv2d_1/Conv2D"
+            ]
+        },
+        "SE/conv2d/BiasAdd": {
+            "attr": {
+                "attr": {},
+                "type": "BiasAdd"
+            },
+            "inbounds": [
+                "SE/conv2d/Conv2D"
+            ],
+            "outbounds": [
+                "SE/Relu"
+            ]
+        },
+        "SE/conv2d/Conv2D": {
+            "attr": {
+                "attr": {},
+                "type": "Conv2D"
+            },
+            "inbounds": [
+                "SE/AvgPool"
+            ],
+            "outbounds": [
+                "SE/conv2d/BiasAdd"
+            ]
+        },
+        "SE/conv2d_1/BiasAdd": {
+            "attr": {
+                "attr": {},
+                "type": "BiasAdd"
+            },
+            "inbounds": [
+                "SE/conv2d_1/Conv2D"
+            ],
+            "outbounds": [
+                "Add_1"
+            ]
+        },
+        "SE/conv2d_1/Conv2D": {
+            "attr": {
+                "attr": {},
+                "type": "Conv2D"
+            },
+            "inbounds": [
+                "SE/Relu"
+            ],
+            "outbounds": [
+                "SE/conv2d_1/BiasAdd"
+            ]
+        }
     },
-    "SE/AvgPool": {
-        "attr": {
-            "attr": {},
-            "type": "AvgPool"
+    {
+        "dummy_input": {
+            "attr": {
+                "attr": {},
+                "type": "dummy"
+            },
+            "inbounds": [],
+            "outbounds": [
+                "GlobalAveragePool_9"
+            ]
         },
-        "inbounds": [
-            "dummy_input"
-        ],
-        "outbounds": [
-            "SE/conv2d/Conv2D"
-        ]
-    },
-    "SE/Relu": {
-        "attr": {
-            "attr": {},
-            "type": "Relu"
+        "GlobalAveragePool_9": {
+            "attr": {
+                "attr": {},
+                "type": "gap"
+            },
+            "inbounds": [
+                "dummy_input"
+            ],
+            "outbounds": [
+                "Conv_10"
+            ]
         },
-        "inbounds": [
-            "SE/conv2d/BiasAdd"
-        ],
-        "outbounds": [
-            "SE/conv2d_1/Conv2D"
-        ]
-    },
-    "SE/conv2d/BiasAdd": {
-        "attr": {
-            "attr": {},
-            "type": "BiasAdd"
+        "Conv_10": {
+            "attr": {
+                "attr": {},
+                "type": "conv"
+            },
+            "inbounds": [
+                "GlobalAveragePool_9"
+            ],
+            "outbounds": [
+                "Relu_11"
+            ]
         },
-        "inbounds": [
-            "SE/conv2d/Conv2D"
-        ],
-        "outbounds": [
-            "SE/Relu"
-        ]
-    },
-    "SE/conv2d/Conv2D": {
-        "attr": {
-            "attr": {},
-            "type": "Conv2D"
+        "Relu_11": {
+            "attr": {
+                "attr": {},
+                "type": "relu"
+            },
+            "inbounds": [
+                "Conv_10"
+            ],
+            "outbounds": [
+                "Conv_12"
+            ]
         },
-        "inbounds": [
-            "SE/AvgPool"
-        ],
-        "outbounds": [
-            "SE/conv2d/BiasAdd"
-        ]
-    },
-    "SE/conv2d_1/BiasAdd": {
-        "attr": {
-            "attr": {},
-            "type": "BiasAdd"
+        "Conv_12": {
+            "attr": {
+                "attr": {},
+                "type": "conv"
+            },
+            "inbounds": [
+                "Relu_11"
+            ],
+            "outbounds": [
+                "HardSigmoid_13"
+            ]
         },
-        "inbounds": [
-            "SE/conv2d_1/Conv2D"
-        ],
-        "outbounds": [
-            "Add_1"
-        ]
-    },
-    "SE/conv2d_1/Conv2D": {
-        "attr": {
-            "attr": {},
-            "type": "Conv2D"
+        "HardSigmoid_13": {
+            "attr": {
+                "attr": {},
+                "type": "hardsigmoid"
+            },
+            "inbounds": [
+                "Conv_12"
+            ],
+            "outbounds": [
+                "Mul_14"
+            ]
         },
-        "inbounds": [
-            "SE/Relu"
-        ],
-        "outbounds": [
-            "SE/conv2d_1/BiasAdd"
-        ]
+        "Mul_14": {
+            "attr": {
+                "attr": {},
+                "type": "mul"
+            },
+            "inbounds": [
+                "dummy_input",
+                "HardSigmoid_13"
+            ],
+            "outbounds": []
+        }
     }
-}
+]

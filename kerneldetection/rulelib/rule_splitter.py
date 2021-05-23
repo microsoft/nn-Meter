@@ -9,11 +9,12 @@ class RuleSplitter:
         self.rule_reader = rule_reader
 
     def fuse_multiop_blocks(self, graph: Grapher):
-        for type, block in self.rule_reader.fusion_units.items():
-            subgraphs = graph.find_subgraphs(block, MatchHelper.op_type_matcher)
-            MatchHelper.tag_matched_nodes(graph, subgraphs)
-            for subgraph in subgraphs:
-                graph.fuse(subgraph.keys(), type)
+        for type, blocks in self.rule_reader.fusion_units.items():
+            for block in blocks:
+                subgraphs = graph.find_subgraphs(block, MatchHelper.op_type_matcher)
+                MatchHelper.tag_matched_nodes(graph, subgraphs)
+                for subgraph in subgraphs:
+                    graph.fuse(subgraph.keys(), type)
 
     def split(self, graph: Grapher):
         """
