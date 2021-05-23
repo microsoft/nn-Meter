@@ -510,6 +510,14 @@ class ShapeInference:
 
         return [input_shape], [exp_output_shape]
 
+    @staticmethod
+    def Packed_get_shape(grapher, node):
+        return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
+    
+    @staticmethod
+    def StridedSlice_get_shape(grapher, node):
+        return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
+
     def __init__(self, grapher):
         seq = ph.get_graph_seq(grapher)
         graph = grapher.get_graph()
