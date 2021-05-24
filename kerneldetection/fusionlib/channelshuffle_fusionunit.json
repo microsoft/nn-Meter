@@ -1,112 +1,148 @@
-{
-    "Reshape": {
-        "attr": {
+[
+    {
+        "Reshape": {
             "attr": {
-                "weight_shape": null
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "shape": [],
+                "type": "Reshape"
             },
-            "node": null,
-            "shape": [],
-            "type": "Reshape"
+            "inbounds": [
+                "packed"
+            ],
+            "outbounds": [
+                "transpose"
+            ]
         },
-        "inbounds": [
-            "packed"
-        ],
-        "outbounds": [
-            "transpose"
-        ]
+        "packed": {
+            "attr": {
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "shape": [],
+                "type": "Pack"
+            },
+            "inbounds": [
+                "strided_slice"
+            ],
+            "outbounds": [
+                "Reshape"
+            ]
+        },
+        "strided_slice": {
+            "attr": {
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "shape": [],
+                "type": "StridedSlice"
+            },
+            "inbounds": [
+            ],
+            "outbounds": [
+                "packed"
+            ]
+        },
+        "transpose": {
+            "attr": {
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "shape": [],
+                "type": "Transpose"
+            },
+            "inbounds": [
+                "Reshape"
+            ],
+            "outbounds": [
+                "Reshape_1"
+            ]
+        },
+        "Reshape_1": {
+            "attr": {
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "shape": [],
+                "type": "Reshape"
+            },
+            "inbounds": [
+                "transpose",
+                "packed_1"
+            ],
+            "outbounds": [
+            ]
+        },
+        "packed_1": {
+            "attr": {
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "shape": [],
+                "type": "Pack"
+            },
+            "inbounds": [
+                "strided_slice_1"
+            ],
+            "outbounds": [
+                "Reshape_1"
+            ]
+        },
+        "strided_slice_1": {
+            "attr": {
+                "attr": {
+                    "weight_shape": null
+                },
+                "node": null,
+                "shape": [],
+                "type": "StridedSlice"
+            },
+            "inbounds": [
+            ],
+            "outbounds": [
+                "packed_1"
+            ]
+        }
     },
-    "packed": {
-        "attr": {
+    {
+        "Reshape_144": {
             "attr": {
-                "weight_shape": null
+                "attr": {},
+                "type": "reshape"
             },
-            "node": null,
-            "shape": [],
-            "type": "Pack"
+            "inbounds": [
+                "Transpose_139"
+            ],
+            "outbounds": []
         },
-        "inbounds": [
-            "strided_slice"
-        ],
-        "outbounds": [
-            "Reshape"
-        ]
-    },
-    "strided_slice": {
-        "attr": {
+        "Transpose_139": {
             "attr": {
-                "weight_shape": null
+                "attr": {},
+                "type": "transpose"
             },
-            "node": null,
-            "shape": [],
-            "type": "StridedSlice"
+            "inbounds": [
+                "Reshape_138"
+            ],
+            "outbounds": [
+                "Reshape_144"
+            ]
         },
-        "inbounds": [
-        ],
-        "outbounds": [
-            "packed"
-        ]
-    },
-    "transpose": {
-        "attr": {
+        "Reshape_138": {
             "attr": {
-                "weight_shape": null
+                "attr": {},
+                "type": "reshape"
             },
-            "node": null,
-            "shape": [],
-            "type": "Transpose"
-        },
-        "inbounds": [
-            "Reshape"
-        ],
-        "outbounds": [
-            "Reshape_1"
-        ]
-    },
-    "Reshape_1": {
-        "attr": {
-            "attr": {
-                "weight_shape": null
-            },
-            "node": null,
-            "shape": [],
-            "type": "Reshape"
-        },
-        "inbounds": [
-            "transpose",
-            "packed_1"
-        ],
-        "outbounds": [
-        ]
-    },
-    "packed_1": {
-        "attr": {
-            "attr": {
-                "weight_shape": null
-            },
-            "node": null,
-            "shape": [],
-            "type": "Pack"
-        },
-        "inbounds": [
-            "strided_slice_1"
-        ],
-        "outbounds": [
-            "Reshape_1"
-        ]
-    },
-    "strided_slice_1": {
-        "attr": {
-            "attr": {
-                "weight_shape": null
-            },
-            "node": null,
-            "shape": [],
-            "type": "StridedSlice"
-        },
-        "inbounds": [
-        ],
-        "outbounds": [
-            "packed_1"
-        ]
+            "inbounds": [],
+            "outbounds": [
+                "Transpose_139"
+            ]
+        }
     }
-}
+]
