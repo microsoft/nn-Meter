@@ -11,7 +11,6 @@ def convert_nodes(graph):
     for _, node in new_graph.items():
         type = node['attr']['type']
         new_type = OP_ALIAS.get(type, type)
-        node['attr']['type'] = new_type
         attr = node['attr']['attr']
 
         if 'kernel_shape' in attr:
@@ -29,5 +28,19 @@ def convert_nodes(graph):
         if new_type == 'split' and 'axis' in attr:
             attr['split_dim'] = attr['axis']
             del attr['axis']
+
+        # workaround for add, mul, div, sub with const
+        if new_type in ['add', 'mul', 'div', 'sub'] and 'input_shape' in node['attr']:
+            input_shape = node['attr']['input_shape']
+            shape = input_shape[0] if input_shape[0] else input_shape[1]
+            node['attr']['input_shape'] = [shape] * len(input_shape)
+
+        if new_type == 'conv' and 'group' in attr and 'input_shape' in node['attr']:
+            group = attr['group']
+            cin = node['attr']['input_shape'][0][3]
+            if group == cin:
+                new_type = 'dwconv'
+
+        node['attr']['type'] = new_type
 
     return new_graph
