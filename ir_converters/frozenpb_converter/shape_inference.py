@@ -105,6 +105,7 @@ class ShapeInference:
 
     @staticmethod
     def propogate_shape(grapher, node):
+        logging.info('Propogate through op %s.', node['attr']['name'])
         in_shape = [grapher[node['inbounds'][0]]['attr']['output_shape'][0]]
         return in_shape, in_shape
 
@@ -512,15 +513,27 @@ class ShapeInference:
 
     @staticmethod
     def Packed_get_shape(grapher, node):
+        seq = ph.get_graph_seq(grapher, [node['attr']['name']])[:5]
+        for out_node in seq:
+            if grapher[out_node]['attr']['type'] == 'Reshape':
+                if 'input_shape' in grapher[out_node]['attr'].keys():
+                    return grapher[out_node]['attr']['input_shape'], grapher[out_node]['attr']['input_shape']
         return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
     
     @staticmethod
     def StridedSlice_get_shape(grapher, node):
+        seq = ph.get_graph_seq(grapher, [node['attr']['name']])[:5]
+        for out_node in seq:
+            if grapher[out_node]['attr']['type'] == 'Reshape':
+                if 'input_shape' in grapher[out_node]['attr'].keys():
+                    return grapher[out_node]['attr']['input_shape'], grapher[out_node]['attr']['input_shape']
         return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
 
     def __init__(self, grapher):
-        seq = ph.get_graph_seq(grapher)
         graph = grapher.get_graph()
+        seq = ph.get_graph_seq(graph, grapher.get_graph_head())
+
+        # Pass #1
         for node_name in seq:
             node_get_shape_name = grapher.get_node_type(
                 node_name) + '_get_shape'
@@ -542,3 +555,20 @@ class ShapeInference:
                 logging.info('------ node content --------')
                 logging.info(graph[node_name])
                 logging.info('----------------------------')
+        
+        # Pass #2
+        for node_name in seq:
+            if grapher.get_node_type(node_name) in ['Packed', 'StridedSlice']:
+                node_get_shape_name = grapher.get_node_type(node_name) + '_get_shape'
+                input_shape, output_shape = eval(
+                    'self.' + node_get_shape_name)(graph, graph[node_name])
+                if output_shape is not None:
+                    graph[node_name]['attr']['output_shape'] = copy.deepcopy(output_shape)
+                if input_shape is not None:
+                    graph[node_name]['attr']['input_shape'] = copy.deepcopy(input_shape)
+                logging.info(
+                    'Second Pass: Input shape of %s op is %s.' %
+                    (node_name, str(input_shape)))
+                logging.info(
+                    'Second Pass: Output shape of %s op is %s.' %
+                    (node_name, str(output_shape)))

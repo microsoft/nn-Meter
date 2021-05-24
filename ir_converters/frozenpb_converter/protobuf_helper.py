@@ -59,8 +59,7 @@ class ProtobufHelper:
         return weight_name
 
     @staticmethod
-    def get_graph_seq(x):
-        graph_head = x.get_graph_head()
+    def get_graph_seq(grapher, graph_head):
         seen = set()
         stack = []
         order = []
@@ -71,10 +70,8 @@ class ProtobufHelper:
                 v = q.pop()
                 if v not in seen:
                     seen.add(v)
-                    q.extend(x.get_node_outbounds(v))
-
-                    while stack and v not in x.get_node_outbounds(
-                            stack[-1]):
+                    q.extend(grapher[v]['outbounds'])
+                    while stack and v not in grapher[stack[-1]]['outbounds']:
                         order.append(stack.pop())
                     stack.append(v)
         return stack + order[::-1]
