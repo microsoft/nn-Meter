@@ -30,17 +30,21 @@ Please also check the versions of numpy, scikit_learn. The different versions ma
 
 To run the latency predictor, we support two input formats. We include popular CNN models in `data/testmodels`
 
-#### 1. input model: xx.onnx or xx.pb:
+#### 1. input model: xx.onnx or xx.pb :
 
-`python demo_with_converter.py --input_models data/testmodels/alexnet.onnx --mf alexnet`
+`python demo.py --input_model data/testmodels/alexnet.onnx --mf alexnet`
 
-`python demo_with_converter.py --input_models data/testmodels/alexnet.pb --mf alexnet`
+`python demo.py --input_model data/testmodels/alexnet.pb --mf alexnet`
 
 It will firstly convert onnx and pb models into our defined IR json. We conduct kernel detection with the IR graph and predict kernel latency on the 4 measured edge devices. 
 
 #### 2. input model: the converted IR json:
 
 `python demo.py --input_models data/testmodels/alexnet_0.json --mf alexnet`
+
+#### 3. To convert the onnx and pb model into the IR json:
+
+`python model_converter.py --input_model data/testmodels/alexnet_0.pb --output_path data/testmodels/alexnet_0.json`
 
 
 ## Contributing
