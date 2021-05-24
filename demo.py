@@ -12,7 +12,7 @@ def main(hardware, model, rule_file, mf, level, latency_file):
     kd = KernelDetector(rule_file)
     kd.load_graph(graph)
     print(model)
-    mid=model.split('/')[-1].replace(".onnx","").replace(".pb","")
+    mid=model.split('/')[-1].replace(".onnx","").replace(".pb","").replace(".json","")
     kernel_result={mid:kd.kernels}
     #print(kernel_result)
 
@@ -31,11 +31,15 @@ if __name__ == '__main__':
     parser.add_argument('-lf', '--latency_file', type=str)
 
     args=parser.parse_args()
+    #from glob import glob 
+    #jsons=glob("data/testmodels/**.json")
+    #for fn in jsons:
+        #args.input_model=fn
     mf=args.input_model.split('/')[-1].split('_')[0].replace("small","").replace("large","")
     mf=mf.replace("11","").replace("13","").replace("16","").replace("19","")
     mf=mf.replace("18","").replace("34","").replace("50","")
 
     rule_file = args.rule_file or BACKENDS[args.hardware]
     latency_file = args.latency_file or f'data/model_latency/{args.hardware}/{mf}-log.csv'
-   
+        
     main(args.hardware, args.input_model, rule_file, mf, args.level, latency_file)
