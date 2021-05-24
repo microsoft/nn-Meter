@@ -8,10 +8,10 @@ import os
 
 def main(hardware, model, rule_file, mf, level, latency_file):
     graph = model_file_to_grapher(model)
-    print(graph)
+    #print(graph)
     kd = KernelDetector(rule_file)
     kd.load_graph(graph)
-    print(model)
+    #print(model)
     mid=model.split('/')[-1].replace(".onnx","").replace(".pb","").replace(".json","")
     kernel_result={mid:kd.kernels}
     #print(kernel_result)
