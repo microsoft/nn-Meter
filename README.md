@@ -30,17 +30,21 @@ Please also check the versions of numpy, scikit_learn. The different versions ma
 
 To run the latency predictor, we support two input formats. We include popular CNN models in `data/testmodels`
 
-#### 1. input model: xx.onnx or xx.pb:
+#### 1. input model: xx.onnx or xx.pb :
 
-`python demo_with_converter.py --input_models data/testmodels/alexnet.onnx --mf alexnet`
+`python demo.py --input_model data/testmodels/alexnet.onnx --mf alexnet`
 
-`python demo_with_converter.py --input_models data/testmodels/alexnet.pb --mf alexnet`
+`python demo.py --input_model data/testmodels/alexnet.pb --mf alexnet`
 
 It will firstly convert onnx and pb models into our defined IR json. We conduct kernel detection with the IR graph and predict kernel latency on the 4 measured edge devices. 
 
 #### 2. input model: the converted IR json:
 
 `python demo.py --input_models data/testmodels/alexnet_0.json --mf alexnet`
+
+#### 3. To convert the onnx and pb model into the IR json:
+
+`python model_converter.py --input_model data/testmodels/alexnet_0.pb --output_path data/testmodels/alexnet_0.json`
 
 
 ## Contributing
@@ -57,10 +61,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-## Trademarks
+## License
+The entire codebase is under [MIT license](https://github.com/microsoft/nn-Meter/blob/main/LICENSE) 
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+The dataset is under [Open Use of Data Agreement](https://github.com/Community-Data-License-Agreements/Releases/blob/main/O-UDA-1.0.md)
+
