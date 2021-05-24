@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('-lf', '--latency_file', type=str)
 
     args=parser.parse_args()
-    mf=args.input_model.split('/')[-1].replace("_0.pb","").replace("small","").replace("large","")
+    mf=args.input_model.split('/')[-1].split('_')[0].replace("small","").replace("large","")
     mf=mf.replace("11","").replace("13","").replace("16","").replace("19","")
     mf=mf.replace("18","").replace("34","").replace("50","")
 
