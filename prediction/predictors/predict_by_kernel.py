@@ -19,7 +19,7 @@ def predict_model(model,hardware):
     for layer in model:
             op=list(model[layer].keys())[0]
             features=model[layer][op]
-           # print(op,features)
+            #print(op,features)
             rop=merge_op(op)
             if not rop in dicts:
                 dicts[rop]=[]
@@ -27,7 +27,7 @@ def predict_model(model,hardware):
          
     for op in dicts:
            # print('op',op)
-            print(op,dicts[op])
+            #print(op,dicts[op])
             pys=get_kernel_latency(op,dicts[op],hardware)
             
             

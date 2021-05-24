@@ -172,9 +172,9 @@ class FrozenPbParser:
                             if attr_name == 'value' and 'weight' not in node.name and 'BatchNorm' not in node.name and 'kernel' not in node.name:
                                 attr_dict[attr_as_node[node.op]['attr_name']] = \
                                     copy.deepcopy(attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor))
-                            if node.name == 'Const':
-                                print(node)
-                                print('>', attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor))
+                            #if node.name == 'Const':
+                             #   print(node)
+                             #   print('>', attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor))
 
         return attr_dict
 

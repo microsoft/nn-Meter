@@ -185,9 +185,9 @@ def read_model_latency(configs,latency_file):
     Y={}
     hws=[]
     mdicts={}
-    for mid in configs:
-        for item in configs[mid]:
-            print(mid,item)
+    #for mid in configs:
+    #    for item in configs[mid]:
+    #        print(mid,item)
     
     while True:
         line=f.readline()
@@ -207,7 +207,7 @@ def read_model_latency(configs,latency_file):
             for item in config:
                 op=item['op']
                 #print('here',item)
-                print(item)
+              #  print(item)
                 if op not in ['reshape','split','channelshuffle','concat','bn','hswish','relu','channel_shuffle','fc-relu','add','bn-relu','add-relu','gap','global-avgpool','fc','se-relu','se','add-add']:
                     cout=item['cout']
                     cin=item['cin']
@@ -275,7 +275,7 @@ def read_model_latency(configs,latency_file):
                     mdicts[model][layer]={}
                     mdicts[model][layer][op]=features
                     #print(features)
-                elif 'concat' in op:
+                elif 'concat' in op:  ## maximum 4 branches
                    
                     itensors=item['input_tensors']
                     inputh=itensors[0][1]
@@ -286,6 +286,11 @@ def read_model_latency(configs,latency_file):
                         features.append(co)
                     if len(features)<6:
                         features=features+[0]*(6-len(features))
+
+                    elif len(features)>6:
+                        nf=features[0:6]
+                        features=nf
+                        features[1]=6
                     #print(features)
                     mdicts[model][layer]={}
                     mdicts[model][layer][op]=features
