@@ -46,6 +46,9 @@ class KernelDetector:
             input_shape = self.graph.get_node_attr(layer)['input_shape']
             output_shape = self.graph.get_node_attr(layer)['output_shape']
 
+            # Remove const from first biasadd of hswish
+            if type == 'hswish':
+                input_shape = [input_shape[0]]
             kernel['input_tensors'] = input_shape
 
             if 'ks' in attr:
