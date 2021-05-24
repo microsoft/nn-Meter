@@ -32,15 +32,15 @@ To run the latency predictor, we support two input formats. We include popular C
 
 #### 1. input model: xx.onnx or xx.pb :
 
-`python demo.py --input_model data/testmodels/alexnet.onnx --mf alexnet`
+`python demo.py --input_model data/testmodels/alexnet.onnx --hardware cpu `
 
-`python demo.py --input_model data/testmodels/alexnet.pb --mf alexnet`
+`python demo.py --input_model data/testmodels/alexnet.pb --hardware cpu`
 
 It will firstly convert onnx and pb models into our defined IR json. We conduct kernel detection with the IR graph and predict kernel latency on the 4 measured edge devices. 
 
 #### 2. input model: the converted IR json:
 
-`python demo.py --input_models data/testmodels/alexnet_0.json --mf alexnet`
+`python demo.py --input_models data/testmodels/alexnet_0.json --hardware cpu`
 
 #### 3. To convert the onnx and pb model into the IR json:
 
