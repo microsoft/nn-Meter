@@ -28,24 +28,29 @@ Please also check the versions of numpy, scikit_learn. The different versions ma
 
 ## Usage
 
-To run the latency predictor, we support two input formats. We include popular CNN models in `data/testmodels`
+### Predict inference latency
+nn-Meter could be seamlessly integrated with existing `PyTorch` codes to predict the inference latency of an `torch.nn.Module` object. 
+```python
+from nn_meter import load_latency_predictor
 
-#### 1. input model: xx.onnx or xx.pb :
+predictor = load_lat_predictor(backend='TFLite-CortexA76') # case insensitive in backend
 
-`python demo.py --input_model data/testmodels/alexnet.onnx --hardware cpu `
+# build your model here
+model = ... # model is instance of torch.nn.Module
 
-`python demo.py --input_model data/testmodels/alexnet.pb --hardware cpu`
+lat = predictor.predict(model)
+```
+By calling `load_latency_predictor`, user selects the target backend (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/predictors`. If the predictor file doesn't exist, it will download from the Github repo. 
 
-It will firstly convert onnx and pb models into our defined IR json. We conduct kernel detection with the IR graph and predict kernel latency on the 4 measured edge devices. 
+Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `~/.nn_meter/config.json`.
 
-#### 2. input model: the converted IR json:
+### Use nn-Meter in commands
+To predict the latency for saved models, users could also use the nn-Meter command like 
 
-`python demo.py --input_models data/testmodels/alexnet_0.json --hardware cpu`
-
-#### 3. To convert the onnx and pb model into the IR json:
-
-`python model_converter.py --input_model data/testmodels/alexnet_0.pb --output_path data/testmodels/alexnet_0.json`
-
+```bash
+nn-meter --input_model data/testmodels/alexnet.onnx --backend TFLite-CortexA76
+```
+Currently we support `ONNX` format (ONNX files of popular CNN models are included in [`data/testmodels`](data/testmodels)) and Tensorflow pb file. 
 
 ## Contributing
 
