@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from kerneldetection.rulelib.rule_reader import RuleReader
 from kerneldetection.rulelib.rule_splitter import RuleSplitter
 from utils.grapher_tool import Grapher

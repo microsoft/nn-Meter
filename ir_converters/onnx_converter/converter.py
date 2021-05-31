@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import networkx as nx
 from .utils import get_tensor_shape
 from .constants import *

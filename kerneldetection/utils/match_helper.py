@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 class MatchHelper:
     @classmethod
     def op_type_matcher(cls, node_1, node_2):

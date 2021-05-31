@@ -1,11 +1,13 @@
-from ir_converters import model_file_to_grapher
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+from ir_converters import model_file_to_graph
 import argparse
 import json
 import sys
 
 
 def converter(input_model, output_path):
-    result = model_file_to_grapher(input_model)
+    result = model_file_to_graph(input_model)
     #results={input_model.split('/')[-1].replace(".onnx","").replace(".pb",""):result}
 
     if output_path:
@@ -23,7 +25,3 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     converter(args.input_model, args.output_path)
-    #from glob import glob 
-    #pbs=glob("data/testmodels/**.pb")
-    #for pb in pbs:
-        #converter(pb,pb.replace(".pb",".json"))

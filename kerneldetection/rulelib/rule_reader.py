@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import json
 from utils.grapher_tool import Grapher
 from kerneldetection.fusionlib import get_fusion_unit

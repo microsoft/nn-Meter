@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from .rule_reader import RuleReader
 from utils.grapher_tool import Grapher
 from kerneldetection.utils.match_helper import MatchHelper

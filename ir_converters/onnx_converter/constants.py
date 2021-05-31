@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 CONV_TYPE = 'Conv'
 BN_TYPE = 'BatchNormalization'
 SLICE_TYPE = 'Slice'

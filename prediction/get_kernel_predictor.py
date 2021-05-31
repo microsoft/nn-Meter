@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from predictors.extract_feature import*
 from predictors.kernel_predictor import*
 from sklearn.metrics import mean_squared_error

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from sklearn.ensemble import RandomForestRegressor
 
 def get_model(hardware,kernel):

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 DUMMY_TYPES = [
     'Const',
     'Identity',

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from .protobuf_helper import ProtobufHelper
 from .shape_fetcher import ShapeFetcher
 from tensorflow import io

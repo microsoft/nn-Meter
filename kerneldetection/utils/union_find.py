@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 class UF:
     """
     UnionFind implemented with compression optimization

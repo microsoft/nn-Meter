@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from .protobuf_helper import ProtobufHelper as ph
 from functools import reduce
 import copy

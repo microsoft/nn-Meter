@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import tensorflow as tf
 import numpy as np
 from typing import List
