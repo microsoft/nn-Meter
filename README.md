@@ -20,6 +20,8 @@ As the maintainer of this project, please make a few updates:
 - Understanding the security reporting process in SECURITY.MD
 - Remove this section from the README
 
+## Who should consider using nn-Meter
+
 ## Installation
 
 To install nn-meter, please first install python3. The test environment uses anaconda python 3.6.10. Install the dependencies via: 
