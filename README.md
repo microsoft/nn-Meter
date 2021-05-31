@@ -28,7 +28,27 @@ Please also check the versions of numpy, scikit_learn. The different versions ma
 
 ## Usage
 
-### Predict inference latency
+### Run nn-Meter demo
+To predict the latency for a CNN model on a hardware, users can run the following command with two hyper-parameters:
+```
+python demo.py --hardware cortexA76cpu_tflite21 --input_model data/testmodels/alexnet_0.pb
+```
+The two hyper-parameters include: (i) the targeting hardware with inference framework, (ii) the input model file
+
+nn-Meter currently supports prediction on the following four hardware:
+|  hardware | 
+|:-------------------:|
+|cortexA76cpu_tflite21 | 
+|adreno640gpu_tflite21 |
+|adreno630gpu_tflite21  |
+|myriadvpu_openvino2019r2 |
+
+For the input model file, you can find any example provided under the `data/testmodels`
+
+
+
+
+### Predict inference latency (to do)
 nn-Meter could be seamlessly integrated with existing `PyTorch` codes to predict the inference latency of an `torch.nn.Module` object. 
 ```python
 from nn_meter import load_latency_predictor
@@ -44,7 +64,7 @@ By calling `load_latency_predictor`, user selects the target backend (`Framework
 
 Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `~/.nn_meter/config.json`.
 
-### Use nn-Meter in commands
+### Use nn-Meter in commands (to do)
 To predict the latency for saved models, users could also use the nn-Meter command like 
 
 ```bash
