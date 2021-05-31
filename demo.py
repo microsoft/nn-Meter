@@ -19,13 +19,15 @@ def main(hardware, model, rule_file):
     mid=model.split('/')[-1].replace(".onnx","").replace(".pb","").replace(".json","")
     kernel_result={mid:kd.kernels}
     predictor=load_lat_predictors(hardware)
-    #nn_predict(predictor,kernel_result)
-    #if 'cpu' in hardware:
+    py=nn_predict(predictor,kernel_result)
+    print('predict the latency of '+mid+" on "+hardware+": "+str(py))
+    '''
     mf=model.split('/')[-1].split('_')[0].replace("small","").replace("large","")
     mf=mf.replace("11","").replace("13","").replace("16","").replace("19","")
     mf=mf.replace("18","").replace("34","").replace("50","")
     latencyfile='data/model_latency/'+hardware+'/'+mf+"-log.csv"
     main_kernel_predict(predictor,kernel_result,latencyfile)
+    '''
 
 
 
