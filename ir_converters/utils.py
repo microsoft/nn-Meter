@@ -31,7 +31,7 @@ def model_file_to_graph(filename, model_type=None):
 
     if model_type == 'onnx':
         model = onnx.load(filename)
-        return model_to_grapher(model, model_type)
+        return model_to_graph(model, model_type)
     elif model_type == 'pb':
         converter = FrozenPbConverter(filename)
         return converter.get_flatten_grapher()
