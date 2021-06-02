@@ -5,7 +5,6 @@ from prediction.predictors.predict_by_kernel import main_kernel_predict
 from kerneldetection import KernelDetector
 from ir_converters import model_file_to_graph
 from prediction.load_predictors import*
-import os
 
 
 
