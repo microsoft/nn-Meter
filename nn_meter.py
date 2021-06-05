@@ -23,13 +23,11 @@ class nnMeter:
     def predict(self,model):
         graph = model_file_to_graph(model)        
         self.kd.load_graph(graph)
-        mid=self.__getmodelname__(model)
+        #mid=self.__getmodelname__(model)
+        mid="test"
         kernel_result={mid:self.kd.kernels}    
         py=nn_predict(self.kernel_predictors,kernel_result)
         return py
 
-    def __getmodelname__(self,model):
-
-        mid=model.split('/')[-1].replace(".onnx","").replace(".pb","").replace(".json","")
-        return mid
+    
 
