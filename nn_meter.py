@@ -3,7 +3,7 @@
 from prediction.predictors.predict_by_kernel import nn_predict
 from prediction.predictors.predict_by_kernel import main_kernel_predict
 from kerneldetection import KernelDetector
-from ir_converters import model_file_to_graph
+from ir_converters import model_to_graph
 from prediction.load_predictors import*
 
 
@@ -21,7 +21,7 @@ class nnMeter:
         self.kd = KernelDetector(self.fusionrule)
         
     def predict(self,model):
-        graph = model_file_to_graph(model)        
+        graph = model_to_graph(model,model_type='torch')        
         self.kd.load_graph(graph)
         #mid=self.__getmodelname__(model)
         mid="test"
