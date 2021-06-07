@@ -1,7 +1,7 @@
 import torch
 import onnx
 import tempfile
-from ir_converters.onnx_converter import OnnxConverter
+from nn_meter.ir_converters.onnx_converter import OnnxConverter
 
 
 class TorchConverter(OnnxConverter):

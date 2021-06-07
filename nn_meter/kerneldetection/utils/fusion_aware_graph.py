@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from utils.grapher_tool import Grapher
+from nn_meter.utils.grapher_tool import Grapher
 from .union_find import UF
 import networkx as nx
 

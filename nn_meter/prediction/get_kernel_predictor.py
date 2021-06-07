@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from predictors.extract_feature import*
-from predictors.kernel_predictor import*
+from .predictors.extract_feature import *
+from .predictors.kernel_predictor import *
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from math import sqrt
-import matplotlib.pyplot as plt 
-import pickle,sys,os 
+import matplotlib.pyplot as plt
+import pickle,sys,os
 import argparse,time
 from glob import glob
 
@@ -42,11 +42,11 @@ for filename in filenames:
       model.fit(X,Y)
       with open(args.save_dir+'/'+kernelname+'.pkl','wb') as f:
         pickle.dump(model,f)
-      
-        
-      
+
+
+
 
 
     print('\n')
 
-  
+

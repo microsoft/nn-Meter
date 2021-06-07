@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import sys
-sys.path.append("prediction")
-from predictors.utils import*
-from predictors.extract_feature import*
+from .utils import *
+from .extract_feature import *
 
 def merge_op(op):
     if 'conv' in op and 'dwconv' not in op:
@@ -12,8 +11,8 @@ def merge_op(op):
         return 'dwconv-bn-relu'
     else:
         return op
-    
-    
+
+
 
 def predict_model(model,predictors):
     py=0
@@ -25,18 +24,18 @@ def predict_model(model,predictors):
             if not rop in dicts:
                 dicts[rop]=[]
             dicts[rop].append(features)
-         
+
     for op in dicts:
           #  print(op)
             opname=get_kernel_name(op)
             if opname in predictors:
                 pred=predictors[opname]
                 pys=pred.predict(dicts[op])
-                #pys=get_kernel_latency(op,dicts[op],hardware)  
+                #pys=get_kernel_latency(op,dicts[op],hardware)
                 if len(pys)!=0:
                     py+=sum(pys)
-            
-            
+
+
 
     return py
 
@@ -45,7 +44,7 @@ def nn_predict(predictor,configs):
        # print(configs.items())
         config=configs[list(configs.keys())[0]]
     else:
-        config=configs 
+        config=configs
     features=get_predict_features(config)
     py=predict_model(features,predictor)
     print(py)

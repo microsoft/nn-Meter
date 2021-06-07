@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from .rule_reader import RuleReader
-from utils.grapher_tool import Grapher
-from kerneldetection.utils.match_helper import MatchHelper
-from kerneldetection.utils.fusion_aware_graph import FusionAwareGraph
+from nn_meter.utils.grapher_tool import Grapher
+from nn_meter.kerneldetection.utils.match_helper import MatchHelper
+from nn_meter.kerneldetection.utils.fusion_aware_graph import FusionAwareGraph
 
 
 class RuleSplitter:

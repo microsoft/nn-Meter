@@ -4,7 +4,7 @@ import sys
 import os
 import numpy as np
 
-from utils.grapher_tool import Grapher
+from nn_meter.utils.grapher_tool import Grapher
 from .frozenpb_parser import FrozenPbParser
 from .shape_inference import ShapeInference
 
