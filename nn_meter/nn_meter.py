@@ -20,8 +20,16 @@ class nnMeter:
         self.fusionrule = fusionrule
         self.kd = KernelDetector(self.fusionrule)
 
-    def predict(self, model):
-        graph = model_file_to_graph(model)
+    def predict(self, model, model_type=None):
+        '''
+        @params:
+
+        model: a pytorch/onnx/tensorflow model object or a str containing path to the model file
+        '''
+        if isinstance(model, str):
+            graph = model_file_to_graph(model, model_type)
+        else:
+            graph = model_to_graph(model, model_type)
         self.kd.load_graph(graph)
         #mid=self.__getmodelname__(model)
         mid = "test"
