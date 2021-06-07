@@ -17,6 +17,7 @@ class KernelDetector:
     def load_graph(self, graph):
         new_graph = convert_nodes(graph)
         self.graph = Grapher(graph=new_graph)
+        self.graph.refresh()
         self.bbs = self.splitter.split(self.graph)
 
     @property

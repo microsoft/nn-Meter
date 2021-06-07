@@ -75,6 +75,7 @@ class OnnxConverter:
             for tensor_name in self._get_sibling_slice_output_tensors(node):
                 output_tensors.append(self.tensors[tensor_name]['shape'])
         if len(input_tensors) == 0 or len(input_tensors[0]) <= 1 or len(output_tensors) == 0 or len(output_tensors[0]) <= 1:
+            logging.warning(f'Empty shape information with {node.name}')
             return attrs
 
         attrs['attr'] = {}
