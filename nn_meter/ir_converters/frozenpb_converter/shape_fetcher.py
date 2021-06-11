@@ -6,15 +6,15 @@ from typing import List
 
 
 class ShapeFetcher:
-    def get_nodes_with_input_tensor(self, tensor):
-        return list(
-            filter(
-                lambda op: (tensor in op.inputs) and (op.type not in ["Shape"]),
-                self.graph.get_operations(),
-            )
-        )
-
     def __init__(self, input_graph):
+        """
+        Dynamically inference the node shapes.
+
+        Parameters
+        ----------
+        input_graph : graph_def
+            The tensorflow input graph_def file.
+        """
         tf.compat.v1.disable_eager_execution()
 
         graph = tf.Graph()

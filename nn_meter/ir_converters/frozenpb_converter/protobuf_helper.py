@@ -8,6 +8,15 @@ logging = logging.getLogger(__name__)
 class ProtobufHelper:
     @staticmethod
     def get_w(x):
+        """
+        Get width from a list.
+
+        Parameters
+        ----------
+        x : list
+            A 2-D or 4-D list
+                represent the shape of a tensor
+        """
         l = len(x)
         if l == 4:
             return x[1]
@@ -17,6 +26,15 @@ class ProtobufHelper:
 
     @staticmethod
     def get_h(x):
+        """
+        Get height from a list.
+
+        Parameters
+        ----------
+        x : list
+            A 2-D or 4-D list
+                represent the shape of a tensor
+        """
         l = len(x)
         if l == 4:
             return x[2]
@@ -26,6 +44,16 @@ class ProtobufHelper:
 
     @staticmethod
     def find_weights_root(graph, node):
+        """
+        Find the node which store the weight of the tensor.
+
+        Parameters
+        ----------
+        graph : dict
+            The graph IR in dict form.
+        node : dict
+            A single node in graph IR.
+        """
         NODE_WEIGHT_LUT = {
             "Conv2D": [
                 lambda x: x.replace("/Conv2D", "/weight"),
@@ -50,7 +78,8 @@ class ProtobufHelper:
         if node["attr"]["type"] in NODE_WEIGHT_LUT.keys():
             for lut_lamba in NODE_WEIGHT_LUT[node["attr"]["type"]]:
                 weight_op = lut_lamba(node["attr"]["name"])
-                if weight_op in graph.keys() and graph[weight_op]["attr"]["type"] != "Identity":
+                if weight_op in graph.keys(
+                ) and graph[weight_op]["attr"]["type"] != "Identity":
                     logging.info(
                         "Find node %s with its weight op %s."
                         % (node["attr"]["name"], weight_op)
@@ -60,7 +89,18 @@ class ProtobufHelper:
         return weight_name
 
     @staticmethod
-    def get_graph_seq(grapher, graph_head):
+    def get_graph_seq(graph, graph_head):
+        """
+        Run a topological sort of the graph,
+        return the sorted sequence.
+
+        Parameters
+        ----------
+        graph : dict
+            The graph IR in dict form.
+        graph_head : str
+            Start position of the sort.
+        """
         seen = set()
         stack = []
         order = []
@@ -71,14 +111,22 @@ class ProtobufHelper:
                 v = q.pop()
                 if v not in seen:
                     seen.add(v)
-                    q.extend(grapher[v]["outbounds"])
-                    while stack and v not in grapher[stack[-1]]["outbounds"]:
+                    q.extend(graph[v]["outbounds"])
+                    while stack and v not in graph[stack[-1]]["outbounds"]:
                         order.append(stack.pop())
                     stack.append(v)
         return stack + order[::-1]
 
     @staticmethod
     def pkg42dec(x):
+        """
+        Convert protobuf 4-packed oct format to number.
+
+        Parameters
+        ----------
+        x : list
+            The 4-packed oct list.
+        """
         total_byte = len(x) // 4
         assert total_byte * 4 == len(x)
 
@@ -94,6 +142,14 @@ class ProtobufHelper:
 
     @staticmethod
     def get_tensor_value(x):
+        """
+        Get the value from a const op.
+
+        Parameters
+        ----------
+        x : Protobuf.node
+            The const node.
+        """
         DTYPE_ENUM = {
             0: lambda x: list(map(float, x.float_val)),
             1: lambda x: list(map(float, x.float_val)),

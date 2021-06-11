@@ -16,8 +16,8 @@ class ShapeInference:
         input_nodes = node["inbounds"]
         if len(input_nodes) < 2:
             logging.warn(
-                "Invalid input op num for prodcast op %s" % (node["attr"]["name"])
-            )
+                "Invalid input op num for prodcast op %s" %
+                (node["attr"]["name"]))
             if len(input_nodes) == 1:
                 return grapher[node["inbounds"][0]]["attr"]["output_shape"][0]
             else:
@@ -67,9 +67,8 @@ class ShapeInference:
     def get_padding_shape(input_shape, cout, k_size, strides, padding):
 
         logging.info(
-            "Calculating padding shape, input shape: %s, kernel size: %s, strides: %s, padding: %s."
-            % (str(input_shape), str(k_size), str(strides), str(padding))
-        )
+            "Calculating padding shape, input shape: %s, kernel size: %s, strides: %s, padding: %s." %
+            (str(input_shape), str(k_size), str(strides), str(padding)))
 
         if padding == "SAME":
             outh = math.ceil(ph.get_h(input_shape) / ph.get_h(strides))
@@ -96,11 +95,15 @@ class ShapeInference:
             pad_size = [pad_top, pad_bottom, pad_left, pad_right]
         elif padding == "VALID":
             outh = math.ceil(
-                (ph.get_h(input_shape) - ph.get_h(k_size) + 1) / ph.get_h(strides)
-            )
+                (ph.get_h(input_shape) -
+                 ph.get_h(k_size) +
+                    1) /
+                ph.get_h(strides))
             outw = math.ceil(
-                (ph.get_h(input_shape) - ph.get_h(k_size) + 1) / ph.get_w(strides)
-            )
+                (ph.get_h(input_shape) -
+                 ph.get_h(k_size) +
+                    1) /
+                ph.get_w(strides))
 
             pad_size = [0, 0, 0, 0]
         else:
@@ -158,7 +161,9 @@ class ShapeInference:
     @staticmethod
     def Pool_get_shape(grapher, node):
         if len(node["inbounds"]) != 1:
-            logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
+            logging.warning(
+                "Failed to get input node of %s." %
+                (node["attr"]["name"]))
             logging.info(node)
             return
 
@@ -225,18 +230,24 @@ class ShapeInference:
     def Conv2D_get_shape(grapher, node):
         weight_node = ph.find_weights_root(grapher, node)
         if len(weight_node) != 1:
-            logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
+            logging.warning(
+                "Failed to get shape of node %s." %
+                (node["attr"]["name"]))
             logging.info(node)
             return
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
-        input_node = [x for x in input_node if grapher[x]["attr"]["type"] != "Identity"]
+        input_node = [x for x in input_node if grapher[x]
+                      ["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
-            logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
+            logging.warning(
+                "Failed to get input node of %s." %
+                (node["attr"]["name"]))
             logging.info(node)
             return
 
-        input_shape = copy.deepcopy(grapher[input_node[0]]["attr"]["output_shape"][0])
+        input_shape = copy.deepcopy(
+            grapher[input_node[0]]["attr"]["output_shape"][0])
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
@@ -299,18 +310,24 @@ class ShapeInference:
     def DepthwiseConv2dNative_get_shape(grapher, node):
         weight_node = ph.find_weights_root(grapher, node)
         if len(weight_node) != 1:
-            logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
+            logging.warning(
+                "Failed to get shape of node %s." %
+                (node["attr"]["name"]))
             logging.info(node)
             return
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
-        input_node = [x for x in input_node if grapher[x]["attr"]["type"] != "Identity"]
+        input_node = [x for x in input_node if grapher[x]
+                      ["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
-            logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
+            logging.warning(
+                "Failed to get input node of %s." %
+                (node["attr"]["name"]))
             logging.info(node)
             return
 
-        input_shape = copy.deepcopy(grapher[input_node[0]]["attr"]["output_shape"][0])
+        input_shape = copy.deepcopy(
+            grapher[input_node[0]]["attr"]["output_shape"][0])
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
@@ -407,7 +424,9 @@ class ShapeInference:
     def MatMul_get_shape(grapher, node):
         weight_node = ph.find_weights_root(grapher, node)
         if len(weight_node) != 1:
-            logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
+            logging.warning(
+                "Failed to get shape of node %s." %
+                (node["attr"]["name"]))
             logging.info(node)
             return
 
@@ -426,13 +445,17 @@ class ShapeInference:
         )
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
-        input_node = [x for x in input_node if grapher[x]["attr"]["type"] != "Identity"]
+        input_node = [x for x in input_node if grapher[x]
+                      ["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
-            logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
+            logging.warning(
+                "Failed to get input node of %s." %
+                (node["attr"]["name"]))
             logging.info(node)
             return
 
-        input_shape = copy.deepcopy(grapher[input_node[0]]["attr"]["output_shape"][0])
+        input_shape = copy.deepcopy(
+            grapher[input_node[0]]["attr"]["output_shape"][0])
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
@@ -455,8 +478,8 @@ class ShapeInference:
     def Reshape_get_shape(grapher, node):
         if "shape" in node["attr"]["attr"].keys():
             logging.info(
-                "Shape attr find in %s op, propogate with normal.", node["attr"]["name"]
-            )
+                "Shape attr find in %s op, propogate with normal.",
+                node["attr"]["name"])
             input_shape = copy.deepcopy(
                 grapher[node["inbounds"][0]]["attr"]["output_shape"][0]
             )
@@ -487,13 +510,13 @@ class ShapeInference:
                     )
 
         input_elements = abs(reduce(lambda x, y: x * y, input_shape))
-        exp_output_shape_elements = abs(reduce(lambda x, y: x * y, exp_output_shape))
+        exp_output_shape_elements = abs(
+            reduce(lambda x, y: x * y, exp_output_shape))
 
         if input_elements != exp_output_shape_elements:
             logging.warning(
-                "Input shape %s and output shape %s not matched for %s."
-                % (str(input_shape), str(exp_output_shape), node["attr"]["name"])
-            )
+                "Input shape %s and output shape %s not matched for %s." %
+                (str(input_shape), str(exp_output_shape), node["attr"]["name"]))
 
         return [input_shape], [exp_output_shape]
 
@@ -532,10 +555,14 @@ class ShapeInference:
             elif grapher[in_node]["attr"]["type"] == "Pack":
                 pass
             else:
-                input_shape = copy.deepcopy(grapher[in_node]["attr"]["output_shape"][0])
+                input_shape = copy.deepcopy(
+                    grapher[in_node]["attr"]["output_shape"][0])
 
         split_dim = node["attr"]["attr"]["split_dim"][0]
-        logging.info("Fetched Split dim for %s is %s.", node["attr"]["name"], split_dim)
+        logging.info(
+            "Fetched Split dim for %s is %s.",
+            node["attr"]["name"],
+            split_dim)
         output_node_cnt = len(node["outbounds"])
 
         output_shape = copy.deepcopy(input_shape)
@@ -548,20 +575,26 @@ class ShapeInference:
     def Transpose_get_shape(grapher, node):
         for in_node in node["inbounds"]:
             if grapher[in_node]["attr"]["type"] == "Const":
-                perm = copy.deepcopy(grapher[in_node]["attr"]["attr"]["constant"])
-                logging.info("Fetched perm sequence from Const op %s" % str(perm))
+                perm = copy.deepcopy(
+                    grapher[in_node]["attr"]["attr"]["constant"])
+                logging.info(
+                    "Fetched perm sequence from Const op %s" %
+                    str(perm))
             elif grapher[in_node]["attr"]["type"] == "Pack":
                 perm = [1] + [
                     it
                     for sl in grapher[in_node]["attr"]["attr"]["constant"]
                     for it in sl
                 ]
-                logging.info("Fetched perm sequence from Pack op %s" % str(perm))
-            else:
-                input_shape = copy.deepcopy(grapher[in_node]["attr"]["output_shape"][0])
                 logging.info(
-                    "Fetched input shape from %s,  %s" % (in_node, str(input_shape))
-                )
+                    "Fetched perm sequence from Pack op %s" %
+                    str(perm))
+            else:
+                input_shape = copy.deepcopy(
+                    grapher[in_node]["attr"]["output_shape"][0])
+                logging.info(
+                    "Fetched input shape from %s,  %s" %
+                    (in_node, str(input_shape)))
 
         exp_output_shape = []
         for i in range(len(perm)):
@@ -599,25 +632,28 @@ class ShapeInference:
 
         # Pass #1
         for node_name in seq:
-            node_get_shape_name = grapher.get_node_type(node_name) + "_get_shape"
+            node_get_shape_name = grapher.get_node_type(
+                node_name) + "_get_shape"
             if node_get_shape_name in dir(self):
-                input_shape, output_shape = eval("self." + node_get_shape_name)(
-                    graph, graph[node_name]
-                )
+                input_shape, output_shape = eval(
+                    "self." + node_get_shape_name)(graph, graph[node_name])
                 if output_shape is not None:
                     graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
                         output_shape
                     )
                 if input_shape is not None:
-                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
+                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(
+                        input_shape)
                 logging.info(
-                    "Input shape of %s op is %s." % (node_name, str(input_shape))
-                )
+                    "Input shape of %s op is %s." %
+                    (node_name, str(input_shape)))
                 logging.info(
-                    "Output shape of %s op is %s." % (node_name, str(output_shape))
-                )
+                    "Output shape of %s op is %s." %
+                    (node_name, str(output_shape)))
             else:
-                logging.error("%s not support yet." % grapher.get_node_type(node_name))
+                logging.error(
+                    "%s not support yet." %
+                    grapher.get_node_type(node_name))
                 logging.info("------ node content --------")
                 logging.info(graph[node_name])
                 logging.info("----------------------------")
@@ -625,16 +661,17 @@ class ShapeInference:
         # Pass #2
         for node_name in seq:
             if grapher.get_node_type(node_name) in ["Packed", "StridedSlice"]:
-                node_get_shape_name = grapher.get_node_type(node_name) + "_get_shape"
-                input_shape, output_shape = eval("self." + node_get_shape_name)(
-                    graph, graph[node_name]
-                )
+                node_get_shape_name = grapher.get_node_type(
+                    node_name) + "_get_shape"
+                input_shape, output_shape = eval(
+                    "self." + node_get_shape_name)(graph, graph[node_name])
                 if output_shape is not None:
                     graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
                         output_shape
                     )
                 if input_shape is not None:
-                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
+                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(
+                        input_shape)
                 logging.info(
                     "Second Pass: Input shape of %s op is %s."
                     % (node_name, str(input_shape))

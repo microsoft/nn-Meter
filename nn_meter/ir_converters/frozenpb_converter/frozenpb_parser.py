@@ -23,6 +23,17 @@ class FrozenPbParser:
 
     @staticmethod
     def strip_useless_nodes(graph_helper):
+        """
+        Remove nodes that does not matter with the predict or the structure of model,
+        including following types:
+        - weights for ops
+        - attributes for ops
+
+        Parameters
+        ----------
+        graph_helper : Graph
+            the graph holder
+        """
         stripped_nodes_type_all = []
         stripped_nodes_type = ["Const", "Identity"]
         stripped_nodes_keywords = [
@@ -59,6 +70,17 @@ class FrozenPbParser:
 
     @staticmethod
     def fix_split_naming(graph_helper):
+        """
+        TensorFlow is using "NODE_NAME:NUMBER"  for example "split:0", "split:1"
+        as a notation to oredered outputs,
+        such notation will make the edge not able to connect. We patch it by using the list
+        to store the name and keep the sequence.
+
+        Parameters
+        ----------
+        graph_helper : Graph
+            the graph holder
+        """
         graph = graph_helper.get_graph()
         graph_nodes = copy.deepcopy(list(graph.keys()))
         remove_node_list = []
@@ -70,12 +92,16 @@ class FrozenPbParser:
                         split_node_name = graph_node
                         split_node_child = []
                         for node_name in graph.keys():
-                            idx = re.findall(r"%s:(\d+)" % split_node_name, node_name)
+                            idx = re.findall(
+                                r"%s:(\d+)" %
+                                split_node_name, node_name)
                             if len(idx) > 0:
                                 idx = int(idx[0])
-                                logging.info("Find split child node %s." % node_name)
+                                logging.info(
+                                    "Find split child node %s." % node_name)
                                 graph[graph_node]["outbounds"] += graph[node_name]["outbounds"]
-                                graph[graph[node_name]["outbounds"][0]]["inbounds"] += [graph_node]
+                                graph[graph[node_name]["outbounds"]
+                                      [0]]["inbounds"] += [graph_node]
                                 remove_node_list.append(node_name)
 
         for node in remove_node_list:
@@ -83,7 +109,17 @@ class FrozenPbParser:
 
         graph_helper.refresh()
 
-    def fetch_attr_to_dict(self, node, shape_fetcher):
+    def fetch_attr_to_dict(self, node):
+        """
+        Tensorflow store some of the attributes as a node connect to the tensor.
+        We fetch the attribute from those noed to a dict.
+
+        Parameters
+        ----------
+        node : Protobuf.node
+            The protobuf node of the frozen pb.
+        """
+
         attr_dict = {}
 
         attr_as_node = {
@@ -130,7 +166,8 @@ class FrozenPbParser:
 
         for attr_name in node.attr.keys():
             if attr_name in list_i_nodes:
-                attr_dict[attr_name] = [int(a) for a in node.attr[attr_name].list.i]
+                attr_dict[attr_name] = [
+                    int(a) for a in node.attr[attr_name].list.i]
                 continue
 
             if attr_name in str_nodes:
@@ -154,9 +191,8 @@ class FrozenPbParser:
         if node.op in attr_as_node.keys():
             for target_node in self.graph.node:
                 if "regex" in attr_as_node[node.op].keys():
-                    node_attr = re.findall(
-                        attr_as_node[node.op]["node_name"](node.name), target_node.name
-                    )
+                    node_attr = re.findall(attr_as_node[node.op]["node_name"](
+                        node.name), target_node.name)
                     if len(node_attr) > 0:
                         logging.info("Find regex matching node %s" % node.name)
                         for attr_name in target_node.attr.keys():
@@ -172,19 +208,27 @@ class FrozenPbParser:
                                     )
                                 )
                 else:
-                    if target_node.name == attr_as_node[node.op]["node_name"](node.name):
+                    if target_node.name == attr_as_node[node.op]["node_name"](
+                            node.name):
                         for attr_name in target_node.attr.keys():
                             if attr_name == "value" and "weight" not in node.name and "BatchNorm" not in node.name and "kernel" not in node.name:
                                 attr_dict[attr_as_node[node.op]["attr_name"]] = copy.deepcopy(
                                     attr_as_node[node.op]["node_value"](target_node.attr[attr_name].tensor)
                                 )
-                            # if node.name == 'Const':
-                            #   print(node)
-                            #   print('>', attr_as_node[node.op]['node_value'](target_node.attr[attr_name].tensor))
 
         return attr_dict
 
-    def parse_graph(self, graph_helper, required_shape=False, insert_node=False):
+    def parse_graph(self, graph_helper, required_shape=False):
+        """
+        Parse a frozen protobuf file from tensorflow to graph IR
+
+        Parameters
+        ----------
+        graph_helper : Graph
+            The Graph IR holder.
+        required_shape : bool
+            Using dynamic shape inference to fetch the tensor shape.
+        """
         if required_shape:
             shape_fetcher = ShapeFetcher(self.graph)
 
@@ -198,8 +242,7 @@ class FrozenPbParser:
                     "output_shape": shape_fetcher.shape_results[node.name + ":0"]
                     if required_shape else [],
                     "attr": self.fetch_attr_to_dict(
-                        node, shape_fetcher if required_shape else None
-                    ),
-                    # 'node': node if insert_node else None
+                        node
+                    )
                 },
             )
