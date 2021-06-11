@@ -35,28 +35,34 @@ class Grapher:
                 self.graph[node]["outbounds"].append(name)
 
     def refresh(self):
-        for name in self.graph.keys():
-            self.graph[name]["outbounds"] = []
+        last_remove_nodes_cnt = -1
+        while 1:
+            for name in self.graph.keys():
+                self.graph[name]["outbounds"] = []
 
-        for name in self.graph.keys():
-            if "inbounds" in self.graph[name].keys():
-                for node in self.graph[name]["inbounds"]:
-                    if node not in self.graph.keys():
-                        while node in self.graph[name]["inbounds"]:
-                            self.graph[name]["inbounds"].remove(node)
-                    else:
-                        if "outbounds" not in self.graph[node].keys():
-                            self.graph[node]["outbounds"] = []
+            for name in self.graph.keys():
+                if "inbounds" in self.graph[name].keys():
+                    for node in self.graph[name]["inbounds"]:
+                        if node not in self.graph.keys():
+                            while node in self.graph[name]["inbounds"]:
+                                self.graph[name]["inbounds"].remove(node)
+                        else:
+                            if "outbounds" not in self.graph[node].keys():
+                                self.graph[node]["outbounds"] = []
 
-                        self.graph[node]["outbounds"].append(name)
+                            self.graph[node]["outbounds"].append(name)
 
-        spare_nodes = []
-        for name in self.graph.keys():
-            if  len(self.graph[name]["outbounds"]) == 0 and len(self.graph[name]["inbounds"]) == 0:
-                spare_nodes.append(name)
+            spare_nodes = []
+            for name in self.graph.keys():
+                if  len(self.graph[name]["outbounds"]) == 0 and len(self.graph[name]["inbounds"]) == 0:
+                    spare_nodes.append(name)
 
-        for removing_node_name in spare_nodes:
-            del self.graph[removing_node_name]
+            if last_remove_nodes_cnt == 0 and len(spare_nodes) == 0:
+                break
+                
+            last_remove_nodes_cnt = len(spare_nodes)
+            for removing_node_name in spare_nodes:
+                del self.graph[removing_node_name]
 
     def get_graph(self):
         return self.graph

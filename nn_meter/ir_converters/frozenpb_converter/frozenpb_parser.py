@@ -56,10 +56,6 @@ class FrozenPbParser:
             del graph[key]
 
         graph_helper.refresh()
-        graph_helper.refresh()
-        graph_helper.refresh()
-        graph_helper.refresh()
-        graph_helper.refresh()
 
     @staticmethod
     def fix_split_naming(graph_helper):
@@ -85,10 +81,6 @@ class FrozenPbParser:
         for node in remove_node_list:
             del graph[node]
 
-        graph_helper.refresh()
-        graph_helper.refresh()
-        graph_helper.refresh()
-        graph_helper.refresh()
         graph_helper.refresh()
 
     def fetch_attr_to_dict(self, node, shape_fetcher):
