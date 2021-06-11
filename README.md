@@ -33,18 +33,18 @@ Please also check the versions of numpy, scikit_learn. The different versions ma
 ### Run nn-Meter demo
 To predict the latency for a CNN model on a hardware, users can run the following command with two hyper-parameters:
 ```
-python demo.py --config configs/cpu.yaml --input_model data/testmodels/alexnet_0.pb
+python demo.py --config configs/devices.yaml --input_model data/testmodels/alexnet_0.pb --hardware cortexA76cpu_tflite21
 ```
 The two hyper-parameters include: (i) the config file describes the targeting device and inference framework, (ii) the input model file
 
 nn-Meter currently supports prediction on the following four config:
 
-| config |   hardware     |
-|:----:|:-------------------:|
-|  configs/cpu.yaml |        cortexA76cpu_tflite21       | 
-|  configs/gpu.yaml |         adreno640gpu_tflite21         |  
-| configs/gpu1.yaml |       adreno630gpu_tflite21      |   
-|  configs/vpu.yaml | myriadvpu_openvino2019r2 | 
+|   hardware     |
+|:-------------------:|
+|        cortexA76cpu_tflite21       | 
+|         adreno640gpu_tflite21         |  
+|       adreno630gpu_tflite21      |   
+| myriadvpu_openvino2019r2 | 
 
 For the input model file, you can find any example provided under the `data/testmodels`
 
