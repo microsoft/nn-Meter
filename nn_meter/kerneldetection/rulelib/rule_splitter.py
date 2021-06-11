@@ -33,7 +33,7 @@ class RuleSplitter:
             if not fag.get_outbounds(i):
                 continue
             # MON
-            mon = self.rule_reader.query_rule('MON')
+            mon = self.rule_reader.query_rule("MON")
             if mon == 0:  # can't fuse if having multiple out node
                 if len(fag.get_outbounds(i)) > 1:
                     continue
@@ -47,7 +47,7 @@ class RuleSplitter:
                 if not self.rule_reader.is_fusible(node_type, outnode_type):
                     continue
                 # RT
-                if self.rule_reader.query_rule('RT'):
+                if self.rule_reader.query_rule("RT"):
                     if not fag.is_ready(j):
                         continue
                 # fuse node

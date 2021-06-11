@@ -1,5 +1,0 @@
-predictor:
-  name: adreno640gpu_tflite21
-  version: 1.0 
-  predictors_num: 10
-  download: https://github.com/Lynazhang/nnmeter/releases/download/version1.0/adreno640gpu_tflite21.zip

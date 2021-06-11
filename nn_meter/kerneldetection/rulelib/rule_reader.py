@@ -7,17 +7,17 @@ from nn_meter.kerneldetection.fusionlib import get_fusion_unit
 
 class RuleReader:
     rules_default = {
-        'MON': 0,
-        'RT': True,
-        'FN': True,
+        "MON": 0,
+        "RT": True,
+        "FN": True,
     }
 
-    multiop_blocks = ['se', 'hswish', 'channelshuffle','gap']
+    multiop_blocks = ["se", "hswish", "channelshuffle", "gap"]
 
     def __init__(self, rule_file=None):
         self.rules = {}
         if rule_file:
-            with open(rule_file, 'r') as fp:
+            with open(rule_file, "r") as fp:
                 self.rules = json.load(fp)
         self._extract_fusible()
         self._parse_multiop_block()
@@ -26,32 +26,32 @@ class RuleReader:
         return (node_type, outnode_type) in self.fusible
 
     def query_rule(self, rule):
-        if rule not in self.rules or self.rules[rule]['obey'] is None:
+        if rule not in self.rules or self.rules[rule]["obey"] is None:
             return self.rules_default[rule]
         else:
-            return self.rules[rule]['obey']
+            return self.rules[rule]["obey"]
 
     def _extract_fusible(self):
         self.fusible = []
         self.fusion_units = {}
         for name, rule in self.rules.items():
-            if rule['obey'] and name.startswith('BF'):
-                ops = name.split('_')[1:]
+            if rule["obey"] and name.startswith("BF"):
+                ops = name.split("_")[1:]
                 if len(ops) == 2:
                     self.fusible.append((ops[0], ops[1]))
                 elif len(ops) > 2:
                     fusion_unit = {}
-                    get_name = lambda i: f'{ops[i]}_{i}'
+                    get_name = lambda i: f"{ops[i]}_{i}"
                     for i in range(0, len(ops)):
                         fusion_unit[get_name(i)] = {
-                            'attr': {
-                                'type': ops[i],
-                                'attr': {},
+                            "attr": {
+                                "type": ops[i],
+                                "attr": {},
                             },
-                            'inbounds': [get_name(i - 1)] if i > 0 else [],
-                            'outbounds': [get_name(i + 1)] if i < len(ops) - 1 else [],
+                            "inbounds": [get_name(i - 1)] if i > 0 else [],
+                            "outbounds": [get_name(i + 1)] if i < len(ops) - 1 else [],
                         }
-                    self.fusion_units['-'.join(ops)] = [Grapher(graph=fusion_unit)]
+                    self.fusion_units["-".join(ops)] = [Grapher(graph=fusion_unit)]
 
     def _parse_multiop_block(self):
         for block in self.multiop_blocks:

@@ -4,8 +4,10 @@ from nn_meter import load_latency_predictors
 import yaml
 import argparse
 
-def test_pytorch_models(args,predictor):
+
+def test_pytorch_models(args, predictor):
     import torchvision.models as models
+
     resnet18 = models.resnet18()
     alexnet = models.alexnet()
     vgg16 = models.vgg16()
@@ -18,7 +20,7 @@ def test_pytorch_models(args,predictor):
     resnext50_32x4d = models.resnext50_32x4d()
     wide_resnet50_2 = models.wide_resnet50_2()
     mnasnet = models.mnasnet1_0()
-    models=[]
+    models = []
     models.append(alexnet)
     models.append(resnet18)
     models.append(vgg16)
@@ -30,36 +32,50 @@ def test_pytorch_models(args,predictor):
     models.append(resnext50_32x4d)
     models.append(wide_resnet50_2)
     models.append(mnasnet)
+    print("start to test")
     for model in models:
-            latency=predictor.predict(model,model_type='torch',input_shape=(1,3,224,224))
-            print(model.__class__.__name__,latency)
-    
-def test_onnx_models(args,predictor):
-     from glob import glob 
-     models=glob("data/testmodels/**.onnx")
-     for model in models:
-        latency=predictor.predict(model)
-        print(model.split('/')[-1],latency)
- 
-def test_pb_models(args,predictor):
-     from glob import glob 
-     models=glob("data/testmodels/**.pb")
-     for model in models:
-        latency=predictor.predict(model)
-        print(model.split('/')[-1],latency)
+        latency = predictor.predict(
+            model, model_type="torch", input_shape=(1, 3, 224, 224)
+        )
+        print(model.__class__.__name__, latency)
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser('predict model latency on device')
-    parser.add_argument('-i', '--input_model', type=str, required=True, help='Path to input model. ONNX, FrozenPB or JSON')
-    parser.add_argument('-c', '--config', type=str, required=True, help='config file')
-    args=parser.parse_args()    
+
+def test_onnx_models(args, predictor):
+    from glob import glob
+
+    models = glob("data/testmodels/**.onnx")
+    for model in models:
+        latency = predictor.predict(model)
+        print(model.split("/")[-1], latency)
+
+
+def test_pb_models(args, predictor):
+    from glob import glob
+
+    models = glob("data/testmodels/**.pb")
+    for model in models:
+        latency = predictor.predict(model)
+        print(model.split("/")[-1], latency)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("predict model latency on device")
+    parser.add_argument( "--input_model", type=str, required=True, help="Path to input model. ONNX, FrozenPB or JSON")
+    parser.add_argument( "--hardware", type=str, default='cortexA76cpu_tflite21', help="target hardware")
+    parser.add_argument( "--config", type=str, required=True, help="config file")
+    args = parser.parse_args()
 
     with open(args.config) as file:
-        config=yaml.load(file,Loader=yaml.FullLoader)
-        print(config)        
-        predictor=load_latency_predictors(config['predictor'])
-        latency=predictor.predict(args.input_model)
-        #test_pytorch_models(args,predictor)
-        print('predict latency',latency)
+        config = yaml.load(file, Loader=yaml.FullLoader)['predictors']
+        if args.hardware in config:
+            print(config)
+       
+            predictor = load_latency_predictors(config,args.hardware)
+            latency=predictor.predict(args.input_model)
+        #test_onnx_models(args,predictor)
+        # test_pb_models(args,predictor)
+            #test_pytorch_models(args, predictor)
+            print('predict latency',latency)
+        else:
+            raise NotImplementedError
 
-        

@@ -4,6 +4,7 @@ class UF:
     """
     UnionFind implemented with compression optimization
     """
+
     def __init__(self, N):
         self._parent = list(range(0, N))
 
@@ -19,4 +20,3 @@ class UF:
 
     def connected(self, p, q):
         return self.find(p) == self.find(q)
-    

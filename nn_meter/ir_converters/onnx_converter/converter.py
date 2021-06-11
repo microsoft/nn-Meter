@@ -16,18 +16,18 @@ class OnnxConverter:
         self.tensors = {}
         for tensor in chain(self.graph.input, self.graph.value_info, self.graph.output):
             self.tensors[tensor.name] = {
-                'shape': get_tensor_shape(tensor),
-                'inputs': [],
-                'outputs': [],
+                "shape": get_tensor_shape(tensor),
+                "inputs": [],
+                "outputs": [],
             }
 
         for node in self.graph.node:
             for input_name in node.input:
                 if input_name in self.tensors:
-                    self.tensors[input_name]['outputs'].append(node)
+                    self.tensors[input_name]["outputs"].append(node)
             for output_name in node.output:
                 if output_name in self.tensors:
-                    self.tensors[output_name]['inputs'].append(node)
+                    self.tensors[output_name]["inputs"].append(node)
 
         self.G = self.to_networkx()
 
@@ -50,7 +50,7 @@ class OnnxConverter:
             if node.op_type == SLICE_TYPE and node.name not in selected_slice:
                 continue
             for input_name in node.input:
-                if input_name in self.tensors: # remove dummy ops
+                if input_name in self.tensors:  # remove dummy ops
                     G.add_edge(input_name, node.name)
             for output_name in node.output:
                 if output_name in self.tensors:
@@ -66,33 +66,33 @@ class OnnxConverter:
         input_tensors = []
         for input_name in node.input:
             if input_name in self.tensors:
-                input_tensors.append(self.tensors[input_name]['shape'])
+                input_tensors.append(self.tensors[input_name]["shape"])
         output_tensors = []
         for output_name in node.output:
             if output_name in self.tensors:
-                output_tensors.append(self.tensors[output_name]['shape'])
+                output_tensors.append(self.tensors[output_name]["shape"])
         if node.op_type == SLICE_TYPE:
             for tensor_name in self._get_sibling_slice_output_tensors(node):
-                output_tensors.append(self.tensors[tensor_name]['shape'])
+                output_tensors.append(self.tensors[tensor_name]["shape"])
         if len(input_tensors) == 0 or len(input_tensors[0]) <= 1 or len(output_tensors) == 0 or len(output_tensors[0]) <= 1:
-            logging.warning(f'Empty shape information with {node.name}')
+            logging.warning(f"Empty shape information with {node.name}")
             return attrs
 
-        attrs['attr'] = {}
-        attrs['type'] = node.op_type
-        attrs['input_shape'] = input_tensors
-        attrs['output_shape'] = output_tensors
+        attrs["attr"] = {}
+        attrs["type"] = node.op_type
+        attrs["input_shape"] = input_tensors
+        attrs["output_shape"] = output_tensors
         for attr in node.attribute:
             if attr.type == AttributeProto.FLOAT:
-                attrs['attr'][attr.name] = attr.f
+                attrs["attr"][attr.name] = attr.f
             elif attr.type == AttributeProto.INT:
-                attrs['attr'][attr.name] = attr.i
+                attrs["attr"][attr.name] = attr.i
             elif attr.type == AttributeProto.INTS:
-                attrs['attr'][attr.name] = list(attr.ints)
+                attrs["attr"][attr.name] = list(attr.ints)
             elif attr.type == AttributeProto.STRING:
-                attrs['attr'][attr.name] = str(attr.s)
+                attrs["attr"][attr.name] = str(attr.s)
             else:
-                logging.warning(f'Unsupported attributes type: {attr.type}')
+                logging.warning(f"Unsupported attributes type: {attr.type}")
 
         return attrs
 
@@ -114,16 +114,16 @@ class OnnxConverter:
                     inbounds.append(pred_pred)
 
             result[node] = {
-                'attr': node_attrs,
-                'outbounds': outbounds,
-                'inbounds': inbounds,
+                "attr": node_attrs,
+                "outbounds": outbounds,
+                "inbounds": inbounds,
             }
 
         return result
 
     def _get_sibling_slice_output_tensors(self, node):
         output_tensors = []
-        for slice in self.tensors[node.input[0]]['outputs']:
+        for slice in self.tensors[node.input[0]]["outputs"]:
             if slice.name != node.name and slice.op_type == SLICE_TYPE:
                 for output_name in slice.output:
                     if output_name in self.tensors:

@@ -35,6 +35,7 @@ class FrozenPbConverter:
                     if isinstance(v, np.ndarray):
                         d[k] = v.tolist()
                     if isinstance(v, (bytes, bytearray)):
-                        d[k] = v.decode('utf-8')
+                        d[k] = v.decode("utf-8")
+
         np_encoder(self.graph.get_graph())
         return self.graph.get_graph()

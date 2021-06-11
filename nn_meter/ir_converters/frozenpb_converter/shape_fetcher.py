@@ -6,12 +6,13 @@ from typing import List
 
 
 class ShapeFetcher:
-
     def get_nodes_with_input_tensor(self, tensor):
-        return list(filter(
-            lambda op: (tensor in op.inputs) and (op.type not in ["Shape"]),
-            self.graph.get_operations()
-        ))
+        return list(
+            filter(
+                lambda op: (tensor in op.inputs) and (op.type not in ["Shape"]),
+                self.graph.get_operations(),
+            )
+        )
 
     def __init__(self, input_graph):
         tf.compat.v1.disable_eager_execution()
@@ -45,7 +46,5 @@ class ShapeFetcher:
             fake_input = np.random.randn(1, self.imsize, self.imsize, 3)
             for tensor_name, shape_tensor in shape_tensors.items():
                 self.shape_results[tensor_name] = sess.run(
-                    shape_tensor, feed_dict={
-                        graph_input_tensor: fake_input
-                    }
+                    shape_tensor, feed_dict={graph_input_tensor: fake_input}
                 )

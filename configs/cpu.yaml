@@ -1,5 +1,0 @@
-predictor:
-  name: cortexA76cpu_tflite21
-  version: 1.0 
-  predictors_num: 16
-  download: https://github.com/Lynazhang/nnmeter/releases/download/version1.0/cortexA76cpu_tflite21.zip
