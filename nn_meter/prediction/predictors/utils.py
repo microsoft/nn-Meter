@@ -2,19 +2,7 @@
 # Licensed under the MIT license.
 import pickle, os
 
-
-def get_hswish_feature(features):
-    nfs = []
-    for fe in features:
-        [inputh, cin, cout, ks, s, flops, params] = fe
-        if s == 2:
-            nfe = [inputh / 2, cout]
-        else:
-            nfe = [inputh, cout]
-        nfs.append(nfe)
-    return nfs
-
-
+# multiple similar kernels share one kernel predictor, since the latency difference is negligible
 def get_kernel_name(optype):
     if "conv" in optype and "dwconv" not in optype:
         optype = "conv-bn-relu"

@@ -5,64 +5,47 @@ from .utils import *
 from .extract_feature import *
 
 
-def merge_op(op):
-    if "conv" in op and "dwconv" not in op:
+def merge_conv_kernels(kernelname): ## to speed up, we merge conv and dwconv related kernels into 
+    if "conv" in kernelname and "dwconv" not in kernelname:
         return "conv-bn-relu"
-    elif "dwconv" in op:
+    elif "dwconv" in kernelname:
         return "dwconv-bn-relu"
     else:
-        return op
+        return kernelname
 
 
 def predict_model(model, predictors):
     py = 0
     dicts = {}
     for layer in model:
-        op = list(model[layer].keys())[0]
-        features = model[layer][op]
-        rop = merge_op(op)
-        if not rop in dicts:
-            dicts[rop] = []
-        dicts[rop].append(features)
+        kernel = list(model[layer].keys())[0]
+        features = model[layer][kernel]
+        rkernel = merge_conv_kernels(kernel)
+        if not rkernel in dicts:
+            dicts[rkernel] = []
+        dicts[rkernel].append(features)
 
-    for op in dicts:
-        #  print(op)
-        opname = get_kernel_name(op)
-        if opname in predictors:
-            pred = predictors[opname]
-            pys = pred.predict(dicts[op])
-            # pys=get_kernel_latency(op,dicts[op],hardware)
+    for kernel in dicts:
+        kernelname = get_kernel_name(kernel)
+        if kernelname in predictors:
+            pred = predictors[kernelname]
+            pys = pred.predict(dicts[kernel])
             if len(pys) != 0:
                 py += sum(pys)
 
     return py
 
 
-def nn_predict(predictor, configs):
-    if isinstance(configs, dict):
-        # print(configs.items())
-        config = configs[list(configs.keys())[0]]
-    else:
-        config = configs
-    features = get_predict_features(config)
-    py = predict_model(features, predictor)
-    print(py)
+def nn_predict(predictors, kernel_units): 
+    """
+        @params:
+
+        predictors: dictionary object, key: kernel name, object: loaded pkl latency model
+        kernel_units: the divided kernel units and the features of a model.
+        """
+
+    features = get_predict_features(kernel_units)
+    py = predict_model(features, predictors)
     return py
 
 
-def main_kernel_predict(predictor, configs, latencyfile):
-    Y = read_model_latency(latencyfile)
-    pY = []  #
-    Y1 = []
-    for mid in configs:
-        features = get_predict_features(configs[mid])
-        py = predict_model(features, predictor)
-        if mid in Y:
-            y = Y[mid]
-            pY.append(py)
-            Y1.append(y)
-            print(mid, "predict " + str(py) + ",real " + str(y))
-
-    rmse, rmspe, error, acc5, acc10, acc15 = lat_metrics(np.array(pY), np.array(Y1))
-    print("rmse", rmse, "rmpse", rmspe, "error", error, "acc", acc10)
-    return rmse, rmspe, error, acc5, acc10

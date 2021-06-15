@@ -33,6 +33,6 @@ class nnMeter:
             graph = model_to_graph(model, model_type, input_shape=input_shape)
         self.kd.load_graph(graph)
 
-        kernel_result = {modelname: self.kd.kernels}
-        py = nn_predict(self.kernel_predictors, kernel_result)
+       # kernel_result = {modelname: self.kd.kernels}
+        py = nn_predict(self.kernel_predictors, self.kd.kernels)
         return py
