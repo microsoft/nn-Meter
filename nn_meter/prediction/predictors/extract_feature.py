@@ -63,20 +63,16 @@ def get_predict_features(config):
             ks = item["ks"][1]
             s = item["strides"][1]
             inputh = item["inputh"]
-
         if op in ["channelshuffle", "split"]:
             [b, inputh, inputw, cin] = item["input_tensors"][0]
-
         if "conv" in op:
             flops, params = get_flops_params(op, inputh, cin, cout, ks, s)
             features = [inputh, cin, cout, ks, s, flops / 2e6, params / 1e6]
-
         elif "fc" in op or "fc-relu" in op:
             cout = item["cout"]
             cin = item["cin"]
             flop = (2 * cin + 1) * cout
             features = [cin, cout, flop / 2e6, flop / 1e6]
-
         elif "pool" in op and "global" not in op:
             features = [inputh, cin, cout, ks, s]
         elif "global-pool" in op or "global-avgpool" in op or "gap" in op:
@@ -150,21 +146,3 @@ def read_model_latency(latency_file):
 
 
 
-def get_feature(op, inputh, cin, cout, ks, s):
-    if s != None and "conv" in op:
-
-        flops, params = get_flops_params(op, inputh, cin, cout, ks, s)
-        features = [inputh, cin, cout, ks, s, flops / 2e6, params / 1e6]
-
-    elif "fc" in op:
-        flop = (2 * cin + 1) * cout
-        features = [cin, cout, flop / 2e6, flop / 1e6]
-
-    elif "pool" in op:
-        features = [inputh, cin, cout, ks, s]
-    elif "se" in op:
-        features = [inputh, cin]
-    elif op in ["hwish", "hswish"]:
-        features = [inputh, cin]
-
-    return features

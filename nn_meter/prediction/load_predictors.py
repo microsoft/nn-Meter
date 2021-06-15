@@ -53,13 +53,14 @@ def download_from_url(urladdr, ppath, filename):
 
 
 def check_predictors(ppath, kernel_predictors):
-
+    print('checking local kernel predictors at '+ppath)
     if os.path.isdir(ppath):
-        filenames = glob(ppath + "/**.pkl")
-        if len(filenames)==len(kernel_predictors):
-            return True
-        else:
-            return False
-        
+        filenames = glob(ppath + "/**.pkl")  ## 
+        ## check if all the pkl files are included
+        for kp in kernel_predictors:
+            fullpath=ppath + "/" + kp + ".pkl"
+            if fullpath not in filenames:
+                return False 
+        return True       
     else:
         return False

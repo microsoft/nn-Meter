@@ -56,13 +56,14 @@ def test_pb_models(args, predictor):
     for model in models:
         latency = predictor.predict(model)
         print(model.split("/")[-1], latency)
+       # break
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("predict model latency on device")
     parser.add_argument( "--input_model", type=str, required=True, help="Path to input model. ONNX, FrozenPB or JSON")
     parser.add_argument( "--hardware", type=str, default='cortexA76cpu_tflite21', help="target hardware")
-    parser.add_argument( "--config", type=str, required=True, help="config file")
+    parser.add_argument( "--config", type=str, default="configs/devices.yaml", help="config file to store current supported edge platform")
     args = parser.parse_args()
 
     with open(args.config) as file:
@@ -72,8 +73,8 @@ if __name__ == "__main__":
        
             predictor = load_latency_predictors(config,args.hardware)
             latency=predictor.predict(args.input_model)
-        #test_onnx_models(args,predictor)
-        # test_pb_models(args,predictor)
+            #test_onnx_models(args,predictor)
+            #test_pb_models(args,predictor)
             #test_pytorch_models(args, predictor)
             print('predict latency',latency)
         else:
