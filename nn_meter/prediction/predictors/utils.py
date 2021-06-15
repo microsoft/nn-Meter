@@ -1,8 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import pickle, os
+import pickle
+import os
 
-# multiple similar kernels share one kernel predictor, since the latency difference is negligible
+# multiple similar kernels share one kernel predictor, since the latency
+# difference is negligible
+
+
 def get_kernel_name(optype):
     if "conv" in optype and "dwconv" not in optype:
         optype = "conv-bn-relu"

@@ -2,7 +2,8 @@
 # Licensed under the MIT license.
 import numpy as np
 from sklearn.metrics import mean_squared_error
-import shutil, json
+import shutil
+import json
 
 
 def get_accuracy(y_pred, y_true, threshold=0.01):
@@ -87,7 +88,7 @@ def get_predict_features(config):
             inputh = item["input_tensors"][-1][-2]
             cin = item["input_tensors"][-1][-1]
             features = [inputh, cin]
-        elif "concat" in op:  ## maximum 4 branches
+        elif "concat" in op:  # maximum 4 branches
             itensors = item["input_tensors"]
             inputh = itensors[0][1]
             features = [inputh, len(itensors)]
@@ -142,7 +143,3 @@ def read_model_latency(latency_file):
         latency = float(content[2])
         dicts[model] = latency
     return dicts
-
-
-
-

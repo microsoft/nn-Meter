@@ -5,7 +5,8 @@ from .utils import *
 from .extract_feature import *
 
 
-def merge_conv_kernels(kernelname): ## to speed up, we merge conv and dwconv related kernels into 
+# to speed up, we merge conv and dwconv related kernels into
+def merge_conv_kernels(kernelname):
     if "conv" in kernelname and "dwconv" not in kernelname:
         return "conv-bn-relu"
     elif "dwconv" in kernelname:
@@ -21,7 +22,7 @@ def predict_model(model, predictors):
         kernel = list(model[layer].keys())[0]
         features = model[layer][kernel]
         rkernel = merge_conv_kernels(kernel)
-        if not rkernel in dicts:
+        if rkernel not in dicts:
             dicts[rkernel] = []
         dicts[rkernel].append(features)
 
@@ -36,7 +37,7 @@ def predict_model(model, predictors):
     return py
 
 
-def nn_predict(predictors, kernel_units): 
+def nn_predict(predictors, kernel_units):
     """
         @params:
 
@@ -47,5 +48,3 @@ def nn_predict(predictors, kernel_units):
     features = get_predict_features(kernel_units)
     py = predict_model(features, predictors)
     return py
-
-

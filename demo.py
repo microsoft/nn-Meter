@@ -61,22 +61,33 @@ def test_pb_models(args, predictor):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("predict model latency on device")
-    parser.add_argument( "--input_model", type=str, required=True, help="Path to input model. ONNX, FrozenPB or JSON")
-    parser.add_argument( "--hardware", type=str, default='cortexA76cpu_tflite21', help="target hardware")
-    parser.add_argument( "--config", type=str, default="configs/devices.yaml", help="config file to store current supported edge platform")
+    parser.add_argument(
+        "--input_model",
+        type=str,
+        required=True,
+        help="Path to input model. ONNX, FrozenPB or JSON")
+    parser.add_argument(
+        "--hardware",
+        type=str,
+        default='cortexA76cpu_tflite21',
+        help="target hardware")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="configs/devices.yaml",
+        help="config file to store current supported edge platform")
     args = parser.parse_args()
 
     with open(args.config) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)['predictors']
         if args.hardware in config:
             print(config)
-       
-            predictor = load_latency_predictors(config,args.hardware)
-            latency=predictor.predict(args.input_model)
-            #test_onnx_models(args,predictor)
-            #test_pb_models(args,predictor)
+
+            predictor = load_latency_predictors(config, args.hardware)
+            latency = predictor.predict(args.input_model)
+            # test_onnx_models(args,predictor)
+            # test_pb_models(args,predictor)
             #test_pytorch_models(args, predictor)
-            print('predict latency',latency)
+            print('predict latency', latency)
         else:
             raise NotImplementedError
-

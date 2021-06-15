@@ -197,7 +197,8 @@ class FrozenPbParser:
                         logging.info("Find regex matching node %s" % node.name)
                         for attr_name in target_node.attr.keys():
                             if attr_name == "value" and "weight" not in node.name and "BatchNorm" not in node.name and "kernel" not in node.name:
-                                node_attr_name = attr_as_node[node.op]["attr_name"]
+                                node_attr_name = attr_as_node[node.op][
+                                    "attr_name"]
                                 if node_attr_name not in attr_dict.keys():
                                     attr_dict[node_attr_name] = []
                                 attr_dict[node_attr_name].append(
@@ -236,13 +237,8 @@ class FrozenPbParser:
             graph_helper.node(str(node.name), list(map(str, node.input)))
             graph_helper.set_node_attr(
                 node.name,
-                {
-                    "name": str(node.name),
-                    "type": str(node.op),
-                    "output_shape": shape_fetcher.shape_results[node.name + ":0"]
-                    if required_shape else [],
-                    "attr": self.fetch_attr_to_dict(
-                        node
-                    )
-                },
-            )
+                {"name": str(node.name),
+                 "type": str(node.op),
+                 "output_shape": shape_fetcher.shape_results
+                 [node.name + ":0"] if required_shape else[],
+                 "attr": self.fetch_attr_to_dict(node)},)

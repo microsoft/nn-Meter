@@ -32,7 +32,8 @@ def convert_nodes(graph):
             del attr["axis"]
 
         # workaround for add, mul, div, sub with const
-        if new_type in ["add", "mul", "div", "sub"] and "input_shape" in node["attr"]:
+        if new_type in ["add", "mul", "div",
+                        "sub"] and "input_shape" in node["attr"]:
             input_shape = node["attr"]["input_shape"]
             shape = input_shape[0] if input_shape[0] else input_shape[1]
             node["attr"]["input_shape"] = [shape] * len(input_shape)

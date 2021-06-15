@@ -14,7 +14,10 @@ class OnnxConverter:
         self.graph = inferred_model.graph
 
         self.tensors = {}
-        for tensor in chain(self.graph.input, self.graph.value_info, self.graph.output):
+        for tensor in chain(
+                self.graph.input,
+                self.graph.value_info,
+                self.graph.output):
             self.tensors[tensor.name] = {
                 "shape": get_tensor_shape(tensor),
                 "inputs": [],
@@ -56,7 +59,8 @@ class OnnxConverter:
                 if output_name in self.tensors:
                     G.add_edge(node.name, output_name)
                 if node.op_type == SLICE_TYPE:
-                    for tensor_name in self._get_sibling_slice_output_tensors(node):
+                    for tensor_name in self._get_sibling_slice_output_tensors(
+                            node):
                         G.add_edge(node.name, tensor_name)
 
         return G
@@ -74,7 +78,9 @@ class OnnxConverter:
         if node.op_type == SLICE_TYPE:
             for tensor_name in self._get_sibling_slice_output_tensors(node):
                 output_tensors.append(self.tensors[tensor_name]["shape"])
-        if len(input_tensors) == 0 or len(input_tensors[0]) <= 1 or len(output_tensors) == 0 or len(output_tensors[0]) <= 1:
+        if len(input_tensors) == 0 or len(
+                input_tensors[0]) <= 1 or len(output_tensors) == 0 or len(
+                output_tensors[0]) <= 1:
             logging.warning(f"Empty shape information with {node.name}")
             return attrs
 

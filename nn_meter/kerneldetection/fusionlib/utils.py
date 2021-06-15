@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import os
 import json
-from nn_meter.utils.grapher_tool import Grapher
+from nn_meter.utils.graphe_tool import Graphe
 from nn_meter.kerneldetection.utils.ir_tools import convert_nodes
 
 
@@ -17,4 +17,4 @@ def get_fusion_unit(name):
     if not isinstance(graph, list):
         graph = [graph]
 
-    return [Grapher(graph=convert_nodes(g)) for g in graph]
+    return [Graphe(graph=convert_nodes(g)) for g in graph]

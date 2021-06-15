@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from .rule_reader import RuleReader
-from nn_meter.utils.grapher_tool import Grapher
+from nn_meter.utils.graphe_tool import Graphe
 from nn_meter.kerneldetection.utils.match_helper import MatchHelper
 from nn_meter.kerneldetection.utils.fusion_aware_graph import FusionAwareGraph
 
@@ -10,14 +10,15 @@ class RuleSplitter:
     def __init__(self, rule_reader: RuleReader):
         self.rule_reader = rule_reader
 
-    def fuse_multiop_blocks(self, graph: Grapher):
+    def fuse_multiop_blocks(self, graph: Graphe):
         for type, blocks in self.rule_reader.fusion_units.items():
             for block in blocks:
-                subgraphs = graph.find_subgraphs(block, MatchHelper.op_type_matcher)
+                subgraphs = graph.find_subgraphs(
+                    block, MatchHelper.op_type_matcher)
                 for subgraph in subgraphs:
                     graph.fuse(subgraph.keys(), type)
 
-    def split(self, graph: Grapher):
+    def split(self, graph: Graphe):
         """
         Apply rules to graph
         """
@@ -64,5 +65,5 @@ class RuleSplitter:
 
         return fag.get_basicblocks()
 
-    def preprocess(self, graph: Grapher):
+    def preprocess(self, graph: Graphe):
         self.fuse_multiop_blocks(graph)

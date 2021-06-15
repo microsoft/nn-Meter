@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import json
-from nn_meter.utils.grapher_tool import Grapher
+from nn_meter.utils.graphe_tool import Graphe
 from nn_meter.kerneldetection.fusionlib import get_fusion_unit
 
 
@@ -41,17 +41,16 @@ class RuleReader:
                     self.fusible.append((ops[0], ops[1]))
                 elif len(ops) > 2:
                     fusion_unit = {}
-                    get_name = lambda i: f"{ops[i]}_{i}"
+                    def get_name(i): return f"{ops[i]}_{i}"
                     for i in range(0, len(ops)):
                         fusion_unit[get_name(i)] = {
-                            "attr": {
-                                "type": ops[i],
-                                "attr": {},
-                            },
-                            "inbounds": [get_name(i - 1)] if i > 0 else [],
-                            "outbounds": [get_name(i + 1)] if i < len(ops) - 1 else [],
-                        }
-                    self.fusion_units["-".join(ops)] = [Grapher(graph=fusion_unit)]
+                            "attr": {"type": ops[i],
+                                     "attr": {}, },
+                            "inbounds": [get_name(i - 1)] if i > 0 else[],
+                            "outbounds": [get_name(i + 1)]
+                            if i < len(ops) - 1 else[], }
+                    self.fusion_units["-".join(ops)
+                                      ] = [Graphe(graph=fusion_unit)]
 
     def _parse_multiop_block(self):
         for block in self.multiop_blocks:

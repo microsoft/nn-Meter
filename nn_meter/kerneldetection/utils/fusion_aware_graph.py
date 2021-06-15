@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.grapher_tool import Grapher
+from nn_meter.utils.graphe_tool import Graphe
 from .union_find import UF
 import networkx as nx
 
 
 class FusionAwareGraph:
-    def __init__(self, graph: Grapher):
+    def __init__(self, graph: Graphe):
         self._graph = graph
         self._dag = list(nx.topological_sort(graph.get_networkx_graph()))
         self._uf = UF(len(self._dag))
@@ -18,11 +18,11 @@ class FusionAwareGraph:
         inbounds = []
         for index, name in enumerate(self._dag):
             outbounds.append(
-                {reverse[outbound] for outbound in self._graph.get_node_outbounds(name)}
-            )
+                {reverse[outbound]
+                 for outbound in self._graph.get_node_outbounds(name)})
             inbounds.append(
-                {reverse[inbound] for inbound in self._graph.get_node_inbounds(name)}
-            )
+                {reverse[inbound]
+                 for inbound in self._graph.get_node_inbounds(name)})
 
         self._outbounds = outbounds
         self._inbounds = inbounds

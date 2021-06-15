@@ -1,4 +1,5 @@
-import pickle, os
+import pickle
+import os
 from glob import glob
 import shutil
 from zipfile import ZipFile
@@ -10,11 +11,12 @@ def loading_to_local(configs, hardware, dir="data/predictorzoo"):
     if hardware not in configs:
         raise NotImplementedError
     ppath = dir + "/" + hardware
-    isdownloaded = check_predictors(ppath, configs[hardware]["kernel_predictors"])
-    if isdownloaded == False:  ##
+    isdownloaded = check_predictors(
+        ppath, configs[hardware]["kernel_predictors"])
+    if not isdownloaded:
         download_from_url(configs[hardware]["download"], dir, hardware)
 
-    ##load predictors
+    # load predictors
     predictors = {}
     ps = glob(ppath + "/**.pkl")
     for p in ps:
@@ -27,8 +29,9 @@ def loading_to_local(configs, hardware, dir="data/predictorzoo"):
     print(fusionrule)
     if os.path.isfile(fusionrule) == False:
         raise ValueError(
-            "check your fusion rule path, file " + fusionrule + " does not exist！"
-        )
+            "check your fusion rule path, file " +
+            fusionrule +
+            " does not exist！")
     return predictors, fusionrule
 
 
@@ -53,14 +56,14 @@ def download_from_url(urladdr, ppath, filename):
 
 
 def check_predictors(ppath, kernel_predictors):
-    print('checking local kernel predictors at '+ppath)
+    print('checking local kernel predictors at ' + ppath)
     if os.path.isdir(ppath):
-        filenames = glob(ppath + "/**.pkl")  ## 
-        ## check if all the pkl files are included
+        filenames = glob(ppath + "/**.pkl")
+        # check if all the pkl files are included
         for kp in kernel_predictors:
-            fullpath=ppath + "/" + kp + ".pkl"
+            fullpath = ppath + "/" + kp + ".pkl"
             if fullpath not in filenames:
-                return False 
-        return True       
+                return False
+        return True
     else:
         return False

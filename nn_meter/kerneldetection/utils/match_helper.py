@@ -29,15 +29,15 @@ class MatchHelper:
         graph_helper.refresh()
 
     @staticmethod
-    def tag_matched_nodes(grapher, matched_subgraph):
+    def tag_matched_nodes(graphe, matched_subgraph):
         for matched_unit in matched_subgraph:
             for node_name in matched_unit.keys():
-                grapher.add_node_attr(node_name, "_tagged", "")
+                graphe.add_node_attr(node_name, "_tagged", "")
 
     @staticmethod
-    def get_untagged_nodes(grapher):
+    def get_untagged_nodes(graphe):
         untagged_node = []
-        for node in grapher.get_graph().keys():
-            if "_tagged" not in grapher.get_node_attr(node)["attr"]:
+        for node in graphe.get_graph().keys():
+            if "_tagged" not in graphe.get_node_attr(node)["attr"]:
                 untagged_node.append(node)
         return untagged_node
