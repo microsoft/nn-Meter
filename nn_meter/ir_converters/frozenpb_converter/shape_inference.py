@@ -98,15 +98,15 @@ class ShapeInference:
             pad_size = [pad_top, pad_bottom, pad_left, pad_right]
         elif padding == "VALID":
             outh = math.ceil(
-                (ph.get_h(input_shape) -
-                 ph.get_h(k_size) +
-                    1) /
-                ph.get_h(strides))
+                (ph.get_h(input_shape)
+                 - ph.get_h(k_size)
+                 + 1)
+                / ph.get_h(strides))
             outw = math.ceil(
-                (ph.get_h(input_shape) -
-                 ph.get_h(k_size) +
-                    1) /
-                ph.get_w(strides))
+                (ph.get_h(input_shape)
+                 - ph.get_h(k_size)
+                 + 1)
+                / ph.get_w(strides))
 
             pad_size = [0, 0, 0, 0]
         else:
@@ -452,7 +452,6 @@ class ShapeInference:
         )
 
         k_size = weight_shape[:2]
-        cin = weight_shape[2]
         cout = weight_shape[3]
 
         if node["attr"]["attr"]["strides"][::3] != [1, 1]:

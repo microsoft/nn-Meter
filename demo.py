@@ -16,7 +16,7 @@ def test_pytorch_models(args, predictor):
     inception = models.inception_v3()
     googlenet = models.googlenet()
     shufflenet = models.shufflenet_v2_x1_0()
-    mobilenet_v2 = models.mobilenet_v2()
+    mobilenet_v2 = models.mobilenet_v2()  # noqa: F841
     resnext50_32x4d = models.resnext50_32x4d()
     wide_resnet50_2 = models.wide_resnet50_2()
     mnasnet = models.mnasnet1_0()
@@ -56,7 +56,6 @@ def test_pb_models(args, predictor):
     for model in models:
         latency = predictor.predict(model)
         print(model.split("/")[-1], latency)
-       # break
 
 
 if __name__ == "__main__":
@@ -87,7 +86,7 @@ if __name__ == "__main__":
             latency = predictor.predict(args.input_model)
             # test_onnx_models(args,predictor)
             # test_pb_models(args,predictor)
-            #test_pytorch_models(args, predictor)
+            # test_pytorch_models(args, predictor)
             print('predict latency', latency)
         else:
             raise NotImplementedError

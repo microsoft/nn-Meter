@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import networkx as nx
 from .utils import get_tensor_shape
-from .constants import *
+from .constants import SLICE_TYPE
 from itertools import chain
 import logging
 from onnx import AttributeProto, shape_inference

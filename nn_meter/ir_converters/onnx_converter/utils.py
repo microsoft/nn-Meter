@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from .constants import *
 
 
 def get_tensor_shape(tensor):

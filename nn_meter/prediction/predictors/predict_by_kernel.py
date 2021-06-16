@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import sys
-from .utils import *
-from .extract_feature import *
+from .utils import get_kernel_name
+from .extract_feature import get_predict_features
 
 
 # to speed up, we merge conv and dwconv related kernels into

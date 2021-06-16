@@ -10,3 +10,4 @@ protobuf==3.17.1
 PyYAML==5.4.1
 scikit_learn==0.24.2
 torch==1.8.1
+flake8==3.9.2

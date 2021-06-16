@@ -1,7 +1,6 @@
 import pickle
 import os
 from glob import glob
-import shutil
 from zipfile import ZipFile
 from tqdm import tqdm
 import requests
@@ -27,17 +26,17 @@ def loading_to_local(configs, hardware, dir="data/predictorzoo"):
             predictors[pname] = model
     fusionrule = ppath + "/rule_" + hardware + ".json"
     print(fusionrule)
-    if os.path.isfile(fusionrule) == False:
+    if not os.path.isfile(fusionrule):
         raise ValueError(
-            "check your fusion rule path, file " +
-            fusionrule +
-            " does not exist！")
+            "check your fusion rule path, file "
+            + fusionrule
+            + " does not exist！")
     return predictors, fusionrule
 
 
 def download_from_url(urladdr, ppath, filename):
     file_name = ppath + "/" + ".zip"
-    if os.path.isdir(ppath) == False:
+    if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
     print("download from " + urladdr)

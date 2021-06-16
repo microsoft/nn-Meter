@@ -32,6 +32,9 @@ class RuleReader:
             return self.rules[rule]["obey"]
 
     def _extract_fusible(self):
+        def get_name(i):
+            return f"{ops[i]}_{i}"
+
         self.fusible = []
         self.fusion_units = {}
         for name, rule in self.rules.items():
@@ -41,7 +44,6 @@ class RuleReader:
                     self.fusible.append((ops[0], ops[1]))
                 elif len(ops) > 2:
                     fusion_unit = {}
-                    def get_name(i): return f"{ops[i]}_{i}"
                     for i in range(0, len(ops)):
                         fusion_unit[get_name(i)] = {
                             "attr": {"type": ops[i],

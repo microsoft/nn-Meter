@@ -2,13 +2,10 @@
 # Licensed under the MIT license.
 import numpy as np
 from sklearn.metrics import mean_squared_error
-import shutil
-import json
 
 
 def get_accuracy(y_pred, y_true, threshold=0.01):
     a = (y_true - y_pred) / y_true
-    c = abs(y_true - y_pred)
     b = np.where(abs(a) <= threshold)
     return len(b[0]) / len(y_true)
 

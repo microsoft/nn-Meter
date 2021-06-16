@@ -3,7 +3,7 @@
 from nn_meter.kerneldetection.rulelib.rule_reader import RuleReader
 from nn_meter.kerneldetection.rulelib.rule_splitter import RuleSplitter
 from nn_meter.utils.graphe_tool import Graphe
-from nn_meter.kerneldetection.utils.constants import *
+from nn_meter.kerneldetection.utils.constants import DUMMY_TYPES
 from nn_meter.kerneldetection.utils.ir_tools import convert_nodes
 
 

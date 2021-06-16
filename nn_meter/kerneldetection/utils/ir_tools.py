@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import copy
-from .constants import *
+from .constants import OP_ALIAS
 
 
 def convert_nodes(graph):

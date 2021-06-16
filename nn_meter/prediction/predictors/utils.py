@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import pickle
-import os
 
 # multiple similar kernels share one kernel predictor, since the latency
 # difference is negligible

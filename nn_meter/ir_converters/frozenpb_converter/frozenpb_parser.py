@@ -2,9 +2,6 @@
 # Licensed under the MIT license.
 from .protobuf_helper import ProtobufHelper
 from .shape_fetcher import ShapeFetcher
-from tensorflow import io
-from tensorflow import gfile
-from google.protobuf import text_format
 import tensorflow as tf
 import copy
 import re
@@ -90,7 +87,6 @@ class FrozenPbParser:
                     if graph[graph_node]["attr"]["type"] == "Split" and ":" not in graph_node:
                         logging.info("Find split main node %s." % graph_node)
                         split_node_name = graph_node
-                        split_node_child = []
                         for node_name in graph.keys():
                             idx = re.findall(
                                 r"%s:(\d+)" %
@@ -196,7 +192,10 @@ class FrozenPbParser:
                     if len(node_attr) > 0:
                         logging.info("Find regex matching node %s" % node.name)
                         for attr_name in target_node.attr.keys():
-                            if attr_name == "value" and "weight" not in node.name and "BatchNorm" not in node.name and "kernel" not in node.name:
+                            if (attr_name == "value"
+                                    and "weight" not in node.name
+                                    and "BatchNorm" not in node.name
+                                    and "kernel" not in node.name):
                                 node_attr_name = attr_as_node[node.op][
                                     "attr_name"]
                                 if node_attr_name not in attr_dict.keys():
@@ -212,7 +211,10 @@ class FrozenPbParser:
                     if target_node.name == attr_as_node[node.op]["node_name"](
                             node.name):
                         for attr_name in target_node.attr.keys():
-                            if attr_name == "value" and "weight" not in node.name and "BatchNorm" not in node.name and "kernel" not in node.name:
+                            if (attr_name == "value"
+                                    and "weight" not in node.name
+                                    and "BatchNorm" not in node.name
+                                    and "kernel" not in node.name):
                                 attr_dict[attr_as_node[node.op]["attr_name"]] = copy.deepcopy(
                                     attr_as_node[node.op]["node_value"](target_node.attr[attr_name].tensor)
                                 )

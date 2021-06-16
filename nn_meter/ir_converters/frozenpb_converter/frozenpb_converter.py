@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import sys
-import os
 import numpy as np
 
 from nn_meter.utils.graphe_tool import Graphe

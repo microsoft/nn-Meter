@@ -35,11 +35,9 @@ class nnMeter:
         """
         if isinstance(model, str):
             graph = model_file_to_graph(model, model_type)
-            modelname = model.split("/")[-1].split(".")[0]
         else:
             graph = model_to_graph(model, model_type, input_shape=input_shape)
         self.kd.load_graph(graph)
 
-       # kernel_result = {modelname: self.kd.kernels}
         py = nn_predict(self.kernel_predictors, self.kd.kernels)
         return py

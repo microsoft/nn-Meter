@@ -298,10 +298,6 @@ class Graphe:
                         sub_graph.get_graph()[
                             sub_fetch_graph[op_entry]]["inbounds"])
                     dummy_op.attr["T"].type = 1
-                    # if 'graph_head' in sub_graph.get_graph()[sub_fetch_graph[op_entry]]['attr']['attr']:
-                    #     dummy_op.attr['shape'] = []
-                    #     dummy_op.attr['shape'].dim = list(map(int, sub_graph.get_graph()[sub_fetch_graph[op_entry]]['attr']['attr']['graph_head'].split(',')))
-                    # print(dummy_op)
                 else:
                     # --- Fetch the main op ---
                     node = copy.deepcopy(self.graph[op_entry]["attr"]["node"])
