@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-# multiple similar kernels share one kernel predictor, since the latency
-# difference is negligible
-
 
 def get_kernel_name(optype):
+    """
+    for many similar kernels, we use one kernel predictor since their latency difference is negligible,
+    return the kernel name via the optype
+
+    """
     if "conv" in optype and "dwconv" not in optype:
         optype = "conv-bn-relu"
     if "dwconv" in optype:

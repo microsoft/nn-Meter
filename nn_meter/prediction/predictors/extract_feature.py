@@ -11,6 +11,9 @@ def get_accuracy(y_pred, y_true, threshold=0.01):
 
 
 def lat_metrics(y_pred, y_true):
+    """
+    evaluation metrics for prediction performance
+    """
     rmspe = (np.sqrt(np.mean(np.square((y_true - y_pred) / y_true)))) * 100
     rmse = np.sqrt(mean_squared_error(y_pred, y_true))
     acc5 = get_accuracy(y_pred, y_true, threshold=0.05)
@@ -48,7 +51,9 @@ def get_flops_params(blocktype, hw, cin, cout, kernelsize, stride):
 
 
 def get_predict_features(config):
-
+    """
+    get prediction features
+    """
     mdicts = {}
     layer = 0
     for item in config:
@@ -128,7 +133,9 @@ def get_predict_features(config):
 
 
 def read_model_latency(latency_file):
-
+    """
+    read model latency csv files. It can provide the benchmarked latency, and compare with the predicted latency
+    """
     f = open(latency_file, "r")
     dicts = {}
     while True:

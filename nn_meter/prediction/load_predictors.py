@@ -7,13 +7,20 @@ import requests
 
 
 def loading_to_local(configs, hardware, dir="data/predictorzoo"):
+    """
+    @params:
+
+    configs: the default devices.yaml that describes the supported hardware+backend
+    hardware: the targeting hardware_inferenceframework name
+    dir: the local directory to store the kernel predictors and fusion rules
+
+    """
     if hardware not in configs:
         raise NotImplementedError
     ppath = dir + "/" + hardware
-    isdownloaded = check_predictors(
-        ppath, configs[hardware]["kernel_predictors"])
+    isdownloaded = check_predictors(ppath, configs[hardware]["kernel_predictors"])
     if not isdownloaded:
-        download_from_url(configs[hardware]["download"], dir, hardware)
+        download_from_url(configs[hardware]["download"], dir)
 
     # load predictors
     predictors = {}
@@ -28,13 +35,20 @@ def loading_to_local(configs, hardware, dir="data/predictorzoo"):
     print(fusionrule)
     if not os.path.isfile(fusionrule):
         raise ValueError(
-            "check your fusion rule path, file "
-            + fusionrule
-            + " does not exist！")
+            "check your fusion rule path, file " + fusionrule + " does not exist！"
+        )
     return predictors, fusionrule
 
 
-def download_from_url(urladdr, ppath, filename):
+def download_from_url(urladdr, ppath):
+    """
+    download the kernel predictors from the url
+    @params:
+
+    urladdr: github release url address
+    ppath: the targeting hardware_inferenceframework name
+
+    """
     file_name = ppath + "/" + ".zip"
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
@@ -55,7 +69,12 @@ def download_from_url(urladdr, ppath, filename):
 
 
 def check_predictors(ppath, kernel_predictors):
-    print('checking local kernel predictors at ' + ppath)
+    """
+    @params:
+
+    model: a pytorch/onnx/tensorflow model object or a str containing path to the model file
+    """
+    print("checking local kernel predictors at " + ppath)
     if os.path.isdir(ppath):
         filenames = glob(ppath + "/**.pkl")
         # check if all the pkl files are included
