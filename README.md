@@ -1,27 +1,22 @@
-# Introduction
 
->nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. 
+nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. 
 nn-Meter contains two key techniques: (i) kernel detection to automatically detect the execution unit of model inference via a set of well-designed test cases; (ii) adaptive sampling to efficiently sample the most beneficial configurations from a large space to build accurate kernel-level latency predictors.
-nn-Meter currently evaluates four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
+We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
 
 The current supported hardware and inference frameworks:
 
-| name |        Device       |    Framework   |    Processor   | +-10%  Accuracy |
-|:----:|:-------------------:|:--------------:|:--------------:|:------------------:|
-|  CPU |        Pixel4       |   TFLite v2.1  |  CortexA76 CPU |        99.0%       |
-|  GPU |         Mi9         |   TFLite v2.1  | Adreno 640 GPU |        99.1%       |
-| GPU1 |       Pixel3XL      |   TFLite v2.1  | Adreno 630 GPU |        99.0%       |
-|  VPU | Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |        83.4%       |
+| Abbr. |        Device       |    Framework   |    Processor   | +-10%  Accuracy | key in nn-Meter usage       |
+|:----:|:-------------------:|:--------------:|:--------------:|:------------------:|:-------------------:|
+|  CPU |        Pixel4       |   TFLite v2.1  |  CortexA76 CPU |        99.0%       |      **cortexA76cpu_tflite21**       | 
+|  GPU |         Mi9         |   TFLite v2.1  | Adreno 640 GPU |        99.1%       |    **adreno640gpu_tflite21**       |
+| GPU1 |       Pixel3XL      |   TFLite v2.1  | Adreno 630 GPU |        99.0%       | **adreno630gpu_tflite21**      |
+|  VPU | Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |        83.4%       | **myriadvpu_openvino2019r2** |
 
-As the maintainer of this project, please make a few updates:
-
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
 
 ## Who should consider using nn-Meter
-
+- Those who want to get the DNN inference latency on mobile and edge devices with **no deployment efforts on real devices**.
+- Those who want to run **hardware-aware NAS with [NNI](https://github.com/microsoft/nni)**.
+- Those who want to **build latency predictors for their own devices**.
 ## Installation
 
 To install nn-meter, please first install python3. The test environment uses anaconda python 3.6.10. Install the dependencies via: 
