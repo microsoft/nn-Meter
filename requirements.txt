@@ -1,0 +1,13 @@
+tensorflow==1.15.0
+numpy==1.18.5
+onnx==1.9.0
+tqdm==4.47.0
+matplotlib==2.2.2
+graphviz==0.14
+networkx==2.4
+requests==2.22.0
+protobuf==3.17.1
+PyYAML==5.4.1
+scikit_learn==0.24.2
+torch==1.8.1
+flake8==3.9.2

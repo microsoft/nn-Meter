@@ -1,0 +1,20 @@
+{
+    "bn_1": {
+        "attr": {
+            "type": "FusedBatchNorm",
+            "attr": {}
+        },
+        "inbounds": [
+        ]
+    },
+
+    "relu_2": {
+        "attr": {
+            "type": "ReLU",
+            "attr": {}
+        },
+        "inbounds": [
+            "bn_1"
+        ]
+    }
+}
