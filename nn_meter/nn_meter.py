@@ -5,6 +5,17 @@ from .kerneldetection import KernelDetector
 from .ir_converters import model_to_graph, model_file_to_graph
 from .prediction.load_predictors import loading_to_local
 
+import yaml
+import os
+
+
+def get_default_config():
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'configs/devices.yaml')
+    with open(config_path, 'r') as fp:
+        config = yaml.load(fp, yaml.FullLoader)['predictors']
+    hardware = 'cortexA76cpu_tflite21'
+    return config, hardware
+
 
 def load_latency_predictors(config, hardware):
     kernel_predictors, fusionrule = loading_to_local(config, hardware)

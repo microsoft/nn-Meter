@@ -6,6 +6,7 @@ import json
 from .onnx_converter import OnnxConverter
 from .frozenpb_converter import FrozenPbConverter
 from .torch_converter import TorchConverter
+from .torch_converter.converter import NNIIRConverter
 
 
 def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
@@ -24,6 +25,9 @@ def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
         if next(model.parameters()).is_cuda:
             args = args.to("cuda")
         converter = TorchConverter(model, args)
+        result = converter.convert()
+    elif model_type == 'nni':
+        converter = NNIIRConverter(model)
         result = converter.convert()
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
