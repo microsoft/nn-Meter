@@ -71,6 +71,8 @@ nn-meter --input_model data/testmodels/alexnet.onnx --backend TFLite-CortexA76
 Currently we support `ONNX` format (ONNX files of popular CNN models are included in [`data/testmodels`](data/testmodels)) and Tensorflow pb file.
 
 ### Hardware-aware NAS by nn-Meter and NNI
+
+#### Run multi-trial SPOS demo
 Install NNI by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation).
 
 Install nn-Meter from source code (currently we haven't released this package, so development installation is required).
@@ -84,6 +86,24 @@ Then run multi-trail SPOS demo:
 ```bash
 python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 ```
+
+#### How the demo works
+Refer to https://nni.readthedocs.io/en/stable/nas.html for how to perform NAS by NNI.
+
+To support latency-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
+
+```python
+simple_strategy = strategy.Random(model_filter=LatencyFilter(100)
+```
+
+`LatencyFilter` will predict the models' latency by using nn-Meter and filter out the models whose latency are larger than the threshold (i.e., `100` in this example).
+You can also build your own strategies and filters to support more flexible NAS such as sorting the models according to latency.
+
+Then, pass this strategy to `RetiariiExperiment` along with some additional arguments: `parse_shape=True, example_inputs=example_inputs`:
+```python
+RetiariiExperiment(base_model, trainer, [], simple_strategy, True, example_inputs)
+```
+Here, `parse_shape=True` means extracting shape info from the torch model as it is required by nn-Meter to predict latency. `example_inputs` is required for tracing shape info.
 
 ## Contributing
 
