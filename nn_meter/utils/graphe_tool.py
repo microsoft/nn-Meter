@@ -54,9 +54,10 @@ class Graphe:
 
             spare_nodes = []
             for name in self.graph.keys():
-                if len(
-                        self.graph[name]["outbounds"]) == 0 and len(
-                        self.graph[name]["inbounds"]) == 0:
+                if (
+                    len(self.graph[name]["outbounds"]) == 0
+                    and len(self.graph[name]["inbounds"]) == 0
+                ):
                     spare_nodes.append(name)
 
             if last_remove_nodes_cnt == 0 and len(spare_nodes) == 0:
@@ -206,8 +207,11 @@ class Graphe:
             dot.node(key, key)
             if "inbounds" in value.keys():
                 for node in value["inbounds"]:
-                    dot.edge(node, key, label=", ".join(str(x)
-                                                        for x in value["attr"]["output_shape"]), )
+                    dot.edge(
+                        node,
+                        key,
+                        label=", ".join(str(x) for x in value["attr"]["output_shape"]),
+                    )
         dot.render("graph.gv", view=False)
 
     def plot_networkx_graph(self):
@@ -215,10 +219,7 @@ class Graphe:
         import networkx as nx
 
         plt.subplot(121)
-        nx.draw(
-            self.get_networkx_graph(),
-            with_labels=True,
-            font_weight="bold")
+        nx.draw(self.get_networkx_graph(), with_labels=True, font_weight="bold")
         plt.show()
 
     def get_networkx_graph(self):
@@ -226,10 +227,7 @@ class Graphe:
 
         G = nx.MultiDiGraph()
         for (key, value) in self.graph.items():
-            G.add_node(
-                key,
-                type=value["attr"]["type"],
-                **value["attr"]["attr"])
+            G.add_node(key, type=value["attr"]["type"], **value["attr"]["attr"])
             if "inbounds" in value.keys():
                 for node in value["inbounds"]:
                     G.add_edge(node, key)
@@ -263,16 +261,22 @@ class Graphe:
         weight_roots = []
         weights_nodes = []
         for inbound in self.graph[layer_name]["inbounds"]:
-            if self.graph[inbound]["attr"]["type"] == "Identity" and len(
-                    self.graph[inbound]["inbounds"]) == 1:
-                if self.graph[self.graph[inbound]["inbounds"]
-                              [0]]["attr"]["type"] == "Const":
+            if (
+                self.graph[inbound]["attr"]["type"] == "Identity"
+                and len(self.graph[inbound]["inbounds"]) == 1
+            ):
+                if (
+                    self.graph[self.graph[inbound]["inbounds"][0]]["attr"]["type"]
+                    == "Const"
+                ):
                     weight_roots.append(inbound)
                     weights_nodes.append(inbound)
                     weights_nodes.append(self.graph[inbound]["inbounds"][0])
 
-            if self.graph[inbound]["attr"]["type"] == "Const" and len(
-                    self.graph[inbound]["inbounds"]) == 0:
+            if (
+                self.graph[inbound]["attr"]["type"] == "Const"
+                and len(self.graph[inbound]["inbounds"]) == 0
+            ):
                 weight_roots.append(inbound)
                 weights_nodes.append(inbound)
 
@@ -289,14 +293,16 @@ class Graphe:
 
             for op_entry in sub_fetch_graph.keys():
                 # --- Repleace dummy op ---
-                if sub_graph.get_graph()[
-                        sub_fetch_graph[op_entry]]["attr"]["type"] == "dummy":
+                if (
+                    sub_graph.get_graph()[sub_fetch_graph[op_entry]]["attr"]["type"]
+                    == "dummy"
+                ):
                     dummy_op = tar_sub_graphs[-1].node.add()
                     dummy_op.op = "Identity"
                     dummy_op.name = sub_fetch_graph[op_entry]
                     dummy_op.input.extend(
-                        sub_graph.get_graph()[
-                            sub_fetch_graph[op_entry]]["inbounds"])
+                        sub_graph.get_graph()[sub_fetch_graph[op_entry]]["inbounds"]
+                    )
                     dummy_op.attr["T"].type = 1
                 else:
                     # --- Fetch the main op ---
@@ -306,8 +312,8 @@ class Graphe:
 
                     del node.input[:]
                     node.input.extend(
-                        sub_graph.get_graph()[
-                            sub_fetch_graph[op_entry]]["inbounds"])
+                        sub_graph.get_graph()[sub_fetch_graph[op_entry]]["inbounds"]
+                    )
                     # --- Fetch the constant op ---
                     roots, nodes = self.find_weight_roots(op_entry)
                     for weight_root in roots:
@@ -315,7 +321,8 @@ class Graphe:
 
                     for weight_node in nodes:
                         tar_sub_graphs[-1].node.append(
-                            self.graph[weight_node]["attr"]["node"])
+                            self.graph[weight_node]["attr"]["node"]
+                        )
 
                     tar_sub_graphs[-1].node.append(node)
 

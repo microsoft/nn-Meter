@@ -26,7 +26,7 @@ def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
             args = args.to("cuda")
         converter = TorchConverter(model, args)
         result = converter.convert()
-    elif model_type == 'nni':
+    elif model_type == "nni":
         converter = NNIIRConverter(model)
         result = converter.convert()
     else:
@@ -35,14 +35,7 @@ def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
     return result
 
 
-def model_file_to_graph(
-    filename,
-    model_type=None,
-    input_shape=(
-        1,
-        3,
-        224,
-        224)):
+def model_file_to_graph(filename, model_type=None, input_shape=(1, 3, 224, 224)):
     """
     @params:
 

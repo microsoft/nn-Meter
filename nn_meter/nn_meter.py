@@ -10,10 +10,13 @@ import os
 
 
 def get_default_config():
-    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'configs/devices.yaml')
-    with open(config_path, 'r') as fp:
-        config = yaml.load(fp, yaml.FullLoader)['predictors']
-    hardware = 'cortexA76cpu_tflite21'
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "configs/devices.yaml",
+    )
+    with open(config_path, "r") as fp:
+        config = yaml.load(fp, yaml.FullLoader)["predictors"]
+    hardware = "cortexA76cpu_tflite21"
     return config, hardware
 
 
@@ -23,6 +26,16 @@ def load_latency_predictors(config, hardware):
     return nnmeter
 
 
+def list_latency_predictors():
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "configs/devices.yaml",
+    )
+    with open(config_path, "r") as fp:
+        config = yaml.load(fp, yaml.FullLoader)["predictors"]
+    print("supported hardware platforms:", config.keys())
+
+
 class nnMeter:
     def __init__(self, predictors, fusionrule):
         self.kernel_predictors = predictors
@@ -30,15 +43,8 @@ class nnMeter:
         self.kd = KernelDetector(self.fusionrule)
 
     def predict(
-            self,
-            model,
-            model_type=None,
-            input_shape=(
-                1,
-                3,
-                224,
-                224),
-            modelname="test"):
+        self, model, model_type=None, input_shape=(1, 3, 224, 224), modelname="test"
+    ):
         """
         @params:
 

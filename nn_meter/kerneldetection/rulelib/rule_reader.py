@@ -46,13 +46,14 @@ class RuleReader:
                     fusion_unit = {}
                     for i in range(0, len(ops)):
                         fusion_unit[get_name(i)] = {
-                            "attr": {"type": ops[i],
-                                     "attr": {}, },
-                            "inbounds": [get_name(i - 1)] if i > 0 else[],
-                            "outbounds": [get_name(i + 1)]
-                            if i < len(ops) - 1 else[], }
-                    self.fusion_units["-".join(ops)
-                                      ] = [Graphe(graph=fusion_unit)]
+                            "attr": {
+                                "type": ops[i],
+                                "attr": {},
+                            },
+                            "inbounds": [get_name(i - 1)] if i > 0 else [],
+                            "outbounds": [get_name(i + 1)] if i < len(ops) - 1 else [],
+                        }
+                    self.fusion_units["-".join(ops)] = [Graphe(graph=fusion_unit)]
 
     def _parse_multiop_block(self):
         for block in self.multiop_blocks:

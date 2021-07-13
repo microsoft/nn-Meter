@@ -13,8 +13,7 @@ class RuleSplitter:
     def fuse_multiop_blocks(self, graph: Graphe):
         for type, blocks in self.rule_reader.fusion_units.items():
             for block in blocks:
-                subgraphs = graph.find_subgraphs(
-                    block, MatchHelper.op_type_matcher)
+                subgraphs = graph.find_subgraphs(block, MatchHelper.op_type_matcher)
                 for subgraph in subgraphs:
                     graph.fuse(subgraph.keys(), type)
 

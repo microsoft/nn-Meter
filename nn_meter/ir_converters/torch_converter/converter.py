@@ -29,42 +29,42 @@ class NNIIRConverter:
 
         for node in self.ir_model.root_graph.hidden_nodes:
             node_dict = {
-                'attr': {
-                    'attr': {
+                "attr": {
+                    "attr": {
                         k: v
                         for k, v in node.operation.parameters.items()
-                        if k not in ['input_shape', 'output_shape']
+                        if k not in ["input_shape", "output_shape"]
                     },
-                    'input_shape': node.operation.parameters['input_shape'],
-                    'output_shape': node.operation.parameters['output_shape'],
-                    'type': node.operation.type,
+                    "input_shape": node.operation.parameters["input_shape"],
+                    "output_shape": node.operation.parameters["output_shape"],
+                    "type": node.operation.type,
                 },
-                'inbounds': [],
-                'outbounds': [],
+                "inbounds": [],
+                "outbounds": [],
             }
 
             incoming_edges = sorted(node.incoming_edges, key=lambda e: e.tail_slot or 0)
             for edge in incoming_edges:
-                node_dict['inbounds'].append(edge.head.name)
+                node_dict["inbounds"].append(edge.head.name)
 
             outgoing_edges = sorted(node.outgoing_edges, key=lambda e: e.head_slot or 0)
             for edge in outgoing_edges:
-                node_dict['outbounds'].append(edge.tail.name)
+                node_dict["outbounds"].append(edge.tail.name)
 
             graphe[node.name] = node_dict
 
         return graphe
 
     def _map_opset(self, node):
-        old_type = node['attr']['type']
+        old_type = node["attr"]["type"]
         new_type = nni_type_map.get(old_type, old_type)
 
         new_attr_dict = {}
-        for attr_name, attr_value in node['attr']['attr'].items():
+        for attr_name, attr_value in node["attr"]["attr"].items():
             new_attr_name = attr_name
             new_attr_value = attr_value
             for type, attr_map in nni_attr_map.items():
-                if type == '__all__' or type == new_type:
+                if type == "__all__" or type == new_type:
                     if attr_name in attr_map:
                         new_attr_name, modifier = attr_map[attr_name]
                         if modifier is not None:
@@ -72,12 +72,12 @@ class NNIIRConverter:
 
             new_attr_dict[new_attr_name] = new_attr_value
 
-        node['attr']['type'] = new_type
-        node['attr']['attr'] = new_attr_dict
+        node["attr"]["type"] = new_type
+        node["attr"]["attr"] = new_attr_dict
 
     def _remove_unshaped_nodes(self, graphe):
         for node_name, node_dict in list(graphe.items()):
-            if not node_dict['attr']['input_shape']:
+            if not node_dict["attr"]["input_shape"]:
                 del graphe[node_name]
 
 
@@ -89,7 +89,9 @@ class NNIBasedTorchConverter(NNIIRConverter):
         # PyTorch module to NNI IR
         script_module = torch.jit.script(model)
         converter = GraphConverterWithShape()
-        ir_model = convert_to_graph(script_module, model, converter, example_inputs=example_inputs)
+        ir_model = convert_to_graph(
+            script_module, model, converter, example_inputs=example_inputs
+        )
 
         super().__init__(ir_model)
 

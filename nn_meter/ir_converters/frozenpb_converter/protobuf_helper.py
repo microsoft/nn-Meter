@@ -78,8 +78,10 @@ class ProtobufHelper:
         if node["attr"]["type"] in NODE_WEIGHT_LUT.keys():
             for lut_lamba in NODE_WEIGHT_LUT[node["attr"]["type"]]:
                 weight_op = lut_lamba(node["attr"]["name"])
-                if weight_op in graph.keys(
-                ) and graph[weight_op]["attr"]["type"] != "Identity":
+                if (
+                    weight_op in graph.keys()
+                    and graph[weight_op]["attr"]["type"] != "Identity"
+                ):
                     logging.info(
                         "Find node %s with its weight op %s."
                         % (node["attr"]["name"], weight_op)
