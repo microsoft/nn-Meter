@@ -23,47 +23,47 @@ class RuleSplitter:
         Apply rules to graph
         """
         self.preprocess(graph)
-        fag = FusionAwareGraph(graph)
+        fusion_graph = FusionAwareGraph(graph)
 
         i = -1
-        while i < len(fag) - 1:
+        while i < len(fusion_graph) - 1:
             i += 1
-            if fag.is_fused(i):
+            if fusion_graph.is_fused(i):
                 continue
-            fag.mark_ready(i)
-            if not fag.get_outbounds(i):
+            fusion_graph.mark_ready(i)
+            if not fusion_graph.get_outbounds(i):
                 continue
             # MON
             mon = self.rule_reader.query_rule("MON")
             if mon == 0:  # can't fuse if having multiple out node
-                if len(fag.get_outbounds(i)) > 1:
+                if len(fusion_graph.get_outbounds(i)) > 1:
                     continue
             # FN: TODO: which one is the first node
             fused = False
-            for j in fag.get_outbounds(i):
-                if fag.is_fused(j):
+            for j in fusion_graph.get_outbounds(i):
+                if fusion_graph.is_fused(j):
                     continue
-                outnode_type = fag.get_type(j)
-                node_type = fag.get_type(i)
+                outnode_type = fusion_graph.get_type(j)
+                node_type = fusion_graph.get_type(i)
                 if not self.rule_reader.is_fusible(node_type, outnode_type):
                     continue
                 # RT
                 if self.rule_reader.query_rule("RT"):
-                    if not fag.is_ready(j):
+                    if not fusion_graph.is_ready(j):
                         continue
                 # fuse node
                 if mon == 0:
-                    fag.fuse(i, j)
+                    fusion_graph.fuse(i, j)
                 else:
-                    fag.fuse(i, j, True)
-                fag.mark_ready(j)
+                    fusion_graph.fuse(i, j, True)
+                fusion_graph.mark_ready(j)
                 fused = True
                 if mon == 1:  # only fused to first outnode
                     break
             if fused:
                 i -= 1
 
-        return fag.get_basicblocks()
+        return fusion_graph.get_basicblocks()
 
     def preprocess(self, graph: Graphe):
         self.fuse_multiop_blocks(graph)

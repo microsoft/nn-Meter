@@ -104,8 +104,8 @@ if __name__ == "__main__":
         if args.hardware in config:
             print(config)
             predictor = load_latency_predictors(config, args.hardware)
-            # latency = predictor.predict(args.input_model)
-            # print('predict latency', latency)
+            #latency = predictor.predict(args.input_model)
+            #print('predict latency', latency)
             # test_pb_models(args,predictor)
             #  test_onnx_models(args,predictor)
             # test_pytorch_models(args,predictor)
