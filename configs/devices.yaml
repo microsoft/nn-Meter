@@ -18,7 +18,7 @@ predictors:
         - bnrelu
         - channelshuffle
         - concat
-      download: https://github.com/Lynazhang/nnmeter/releases/download/version1.0/cortexA76cpu_tflite21.zip
+      download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/cortexA76cpu_tflite21.zip
   
     adreno640gpu_tflite21:
       version: 1.0 
@@ -33,7 +33,7 @@ predictors:
         - bn
         - bnrelu
         - concat
-      download: https://github.com/Lynazhang/nnmeter/releases/download/version1.0/adreno640gpu_tflite21.zip
+      download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/adreno640gpu_tflite21.zip
     
     adreno630gpu_tflite21:
       version: 1.0 
@@ -48,7 +48,7 @@ predictors:
         - bn
         - bnrelu
         - concat
-      download: https://github.com/Lynazhang/nnmeter/releases/download/version1.0/adreno630gpu_tflite21.zip
+      download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/adreno630gpu_tflite21.zip
     
     myriadvpu_openvino2019r2:
       version: 1.0 
@@ -65,4 +65,4 @@ predictors:
         - bn
         - bnrelu
         - channelshuffle
-      download: https://github.com/Lynazhang/nnmeter/releases/download/version1.0/myriadvpu_openvino2019r2.zip
+      download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/myriadvpu_openvino2019r2.zip

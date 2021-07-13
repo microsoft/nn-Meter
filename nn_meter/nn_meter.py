@@ -48,6 +48,7 @@ class nnMeter:
             graph = model_file_to_graph(model, model_type)
         else:
             graph = model_to_graph(model, model_type, input_shape=input_shape)
+        print(graph)
         self.kd.load_graph(graph)
 
         py = nn_predict(self.kernel_predictors, self.kd.kernels)
