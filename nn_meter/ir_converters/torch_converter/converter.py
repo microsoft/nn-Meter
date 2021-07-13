@@ -3,15 +3,14 @@ import onnx
 import tempfile
 from nn_meter.ir_converters.onnx_converter import OnnxConverter
 
-from nni.retiarii.converter import convert_to_graph
-from nni.retiarii.converter.graph_gen import GraphConverterWithShape
-from nni.retiarii.graph import Model
 
 from .opset_map import nni_attr_map, nni_type_map
 
 
 class NNIIRConverter:
-    def __init__(self, ir_model: Model):
+    def __init__(self, ir_model):
+        from nni.retiarii.converter.graph_gen import GraphConverterWithShape
+
         self.ir_model = ir_model.fork()
         GraphConverterWithShape().flatten(self.ir_model)
 
@@ -84,6 +83,9 @@ class NNIIRConverter:
 
 class NNIBasedTorchConverter(NNIIRConverter):
     def __init__(self, model, example_inputs):
+        from nni.retiarii.converter import convert_to_graph
+        from nni.retiarii.converter.graph_gen import GraphConverterWithShape
+
         # PyTorch module to NNI IR
         script_module = torch.jit.script(model)
         converter = GraphConverterWithShape()
