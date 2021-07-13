@@ -23,7 +23,6 @@ nni_attr_map = {
         'stride': ('strides', int_to_list_modifier),
     },
     'concat': {
-        'dim': ('axis', None)
+        'dim': ('axis', None),
     },
 }
-
