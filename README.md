@@ -24,8 +24,15 @@ To install nn-meter, please first install python3. The test environment uses ana
 Please also check the versions of numpy, scikit_learn. The different versions may change the prediction accuracy of kernel predictors.
 
 ## Usage
+### Supported input model format
 
-### Run nn-Meter demo
+| name |        format       |
+|:----:|:-------------------:|
+|  Tensorflow |        .pb     |  
+|  Onnx |         .onnx         | 
+| nnmeter IR graph  |       .json     |
+|  NNI IR graph | .json |
+### To predict a single model: Run nn-Meter demo
 To predict the latency for a CNN model on a hardware, users can run the following command with two hyper-parameters:
 ```
 python demo.py --config configs/devices.yaml --input_model data/testmodels/alexnet_0.pb --hardware cortexA76cpu_tflite21
@@ -44,31 +51,22 @@ nn-Meter currently supports prediction on the following four config:
 For the input model file, you can find any example provided under the `data/testmodels`
 
 
-
-
-### Predict inference latency (to be implemented)
-nn-Meter could be seamlessly integrated with existing `PyTorch` codes to predict the inference latency of an `torch.nn.Module` object.
+### Import nn-Meter in your python code
 ```python
 from nn_meter import load_latency_predictor
 
-predictor = load_lat_predictor(backend='TFLite-CortexA76') # case insensitive in backend
+predictor = load_lat_predictor(config, hardware_name) # case insensitive in backend
 
 # build your model here
 model = ... # model is instance of torch.nn.Module
 
 lat = predictor.predict(model)
 ```
-By calling `load_latency_predictor`, user selects the target backend (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/predictors`. If the predictor file doesn't exist, it will download from the Github repo.
+By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `data/predictorzoo`. If the predictor file doesn't exist, it will download from the Github release.
 
-Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `~/.nn_meter/config.json`.
+Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `configs/device.yaml`.
 
-### Use nn-Meter in commands (to do)
-To predict the latency for saved models, users could also use the nn-Meter command like
 
-```bash
-nn-meter --input_model data/testmodels/alexnet.onnx --backend TFLite-CortexA76
-```
-Currently we support `ONNX` format (ONNX files of popular CNN models are included in [`data/testmodels`](data/testmodels)) and Tensorflow pb file.
 
 ### Hardware-aware NAS by nn-Meter and NNI
 
