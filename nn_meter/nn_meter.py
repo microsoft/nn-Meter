@@ -30,6 +30,7 @@ def load_latency_predictors(config, hardware):
     return nnmeter
 
 
+
 def list_latency_predictors():
     """ return the list of latency predictors specified in ~/.nn_meter/predictors
     """
