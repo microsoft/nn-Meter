@@ -6,6 +6,7 @@ DUMMY_TYPES = [
     "Placeholder",
 ]
 
+# TODO: Refactor opset map. Should be moved to corresponding module.
 OP_ALIAS = {
     # Tensorflow
     "Relu6": "relu",
