@@ -7,6 +7,15 @@ from nn_meter.ir_converters.onnx_converter import OnnxConverter
 from .opset_map import nni_attr_map, nni_type_map
 
 
+def _nchw_to_nhwc(shapes):
+    return [
+        [shape[0], shape[2], shape[3], shape[1]]
+        if len(shape) == 4
+        else shape
+        for shape in shapes
+    ]
+
+
 class NNIIRConverter:
     def __init__(self, ir_model):
         from nni.retiarii.converter.graph_gen import GraphConverterWithShape
@@ -35,8 +44,8 @@ class NNIIRConverter:
                         for k, v in node.operation.parameters.items()
                         if k not in ["input_shape", "output_shape"]
                     },
-                    "input_shape": node.operation.parameters["input_shape"],
-                    "output_shape": node.operation.parameters["output_shape"],
+                    "input_shape": _nchw_to_nhwc(node.operation.parameters["input_shape"]),
+                    "output_shape": _nchw_to_nhwc(node.operation.parameters["output_shape"]),
                     "type": node.operation.type,
                 },
                 "inbounds": [],
