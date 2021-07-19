@@ -6,32 +6,33 @@ from tqdm import tqdm
 import requests
 
 
-def loading_to_local(configs, hardware, dir="data/predictorzoo"):
+def loading_to_local(pred_info, dir="data/predictorzoo"):
     """
     @params:
 
-    configs: the default devices.yaml that describes the supported hardware+backend
+    configs: the default predictor.yaml that describes the supported hardware+backend
     hardware: the targeting hardware_inferenceframework name
     dir: the local directory to store the kernel predictors and fusion rules
 
     """
-    if hardware not in configs:
-        raise NotImplementedError
-    ppath = dir + "/" + hardware
-    isdownloaded = check_predictors(ppath, configs[hardware]["kernel_predictors"])
+    os.makedirs(dir, exist_ok=True)
+    hardware = pred_info['name']
+    ppath = os.path.join(dir, hardware)
+
+    isdownloaded = check_predictors(ppath, pred_info["kernel_predictors"])
     if not isdownloaded:
-        download_from_url(configs[hardware]["download"], dir)
+        download_from_url(pred_info["download"], dir)
 
     # load predictors
     predictors = {}
-    ps = glob(ppath + "/**.pkl")
+    ps = glob(os.path.join(ppath, "**.pkl"))
     for p in ps:
-        pname = p.split("/")[-1].replace(".pkl", "")
+        pname =  os.path.basename(p).replace(".pkl", "")
         with open(p, "rb") as f:
             print("load predictor", p)
             model = pickle.load(f)
             predictors[pname] = model
-    fusionrule = ppath + "/rule_" + hardware + ".json"
+    fusionrule = os.path.join(ppath, "rule_" + hardware + ".json")
     print(fusionrule)
     if not os.path.isfile(fusionrule):
         raise ValueError(
@@ -49,7 +50,8 @@ def download_from_url(urladdr, ppath):
     ppath: the targeting hardware_inferenceframework name
 
     """
-    file_name = ppath + "/" + ".zip"
+    print('downloading from url: urladdr: {}, ppath: {} '.format(urladdr, ppath))
+    file_name = os.path.join(ppath, ".zip")
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
@@ -64,6 +66,7 @@ def download_from_url(urladdr, ppath):
             file.write(data)
     zipfile = ZipFile(file_name)
     zipfile.extractall(path=ppath)
+    zipfile.close() 
     progress_bar.close()
     os.remove(file_name)
 
@@ -76,10 +79,10 @@ def check_predictors(ppath, kernel_predictors):
     """
     print("checking local kernel predictors at " + ppath)
     if os.path.isdir(ppath):
-        filenames = glob(ppath + "/**.pkl")
+        filenames = glob(os.path.join(ppath, "**.pkl"))
         # check if all the pkl files are included
         for kp in kernel_predictors:
-            fullpath = ppath + "/" + kp + ".pkl"
+            fullpath = os.path.join(ppath, kp + ".pkl")
             if fullpath not in filenames:
                 return False
         return True

@@ -12,7 +12,8 @@ import pkg_resources
 from shutil import copyfile
 
 
-__user_config_folder__ = os.path.expanduser('~/.nn_meter')
+__user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
+__user_data_folder__ = os.path.expanduser('~/.nn_meter/data')
 
 
 def create_user_configs():
@@ -24,11 +25,10 @@ def create_user_configs():
         copyfile(pkg_resources.resource_filename(__name__, f'configs/{f}'), os.path.join(__user_config_folder__, f))
 
 
-def load_latency_predictors(config, hardware):
-    kernel_predictors, fusionrule = loading_to_local(config, hardware)
+def load_latency_predictors(pred_info):
+    kernel_predictors, fusionrule = loading_to_local(pred_info, __user_data_folder__)
     nnmeter = nnMeter(kernel_predictors, fusionrule)
     return nnmeter
-
 
 
 def list_latency_predictors():

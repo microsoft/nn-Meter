@@ -92,24 +92,31 @@ if __name__ == "__main__":
         "--hardware", type=str, default="cortexA76cpu_tflite21", help="target hardware"
     )
     parser.add_argument(
+        "--predictor_version",
+        type=str,
+        default=None,
+        help="the version of the latency predictor, default to be None given the version is unique now",
+    )
+    parser.add_argument(
         "--config",
         type=str,
-        default="configs/devices.yaml",
+        default="nn_meter/configs/predictors.yaml",
         help="config file to store current supported edge platform",
     )
     args = parser.parse_args()
 
     with open(args.config) as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)["predictors"]
-        if args.hardware in config:
-            print(config)
-            predictor = load_latency_predictors(config, args.hardware)
+        config = yaml.load(file, Loader=yaml.FullLoader)
+        pred_info = [p for p in config if p['name'] == args.hardware and (args.predictor_version is None or p['version'] == args.predictor_version)]
+        if len(pred_info) == 1:
+            predictor = load_latency_predictors(*pred_info)
             latency = predictor.predict(args.input_model)
             print("predict latency", latency)
             # test_pb_models(args,predictor)
             #  test_onnx_models(args,predictor)
             # test_pytorch_models(args,predictor)
             # test_ir_graphs(args, predictor)
-
+        elif len(pred_info) > 1:
+            print() # Jiahang: warning or error?
         else:
             raise NotImplementedError
