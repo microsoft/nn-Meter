@@ -1,12 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from nn_meter.utils.utils import try_import_torchvision_models
-<<<<<<< HEAD
-from nn_meter import load_predictor_config, load_latency_predictors
-=======
 from nn_meter import load_latency_predictor
-import yaml
->>>>>>> 52bfa50decd5440281db743fedc65a552eeae754
 import argparse
 import os
 import logging
@@ -90,23 +85,10 @@ def test_pytorch_models(args, predictor):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("predict model latency on device")
     parser.add_argument(
-<<<<<<< HEAD
         "--predictor", 
         type=str, 
         required=True, 
         help="name of target predictor (hardware)",
-=======
-        "--input_model",
-        type=str,
-        required=True,
-        help="Path to input model. ONNX, FrozenPB or JSON",
-    )
-    parser.add_argument(
-        "--predictor",
-        type=str,
-        required=True,
-        help="name of target predictor (hardware)"
->>>>>>> 52bfa50decd5440281db743fedc65a552eeae754
     )
     parser.add_argument(
         "--predictor-version",
@@ -152,12 +134,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-<<<<<<< HEAD
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
 
-    pred_info = load_predictor_config(args.config, args.predictor, args.predictor_version)
-    predictor = load_latency_predictors(pred_info)
+    predictor = load_latency_predictor(args.predictor, args.predictor_version)
     if args.tensorflow:
         input_model, model_type = args.tensorflow, "pb"
     elif args.onnx:
@@ -169,8 +149,3 @@ if __name__ == "__main__":
     
     latency = predictor.predict(input_model, model_type)
     logging.info('predict latency: %f' % latency)
-=======
-    predictor = load_latency_predictor(args.predictor, args.predictor_version)
-    latency = predictor.predict(args.input_model)
-    print('predict latency', latency)
->>>>>>> 52bfa50decd5440281db743fedc65a552eeae754
