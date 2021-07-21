@@ -50,7 +50,6 @@ def download_from_url(urladdr, ppath):
     ppath: the targeting hardware_inferenceframework name
 
     """
-    print('downloading from url: urladdr: {}, ppath: {} '.format(urladdr, ppath))
     file_name = os.path.join(ppath, ".zip")
     if not os.path.isdir(ppath):
         os.makedirs(ppath)

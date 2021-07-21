@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+from nn_meter.utils.utils import try_import_tensorflow
 from .protobuf_helper import ProtobufHelper
 from .shape_fetcher import ShapeFetcher
-import tensorflow as tf
 import copy
 import re
 import logging
@@ -12,6 +12,7 @@ logging = logging.getLogger(__name__)
 
 class FrozenPbParser:
     def __init__(self, pb_file):
+        tf = try_import_tensorflow()
         f = open(pb_file, "rb")
         graph = tf.GraphDef()
         graph.ParseFromString(f.read())

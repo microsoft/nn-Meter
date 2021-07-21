@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter import load_latency_predictors
+from nn_meter.utils.utils import try_import_torchvision_models
+from nn_meter import load_predictor_config, load_latency_predictors
 import yaml
 import argparse
 
@@ -46,7 +47,7 @@ def test_onnx_models(args, predictor):
 
 def test_pytorch_models(args, predictor):
     # will remove this to examples once we have the pip package
-    import torchvision.models as models
+    models = try_import_torchvision_models()
 
     resnet18 = models.resnet18()
     alexnet = models.alexnet()
@@ -89,13 +90,16 @@ if __name__ == "__main__":
         help="Path to input model. ONNX, FrozenPB or JSON",
     )
     parser.add_argument(
-        "--hardware", type=str, default="cortexA76cpu_tflite21", help="target hardware"
+        "--predictor", 
+        type=str, 
+        required=True, 
+        help="name of target predictor (hardware)"
     )
     parser.add_argument(
-        "--predictor_version",
+        "--predictor-version",
         type=str,
         default=None,
-        help="the version of the latency predictor, default to be None given the version is unique now",
+        help="the version of the latency predictor (If not specified, use the lateast version)",
     )
     parser.add_argument(
         "--config",
@@ -105,18 +109,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    with open(args.config) as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
-        pred_info = [p for p in config if p['name'] == args.hardware and (args.predictor_version is None or p['version'] == args.predictor_version)]
-        if len(pred_info) == 1:
-            predictor = load_latency_predictors(*pred_info)
-            latency = predictor.predict(args.input_model)
-            print("predict latency", latency)
-            # test_pb_models(args,predictor)
-            #  test_onnx_models(args,predictor)
-            # test_pytorch_models(args,predictor)
-            # test_ir_graphs(args, predictor)
-        elif len(pred_info) > 1:
-            print() # Jiahang: warning or error?
-        else:
-            raise NotImplementedError
+    pred_info = load_predictor_config(args.config, args.predictor, args.predictor_version)
+    predictor = load_latency_predictors(pred_info)
+    latency = predictor.predict(args.input_model)
+    print('predict latency', latency)

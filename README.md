@@ -75,9 +75,9 @@ model = ... # model is instance of torch.nn.Module
 
 lat = predictor.predict(model)
 ```
-By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `data/predictorzoo`. If the predictor file doesn't exist, it will download from the Github release.
+By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/data`. If the predictor file doesn't exist, it will download from the Github release.
 
-Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `configs/device.yaml`.
+Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `nn_meter/configs/predictors.yaml`.
 
 
 

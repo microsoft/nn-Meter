@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import onnx
-import torch
 import json
+from nn_meter.utils.utils import try_import_onnx, try_import_torch
 from .onnx_converter import OnnxConverter
 from .frozenpb_converter import FrozenPbConverter
 from .torch_converter import TorchConverter
@@ -21,6 +20,7 @@ def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
     elif model_type == "pb":
         raise NotImplementedError
     elif model_type == "torch":
+        torch = try_import_torch()
         args = torch.randn(*input_shape)
         if next(model.parameters()).is_cuda:
             args = args.to("cuda")
@@ -54,6 +54,7 @@ def model_file_to_graph(filename, model_type=None, input_shape=(1, 3, 224, 224))
             raise ValueError(f"Unknown file type: {filename}")
 
     if model_type == "onnx":
+        onnx = try_import_onnx()
         model = onnx.load(filename)
         return model_to_graph(model, model_type)
     elif model_type == "pb":
@@ -63,6 +64,7 @@ def model_file_to_graph(filename, model_type=None, input_shape=(1, 3, 224, 224))
         with open(filename, "r") as fp:
             return json.load(fp)
     elif model_type == "torch":
+        torch = try_import_torch()
         model = torch.load(filename)
         return model_to_graph(model, model_type, input_shape)
     else:
