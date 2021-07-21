@@ -85,6 +85,12 @@ def test_pytorch_models(args, predictor):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("predict model latency on device")
     parser.add_argument(
+        '--list-predictors',
+        help='list all supported predictors',
+        action='store_true',
+        default=False
+    )
+    parser.add_argument(
         "--predictor", 
         type=str, 
         required=True, 
@@ -106,25 +112,21 @@ if __name__ == "__main__":
     group.add_argument(
         "--tensorflow",
         type=str,
-        # required=True,
         help="Path to input Tensorflow model (*.pb)"
     )
     group.add_argument(
         "--onnx",
         type=str,
-        # required=True,
         help="Path to input ONNX model (*.onnx)"
     )
     group.add_argument(
         "--nn-meter-ir",
         type=str,
-        # required=True,
         help="Path to input nn-Meter IR model (*.json)"
     )
     group.add_argument(
         "--nni-ir",
         type=str,
-        # required=True,
         help="Path to input NNI IR model (*.json)"
     )
     parser.add_argument(
@@ -135,9 +137,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
+    else:
+        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
-    predictor = load_latency_predictor(args.predictor, args.predictor_version)
     if args.tensorflow:
         input_model, model_type = args.tensorflow, "pb"
     elif args.onnx:
@@ -146,6 +149,7 @@ if __name__ == "__main__":
         input_model, model_type = args.nn_meter_ir, "json"
     elif args.nni_ir:
         input_model, model_type = args.nni_ir, "json"
-    
+        
+    predictor = load_latency_predictor(args.predictor, args.predictor_version)
     latency = predictor.predict(input_model, model_type)
     logging.info('predict latency: %f' % latency)

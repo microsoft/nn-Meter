@@ -56,6 +56,7 @@ def load_predictor_config(predictor_name: str, predictor_version: str):
     """load predictor config according to name and version
     """
     config = load_config_file(__predictors_cfg_filename__)
+    predictor_version = float(predictor_version) if predictor_version else None
     preds_info = [p for p in config if p['name'] == predictor_name and (predictor_version is None or p['version'] == predictor_version)]
     n_preds = len(preds_info)
     if n_preds == 1:
@@ -115,12 +116,6 @@ def nn_meter_cli():
         default=False
     )
     parser.add_argument(
-        "--input_model",
-        type=str,
-        required=True,
-        help="Path to input model. ONNX, FrozenPB or JSON",
-    )
-    parser.add_argument(
         "--predictor",
         type=str,
         required=True,
@@ -131,6 +126,32 @@ def nn_meter_cli():
         help="the version of the latency predictor (If not specified, use the lateast version)",
         default=None
     )
+    group = parser.add_mutually_exclusive_group() # Jiahang: can't handle model_type == "torch" now.
+    group.add_argument(
+        "--tensorflow",
+        type=str,
+        help="Path to input Tensorflow model (*.pb)"
+    )
+    group.add_argument(
+        "--onnx",
+        type=str,
+        help="Path to input ONNX model (*.onnx)"
+    )
+    group.add_argument(
+        "--nn-meter-ir",
+        type=str,
+        help="Path to input nn-Meter IR model (*.json)"
+    )
+    group.add_argument(
+        "--nni-ir",
+        type=str,
+        help="Path to input NNI IR model (*.json)"
+    )
+    parser.add_argument(
+        "-v", "--verbose", 
+        help="increase output verbosity",
+        action="store_true"
+    )
     args = parser.parse_args()
 
     if args.list_predictors:
@@ -140,6 +161,20 @@ def nn_meter_cli():
             logging.info(f"{p['name']}: version={p['version']}")
         return
 
+    if args.verbose:
+        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
+    else:
+        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+
+    if args.tensorflow:
+        input_model, model_type = args.tensorflow, "pb"
+    elif args.onnx:
+        input_model, model_type = args.onnx, "onnx"
+    elif args.nn_meter_ir:
+        input_model, model_type = args.nn_meter_ir, "json"
+    elif args.nni_ir:
+        input_model, model_type = args.nni_ir, "json"
+
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
-    latency = predictor.predict(args.input_model)
-    logging.info('predict latency', latency)
+    latency = predictor.predict(input_model, model_type)
+    logging.info('predict latency: %f' % latency)
