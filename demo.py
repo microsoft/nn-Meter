@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from nn_meter.utils.utils import try_import_torchvision_models
-from nn_meter import load_predictor_config, load_latency_predictors
+from nn_meter import load_latency_predictor
 import yaml
 import argparse
 
@@ -90,9 +90,9 @@ if __name__ == "__main__":
         help="Path to input model. ONNX, FrozenPB or JSON",
     )
     parser.add_argument(
-        "--predictor", 
-        type=str, 
-        required=True, 
+        "--predictor",
+        type=str,
+        required=True,
         help="name of target predictor (hardware)"
     )
     parser.add_argument(
@@ -109,7 +109,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    pred_info = load_predictor_config(args.config, args.predictor, args.predictor_version)
-    predictor = load_latency_predictors(pred_info)
+    predictor = load_latency_predictor(args.predictor, args.predictor_version)
     latency = predictor.predict(args.input_model)
     print('predict latency', latency)
