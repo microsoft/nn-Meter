@@ -66,10 +66,10 @@ def load_predictor_config(predictor_name: str, predictor_version: str):
             if version.parse(preds_info[i]['version']) > latest_version:
                 latest_version = version.parse(preds_info[i]['version'])
                 latest_version_idx = i
-        print(f'WARNING: There are multiple version for {predictor}, use the latest one ({str(latest_version)})')
+        print(f'WARNING: There are multiple version for {predictor_name}, use the latest one ({str(latest_version)})')
         return preds_info[latest_version_idx]
     else:
-        raise NotImplementedError('No predictor that meet the required version, please try again.')
+        raise NotImplementedError('No predictor that meets the required name and version, please try again.')
 
 
 def load_latency_predictor(predictor_name: str, predictor_version: str):
