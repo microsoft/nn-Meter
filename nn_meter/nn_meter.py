@@ -48,6 +48,7 @@ def list_latency_predictors():
 def load_predictor_config(config, predictor, predictor_version):
     with open(config) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
+        predictor_version = float(predictor_version) if predictor_version else None
         preds_info = [p for p in config if p['name'] == predictor and (predictor_version is None or p['version'] == predictor_version)]
         n_preds = len(preds_info)
         if n_preds == 1:
@@ -62,7 +63,7 @@ def load_predictor_config(config, predictor, predictor_version):
             print(f'WARNING: There are multiple version for {predictor}, use the latest one ({str(latest_version)})')
             return preds_info[latest_version_idx]
         else:
-            raise NotImplementedError('No predictor that meet your requirement, please try again.')
+            raise NotImplementedError('No predictor that meet the required version, please try again.')
 
 
 class nnMeter:
