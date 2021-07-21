@@ -11,6 +11,7 @@ import argparse
 import pkg_resources
 from shutil import copyfile
 from packaging import version
+import logging
 
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
@@ -40,7 +41,7 @@ def list_latency_predictors():
         with open(fn_pred) as fp:
             return yaml.load(fp, yaml.FullLoader)
     except FileNotFoundError:
-        print(f"config file {fn_pred} not found, created")
+        logging.debug(f"config file {fn_pred} not found, created")
         create_user_configs()
         return list_latency_predictors()
 
@@ -60,7 +61,7 @@ def load_predictor_config(config, predictor, predictor_version):
                 if version.parse(preds_info[i]['version']) > latest_version:
                     latest_version = version.parse(preds_info[i]['version'])
                     latest_version_idx = i
-            print(f'WARNING: There are multiple version for {predictor}, use the latest one ({str(latest_version)})')
+            logging.warning(f'There are multiple version for {predictor}, use the latest one ({str(latest_version)})')
             return preds_info[latest_version_idx]
         else:
             raise NotImplementedError('No predictor that meet the required version, please try again.')
@@ -84,7 +85,7 @@ class nnMeter:
             graph = model_file_to_graph(model, model_type)
         else:
             graph = model_to_graph(model, model_type, input_shape=input_shape)
-       # print(graph)
+        # logging.debug(graph)
         self.kd.load_graph(graph)
 
         py = nn_predict(self.kernel_predictors, self.kd.kernels)
@@ -120,12 +121,12 @@ def nn_meter_cli():
 
     if args.list_predictors:
         preds = list_latency_predictors()
-        print("Supported latency predictors:")
+        logging.info("Supported latency predictors:")
         for p in preds:
-            print(f"{p['name']}: version={p['version']}")
+            logging.info(f"{p['name']}: version={p['version']}")
         return
 
     pred_info = load_predictor_config(args.config, args.predictor, args.predictor_version)
     predictor = load_latency_predictors(pred_info)
     latency = predictor.predict(args.input_model)
-    print('predict latency', latency)
+    logging.info('predict latency', latency)

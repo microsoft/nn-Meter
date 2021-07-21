@@ -4,6 +4,7 @@ from glob import glob
 from zipfile import ZipFile
 from tqdm import tqdm
 import requests
+import logging
 
 
 def loading_to_local(pred_info, dir="data/predictorzoo"):
@@ -29,11 +30,11 @@ def loading_to_local(pred_info, dir="data/predictorzoo"):
     for p in ps:
         pname =  os.path.basename(p).replace(".pkl", "")
         with open(p, "rb") as f:
-            print("load predictor", p)
+            logging.debug("load predictor %s" % p)
             model = pickle.load(f)
             predictors[pname] = model
     fusionrule = os.path.join(ppath, "rule_" + hardware + ".json")
-    print(fusionrule)
+    logging.debug(fusionrule)
     if not os.path.isfile(fusionrule):
         raise ValueError(
             "check your fusion rule path, file " + fusionrule + " does not exist！"
@@ -54,7 +55,7 @@ def download_from_url(urladdr, ppath):
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
-    print("download from " + urladdr)
+    logging.debug("download from " + urladdr)
     response = requests.get(urladdr, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     block_size = 2048  # 2 Kibibyte
@@ -76,7 +77,7 @@ def check_predictors(ppath, kernel_predictors):
 
     model: a pytorch/onnx/tensorflow model object or a str containing path to the model file
     """
-    print("checking local kernel predictors at " + ppath)
+    logging.debug("checking local kernel predictors at " + ppath)
     if os.path.isdir(ppath):
         filenames = glob(os.path.join(ppath, "**.pkl"))
         # check if all the pkl files are included

@@ -89,13 +89,13 @@ class FrozenPbParser:
                         graph[graph_node]["attr"]["type"] == "Split"
                         and ":" not in graph_node
                     ):
-                        logging.info("Find split main node %s." % graph_node)
+                        logging.debug("Find split main node %s." % graph_node)
                         split_node_name = graph_node
                         for node_name in graph.keys():
                             idx = re.findall(r"%s:(\d+)" % split_node_name, node_name)
                             if len(idx) > 0:
                                 idx = int(idx[0])
-                                logging.info("Find split child node %s." % node_name)
+                                logging.debug("Find split child node %s." % node_name)
                                 graph[graph_node]["outbounds"] += graph[node_name][
                                     "outbounds"
                                 ]
@@ -194,7 +194,7 @@ class FrozenPbParser:
                         attr_as_node[node.op]["node_name"](node.name), target_node.name
                     )
                     if len(node_attr) > 0:
-                        logging.info("Find regex matching node %s" % node.name)
+                        logging.debug("Find regex matching node %s" % node.name)
                         for attr_name in target_node.attr.keys():
                             if (
                                 attr_name == "value"

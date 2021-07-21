@@ -5,6 +5,7 @@ from nn_meter.kerneldetection.rulelib.rule_splitter import RuleSplitter
 from nn_meter.utils.graphe_tool import Graphe
 from nn_meter.kerneldetection.utils.constants import DUMMY_TYPES
 from nn_meter.kerneldetection.utils.ir_tools import convert_nodes
+# import logging
 
 
 class KernelDetector:
@@ -33,7 +34,7 @@ class KernelDetector:
 
     def _bb_to_kernel(self, bb):
         types = [self.graph.get_node_type(node) for node in bb]
-        # print(types)
+        # logging.debug(types)
         types = [t for t in types if t and t not in DUMMY_TYPES]
 
         if types:

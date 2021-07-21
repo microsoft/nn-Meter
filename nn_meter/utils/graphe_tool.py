@@ -3,6 +3,7 @@
 import copy
 import json
 import numpy as np
+import logging
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -136,7 +137,7 @@ class Graphe:
         if name in self.graph.keys() and "attr" in self.graph[name].keys():
             return self.graph[name]["attr"]["type"]
         else:
-            print(name, self.graph[name])
+            logging.debug(name, self.graph[name])
             return None
 
     def get_root_node(self, subgraph):
