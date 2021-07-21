@@ -1,5 +1,5 @@
 from .nn_meter import (
-    load_latency_predictors,
+    load_latency_predictor,
     nnMeter,
     load_predictor_config,
     list_latency_predictors,
