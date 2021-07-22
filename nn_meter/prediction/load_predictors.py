@@ -30,11 +30,11 @@ def loading_to_local(pred_info, dir="data/predictorzoo"):
     for p in ps:
         pname =  os.path.basename(p).replace(".pkl", "")
         with open(p, "rb") as f:
-            logging.debug("load predictor %s" % p)
+            logging.info("load predictor %s" % p)
             model = pickle.load(f)
             predictors[pname] = model
     fusionrule = os.path.join(ppath, "rule_" + hardware + ".json")
-    logging.debug(fusionrule)
+    logging.info(fusionrule)
     if not os.path.isfile(fusionrule):
         raise ValueError(
             "check your fusion rule path, file " + fusionrule + " does not exist！"
@@ -55,7 +55,7 @@ def download_from_url(urladdr, ppath):
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
-    logging.debug("download from " + urladdr)
+    logging.info("download from " + urladdr)
     response = requests.get(urladdr, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     block_size = 2048  # 2 Kibibyte
@@ -77,7 +77,7 @@ def check_predictors(ppath, kernel_predictors):
 
     model: a pytorch/onnx/tensorflow model object or a str containing path to the model file
     """
-    logging.debug("checking local kernel predictors at " + ppath)
+    logging.info("checking local kernel predictors at " + ppath)
     if os.path.isdir(ppath):
         filenames = glob(os.path.join(ppath, "**.pkl"))
         # check if all the pkl files are included

@@ -5,6 +5,18 @@ from nn_meter import load_latency_predictor
 import argparse
 import os
 import logging
+import logging
+from functools import partial, partialmethod
+
+logging.KEYINFO = 22
+logging.addLevelName(logging.KEYINFO, 'KEYINFO')
+logging.Logger.keyinfo = partialmethod(logging.Logger.log, logging.KEYINFO)
+logging.keyinfo = partial(logging.log, logging.KEYINFO)
+
+logging.RESULT = 25
+logging.addLevelName(logging.RESULT, 'RESULT')
+logging.Logger.result = partialmethod(logging.Logger.log, logging.RESULT)
+logging.result = partial(logging.log, logging.RESULT)
 
 
 def test_ir_graphs(args, predictor):
@@ -17,7 +29,7 @@ def test_ir_graphs(args, predictor):
     models = glob("data/testmodels/**.json")
     for model in models:
         latency = predictor.predict(model)
-        logging.debug(os.path.basename(model), latency)
+        logging.info(os.path.basename(model), latency)
 
 
 def test_pb_models(args, predictor):
@@ -30,7 +42,7 @@ def test_pb_models(args, predictor):
     models = glob("data/testmodels/**.pb")
     for model in models:
         latency = predictor.predict(model)
-        logging.debug(os.path.basename(model), latency)
+        logging.info(os.path.basename(model), latency)
 
 
 def test_onnx_models(args, predictor):
@@ -43,7 +55,7 @@ def test_onnx_models(args, predictor):
     models = glob("data/testmodels/**.onnx")
     for model in models:
         latency = predictor.predict(model)
-        logging.debug(os.path.basename(model), latency)
+        logging.info(os.path.basename(model), latency)
 
 
 def test_pytorch_models(args, predictor):
@@ -74,12 +86,12 @@ def test_pytorch_models(args, predictor):
     models.append(resnext50_32x4d)
     models.append(wide_resnet50_2)
     models.append(mnasnet)
-    logging.debug("start to test")
+    logging.info("start to test")
     for model in models:
         latency = predictor.predict(
             model, model_type="torch", input_shape=(1, 3, 224, 224)
         )
-        logging.debug(model.__class__.__name__, latency)
+        logging.info(model.__class__.__name__, latency)
 
 
 if __name__ == "__main__":
@@ -137,9 +149,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
+        logging.basicConfig(format="%(message)s", level=logging.INFO)
     else:
-        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+        logging.basicConfig(format="%(message)s", level=logging.KEYINFO)
 
     if args.tensorflow:
         input_model, model_type = args.tensorflow, "pb"
@@ -152,4 +164,4 @@ if __name__ == "__main__":
         
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
     latency = predictor.predict(input_model, model_type)
-    logging.info('predict latency: %f' % latency)
+    logging.result('[RESULT] predict latency: %f' % latency)

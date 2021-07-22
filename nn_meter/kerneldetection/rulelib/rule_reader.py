@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import json
-from nn_meter.utils.graphe_tool import Graphe
+from nn_meter.utils.graph_tool import Graph
 from nn_meter.kerneldetection.fusionlib import get_fusion_unit
 
 
@@ -53,7 +53,7 @@ class RuleReader:
                             "inbounds": [get_name(i - 1)] if i > 0 else [],
                             "outbounds": [get_name(i + 1)] if i < len(ops) - 1 else [],
                         }
-                    self.fusion_units["-".join(ops)] = [Graphe(graph=fusion_unit)]
+                    self.fusion_units["-".join(ops)] = [Graph(graph=fusion_unit)]
 
     def _parse_multiop_block(self):
         for block in self.multiop_blocks:

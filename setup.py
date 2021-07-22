@@ -15,4 +15,7 @@ setup(
     entry_points={
         'console_scripts': ['nn-meter=nn_meter.nn_meter:nn_meter_cli'],
     },
+    install_requires=[
+        'numpy', 'tqdm', 'networkx', 'requests', 'protobuf', 'PyYAML', 'scikit_learn', 'packaging', 'logging'
+    ],
 )

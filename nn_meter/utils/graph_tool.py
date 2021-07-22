@@ -15,7 +15,7 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class Graphe:
+class Graph:
     def __init__(self, filename=None, graph=None):
         if filename is not None:
             self.graph = json.load(open(filename, "r"))
@@ -137,7 +137,7 @@ class Graphe:
         if name in self.graph.keys() and "attr" in self.graph[name].keys():
             return self.graph[name]["attr"]["type"]
         else:
-            logging.debug(name, self.graph[name])
+            logging.info(name, self.graph[name])
             return None
 
     def get_root_node(self, subgraph):

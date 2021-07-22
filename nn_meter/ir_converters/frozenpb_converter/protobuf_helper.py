@@ -82,7 +82,7 @@ class ProtobufHelper:
                     weight_op in graph.keys()
                     and graph[weight_op]["attr"]["type"] != "Identity"
                 ):
-                    logging.debug(
+                    logging.info(
                         "Find node %s with its weight op %s."
                         % (node["attr"]["name"], weight_op)
                     )

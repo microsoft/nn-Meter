@@ -57,7 +57,7 @@ def get_predict_features(config):
     mdicts = {}
     layer = 0
     for item in config:
-        logging.debug(item)
+        logging.info(item)
     for item in config:
         op = item["op"]
         if "conv" in op or "maxpool" in op or "avgpool" in op:

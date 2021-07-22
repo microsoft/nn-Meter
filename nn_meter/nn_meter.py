@@ -13,7 +13,6 @@ from shutil import copyfile
 from packaging import version
 import logging
 
-
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 __user_data_folder__ = os.path.expanduser('~/.nn_meter/data')
 
@@ -24,7 +23,7 @@ def create_user_configs():
     """create user configs from distributed configs
     """
     os.makedirs(__user_config_folder__, exist_ok=True)
-    # TODO: to handle config merging when upgrading
+    # TODO/backlog: to handle config merging when upgrading
     for f in pkg_resources.resource_listdir(__name__, 'configs'):
         copyfile(pkg_resources.resource_filename(__name__, f'configs/{f}'), os.path.join(__user_config_folder__, f))
 
@@ -41,7 +40,7 @@ def load_config_file(fname: str, loader=None):
             else:
                 return loader(fp)
     except FileNotFoundError:
-        logging.debug(f"config file {filepath} not found, created")
+        logging.info(f"config file {filepath} not found, created")
         create_user_configs()
         return load_config_file(fname)
 
@@ -100,7 +99,7 @@ class nnMeter:
             graph = model_file_to_graph(model, model_type)
         else:
             graph = model_to_graph(model, model_type, input_shape=input_shape)
-        # logging.debug(graph)
+        # logging.info(graph)
         self.kd.load_graph(graph)
 
         py = nn_predict(self.kernel_predictors, self.kd.kernels)
@@ -118,7 +117,6 @@ def nn_meter_cli():
     parser.add_argument(
         "--predictor",
         type=str,
-        required=True,
         help="name of target predictor (hardware)"
     )
     parser.add_argument(
@@ -154,17 +152,17 @@ def nn_meter_cli():
     )
     args = parser.parse_args()
 
+    if args.verbose:
+        logging.basicConfig(format="%(message)s", level=logging.INFO)
+    else:
+        logging.basicConfig(format="%(message)s", level=logging.KEYINFO)
+    
     if args.list_predictors:
         preds = load_config_file(__predictors_cfg_filename__)
-        logging.info("Supported latency predictors:")
+        logging.keyinfo("Supported latency predictors:")
         for p in preds:
-            logging.info(f"{p['name']}: version={p['version']}")
+            logging.result(f"[Predictor] {p['name']}: version={p['version']}")
         return
-
-    if args.verbose:
-        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
-    else:
-        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
     if args.tensorflow:
         input_model, model_type = args.tensorflow, "pb"
@@ -177,4 +175,4 @@ def nn_meter_cli():
 
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
     latency = predictor.predict(input_model, model_type)
-    logging.info('predict latency: %f' % latency)
+    logging.result('[RESULT] predict latency: %f' % latency)

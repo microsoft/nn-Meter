@@ -69,7 +69,7 @@ class ShapeInference:
             Padding type, now support SAME and VALID.
         """
 
-        logging.debug(
+        logging.info(
             "Calculating padding shape, input shape: %s, kernel size: %s, strides: %s, padding: %s."
             % (str(input_shape), str(k_size), str(strides), str(padding))
         )
@@ -156,7 +156,7 @@ class ShapeInference:
         node   : dict
             The node in Graph IR in dict format.
         """
-        logging.debug("Propogate through op %s.", node["attr"]["name"])
+        logging.info("Propogate through op %s.", node["attr"]["name"])
         in_shape = [graphe[node["inbounds"][0]]["attr"]["output_shape"][0]]
         return in_shape, in_shape
 
@@ -279,13 +279,13 @@ class ShapeInference:
         """
         if len(node["inbounds"]) != 1:
             logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
-            logging.debug(node)
+            logging.info(node)
             return
 
         input_shape = copy.deepcopy(
             graphe[node["inbounds"][0]]["attr"]["output_shape"][0]
         )
-        logging.debug(
+        logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], node["inbounds"][0], input_shape)
         )
@@ -297,12 +297,12 @@ class ShapeInference:
                 "Invalid strides %s of node %s."
                 % (str(node["attr"]["attr"]["strides"]), node["attr"]["name"])
             )
-            logging.debug(node)
+            logging.info(node)
             return
 
         strides = node["attr"]["attr"]["strides"]
         padding = node["attr"]["attr"]["padding"].decode("utf-8")
-        logging.debug(
+        logging.info(
             "Op:%s, stride:%s, padding:%s."
             % (node["attr"]["name"], str(strides), str(padding))
         )
@@ -407,18 +407,18 @@ class ShapeInference:
         weight_node = ph.find_weights_root(graphe, node)
         if len(weight_node) != 1:
             logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
-            logging.debug(node)
+            logging.info(node)
             return
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
         input_node = [x for x in input_node if graphe[x]["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
             logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
-            logging.debug(node)
+            logging.info(node)
             return
 
         input_shape = copy.deepcopy(graphe[input_node[0]]["attr"]["output_shape"][0])
-        logging.debug(
+        logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
         )
@@ -429,10 +429,10 @@ class ShapeInference:
                 "Failed to parse weight shape %s of node %s."
                 % (str(weight_shape), node["attr"]["name"])
             )
-            logging.debug(node)
+            logging.info(node)
             return
 
-        logging.debug(
+        logging.info(
             "Get weight shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], weight_node, weight_shape)
         )
@@ -445,13 +445,13 @@ class ShapeInference:
                 "Invalid strides %s of node %s."
                 % (str(node["attr"]["attr"]["strides"]), node["attr"]["name"])
             )
-            logging.debug(node)
+            logging.info(node)
             return
 
         strides = node["attr"]["attr"]["strides"]
         dilation = node["attr"]["attr"]["dilations"]
         padding = node["attr"]["attr"]["padding"].decode("utf-8")
-        logging.debug(
+        logging.info(
             "Op:%s, stride:%s, dilation:%s, padding:%s."
             % (node["attr"]["name"], str(strides), str(dilation), str(padding))
         )
@@ -490,18 +490,18 @@ class ShapeInference:
         weight_node = ph.find_weights_root(graphe, node)
         if len(weight_node) != 1:
             logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
-            logging.debug(node)
+            logging.info(node)
             return
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
         input_node = [x for x in input_node if graphe[x]["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
             logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
-            logging.debug(node)
+            logging.info(node)
             return
 
         input_shape = copy.deepcopy(graphe[input_node[0]]["attr"]["output_shape"][0])
-        logging.debug(
+        logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
         )
@@ -512,10 +512,10 @@ class ShapeInference:
                 "Failed to parse weight shape %s of node %s."
                 % (str(weight_shape), node["attr"]["name"])
             )
-            logging.debug(node)
+            logging.info(node)
             return
 
-        logging.debug(
+        logging.info(
             "Get weight shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], weight_node, weight_shape)
         )
@@ -528,14 +528,14 @@ class ShapeInference:
                 "Invalid strides %s of node %s."
                 % (str(node["attr"]["attr"]["strides"]), node["attr"]["name"])
             )
-            logging.debug(node)
+            logging.info(node)
             return
 
         strides = node["attr"]["attr"]["strides"]
         dilation = node["attr"]["attr"]["dilations"]
         padding = node["attr"]["attr"]["padding"].decode("utf-8")
 
-        logging.debug(
+        logging.info(
             "Op:%s, stride:%s, dilation:%s, padding:%s."
             % (node["attr"]["name"], str(strides), str(dilation), str(padding))
         )
@@ -573,7 +573,7 @@ class ShapeInference:
         """
         input_shape = graphe[node["inbounds"][0]]["attr"]["output_shape"][0]
         output_shape = input_shape
-        logging.debug(
+        logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], node["inbounds"][0], output_shape)
         )
@@ -582,7 +582,7 @@ class ShapeInference:
         output_shape[2] = 0
 
         reduction_indices = node["attr"]["attr"]["reduction_indices"]
-        logging.debug("Get Reduction Indices %s.", str(reduction_indices))
+        logging.info("Get Reduction Indices %s.", str(reduction_indices))
 
         reduction_cnt = 0
         for reduction in sorted(reduction_indices):
@@ -648,7 +648,7 @@ class ShapeInference:
         weight_node = ph.find_weights_root(graphe, node)
         if len(weight_node) != 1:
             logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
-            logging.debug(node)
+            logging.info(node)
             return
 
         weight_shape = graphe[weight_node[0]]["attr"]["attr"]["tensor_shape"]
@@ -657,10 +657,10 @@ class ShapeInference:
                 "Failed to parse weight shape %s of node %s."
                 % (str(weight_shape), node["attr"]["name"])
             )
-            logging.debug(node)
+            logging.info(node)
             return
 
-        logging.debug(
+        logging.info(
             "Get weight shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], weight_node, weight_shape)
         )
@@ -669,11 +669,11 @@ class ShapeInference:
         input_node = [x for x in input_node if graphe[x]["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
             logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
-            logging.debug(node)
+            logging.info(node)
             return
 
         input_shape = copy.deepcopy(graphe[input_node[0]]["attr"]["output_shape"][0])
-        logging.debug(
+        logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
         )
@@ -683,7 +683,7 @@ class ShapeInference:
                 "Weight shape and input shape not matched for %s."
                 % (node["attr"]["name"])
             )
-            logging.debug(node)
+            logging.info(node)
             return
 
         output_shape = copy.deepcopy(input_shape)
@@ -707,7 +707,7 @@ class ShapeInference:
             The node in Graph IR in dict format.
         """
         if "shape" in node["attr"]["attr"].keys():
-            logging.debug(
+            logging.info(
                 "Shape attr find in %s op, propogate with normal.", node["attr"]["name"]
             )
             input_shape = copy.deepcopy(
@@ -715,7 +715,7 @@ class ShapeInference:
             )
             exp_output_shape = copy.deepcopy(node["attr"]["attr"]["shape"])
         else:
-            logging.debug(
+            logging.info(
                 "Shape attr not find in %s op, try finding the shape node.",
                 node["attr"]["name"],
             )
@@ -730,7 +730,7 @@ class ShapeInference:
                         for sl in graphe[in_node]["attr"]["attr"]["constant"]
                         for it in sl
                     ]
-                    logging.debug(
+                    logging.info(
                         "Fetched expected output shape from Pack op %s"
                         % str(exp_output_shape)
                     )
@@ -768,7 +768,7 @@ class ShapeInference:
             in_shape = graphe[in_node]["attr"]["output_shape"][0]
             if in_shape != []:
                 input_shape.append(in_shape)
-                logging.debug(
+                logging.info(
                     "Get input shape of %s from %s, input shape:%s."
                     % (node["attr"]["name"], in_node, input_shape[-1])
                 )
@@ -830,7 +830,7 @@ class ShapeInference:
                 input_shape = copy.deepcopy(graphe[in_node]["attr"]["output_shape"][0])
 
         split_dim = node["attr"]["attr"]["split_dim"][0]
-        logging.debug("Fetched Split dim for %s is %s.", node["attr"]["name"], split_dim)
+        logging.info("Fetched Split dim for %s is %s.", node["attr"]["name"], split_dim)
         output_node_cnt = len(node["outbounds"])
 
         output_shape = copy.deepcopy(input_shape)
@@ -854,17 +854,17 @@ class ShapeInference:
         for in_node in node["inbounds"]:
             if graphe[in_node]["attr"]["type"] == "Const":
                 perm = copy.deepcopy(graphe[in_node]["attr"]["attr"]["constant"])
-                logging.debug("Fetched perm sequence from Const op %s" % str(perm))
+                logging.info("Fetched perm sequence from Const op %s" % str(perm))
             elif graphe[in_node]["attr"]["type"] == "Pack":
                 perm = [1] + [
                     it
                     for sl in graphe[in_node]["attr"]["attr"]["constant"]
                     for it in sl
                 ]
-                logging.debug("Fetched perm sequence from Pack op %s" % str(perm))
+                logging.info("Fetched perm sequence from Pack op %s" % str(perm))
             else:
                 input_shape = copy.deepcopy(graphe[in_node]["attr"]["output_shape"][0])
-                logging.debug(
+                logging.info(
                     "Fetched input shape from %s,  %s" % (in_node, str(input_shape))
                 )
 
@@ -946,17 +946,17 @@ class ShapeInference:
                     )
                 if input_shape is not None:
                     graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
-                logging.debug(
+                logging.info(
                     "Input shape of %s op is %s." % (node_name, str(input_shape))
                 )
-                logging.debug(
+                logging.info(
                     "Output shape of %s op is %s." % (node_name, str(output_shape))
                 )
             else:
                 logging.error("%s not support yet." % graphe.get_node_type(node_name))
-                logging.debug("------ node content --------")
-                logging.debug(graph[node_name])
-                logging.debug("----------------------------")
+                logging.info("------ node content --------")
+                logging.info(graph[node_name])
+                logging.info("----------------------------")
 
         # Pass #2
         # This is a patching for back-end, since backend extract shapes from
@@ -973,11 +973,11 @@ class ShapeInference:
                     )
                 if input_shape is not None:
                     graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
-                logging.debug(
+                logging.info(
                     "Second Pass: Input shape of %s op is %s."
                     % (node_name, str(input_shape))
                 )
-                logging.debug(
+                logging.info(
                     "Second Pass: Output shape of %s op is %s."
                     % (node_name, str(output_shape))
                 )

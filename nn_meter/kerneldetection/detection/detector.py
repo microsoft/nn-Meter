@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 from nn_meter.kerneldetection.rulelib.rule_reader import RuleReader
 from nn_meter.kerneldetection.rulelib.rule_splitter import RuleSplitter
-from nn_meter.utils.graphe_tool import Graphe
+from nn_meter.utils.graph_tool import Graph
 from nn_meter.kerneldetection.utils.constants import DUMMY_TYPES
 from nn_meter.kerneldetection.utils.ir_tools import convert_nodes
 # import logging
@@ -17,7 +17,7 @@ class KernelDetector:
 
     def load_graph(self, graph):
         new_graph = convert_nodes(graph)
-        self.graph = Graphe(graph=new_graph)
+        self.graph = Graph(graph=new_graph)
         self.graph.refresh()
         self.bbs = self.splitter.split(self.graph)
 
@@ -34,7 +34,7 @@ class KernelDetector:
 
     def _bb_to_kernel(self, bb):
         types = [self.graph.get_node_type(node) for node in bb]
-        # logging.debug(types)
+        # logging.info(types)
         types = [t for t in types if t and t not in DUMMY_TYPES]
 
         if types:
