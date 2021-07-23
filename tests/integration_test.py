@@ -44,7 +44,7 @@ def parse_latency_info(info):
     return latency
     
 # integration test to predict model latency
-def integration_test(model_type, url, ppath, outcsv_name = "test.txt"):
+def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.txt"):
     """
     download the kernel predictors from the url
     @params:
@@ -85,12 +85,12 @@ def integration_test(model_type, url, ppath, outcsv_name = "test.txt"):
 if __name__ == "__main__":
     check_package_status()
 
-    # # check tensorflow model
-    # integration_test(
-    #     model_type='tensorflow',
-    #     url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip",
-    #     ppath = "data/testmodels/pb",
-    # )
+    # check tensorflow model
+    integration_test(
+        model_type='tensorflow',
+        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip",
+        ppath = "data/testmodels/pb",
+    )
 
     # check onnx model
     integration_test(
