@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         # install nn-meter
-        pip install .
+        python setup.py install
         # install aditional dependencies for testing
         pip install -r tests/requirements.txt 
     - name: Lint with flake8
