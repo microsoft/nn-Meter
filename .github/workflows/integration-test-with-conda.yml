@@ -1,0 +1,41 @@
+name: Integrated Test
+
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        # conda env update --file environment.yml --name base
+        # cd /path/to/nn-meter
+        pip install . # install nn-meter
+        pip install tests/requirements.txt # install aditional dependencies for testing
+    - name: Lint with flake8
+      run: |
+        conda install flake8
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Pytest
+      run: |
+        conda install pytest
+        pytest
+    - name: Integration test
+      run: |
+        python tests/integration_test.py
+        diff tests/test_result.txt tests/reference_result.txt
