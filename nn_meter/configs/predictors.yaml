@@ -1,0 +1,67 @@
+- name: cortexA76cpu_tflite21
+  version: 1.0
+  kernel_predictors:
+    - conv-bn-relu
+    - dwconv-bn-relu
+    - fc
+    - global-avgpool
+    - hswish
+    - relu
+    - se
+    - split
+    - add
+    - addrelu
+    - maxpool
+    - avgpool
+    - bn
+    - bnrelu
+    - channelshuffle
+    - concat
+  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/cortexA76cpu_tflite21.zip
+
+- name: adreno640gpu_tflite21
+  version: 1.0
+  kernel_predictors:
+    - conv-bn-relu
+    - dwconv-bn-relu
+    - hswish
+    - relu
+    - se
+    - maxpool
+    - avgpool
+    - bn
+    - bnrelu
+    - concat
+  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/adreno640gpu_tflite21.zip
+
+- name: adreno630gpu_tflite21
+  version: 1.0
+  kernel_predictors:
+    - conv-bn-relu
+    - dwconv-bn-relu
+    - hswish
+    - relu
+    - se
+    - maxpool
+    - avgpool
+    - bn
+    - bnrelu
+    - concat
+  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/adreno630gpu_tflite21.zip
+
+- name: myriadvpu_openvino2019r2
+  version: 1.0
+  kernel_predictors:
+    - conv-bn-relu
+    - dwconv-bn-relu
+    - fc
+    - hswish
+    - relu
+    - se
+    - addrelu
+    - maxpool
+    - avgpool
+    - bn
+    - bnrelu
+    - channelshuffle
+  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/myriadvpu_openvino2019r2.zip

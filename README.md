@@ -5,12 +5,12 @@ We currently evaluate four popular platforms on a large dataset of 26k models. I
 
 The current supported hardware and inference frameworks:
 
-| Abbr. |        Device       |    Framework   |    Processor   | +-10%  Accuracy | key in nn-Meter usage       |
-|:----:|:-------------------:|:--------------:|:--------------:|:------------------:|:-------------------:|
-|  CPU |        Pixel4       |   TFLite v2.1  |  CortexA76 CPU |        99.0%       |      **cortexA76cpu_tflite21**       |
-|  GPU |         Mi9         |   TFLite v2.1  | Adreno 640 GPU |        99.1%       |    **adreno640gpu_tflite21**       |
-| GPU1 |       Pixel3XL      |   TFLite v2.1  | Adreno 630 GPU |        99.0%       | **adreno630gpu_tflite21**      |
-|  VPU | Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |        83.4%       | **myriadvpu_openvino2019r2** |
+| Abbr. |       Device        |   Framework    |   Processor    | +-10%  Accuracy |    key in nn-Meter usage     |
+| :---: | :-----------------: | :------------: | :------------: | :-------------: | :--------------------------: |
+|  CPU  |       Pixel4        |  TFLite v2.1   | CortexA76 CPU  |      99.0%      |  **cortexA76cpu_tflite21**   |
+|  GPU  |         Mi9         |  TFLite v2.1   | Adreno 640 GPU |      99.1%      |  **adreno640gpu_tflite21**   |
+| GPU1  |      Pixel3XL       |  TFLite v2.1   | Adreno 630 GPU |      99.0%      |  **adreno630gpu_tflite21**   |
+|  VPU  | Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |      83.4%      | **myriadvpu_openvino2019r2** |
 
 
 ## Who should consider using nn-Meter
@@ -28,26 +28,39 @@ If you use nn-meter in NNI, make sure NNI version >= 2.4
 ## Usage
 ### Supported input model format
 
-| name |        format       |
-|:----:|:-------------------:|
-|  Tensorflow |        .pb     |  
-|  Onnx |         .onnx         | 
-| nnmeter IR graph  |       .json     |
-|  NNI IR graph | .json |
+|       name       | format |
+| :--------------: | :----: |
+|    Tensorflow    |  .pb   |
+|       Onnx       | .onnx  |
+| nnmeter IR graph | .json  |
+|   NNI IR graph   | .json  |
 ### To predict a single model: Run nn-Meter demo
-To predict the latency for a CNN model on a hardware, users can run the following command with two hyper-parameters:
+After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor, users can run the following commands
+
+```bash
+# to list all predefined predictors
+nn-meter --list-predictors 
+
+# for Tensorflow (*.pb) file
+nn-meter --predictor <hardware> --tensorflow <pb-file> 
+
+# for ONNX (*.onnx) file
+nn-meter --predictor <hardware> --onnx <onnx-file>
+
+# for nn-Meter IR (*.json) file
+nn-meter --predictor <hardware> --nn-meter-ir <json-file> 
+
+# for NNI IR (*.json) file
+nn-meter --predictor <hardware> --nni-ir <json-file> 
 ```
-python demo.py --config configs/devices.yaml --input_model data/testmodels/alexnet_0.pb --hardware cortexA76cpu_tflite21
-```
-The two hyper-parameters include: (i) the config file describes the targeting device and inference framework, (ii) the input model file
 
 nn-Meter currently supports prediction on the following four config:
 
-|   hardware     |
-|:-------------------:|
-|        cortexA76cpu_tflite21       |
-|         adreno640gpu_tflite21         |
-|       adreno630gpu_tflite21      |
+|   Predictor (hardware)   |
+| :----------------------: |
+|  cortexA76cpu_tflite21   |
+|  adreno640gpu_tflite21   |
+|  adreno630gpu_tflite21   |
 | myriadvpu_openvino2019r2 |
 
 For the input model file, you can find any example provided under the `data/testmodels`
@@ -64,9 +77,9 @@ model = ... # model is instance of torch.nn.Module
 
 lat = predictor.predict(model)
 ```
-By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `data/predictorzoo`. If the predictor file doesn't exist, it will download from the Github release.
+By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/data`. If the predictor file doesn't exist, it will download from the Github release.
 
-Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `configs/device.yaml`.
+Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `nn_meter/configs/predictors.yaml`.
 
 
 

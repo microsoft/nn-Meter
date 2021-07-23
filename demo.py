@@ -1,8 +1,22 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter import load_latency_predictors
-import yaml
+from nn_meter.utils.utils import try_import_torchvision_models
+from nn_meter import load_latency_predictor
 import argparse
+import os
+import sys
+import logging
+from functools import partial, partialmethod
+
+logging.KEYINFO = 22
+logging.addLevelName(logging.KEYINFO, 'KEYINFO')
+logging.Logger.keyinfo = partialmethod(logging.Logger.log, logging.KEYINFO)
+logging.keyinfo = partial(logging.log, logging.KEYINFO)
+
+logging.RESULT = 25
+logging.addLevelName(logging.RESULT, 'RESULT')
+logging.Logger.result = partialmethod(logging.Logger.log, logging.RESULT)
+logging.result = partial(logging.log, logging.RESULT)
 
 
 def test_ir_graphs(args, predictor):
@@ -15,7 +29,7 @@ def test_ir_graphs(args, predictor):
     models = glob("data/testmodels/**.json")
     for model in models:
         latency = predictor.predict(model)
-        print(model.split("/")[-1], latency)
+        logging.info(os.path.basename(model), latency)
 
 
 def test_pb_models(args, predictor):
@@ -28,7 +42,7 @@ def test_pb_models(args, predictor):
     models = glob("data/testmodels/**.pb")
     for model in models:
         latency = predictor.predict(model)
-        print(model.split("/")[-1], latency)
+        logging.info(os.path.basename(model), latency)
 
 
 def test_onnx_models(args, predictor):
@@ -41,12 +55,12 @@ def test_onnx_models(args, predictor):
     models = glob("data/testmodels/**.onnx")
     for model in models:
         latency = predictor.predict(model)
-        print(model.split("/")[-1], latency)
+        logging.info(os.path.basename(model), latency)
 
 
 def test_pytorch_models(args, predictor):
     # will remove this to examples once we have the pip package
-    import torchvision.models as models
+    models = try_import_torchvision_models()
 
     resnet18 = models.resnet18()
     alexnet = models.alexnet()
@@ -72,44 +86,82 @@ def test_pytorch_models(args, predictor):
     models.append(resnext50_32x4d)
     models.append(wide_resnet50_2)
     models.append(mnasnet)
-    print("start to test")
+    logging.info("start to test")
     for model in models:
         latency = predictor.predict(
             model, model_type="torch", input_shape=(1, 3, 224, 224)
         )
-        print(model.__class__.__name__, latency)
+        logging.info(model.__class__.__name__, latency)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("predict model latency on device")
     parser.add_argument(
-        "--input_model",
-        type=str,
-        required=True,
-        help="Path to input model. ONNX, FrozenPB or JSON",
+        '--list-predictors',
+        help='list all supported predictors',
+        action='store_true',
+        default=False
     )
     parser.add_argument(
-        "--hardware", type=str, default="cortexA76cpu_tflite21", help="target hardware"
+        "--predictor", 
+        type=str, 
+        required=True, 
+        help="name of target predictor (hardware)",
+    )
+    parser.add_argument(
+        "--predictor-version",
+        type=str,
+        default=None,
+        help="the version of the latency predictor (If not specified, use the lateast version)",
     )
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/devices.yaml",
+        default="nn_meter/configs/predictors.yaml",
         help="config file to store current supported edge platform",
+    )
+    group = parser.add_mutually_exclusive_group() # Jiahang: can't handle model_type == "torch" now.
+    group.add_argument(
+        "--tensorflow",
+        type=str,
+        help="Path to input Tensorflow model (*.pb)"
+    )
+    group.add_argument(
+        "--onnx",
+        type=str,
+        help="Path to input ONNX model (*.onnx)"
+    )
+    group.add_argument(
+        "--nn-meter-ir",
+        type=str,
+        help="Path to input nn-Meter IR model (*.json)"
+    )
+    group.add_argument(
+        "--nni-ir",
+        type=str,
+        help="Path to input NNI IR model (*.json)"
+    )
+    parser.add_argument(
+        "-v", "--verbose", 
+        help="increase output verbosity",
+        action="store_true"
     )
     args = parser.parse_args()
 
-    with open(args.config) as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)["predictors"]
-        if args.hardware in config:
-            print(config)
-            predictor = load_latency_predictors(config, args.hardware)
-            latency = predictor.predict(args.input_model)
-            print("predict latency", latency)
-            # test_pb_models(args,predictor)
-            #  test_onnx_models(args,predictor)
-            # test_pytorch_models(args,predictor)
-            # test_ir_graphs(args, predictor)
+    if args.verbose:
+        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.INFO)
+    else:
+        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.KEYINFO)
 
-        else:
-            raise NotImplementedError
+    if args.tensorflow:
+        input_model, model_type = args.tensorflow, "pb"
+    elif args.onnx:
+        input_model, model_type = args.onnx, "onnx"
+    elif args.nn_meter_ir:
+        input_model, model_type = args.nn_meter_ir, "json"
+    elif args.nni_ir:
+        input_model, model_type = args.nni_ir, "json"
+        
+    predictor = load_latency_predictor(args.predictor, args.predictor_version)
+    latency = predictor.predict(input_model, model_type)
+    logging.result('[RESULT] predict latency: %f' % latency)

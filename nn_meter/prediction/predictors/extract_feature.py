@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import numpy as np
 from sklearn.metrics import mean_squared_error
-
+import logging
 
 def get_accuracy(y_pred, y_true, threshold=0.01):
     a = (y_true - y_pred) / y_true
@@ -57,7 +57,7 @@ def get_predict_features(config):
     mdicts = {}
     layer = 0
     for item in config:
-        print(item)
+        logging.info(item)
     for item in config:
         op = item["op"]
         if "conv" in op or "maxpool" in op or "avgpool" in op:

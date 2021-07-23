@@ -12,14 +12,14 @@ logging = logging.getLogger(__name__)
 
 class ShapeInference:
     @staticmethod
-    def eval_prodcast(graphe, node):
+    def eval_prodcast(graph, node):
         """
         Evalute the prodcast along the input nodes.
         Now we use lazy prodcast, will move to tf implement later.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
@@ -30,7 +30,7 @@ class ShapeInference:
                 "Invalid input op num for prodcast op %s" % (node["attr"]["name"])
             )
             if len(input_nodes) == 1:
-                return graphe[node["inbounds"][0]]["attr"]["output_shape"][0]
+                return graph[node["inbounds"][0]]["attr"]["output_shape"][0]
             else:
                 return None
 
@@ -38,7 +38,7 @@ class ShapeInference:
         target_shape = [1]
         input_shape_list = []
         for node_name in input_nodes:
-            input_shape = graphe[node_name]["attr"]["output_shape"][0]
+            input_shape = graph[node_name]["attr"]["output_shape"][0]
             input_shape_list.append(input_shape)
             if target_dim < len(input_shape):
                 target_dim = len(input_shape)
@@ -114,14 +114,14 @@ class ShapeInference:
         return copy.deepcopy(output_shape), copy.deepcopy(pad_size)
 
     @staticmethod
-    def Const_get_shape(graphe, node):
+    def Const_get_shape(graph, node):
         """
         Get shape of a const operator.
         Take the tensor shape as the output shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
@@ -129,150 +129,150 @@ class ShapeInference:
         return [], [node["attr"]["attr"]["tensor_shape"]]
 
     @staticmethod
-    def Identity_get_shape(graphe, node):
+    def Identity_get_shape(graph, node):
         """
         Get shape of an Identity operator.
         This is not well implemented, will move a more robust later.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return [], [graphe[node["inbounds"][0]]["attr"]["output_shape"][0]]
+        return [], [graph[node["inbounds"][0]]["attr"]["output_shape"][0]]
 
     @staticmethod
-    def propogate_shape(graphe, node):
+    def propogate_shape(graph, node):
         """
         For operator who does not affact the shapes.
         Just take the input shapes as output.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
         logging.info("Propogate through op %s.", node["attr"]["name"])
-        in_shape = [graphe[node["inbounds"][0]]["attr"]["output_shape"][0]]
+        in_shape = [graph[node["inbounds"][0]]["attr"]["output_shape"][0]]
         return in_shape, in_shape
 
     @staticmethod
-    def FusedBatchNorm_get_shape(graphe, node):
+    def FusedBatchNorm_get_shape(graph, node):
         """
         Get shape of a FusedBatchNorm operator.
         Just propogate the shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.propogate_shape(graphe, node)
+        return ShapeInference.propogate_shape(graph, node)
 
     @staticmethod
-    def BiasAdd_get_shape(graphe, node):
+    def BiasAdd_get_shape(graph, node):
         """
         Get shape of a BiasAdd operator.
         Just propogate the shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.propogate_shape(graphe, node)
+        return ShapeInference.propogate_shape(graph, node)
 
     @staticmethod
-    def Relu_get_shape(graphe, node):
+    def Relu_get_shape(graph, node):
         """
         Get shape of a Relu operator.
         Just propogate the shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.propogate_shape(graphe, node)
+        return ShapeInference.propogate_shape(graph, node)
 
     @staticmethod
-    def Relu6_get_shape(graphe, node):
+    def Relu6_get_shape(graph, node):
         """
         Get shape of a Relu6 operator.
         Just propogate the shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.propogate_shape(graphe, node)
+        return ShapeInference.propogate_shape(graph, node)
 
     @staticmethod
-    def LeakyReLU_get_shape(graphe, node):
+    def LeakyReLU_get_shape(graph, node):
         """
         Get shape of a LeakyReLU operator.
         Just propogate the shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.propogate_shape(graphe, node)
+        return ShapeInference.propogate_shape(graph, node)
 
     @staticmethod
-    def Add_get_shape(graphe, node):
+    def Add_get_shape(graph, node):
         """
         Get shape of an Add operator.
         Just propogate the shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.eval_prodcast(graphe, node)
+        return ShapeInference.eval_prodcast(graph, node)
 
     @staticmethod
-    def Mul_get_shape(graphe, node):
+    def Mul_get_shape(graph, node):
         """
         Get shape of an FusedBatchNorm operator.
         Just propogate the shape.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.eval_prodcast(graphe, node)
+        return ShapeInference.eval_prodcast(graph, node)
 
     @staticmethod
-    def Pool_get_shape(graphe, node):
+    def Pool_get_shape(graph, node):
         """
         Get shape of a Pooling type operation.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
@@ -283,7 +283,7 @@ class ShapeInference:
             return
 
         input_shape = copy.deepcopy(
-            graphe[node["inbounds"][0]]["attr"]["output_shape"][0]
+            graph[node["inbounds"][0]]["attr"]["output_shape"][0]
         )
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
@@ -322,70 +322,70 @@ class ShapeInference:
         return [input_shape], [out_shape]
 
     @staticmethod
-    def AvgPool_get_shape(graphe, node):
+    def AvgPool_get_shape(graph, node):
         """
         Get shape of an AvgPool operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Pool_get_shape(graphe, node)
+        return ShapeInference.Pool_get_shape(graph, node)
 
     @staticmethod
-    def AveragePooling2D_get_shape(graphe, node):
+    def AveragePooling2D_get_shape(graph, node):
         """
         Get shape of an AveragePooling2D operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Pool_get_shape(graphe, node)
+        return ShapeInference.Pool_get_shape(graph, node)
 
     @staticmethod
-    def MaxPool_get_shape(graphe, node):
+    def MaxPool_get_shape(graph, node):
         """
         Get shape of a MaxPool operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Pool_get_shape(graphe, node)
+        return ShapeInference.Pool_get_shape(graph, node)
 
     @staticmethod
-    def MaxPooling2D_get_shape(graphe, node):
+    def MaxPooling2D_get_shape(graph, node):
         """
         Get shape of a MaxPooling2D operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Pool_get_shape(graphe, node)
+        return ShapeInference.Pool_get_shape(graph, node)
 
     @staticmethod
-    def Placeholder_get_shape(graphe, node):
+    def Placeholder_get_shape(graph, node):
         """
         Get shape of a Placeholder operator.
         This fetch the shape from the shape attibute of the operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
@@ -393,37 +393,37 @@ class ShapeInference:
         return [], [node["attr"]["attr"]["shape"]]
 
     @staticmethod
-    def Conv2D_get_shape(graphe, node):
+    def Conv2D_get_shape(graph, node):
         """
         Get shape of a Conv2D operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        weight_node = ph.find_weights_root(graphe, node)
+        weight_node = ph.find_weights_root(graph, node)
         if len(weight_node) != 1:
             logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
             logging.info(node)
             return
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
-        input_node = [x for x in input_node if graphe[x]["attr"]["type"] != "Identity"]
+        input_node = [x for x in input_node if graph[x]["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
             logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
             logging.info(node)
             return
 
-        input_shape = copy.deepcopy(graphe[input_node[0]]["attr"]["output_shape"][0])
+        input_shape = copy.deepcopy(graph[input_node[0]]["attr"]["output_shape"][0])
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
         )
 
-        weight_shape = graphe[weight_node[0]]["attr"]["attr"]["tensor_shape"]
+        weight_shape = graph[weight_node[0]]["attr"]["attr"]["tensor_shape"]
         if len(weight_shape) != 4:
             logging.warning(
                 "Failed to parse weight shape %s of node %s."
@@ -476,37 +476,37 @@ class ShapeInference:
         return [input_shape], [out_shape]
 
     @staticmethod
-    def DepthwiseConv2dNative_get_shape(graphe, node):
+    def DepthwiseConv2dNative_get_shape(graph, node):
         """
         Get shape of a DepthwiseConv2dNative operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        weight_node = ph.find_weights_root(graphe, node)
+        weight_node = ph.find_weights_root(graph, node)
         if len(weight_node) != 1:
             logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
             logging.info(node)
             return
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
-        input_node = [x for x in input_node if graphe[x]["attr"]["type"] != "Identity"]
+        input_node = [x for x in input_node if graph[x]["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
             logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
             logging.info(node)
             return
 
-        input_shape = copy.deepcopy(graphe[input_node[0]]["attr"]["output_shape"][0])
+        input_shape = copy.deepcopy(graph[input_node[0]]["attr"]["output_shape"][0])
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
         )
 
-        weight_shape = graphe[weight_node[0]]["attr"]["attr"]["tensor_shape"]
+        weight_shape = graph[weight_node[0]]["attr"]["attr"]["tensor_shape"]
         if len(weight_shape) != 4:
             logging.warning(
                 "Failed to parse weight shape %s of node %s."
@@ -560,18 +560,18 @@ class ShapeInference:
         return [input_shape], [out_shape]
 
     @staticmethod
-    def Reduce_get_shape(graphe, node):
+    def Reduce_get_shape(graph, node):
         """
         Get shape of a Reduce operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        input_shape = graphe[node["inbounds"][0]]["attr"]["output_shape"][0]
+        input_shape = graph[node["inbounds"][0]]["attr"]["output_shape"][0]
         output_shape = input_shape
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
@@ -592,66 +592,66 @@ class ShapeInference:
         return [input_shape], [output_shape]
 
     @staticmethod
-    def Mean_get_shape(graphe, node):
+    def Mean_get_shape(graph, node):
         """
         Get shape of a Mean operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Reduce_get_shape(graphe, node)
+        return ShapeInference.Reduce_get_shape(graph, node)
 
     @staticmethod
-    def GlobalAveragePooling2D_get_shape(graphe, node):
+    def GlobalAveragePooling2D_get_shape(graph, node):
         """
         Get shape of a GlobalAveragePooling2D operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Reduce_get_shape(graphe, node)
+        return ShapeInference.Reduce_get_shape(graph, node)
 
     @staticmethod
-    def GlobalMaxPooling2D_get_shape(graphe, node):
+    def GlobalMaxPooling2D_get_shape(graph, node):
         """
         Get shape of a GlobalMaxPooling2D operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Reduce_get_shape(graphe, node)
+        return ShapeInference.Reduce_get_shape(graph, node)
 
     @staticmethod
-    def MatMul_get_shape(graphe, node):
+    def MatMul_get_shape(graph, node):
         """
         Get shape of a MatMul operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        weight_node = ph.find_weights_root(graphe, node)
+        weight_node = ph.find_weights_root(graph, node)
         if len(weight_node) != 1:
             logging.warning("Failed to get shape of node %s." % (node["attr"]["name"]))
             logging.info(node)
             return
 
-        weight_shape = graphe[weight_node[0]]["attr"]["attr"]["tensor_shape"]
+        weight_shape = graph[weight_node[0]]["attr"]["attr"]["tensor_shape"]
         if len(weight_shape) != 2:
             logging.warning(
                 "Failed to parse weight shape %s of node %s."
@@ -666,13 +666,13 @@ class ShapeInference:
         )
 
         input_node = [x for x in node["inbounds"] if x != weight_node]
-        input_node = [x for x in input_node if graphe[x]["attr"]["type"] != "Identity"]
+        input_node = [x for x in input_node if graph[x]["attr"]["type"] != "Identity"]
         if len(input_node) != 1:
             logging.warning("Failed to get input node of %s." % (node["attr"]["name"]))
             logging.info(node)
             return
 
-        input_shape = copy.deepcopy(graphe[input_node[0]]["attr"]["output_shape"][0])
+        input_shape = copy.deepcopy(graph[input_node[0]]["attr"]["output_shape"][0])
         logging.info(
             "Get input shape of %s from %s, input shape:%s."
             % (node["attr"]["name"], input_node[0], input_shape)
@@ -692,7 +692,7 @@ class ShapeInference:
         return [input_shape], [output_shape]
 
     @staticmethod
-    def Reshape_get_shape(graphe, node):
+    def Reshape_get_shape(graph, node):
         """
         Get shape of a Reshape operator.
         It normally should take from the shape attibution,
@@ -701,7 +701,7 @@ class ShapeInference:
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
@@ -711,7 +711,7 @@ class ShapeInference:
                 "Shape attr find in %s op, propogate with normal.", node["attr"]["name"]
             )
             input_shape = copy.deepcopy(
-                graphe[node["inbounds"][0]]["attr"]["output_shape"][0]
+                graph[node["inbounds"][0]]["attr"]["output_shape"][0]
             )
             exp_output_shape = copy.deepcopy(node["attr"]["attr"]["shape"])
         else:
@@ -720,14 +720,14 @@ class ShapeInference:
                 node["attr"]["name"],
             )
             for in_node in node["inbounds"]:
-                if graphe[in_node]["attr"]["type"] == "Const":
+                if graph[in_node]["attr"]["type"] == "Const":
                     exp_output_shape = copy.deepcopy(
-                        graphe[in_node]["attr"]["constant"]
+                        graph[in_node]["attr"]["constant"]
                     )
-                elif graphe[in_node]["attr"]["type"] == "Pack":
+                elif graph[in_node]["attr"]["type"] == "Pack":
                     exp_output_shape = [1] + [
                         it
-                        for sl in graphe[in_node]["attr"]["attr"]["constant"]
+                        for sl in graph[in_node]["attr"]["attr"]["constant"]
                         for it in sl
                     ]
                     logging.info(
@@ -736,7 +736,7 @@ class ShapeInference:
                     )
                 else:
                     input_shape = copy.deepcopy(
-                        graphe[in_node]["attr"]["output_shape"][0]
+                        graph[in_node]["attr"]["output_shape"][0]
                     )
 
         input_elements = abs(reduce(lambda x, y: x * y, input_shape))
@@ -751,21 +751,21 @@ class ShapeInference:
         return [input_shape], [exp_output_shape]
 
     @staticmethod
-    def Concat_get_shape(graphe, node):
+    def Concat_get_shape(graph, node):
         """
         Get shape of a Concat operator.
         We add up the shape through axis.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
         input_shape = []
         for in_node in node["inbounds"]:
-            in_shape = graphe[in_node]["attr"]["output_shape"][0]
+            in_shape = graph[in_node]["attr"]["output_shape"][0]
             if in_shape != []:
                 input_shape.append(in_shape)
                 logging.info(
@@ -781,53 +781,53 @@ class ShapeInference:
         return copy.deepcopy(input_shape), [output_shape]
 
     @staticmethod
-    def Concatenate_get_shape(graphe, node):
+    def Concatenate_get_shape(graph, node):
         """
         Get shape of a Concatenate operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Concat_get_shape(graphe, node)
+        return ShapeInference.Concat_get_shape(graph, node)
 
     @staticmethod
-    def ConcatV2_get_shape(graphe, node):
+    def ConcatV2_get_shape(graph, node):
         """
         Get shape of a ConcatV2 operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        return ShapeInference.Concat_get_shape(graphe, node)
+        return ShapeInference.Concat_get_shape(graph, node)
 
     @staticmethod
-    def Split_get_shape(graphe, node):
+    def Split_get_shape(graph, node):
         """
         Get shape of a Split operator.
         Also patched for Pack-StrideSlice-Split sequence.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
         for in_node in node["inbounds"]:
-            if graphe[in_node]["attr"]["type"] == "Const":
+            if graph[in_node]["attr"]["type"] == "Const":
                 pass
-            elif graphe[in_node]["attr"]["type"] == "Pack":
+            elif graph[in_node]["attr"]["type"] == "Pack":
                 pass
             else:
-                input_shape = copy.deepcopy(graphe[in_node]["attr"]["output_shape"][0])
+                input_shape = copy.deepcopy(graph[in_node]["attr"]["output_shape"][0])
 
         split_dim = node["attr"]["attr"]["split_dim"][0]
         logging.info("Fetched Split dim for %s is %s.", node["attr"]["name"], split_dim)
@@ -840,30 +840,30 @@ class ShapeInference:
         return [copy.deepcopy(input_shape)], output_shape
 
     @staticmethod
-    def Transpose_get_shape(graphe, node):
+    def Transpose_get_shape(graph, node):
         """
         Get shape of a Transpose operator.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
         for in_node in node["inbounds"]:
-            if graphe[in_node]["attr"]["type"] == "Const":
-                perm = copy.deepcopy(graphe[in_node]["attr"]["attr"]["constant"])
+            if graph[in_node]["attr"]["type"] == "Const":
+                perm = copy.deepcopy(graph[in_node]["attr"]["attr"]["constant"])
                 logging.info("Fetched perm sequence from Const op %s" % str(perm))
-            elif graphe[in_node]["attr"]["type"] == "Pack":
+            elif graph[in_node]["attr"]["type"] == "Pack":
                 perm = [1] + [
                     it
-                    for sl in graphe[in_node]["attr"]["attr"]["constant"]
+                    for sl in graph[in_node]["attr"]["attr"]["constant"]
                     for it in sl
                 ]
                 logging.info("Fetched perm sequence from Pack op %s" % str(perm))
             else:
-                input_shape = copy.deepcopy(graphe[in_node]["attr"]["output_shape"][0])
+                input_shape = copy.deepcopy(graph[in_node]["attr"]["output_shape"][0])
                 logging.info(
                     "Fetched input shape from %s,  %s" % (in_node, str(input_shape))
                 )
@@ -875,77 +875,77 @@ class ShapeInference:
         return [input_shape], [exp_output_shape]
 
     @staticmethod
-    def Packed_get_shape(graphe, node):
+    def Packed_get_shape(graph, node):
         """
         Get shape of a Transpose operator.
         Patched for kernel detector.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        seq = ph.get_graph_seq(graphe, [node["attr"]["name"]])[:5]
+        seq = ph.get_graph_seq(graph, [node["attr"]["name"]])[:5]
         for out_node in seq:
-            if graphe[out_node]["attr"]["type"] == "Reshape":
-                if "input_shape" in graphe[out_node]["attr"].keys():
+            if graph[out_node]["attr"]["type"] == "Reshape":
+                if "input_shape" in graph[out_node]["attr"].keys():
                     return (
-                        graphe[out_node]["attr"]["input_shape"],
-                        graphe[out_node]["attr"]["input_shape"],
+                        graph[out_node]["attr"]["input_shape"],
+                        graph[out_node]["attr"]["input_shape"],
                     )
         return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
 
     @staticmethod
-    def StridedSlice_get_shape(graphe, node):
+    def StridedSlice_get_shape(graph, node):
         """
         Get shape of a Transpose operator.
         Patched for kernel detector.
 
         Parameters
         ----------
-        graphe : dict
+        graph : dict
             The Graph IR in dict format.
         node   : dict
             The node in Graph IR in dict format.
         """
-        seq = ph.get_graph_seq(graphe, [node["attr"]["name"]])[:5]
+        seq = ph.get_graph_seq(graph, [node["attr"]["name"]])[:5]
         for out_node in seq:
-            if graphe[out_node]["attr"]["type"] == "Reshape":
-                if "input_shape" in graphe[out_node]["attr"].keys():
+            if graph[out_node]["attr"]["type"] == "Reshape":
+                if "input_shape" in graph[out_node]["attr"].keys():
                     return (
-                        graphe[out_node]["attr"]["input_shape"],
-                        graphe[out_node]["attr"]["input_shape"],
+                        graph[out_node]["attr"]["input_shape"],
+                        graph[out_node]["attr"]["input_shape"],
                     )
         return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
 
-    def __init__(self, graphe):
+    def __init__(self, graph):
         """
         Take the graph, and append output shape
         and input shape to the attributes of nodes.
 
         Parameters
         ----------
-        graphe : Graphe
+        graph : graph
             The Graph IR class.
         """
-        graph = graphe.get_graph()
-        seq = ph.get_graph_seq(graph, graphe.get_graph_head())
+        graph_item = graph.get_graph()
+        seq = ph.get_graph_seq(graph_item, graph.get_graph_head())
 
         # Pass #1
         for node_name in seq:
-            node_get_shape_name = graphe.get_node_type(node_name) + "_get_shape"
+            node_get_shape_name = graph.get_node_type(node_name) + "_get_shape"
             if node_get_shape_name in dir(self):
                 input_shape, output_shape = eval("self." + node_get_shape_name)(
-                    graph, graph[node_name]
+                    graph_item, graph_item[node_name]
                 )
                 if output_shape is not None:
-                    graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
+                    graph_item[node_name]["attr"]["output_shape"] = copy.deepcopy(
                         output_shape
                     )
                 if input_shape is not None:
-                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
+                    graph_item[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
                 logging.info(
                     "Input shape of %s op is %s." % (node_name, str(input_shape))
                 )
@@ -953,26 +953,26 @@ class ShapeInference:
                     "Output shape of %s op is %s." % (node_name, str(output_shape))
                 )
             else:
-                logging.error("%s not support yet." % graphe.get_node_type(node_name))
+                logging.error("%s not support yet." % graph.get_node_type(node_name))
                 logging.info("------ node content --------")
-                logging.info(graph[node_name])
+                logging.info(graph_item[node_name])
                 logging.info("----------------------------")
 
         # Pass #2
         # This is a patching for back-end, since backend extract shapes from
         # those two ops.
         for node_name in seq:
-            if graphe.get_node_type(node_name) in ["Packed", "StridedSlice"]:
-                node_get_shape_name = graphe.get_node_type(node_name) + "_get_shape"
+            if graph.get_node_type(node_name) in ["Packed", "StridedSlice"]:
+                node_get_shape_name = graph.get_node_type(node_name) + "_get_shape"
                 input_shape, output_shape = eval("self." + node_get_shape_name)(
-                    graph, graph[node_name]
+                    graph_item, graph_item[node_name]
                 )
                 if output_shape is not None:
-                    graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
+                    graph_item[node_name]["attr"]["output_shape"] = copy.deepcopy(
                         output_shape
                     )
                 if input_shape is not None:
-                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
+                    graph_item[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
                 logging.info(
                     "Second Pass: Input shape of %s op is %s."
                     % (node_name, str(input_shape))
