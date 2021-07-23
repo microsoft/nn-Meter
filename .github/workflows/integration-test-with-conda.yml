@@ -25,7 +25,7 @@ jobs:
     #     conda activate py36
     - name: Install dependencies
       run: |
-        conda update --file environment.yml --name base
+        conda update --name base
         # install nn-meter
         python setup.py install
         # install aditional dependencies for testing
