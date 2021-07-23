@@ -18,11 +18,11 @@ jobs:
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         echo $CONDA/bin >> $GITHUB_PATH
-    # - name: create py36 env and activate
-    #   run: |
-    #     source /usr/share/miniconda/bin/activate
-    #     conda create --name py36 python=3.6.10
-    #     conda activate py36
+    - name: create py36 env and activate
+      run: |
+        source /usr/share/miniconda/bin/activate
+        conda create --name py36 python=3.6.10
+        conda activate py36
     - name: Install dependencies
       run: |
         # conda update --file environment.yml --name base
