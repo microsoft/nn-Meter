@@ -18,15 +18,16 @@ jobs:
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         echo $CONDA/bin >> $GITHUB_PATH
+    - name: create py36 env and activate
+      run: |
+        conda create --name py36 python=3.6.10
+        conda activate py36
     - name: Install dependencies
       run: |
         # install nn-meter
         python setup.py install
         # install aditional dependencies for testing
-        pip install tensorflow==1.15.0
-        pip install onnx
-        pip install torch
-
+        pip install -r tests/requirements.txt 
     - name: Lint with flake8
       run: |
         conda install flake8
