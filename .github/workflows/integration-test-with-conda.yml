@@ -20,8 +20,7 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
     - name: Install dependencies
       run: |
-        # conda env update --file environment.yml --name base
-        # cd /path/to/nn-meter
+        conda env update --file environment.yml --name base
         pip install . # install nn-meter
         pip install -r tests/requirements.txt # install aditional dependencies for testing
     - name: Lint with flake8
