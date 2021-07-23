@@ -23,7 +23,7 @@ jobs:
         # conda env update --file environment.yml --name base
         # cd /path/to/nn-meter
         pip install . # install nn-meter
-        pip install tests/requirements.txt # install aditional dependencies for testing
+        pip install -r tests/requirements.txt # install aditional dependencies for testing
     - name: Lint with flake8
       run: |
         conda install flake8
