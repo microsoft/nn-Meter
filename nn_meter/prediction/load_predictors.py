@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from tqdm import tqdm
 import requests
 import logging
+from nn_meter.utils.utils import download_from_url
 
 
 def loading_to_local(pred_info, dir="data/predictorzoo"):
@@ -33,7 +34,7 @@ def loading_to_local(pred_info, dir="data/predictorzoo"):
             logging.info("load predictor %s" % p)
             model = pickle.load(f)
             predictors[pname] = model
-    fusionrule = os.path.join(ppath, "rule_" + hardware + ".json")
+    fusionrule = os.path.join(ppath, "fusion_rules.json")
     logging.info(fusionrule)
     if not os.path.isfile(fusionrule):
         raise ValueError(
@@ -42,33 +43,33 @@ def loading_to_local(pred_info, dir="data/predictorzoo"):
     return predictors, fusionrule
 
 
-def download_from_url(urladdr, ppath):
-    """
-    download the kernel predictors from the url
-    @params:
+# def download_from_url(urladdr, ppath):
+#     """
+#     download the kernel predictors from the url
+#     @params:
 
-    urladdr: github release url address
-    ppath: the targeting hardware_inferenceframework name
+#     urladdr: github release url address
+#     ppath: the targeting hardware_inferenceframework name
 
-    """
-    file_name = os.path.join(ppath, ".zip")
-    if not os.path.isdir(ppath):
-        os.makedirs(ppath)
+#     """
+#     file_name = os.path.join(ppath, ".zip")
+#     if not os.path.isdir(ppath):
+#         os.makedirs(ppath)
 
-    logging.info("download from " + urladdr)
-    response = requests.get(urladdr, stream=True)
-    total_size_in_bytes = int(response.headers.get("content-length", 0))
-    block_size = 2048  # 2 Kibibyte
-    progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
-    with open(file_name, "wb") as file:
-        for data in response.iter_content(block_size):
-            progress_bar.update(len(data))
-            file.write(data)
-    zipfile = ZipFile(file_name)
-    zipfile.extractall(path=ppath)
-    zipfile.close() 
-    progress_bar.close()
-    os.remove(file_name)
+#     logging.keyinfo("download from " + urladdr)
+#     response = requests.get(urladdr, stream=True)
+#     total_size_in_bytes = int(response.headers.get("content-length", 0))
+#     block_size = 2048  # 2 Kibibyte
+#     progress_bar = tqdm(total=total_size_in_bytes, unit="iB", unit_scale=True)
+#     with open(file_name, "wb") as file:
+#         for data in response.iter_content(block_size):
+#             progress_bar.update(len(data))
+#             file.write(data)
+#     zipfile = ZipFile(file_name)
+#     zipfile.extractall(path=ppath)
+#     zipfile.close() 
+#     progress_bar.close()
+#     os.remove(file_name)
 
 
 def check_predictors(ppath, kernel_predictors):

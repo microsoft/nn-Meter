@@ -14,10 +14,10 @@ def download_from_url(urladdr, ppath):
     @params:
 
     urladdr: github release url address
-    ppath: the targeting hardware_inferenceframework name
+    ppath: the targeting dir to save the download data (usually hardware_inferenceframework)
 
     """
-    file_name = ppath + "/" + ".zip"
+    file_name = os.path.join(ppath, ".zip")
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
@@ -32,6 +32,7 @@ def download_from_url(urladdr, ppath):
             file.write(data)
     zipfile = ZipFile(file_name)
     zipfile.extractall(path=ppath)
+    zipfile.close() 
     progress_bar.close()
     os.remove(file_name)
 

@@ -10,7 +10,7 @@ setup(
     url='https://github.com/microsoft/nn-Meter',
     packages=find_packages(),
     package_data={
-        'nn_meter': ['configs/*.yaml'],
+        'nn_meter': ['configs/*.yaml', 'kerneldetection/fusionlib/*.json'],
     },
     entry_points={
         'console_scripts': ['nn-meter=nn_meter.nn_meter:nn_meter_cli'],

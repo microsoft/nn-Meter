@@ -7,6 +7,7 @@ from nn_meter.prediction.load_predictors import loading_to_local
 
 import yaml
 import os
+import sys
 import argparse
 import pkg_resources
 from shutil import copyfile
@@ -153,9 +154,9 @@ def nn_meter_cli():
     args = parser.parse_args()
 
     if args.verbose:
-        logging.basicConfig(format="%(message)s", level=logging.INFO)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.INFO)
     else:
-        logging.basicConfig(format="%(message)s", level=logging.KEYINFO)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.KEYINFO)
     
     if args.list_predictors:
         preds = load_config_file(__predictors_cfg_filename__)

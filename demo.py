@@ -4,7 +4,7 @@ from nn_meter.utils.utils import try_import_torchvision_models
 from nn_meter import load_latency_predictor
 import argparse
 import os
-import logging
+import sys
 import logging
 from functools import partial, partialmethod
 
@@ -149,9 +149,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.verbose:
-        logging.basicConfig(format="%(message)s", level=logging.INFO)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.INFO)
     else:
-        logging.basicConfig(format="%(message)s", level=logging.KEYINFO)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.KEYINFO)
 
     if args.tensorflow:
         input_model, model_type = args.tensorflow, "pb"
