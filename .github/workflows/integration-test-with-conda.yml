@@ -29,7 +29,7 @@ jobs:
         # install nn-meter
         python setup.py install
         # install aditional dependencies for testing
-        pip install -r tests/requirements.txt 
+        conda install -r tests/requirements.txt 
     # - name: Lint with flake8
     #   run: |
     #     conda install flake8
