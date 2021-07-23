@@ -23,17 +23,17 @@ class NNIIRConverter:
         GraphConverterWithShape().flatten(self.ir_model)
 
     def convert(self):
-        graphe = self._to_graphe_layout()
+        graph = self._to_graph_layout()
 
-        for _, node in graphe.items():
+        for _, node in graph.items():
             self._map_opset(node)
 
-        self._remove_unshaped_nodes(graphe)
+        self._remove_unshaped_nodes(graph)
 
-        return graphe
+        return graph
 
-    def _to_graphe_layout(self):
-        graphe = {}
+    def _to_graph_layout(self):
+        graph = {}
 
         for node in self.ir_model.root_graph.hidden_nodes:
             node_dict = {
@@ -59,9 +59,9 @@ class NNIIRConverter:
             for edge in outgoing_edges:
                 node_dict["outbounds"].append(edge.tail.name)
 
-            graphe[node.name] = node_dict
+            graph[node.name] = node_dict
 
-        return graphe
+        return graph
 
     def _map_opset(self, node):
         old_type = node["attr"]["type"]
@@ -83,10 +83,10 @@ class NNIIRConverter:
         node["attr"]["type"] = new_type
         node["attr"]["attr"] = new_attr_dict
 
-    def _remove_unshaped_nodes(self, graphe):
-        for node_name, node_dict in list(graphe.items()):
+    def _remove_unshaped_nodes(self, graph):
+        for node_name, node_dict in list(graph.items()):
             if not node_dict["attr"]["input_shape"]:
-                del graphe[node_name]
+                del graph[node_name]
 
 
 class NNIBasedTorchConverter(NNIIRConverter):

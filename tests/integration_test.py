@@ -63,7 +63,7 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
     # if the outcsv is not created, create it and add a title
     if not os.path.isfile(outcsv_name):
         with open(outcsv_name,"w") as f:
-            f.write('test_time, model_name, model_type, predictor, predictor_version, latency, runtime\n')
+            f.write('model_name, model_type, predictor, predictor_version, latency\n')
 
     # start testing
     for model in get_models(model_type, ppath):
@@ -77,7 +77,7 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
                 logging.error("Meets ERROR when checking --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}")
 
             latency = parse_latency_info(result.decode('utf-8'))
-            item = f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}, {os.path.basename(model)}, {model_type}, {pred_name}, {pred_version}, {latency}, {runtime}\n'
+            item = f'{os.path.basename(model)}, {model_type}, {pred_name}, {pred_version}, {latency}\n'
             with open(outcsv_name,"a") as f:
                 f.write(item)
 

@@ -200,7 +200,7 @@ class Graph:
 
         return True
 
-    def plot_graphs(self, comment="Network Graphe View"):
+    def plot_graphs(self, comment="Network Graph View"):
         from graphviz import Digraph
 
         dot = Digraph(comment=comment)

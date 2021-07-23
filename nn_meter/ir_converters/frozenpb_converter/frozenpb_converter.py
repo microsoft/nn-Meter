@@ -24,7 +24,7 @@ class FrozenPbConverter:
         # Strip constant and indentity nodes
         parser.strip_useless_nodes(self.graph)
 
-    def get_flatten_graphe(self):
+    def get_flatten_graph(self):
         def np_encoder(d):
             for k, v in d.items():
                 if isinstance(v, dict):

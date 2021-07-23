@@ -59,7 +59,7 @@ def model_file_to_graph(filename, model_type=None, input_shape=(1, 3, 224, 224))
         return model_to_graph(model, model_type)
     elif model_type == "pb":
         converter = FrozenPbConverter(filename)
-        return converter.get_flatten_graphe()
+        return converter.get_flatten_graph()
     elif model_type == "json":
         with open(filename, "r") as fp:
             return json.load(fp)
