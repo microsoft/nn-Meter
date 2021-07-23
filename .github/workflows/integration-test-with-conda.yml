@@ -23,7 +23,10 @@ jobs:
         # install nn-meter
         python setup.py install
         # install aditional dependencies for testing
-        pip install -r tests/requirements.txt 
+        pip install tensorflow==1.15.0
+        pip install onnx
+        pip install torch
+
     - name: Lint with flake8
       run: |
         conda install flake8
