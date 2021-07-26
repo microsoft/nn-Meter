@@ -66,6 +66,10 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
 
     # start testing
+    print("#####################################")
+    print(get_models(model_type, ppath))
+    print("#####################################")
+    print(get_predictors())
     for model in get_models(model_type, ppath):
         for pred_name, pred_version in get_predictors():
             try:
