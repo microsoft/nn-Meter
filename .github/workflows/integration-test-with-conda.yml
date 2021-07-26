@@ -28,5 +28,6 @@ jobs:
         pip list
     - name: Integration test
       run: |
+        nn-meter -h
         python tests/integration_test.py
         diff tests/test_result.txt tests/reference_result.txt
