@@ -48,6 +48,9 @@ jobs:
 
     - name: Integration test
       run: |
+        nn-meter --list-predictors
+        ls ~/.nn_meter/config
+        ls ~/.nn_meter/data
         python tests/integration_test.py
         ls ../data/testmodels/pb
         ls ../data/testmodels/onnx
