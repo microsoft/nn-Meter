@@ -77,25 +77,8 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
 
             latency = parse_latency_info(result.decode('utf-8'))
             item = f'{os.path.basename(model)}, {model_type}, {pred_name}, {pred_version}, {latency}\n'
-            with open(outcsv_name, "a") as f:
+            with open(outcsv_name, "w") as f:
                 f.write(item)
-    
-    print("#################### complete calculation, ", outcsv_name)
-    print(os.path.isfile('tests/test_result.txt'))
-    lines = []
-    with open(outcsv_name, "r") as f:
-        lines = f.readlines()
-    for line in lines:
-        print(line)
-    
-    print("#################### complete calculation, tests/reference_result.txt")
-    lines = []
-    with open("tests/reference_result.txt", "r") as f:
-        lines = f.readlines()
-    for line in lines:
-        print(line)
-
-    print("#################### complete ####################")
     
 
 if __name__ == "__main__":
@@ -114,5 +97,21 @@ if __name__ == "__main__":
         url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
         ppath = "../data/testmodels/onnx",
     )
+
+    print("#################### complete calculation, ", "tests/test_result.txt")
+    lines = []
+    with open("tests/test_result.txt", "r") as f:
+        lines = f.readlines()
+    for line in lines:
+        print(line)
+    
+    print("#################### complete calculation, tests/reference_result.txt")
+    lines = []
+    with open("tests/reference_result.txt", "r") as f:
+        lines = f.readlines()
+    for line in lines:
+        print(line)
+
+    print("#################### complete ####################")
 
 
