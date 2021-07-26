@@ -3,25 +3,36 @@ name: Integrated Test
 on: [push]
 
 jobs:
-  integrated-test:
+  build-linux:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
         python-version: 3.6.10
+
+    - name: cache
+      run: |
+        mkdir ../data
+        mkdir ../data/testmodels/
+        # pwd: /home/runner/work/nn-Meter/nn-Meter
+        # python /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
+        # pythonLocation: /opt/hostedtoolcache/Python/3.6.10/x64
+        # LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.6.10/x64/lib
+        # package path: /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
+        
     - name: Install nn-Meter and dependencies
       run: |
         # install dependencies for testing
         pip install -r tests/requirements.txt 
         # install nn-meter
         python setup.py install
-        # for debug
-        pip list
+
     - name: Integration test
       run: |
         nn-meter -h

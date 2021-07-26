@@ -91,14 +91,14 @@ if __name__ == "__main__":
     integration_test(
         model_type='tensorflow',
         url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip",
-        ppath = "data/testmodels/pb",
+        ppath = "../data/testmodels/pb",
     )
 
     # check onnx model
     integration_test(
         model_type='onnx',
         url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
-        ppath = "data/testmodels/onnx",
+        ppath = "../data/testmodels/onnx",
     )
 
 
