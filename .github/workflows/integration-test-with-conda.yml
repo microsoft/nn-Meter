@@ -23,8 +23,8 @@ jobs:
         source /usr/share/miniconda/bin/activate
         conda create --name py36 python=3.6.10
         conda activate py36
-        echo ls
-        echo pwd
+        echo $(ls)
+        echo $(pwd)
     - name: Install dependencies
       run: |
         # conda update --file environment.yml --name base
