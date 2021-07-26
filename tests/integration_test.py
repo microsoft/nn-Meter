@@ -25,7 +25,7 @@ def check_package_status():
 # check predictors list
 def get_predictors():
     try:
-        predictors_list = subprocess.check_output('nn-meter --list-predictors')
+        predictors_list = subprocess.check_output(['nn-meter', '--list-predictors'])
     except NotImplementedError:
         logging.error("Meets ERROR when checking 'nn-meter --list-predictors'")
 
@@ -73,7 +73,7 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
             try:
                 since = time.time()
                 # print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
-                result = subprocess.check_output(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
+                result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{model}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
                 runtime = time.time() - since
             except NotImplementedError:
                 logging.error("Meets ERROR when checking --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}")
