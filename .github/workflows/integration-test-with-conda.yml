@@ -14,17 +14,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.6.10
-    - name: Install dependencies
+    - name: Install nn-Meter and dependencies
       run: |
         # install dependencies for testing
         pip install -r tests/requirements.txt 
-        pip list
-    - name: Install nn-Meter
-      run: |
         # install nn-meter
-        python setup.py install # try1
-        # python setup.py sdist bdist_wheel # try2
-        # pip install dist\nn_meter-1.0-py3-none-any.whl # try2
+        python setup.py install
+        # for debug
         pip list
     - name: Integration test
       run: |
