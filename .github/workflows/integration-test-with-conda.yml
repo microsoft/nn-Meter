@@ -16,11 +16,12 @@ jobs:
         python-version: 3.6.10
     - name: Install dependencies
       run: |
-        # pip install -r requirements.txt 
+        # install dependencies for testing
+        pip install -r tests/requirements.txt 
         # install nn-meter
         python setup.py install
-        # install aditional dependencies for testing
-        pip install -r tests/requirements.txt 
+        
+        
     # - name: Lint with flake8
     #   run: |
     #     conda install flake8
