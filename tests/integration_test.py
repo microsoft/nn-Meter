@@ -16,8 +16,6 @@ __model_suffix__ = {
 # check package status
 def check_package_status():
     try:
-        output1 = subprocess.check_output(['ls', '-l'])
-        print(output1)
         output1 = subprocess.check_output(['nn-meter', '-h'])
     except NotImplementedError:
         logging.error("Meets ERROR when checking 'nn-meter -h'")
@@ -72,7 +70,6 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
         for pred_name, pred_version in get_predictors():
             try:
                 since = time.time()
-                # print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
                 result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{model}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
                 runtime = time.time() - since
             except NotImplementedError:
@@ -80,9 +77,25 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
 
             latency = parse_latency_info(result.decode('utf-8'))
             item = f'{os.path.basename(model)}, {model_type}, {pred_name}, {pred_version}, {latency}\n'
-            with open(outcsv_name,"a") as f:
+            with open(outcsv_name, "a") as f:
                 f.write(item)
+    
+    print("#################### complete calculation, ", outcsv_name)
+    lines = []
+    with open(outcsv_name, "a") as f:
+        lines = f.readlines()
+    for line in lines:
+        print(line)
+    
+    print("#################### complete calculation, tests/reference_result.txt")
+    lines = []
+    with open("tests/reference_result.txt", "a") as f:
+        lines = f.readlines()
+    for line in lines:
+        print(line)
 
+    print("#################### complete ####################")
+    
 
 if __name__ == "__main__":
     check_package_status()
