@@ -27,12 +27,10 @@ def get_predictors():
     except NotImplementedError:
         logging.error("Meets ERROR when checking 'nn-meter --list-predictors'")
 
-    print("predictors_list", predictors_list)
     predictors_list = predictors_list.decode('utf-8')
-    pattern = re.compile(r'(?<=\[Predictor\] ).+(?=\r\n)')
+    pattern = re.compile(r'(?<=\[Predictor\] ).+(?=\n)')
     predictors_info = pattern.findall(predictors_list)
     predictors = list(map(lambda x: x.split(': version='), predictors_info))
-    print("predictors_list", predictors)
     return predictors
 
 
@@ -56,7 +54,10 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
     ppath:  the targeting dir to save the download model file
     outcsv_name: a summary file to save the testing results
     """
-
+    if not os.path.isdir("../data/testmodels"):
+        os.mkdir("../data")
+        os.mkdir("../data/testmodels")
+        
     # download data and unzip
     if not os.path.isdir(ppath):
         os.mkdir(ppath)
@@ -68,8 +69,6 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
 
     # start testing
-    print("#####################################")
-    print(get_models(model_type, ppath))
     print("#####################################")
     print(get_predictors())
     for model in get_models(model_type, ppath):

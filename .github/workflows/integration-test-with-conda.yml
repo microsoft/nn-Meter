@@ -16,28 +16,23 @@ jobs:
       with:
         python-version: 3.6.10
 
-    - name: Cache node modules
-      # uses: actions/cache@v2
-      # env:
-      #   cache-name: cache-node-modules
-      # with:
-      #   # npm cache files are stored in `~/.npm` on Linux/macOS
-      #   path: /home/runner/work/nn-Meter/data/testmodels/
+    # - name: Cache node modules
+    #   uses: actions/cache@v2
+    #   env:
+    #     cache-name: cache-node-modules
+    #   with:
+    #     # npm cache files are stored in `~/.npm` on Linux/macOS
+    #     path: |
+    #       /home/runner/work/nn-Meter/data/testmodels
+    #       /home/runner/.nn_meter/data
+    #       /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6
 
-      #   key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-      #   restore-keys: |
-      #     ${{ runner.os }}-build-${{ env.cache-name }}-
-      #     ${{ runner.os }}-build-
-      #     ${{ runner.os }}-
-      run: |
-        mkdir ../data
-        mkdir ../data/testmodels/
-
-        # pwd: /home/runner/work/nn-Meter/nn-Meter
-        # python /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
-        # pythonLocation: /opt/hostedtoolcache/Python/3.6.10/x64
-        # LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.6.10/x64/lib
-        # package path: /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
+    #     key: ${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
+    #     # pwd: /home/runner/work/nn-Meter/nn-Meter
+    #     # python /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
+    #     # pythonLocation: /opt/hostedtoolcache/Python/3.6.10/x64
+    #     # LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.6.10/x64/lib
+    #     # package path: /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
 
     - name: Install nn-Meter and dependencies
       run: |
@@ -48,8 +43,5 @@ jobs:
 
     - name: Integration test
       run: |
-        nn-meter --list-predictors
         python tests/integration_test.py
-        ls ../data/testmodels/pb
-        ls ../data/testmodels/onnx
         diff tests/test_result.txt tests/reference_result.txt
