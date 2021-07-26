@@ -81,15 +81,16 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
                 f.write(item)
     
     print("#################### complete calculation, ", outcsv_name)
+    print(os.path.isfile('tests/test_result.txt'))
     lines = []
-    with open(outcsv_name, "a") as f:
+    with open(outcsv_name, "r") as f:
         lines = f.readlines()
     for line in lines:
         print(line)
     
     print("#################### complete calculation, tests/reference_result.txt")
     lines = []
-    with open("tests/reference_result.txt", "a") as f:
+    with open("tests/reference_result.txt", "r") as f:
         lines = f.readlines()
     for line in lines:
         print(line)
