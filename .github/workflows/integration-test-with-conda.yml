@@ -19,8 +19,9 @@ jobs:
         # install dependencies for testing
         pip install -r tests/requirements.txt 
         # install nn-meter
-        python setup.py install
-        
+        # python setup.py install # try1
+        python setup.py sdist bdist_wheel
+        pip install dist\nn_meter-1.0-py3-none-any.whl
         
     # - name: Lint with flake8
     #   run: |
