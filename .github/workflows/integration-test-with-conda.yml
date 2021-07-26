@@ -23,8 +23,8 @@ jobs:
       run: |
         # install nn-meter
         python setup.py install # try1
-        python setup.py sdist bdist_wheel # try2
-        pip install dist\nn_meter-1.0-py3-none-any.whl # try2
+        # python setup.py sdist bdist_wheel # try2
+        # pip install dist\nn_meter-1.0-py3-none-any.whl # try2
         pip list
     - name: Integration test
       run: |
