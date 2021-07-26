@@ -15,6 +15,7 @@ jobs:
       with:
         python-version: 3.6
     - name: debug
+      run: |
         echo $(pwd)
         python --version
     - name: Install dependencies
