@@ -16,32 +16,29 @@ jobs:
       with:
         python-version: 3.6.10
 
-    # - name: Cache node modules
-    #   uses: actions/cache@v2
-    #   env:
-    #     cache-name: cache-node-modules
-    #   with:
-    #     # npm cache files are stored in `~/.npm` on Linux/macOS
-    #     path: |
-    #       /home/runner/work/nn-Meter/data/testmodels
-    #       /home/runner/.nn_meter/data
-    #       /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6
+    - uses: actions/cache@v2
+      id: cache
+      with:
+        path: |
+          /home/runner/work/nn-Meter/data/testmodels
+          /home/runner/.nn_meter/data
+          # /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6
+        key: ${{hashFiles('setup.py')}}-${{hashFiles('tests/requirements.txt') }}
+        # pwd: /home/runner/work/nn-Meter/nn-Meter
+        # python /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
+        # pythonLocation: /opt/hostedtoolcache/Python/3.6.10/x64
+        # LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.6.10/x64/lib
+        # package path: /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
 
-    #     key: ${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
-    #     # pwd: /home/runner/work/nn-Meter/nn-Meter
-    #     # python /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
-    #     # pythonLocation: /opt/hostedtoolcache/Python/3.6.10/x64
-    #     # LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.6.10/x64/lib
-    #     # package path: /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
-
-    - name: Install nn-Meter and dependencies
-      run: |
-        # install dependencies for testing
-        pip install -r tests/requirements.txt 
-        # install nn-meter
-        python setup.py install
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pip install -r tests/requirements.txt 
+        
+    - name: Install nn-Meter
+      run: python setup.py install
 
     - name: Integration test
-      run: |
-        python tests/integration_test.py
+      run: python tests/integration_test.py
+    
+    - name: Diff result with reference
         diff tests/test_result.txt tests/reference_result.txt
