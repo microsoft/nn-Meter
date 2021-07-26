@@ -3,7 +3,7 @@ name: Integrated Test
 on: [push]
 
 jobs:
-  build-linux:
+  integrated-test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
@@ -16,7 +16,7 @@ jobs:
         python-version: 3.6.10
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt 
+        # pip install -r requirements.txt 
         # install nn-meter
         python setup.py install
         # install aditional dependencies for testing
