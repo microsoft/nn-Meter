@@ -25,6 +25,8 @@ jobs:
         conda activate py36
         echo $(ls)
         echo $(pwd)
+        python --version
+        echo $GITHUB_PATH
     - name: Install dependencies
       run: |
         # conda update --file environment.yml --name base
