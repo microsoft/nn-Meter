@@ -14,19 +14,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.6
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: create py36 env and activate
-      run: |
-        source /usr/share/miniconda/bin/activate
-        conda create --name py36 python=3.6.10
-        conda activate py36
-        echo $(ls)
+    - name: debug
         echo $(pwd)
         python --version
-        echo $GITHUB_PATH
     - name: Install dependencies
       run: |
         # conda update --file environment.yml --name base
