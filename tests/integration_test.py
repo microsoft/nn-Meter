@@ -27,10 +27,12 @@ def get_predictors():
     except NotImplementedError:
         logging.error("Meets ERROR when checking 'nn-meter --list-predictors'")
 
+    print("predictors_list", predictors_list)
     predictors_list = predictors_list.decode('utf-8')
     pattern = re.compile(r'(?<=\[Predictor\] ).+(?=\r\n)')
     predictors_info = pattern.findall(predictors_list)
     predictors = list(map(lambda x: x.split(': version='), predictors_info))
+    print("predictors_list", predictors)
     return predictors
 
 
