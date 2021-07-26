@@ -18,7 +18,7 @@ def check_package_status():
     try:
         output1 = subprocess.check_output(['ls', '-l'])
         print(output1)
-        output1 = subprocess.check_output('nn-meter -h')
+        output1 = subprocess.check_output(['nn-meter', '-h'])
     except NotImplementedError:
         logging.error("Meets ERROR when checking 'nn-meter -h'")
 
