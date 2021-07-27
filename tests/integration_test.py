@@ -36,7 +36,7 @@ def get_predictors():
 
 def get_models(model_type, ppath = "data/testmodels/pb"):
     models = glob(os.path.join(ppath, "**" + __model_suffix__[model_type]))
-    models.sort()
+    models.sort() # sort the models list by alphabetical order
     return models
 
 
@@ -69,7 +69,7 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
     if not os.path.isfile(outcsv_name):
         with open(outcsv_name,"w") as f:
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
-
+    
     # start testing
     for model in get_models(model_type, ppath):
         for pred_name, pred_version in get_predictors():
@@ -104,5 +104,3 @@ if __name__ == "__main__":
         url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
         ppath = "../data/testmodels/onnx",
     )
-
-

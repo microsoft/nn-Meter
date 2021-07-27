@@ -23,6 +23,8 @@ To install nn-meter, please first install python3. The test environment uses ana
 `pip3 install -r requirements.txt`
 Please also check the versions of numpy, scikit_learn. The different versions may change the prediction accuracy of kernel predictors.
 
+If you use nn-meter in NNI, make sure NNI version >= 2.4
+
 ## Usage
 ### Supported input model format
 
