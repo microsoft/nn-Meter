@@ -35,7 +35,8 @@ def get_predictors():
 
 
 def get_models(model_type, ppath = "data/testmodels/pb"):
-    return glob(os.path.join(ppath, "**" + __model_suffix__[model_type]))
+    models = glob(os.path.join(ppath, "**" + __model_suffix__[model_type]))
+    return models.sort()
 
 
 def parse_latency_info(info):

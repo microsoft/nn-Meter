@@ -41,4 +41,4 @@ jobs:
       run: python tests/integration_test.py
     
     - name: Diff result with reference
-        diff tests/test_result.txt tests/reference_result.txt
+      run: diff tests/test_result.txt tests/reference_result.txt
