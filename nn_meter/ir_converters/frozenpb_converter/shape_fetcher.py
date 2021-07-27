@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import tensorflow as tf
+from nn_meter.utils.utils import try_import_tensorflow
 import numpy as np
 from typing import List
 
@@ -15,6 +15,7 @@ class ShapeFetcher:
         input_graph : graph_def
             The tensorflow input graph_def file.
         """
+        tf = try_import_tensorflow()
         tf.compat.v1.disable_eager_execution()
 
         graph = tf.Graph()

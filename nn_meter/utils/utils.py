@@ -4,6 +4,8 @@ import os
 from zipfile import ZipFile
 from tqdm import tqdm
 import requests
+from packaging import version
+import logging
 
 
 def download_from_url(urladdr, ppath):
@@ -12,14 +14,14 @@ def download_from_url(urladdr, ppath):
     @params:
 
     urladdr: github release url address
-    ppath: the targeting hardware_inferenceframework name
+    ppath: the targeting dir to save the download data (usually hardware_inferenceframework)
 
     """
-    file_name = ppath + "/" + ".zip"
+    file_name = os.path.join(ppath, ".zip")
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
-    print("download from " + urladdr)
+    logging.keyinfo("download from " + urladdr)
     response = requests.get(urladdr, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     block_size = 2048  # 2 Kibibyte
@@ -30,5 +32,49 @@ def download_from_url(urladdr, ppath):
             file.write(data)
     zipfile = ZipFile(file_name)
     zipfile.extractall(path=ppath)
+    zipfile.close() 
     progress_bar.close()
     os.remove(file_name)
+
+
+def try_import_onnx(require_version = "1.9.0"):
+    try:
+        import onnx
+        if version.parse(onnx.__version__) != version.parse(require_version):
+            logging.warning(f'onnx=={onnx.__version__} is not well tested now, well tested version: onnx=={require_version}' )
+        return onnx
+    except ImportError:
+        logging.error(f'You have not install the onnx package, please install onnx=={require_version} and try again.')
+        exit()
+
+
+def try_import_torch(require_version = "1.8.1"):
+    try:
+        import torch
+        if version.parse(torch.__version__) != version.parse(require_version):
+            logging.warning(f'torch=={torch.__version__} is not well tested now, well tested version: torch=={require_version}' )
+        return torch
+    except ImportError:
+        logging.error(f'You have not install the torch package, please install torch=={require_version} and try again.')
+        exit()
+
+
+def try_import_tensorflow(require_version = "1.9.0"):
+    try:
+        import tensorflow
+        if version.parse(tensorflow.__version__) != version.parse(require_version):
+            logging.warning(f'tensorflow=={tensorflow.__version__} is not well tested now, well tested version: tensorflow=={require_version}' )
+        return tensorflow
+    except ImportError:
+        logging.error(f'You have not install the tensorflow package, please install tensorflow=={require_version} and try again.')
+        exit()
+
+
+def try_import_torchvision_models():
+    try:
+        import torchvision
+        return torchvision.models
+    except ImportError:
+        logging.error(f'You have not install the torchvision package, please install torchvision and try again.')
+        exit()
+        

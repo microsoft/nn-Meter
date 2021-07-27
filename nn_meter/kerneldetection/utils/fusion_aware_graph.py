@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.graphe_tool import Graphe
+from nn_meter.utils.graph_tool import Graph
 from .union_find import UF
 import networkx as nx
 
 
 class FusionAwareGraph:
-    def __init__(self, graph: Graphe):
+    def __init__(self, graph: Graph):
         self._graph = graph
         self._dag = list(nx.topological_sort(graph.get_networkx_graph()))
         self._uf = UF(len(self._dag))

@@ -1,15 +1,17 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+from nn_meter.utils.utils import try_import_onnx
 import networkx as nx
 from .utils import get_tensor_shape
 from .constants import SLICE_TYPE
 from itertools import chain
 import logging
-from onnx import AttributeProto, shape_inference
 
 
 class OnnxConverter:
     def __init__(self, model):
+        onnx = try_import_onnx()
+        from onnx import shape_inference
         inferred_model = shape_inference.infer_shapes(model)
         self.graph = inferred_model.graph
 
@@ -62,6 +64,7 @@ class OnnxConverter:
         return G
 
     def fetch_attrs(self, node):
+        from onnx import AttributeProto
         attrs = {}
         input_tensors = []
         for input_name in node.input:
