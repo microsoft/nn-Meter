@@ -39,7 +39,7 @@ jobs:
       run: pip install -r tests/requirements.txt 
         
     - name: Install nn-Meter
-      run: python setup.py install
+      run: pip install .
 
     - name: Integration test
       run: python tests/integration_test.py
