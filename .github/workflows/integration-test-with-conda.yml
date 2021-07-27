@@ -23,7 +23,8 @@ jobs:
           /home/runner/work/nn-Meter/data/testmodels
           /home/runner/.nn_meter/data
           # /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6
-        key: ${{hashFiles('setup.py')}}-${{hashFiles('tests/requirements.txt') }}
+        key: nn-meter-models
+        # ${{hashFiles('setup.py')}}-${{hashFiles('tests/requirements.txt') }}
         # pwd: /home/runner/work/nn-Meter/nn-Meter
         # python /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
         # pythonLocation: /opt/hostedtoolcache/Python/3.6.10/x64
