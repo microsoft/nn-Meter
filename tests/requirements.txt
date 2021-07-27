@@ -1,5 +1,4 @@
 # additional required packages for testing
-scipy==1.5.4
 tensorflow==1.15.0
 onnx==1.9.0
 torch==1.8.1

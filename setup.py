@@ -16,14 +16,6 @@ setup(
         'console_scripts': ['nn-meter=nn_meter.nn_meter:nn_meter_cli'],
     },
     install_requires=[
-        'numpy==1.18.5', 
-        'tqdm==4.47.0', 
-        'networkx==2.4', 
-        'requests==2.22.0', 
-        'protobuf==3.17.1', 
-        'PyYAML==5.4.1', 
-        'scikit_learn==0.24.2', 
-        'packaging==21.0', 
-        'logging'
+        'numpy', 'tqdm', 'networkx', 'requests', 'protobuf', 'PyYAML', 'scikit_learn', 'packaging', 'logging'
     ],
 )
