@@ -36,7 +36,7 @@ def get_predictors():
 
 def get_models(model_type, ppath = "data/testmodels/pb"):
     models = glob(os.path.join(ppath, "**" + __model_suffix__[model_type]))
-    models.sort()
+    models.sort() # sort the models list by alphabetical order
     return models
 
 
@@ -65,29 +65,27 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
         os.mkdir(ppath)
         download_from_url(url, ppath)
 
-    # # if the outcsv is not created, create it and add a title
-    # if not os.path.isfile(outcsv_name):
-    #     with open(outcsv_name,"w") as f:
-    #         f.write('model_name, model_type, predictor, predictor_version, latency\n')
+    # if the outcsv is not created, create it and add a title
+    if not os.path.isfile(outcsv_name):
+        with open(outcsv_name,"w") as f:
+            f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
-    # # start testing
-    # print("#####################################")
-    # print(get_predictors())
-    # for model in get_models(model_type, ppath):
-    #     for pred_name, pred_version in get_predictors():
-    #         try:
-    #             since = time.time()
-    #             print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
-    #             result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{model}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
-    #             runtime = time.time() - since
-    #         except NotImplementedError:
-    #             logging.error("Meets ERROR when checking --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}")
+    # start testing
+    for model in get_models(model_type, ppath):
+        for pred_name, pred_version in get_predictors():
+            try:
+                since = time.time()
+                # print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
+                result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{model}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
+                runtime = time.time() - since
+            except NotImplementedError:
+                logging.error("Meets ERROR when checking --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}")
 
-    #         latency = parse_latency_info(result.decode('utf-8'))
-    #         item = f'{os.path.basename(model)}, {model_type}, {pred_name}, {pred_version}, {latency}\n'
-    #         print(item)
-    #         with open(outcsv_name, "a") as f:
-    #             f.write(item)
+            latency = parse_latency_info(result.decode('utf-8'))
+            item = f'{os.path.basename(model)}, {model_type}, {pred_name}, {pred_version}, {latency}\n'
+            # print(item)
+            with open(outcsv_name, "a") as f:
+                f.write(item)
     
 
 if __name__ == "__main__":
@@ -100,9 +98,9 @@ if __name__ == "__main__":
         ppath = "../data/testmodels/pb",
     )
 
-    # # check onnx model
-    # integration_test(
-    #     model_type='onnx',
-    #     url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
-    #     ppath = "../data/testmodels/onnx",
-    # )
+    # check onnx model
+    integration_test(
+        model_type='onnx',
+        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
+        ppath = "../data/testmodels/onnx",
+    )
