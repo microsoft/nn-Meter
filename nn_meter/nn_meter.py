@@ -53,11 +53,10 @@ def list_latency_predictors():
     return load_config_file(__predictors_cfg_filename__)
 
 
-def load_predictor_config(predictor_name: str, predictor_version: str):
+def load_predictor_config(predictor_name: str, predictor_version: float = None):
     """load predictor config according to name and version
     """
     config = load_config_file(__predictors_cfg_filename__)
-    predictor_version = float(predictor_version) if predictor_version else None
     preds_info = [p for p in config if p['name'] == predictor_name and (predictor_version is None or p['version'] == predictor_version)]
     n_preds = len(preds_info)
     if n_preds == 1:
@@ -75,7 +74,7 @@ def load_predictor_config(predictor_name: str, predictor_version: str):
         raise NotImplementedError('No predictor that meets the required name and version, please try again.')
 
 
-def load_latency_predictor(predictor_name: str, predictor_version: str = None):
+def load_latency_predictor(predictor_name: str, predictor_version: float = None):
     """load predictor model according to name and version
     """
     pred_info = load_predictor_config(predictor_name, predictor_version)

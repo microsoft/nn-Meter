@@ -111,7 +111,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--predictor-version",
-        type=str,
+        type=float,
         default=None,
         help="the version of the latency predictor (If not specified, use the lateast version)",
     )
