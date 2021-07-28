@@ -56,7 +56,7 @@ nn-meter --predictor <hardware> --nni-ir <json-file>
 
 nn-Meter currently supports prediction on the following four config:
 
-|   Predictor (hardware)   |
+|   Predictor (device_inferenceframework)   |
 | :----------------------: |
 |  cortexA76cpu_tflite21   |
 |  adreno640gpu_tflite21   |
