@@ -20,40 +20,41 @@ logging.Logger.result = partialmethod(logging.Logger.log, logging.RESULT)
 logging.result = partial(logging.log, logging.RESULT)
 
 
-def test_ir_graphs(args, predictor):
+def test_ir_graphs(predictor, ppath="data/testmodels"):
     # will remove this to examples once we have the pip package
     from glob import glob
     from nn_meter import download_from_url
 
     url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/ir_graphs.zip"
-    download_from_url(url, "data/testmodels")
-    models = glob("data/testmodels/**.json")
+    download_from_url(url, ppath)
+    models = glob(os.path.join(ppath, "**.json"))
+    print(models)
     for model in models:
         latency = predictor.predict(model)
         logging.info(os.path.basename(model), latency)
 
 
-def test_pb_models(args, predictor):
+def test_pb_models(predictor, ppath="data/testmodels"):
     # will remove this to examples once we have the pip package
     from glob import glob
     from nn_meter import download_from_url
 
     url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip"
-    download_from_url(url, "data/testmodels")
-    models = glob("data/testmodels/**.pb")
+    download_from_url(url, ppath)
+    models = glob(os.path.join(ppath, "**.pb"))
     for model in models:
         latency = predictor.predict(model)
         logging.info(os.path.basename(model), latency)
 
 
-def test_onnx_models(args, predictor):
+def test_onnx_models(predictor, ppath="data/testmodels"):
     # will remove this to examples once we have the pip package
     from glob import glob
     from nn_meter import download_from_url
 
     url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip"
-    download_from_url(url, "data/testmodels")
-    models = glob("data/testmodels/**.onnx")
+    download_from_url(url, ppath)
+    models = glob(os.path.join(ppath, "**.onnx"))
     for model in models:
         latency = predictor.predict(model)
         logging.info(os.path.basename(model), latency)
@@ -106,7 +107,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--predictor", 
         type=str, 
-        required=True, 
         help="name of target predictor (hardware)",
     )
     parser.add_argument(
@@ -166,17 +166,19 @@ if __name__ == "__main__":
     # load predictor
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
 
-    # predict latency
-    input_model_list = []
+    # # predict latency
+    # input_model_list = []
     
-    if os.path.isfile(input_model):
-        input_model_list = [input_model]
-    elif os.path.isdir(input_model):
-        input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
-        logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
-    else:
-        logging.error(f'Cannot find any model satisfying the arguments.')
+    # if os.path.isfile(input_model):
+    #     input_model_list = [input_model]
+    # elif os.path.isdir(input_model):
+    #     input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
+    #     logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
+    # else:
+    #     logging.error(f'Cannot find any model satisfying the arguments.')
 
-    for model in input_model_list:
-        latency = predictor.predict(model, model_type)
-        logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency}')
+    # for model in input_model_list:
+    #     latency = predictor.predict(model, model_type)
+    #     logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency}')
+    latency = predictor.predict('data\\testmodels\\shufflenetv2_sample.json', 'json')
+    
