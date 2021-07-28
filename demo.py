@@ -6,6 +6,7 @@ import argparse
 import os
 import sys
 import logging
+from glob import glob
 from functools import partial, partialmethod
 
 logging.KEYINFO = 22
@@ -154,14 +155,28 @@ if __name__ == "__main__":
         logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.KEYINFO)
 
     if args.tensorflow:
-        input_model, model_type = args.tensorflow, "pb"
+        input_model, model_type, model_suffix = args.tensorflow, "pb", ".pb"
     elif args.onnx:
-        input_model, model_type = args.onnx, "onnx"
+        input_model, model_type, model_suffix = args.onnx, "onnx", ".onnx"
     elif args.nn_meter_ir:
-        input_model, model_type = args.nn_meter_ir, "json"
+        input_model, model_type, model_suffix = args.nn_meter_ir, "json", ".json"
     elif args.nni_ir:
-        input_model, model_type = args.nni_ir, "json"
-        
+        input_model, model_type, model_suffix = args.nni_ir, "json", ".json"
+
+    # load predictor
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
-    latency = predictor.predict(input_model, model_type)
-    logging.result('[RESULT] predict latency: %f' % latency)
+
+    # predict latency
+    input_model_list = []
+    
+    if os.path.isfile(input_model):
+        input_model_list = [input_model]
+    elif os.path.isdir(input_model):
+        input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
+        logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
+    else:
+        logging.error(f'Cannot find any model satisfying the arguments.')
+
+    for model in input_model_list:
+        latency = predictor.predict(model, model_type)
+        logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency}')

@@ -30,7 +30,7 @@ def get_predictors():
     predictors_list = predictors_list.decode('utf-8')
     pattern = re.compile(r'(?<=\[Predictor\] ).+(?=\n)')
     predictors_info = pattern.findall(predictors_list)
-    predictors = list(map(lambda x: x.split(': version='), predictors_info))
+    predictors = list(map(lambda x: re.sub('\s*', '', x).split(':version='), predictors_info))
     return predictors
 
 
@@ -41,9 +41,11 @@ def get_models(model_type, ppath = "data/testmodels/pb"):
 
 
 def parse_latency_info(info):
-    pattern = re.compile(r'(?<=\[RESULT\] predict latency: )[0-9.]+(?=\s+?$)')
-    latency = pattern.findall(info)[0]
-    return latency
+    # [RESULT] predict latency for resnet50_0.pb: 58.965621083020814
+    pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?=\n)')
+    latency_info = pattern.findall(info)
+    latency_list = list(map(lambda x: re.sub('\s*', '', x).split(':'), latency_info))
+    return latency_list
     
 # integration test to predict model latency
 def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.txt"):
@@ -71,18 +73,19 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
     # start testing
-    for model in get_models(model_type, ppath):
-        for pred_name, pred_version in get_predictors():
-            try:
-                since = time.time()
-                # print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
-                result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{model}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
-                runtime = time.time() - since
-            except NotImplementedError:
-                logging.error("Meets ERROR when checking --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}")
 
-            latency = parse_latency_info(result.decode('utf-8'))
-            item = f'{os.path.basename(model)}, {model_type}, {pred_name}, {pred_version}, {latency}\n'
+    for pred_name, pred_version in get_predictors():
+        try:
+            since = time.time()
+            # print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
+            result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
+            runtime = time.time() - since
+        except NotImplementedError:
+            logging.error("Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
+
+        latency_list = parse_latency_info(result.decode('utf-8'))
+        for model, latency in latency_list:
+            item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
             # print(item)
             with open(outcsv_name, "a") as f:
                 f.write(item)
