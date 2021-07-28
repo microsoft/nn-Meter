@@ -84,7 +84,7 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
 
         latency_list = parse_latency_info(result.decode('utf-8'))
         for model, latency in latency_list:
-            item = f'{model}, {model_type}, {pred_name}, {pred_version}, {latency}\n'
+            item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
             # print(item)
             with open(outcsv_name, "a") as f:
                 f.write(item)
