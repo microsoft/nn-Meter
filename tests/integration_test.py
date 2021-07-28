@@ -73,6 +73,7 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
     # start testing
+
     for pred_name, pred_version in get_predictors():
         try:
             since = time.time()
