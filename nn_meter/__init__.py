@@ -2,8 +2,9 @@
 # Licensed under the MIT license.
 from .nn_meter import (
     nnMeter,
+    load_predictor_config,
     load_latency_predictor,
-    list_latency_predictors,
+    list_latency_predictors
 )
 from .utils.utils import download_from_url
 import logging
