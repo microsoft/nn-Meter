@@ -122,6 +122,7 @@ def nn_meter_cli():
     )
     parser.add_argument(
         '--predictor-version',
+        type=float,
         help="the version of the latency predictor (If not specified, use the lateast version)",
         default=None
     )

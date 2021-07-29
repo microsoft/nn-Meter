@@ -2,7 +2,6 @@
 # Licensed under the MIT license.
 from .nn_meter import (
     nnMeter,
-    load_predictor_config,
     load_latency_predictor,
     list_latency_predictors
 )
