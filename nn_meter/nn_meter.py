@@ -3,7 +3,7 @@
 from glob import glob
 from nn_meter.prediction.predictors.predict_by_kernel import nn_predict
 from nn_meter.kerneldetection import KernelDetector
-from nn_meter.ir_converters import model_to_graph, model_file_to_graph
+from nn_meter.ir_converters import model_file_to_graph
 from nn_meter.prediction.load_predictors import loading_to_local
 
 import yaml
@@ -89,9 +89,11 @@ def apply_latency_predictor(args):
     elif args.onnx:
         input_model, model_type, model_suffix = args.onnx, "onnx", ".onnx"
     elif args.nn_meter_ir:
-        input_model, model_type, model_suffix = args.nn_meter_ir, "json", ".json"
+        input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter", ".json"
     elif args.nni_ir:
-        input_model, model_type, model_suffix = args.nni_ir, "json", ".json"
+        input_model, model_type, model_suffix = args.nni_ir, "nni", ".json"
+    elif args.torch: # find torch model name from torch model zoo
+        input_model, model_type = args.torch, "torch" # TODO: fix here
 
     # load predictor
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
@@ -118,7 +120,14 @@ def apply_latency_predictor(args):
 
 
 def get_nnmeter_ir(args):
-    pass
+    if args.tensorflow:
+        graph = model_file_to_graph(args.tensorflow, 'pb')
+    elif args.onnx:
+        graph = model_file_to_graph(args.onnx, 'pb')
+    else:
+        raise ValueError(f"Unsupported model.")
+    return graph
+
 
 class nnMeter:
     def __init__(self, predictors, fusionrule):
@@ -127,17 +136,15 @@ class nnMeter:
         self.kd = KernelDetector(self.fusionrule)
 
     def predict(
-        self, model, model_type=None, input_shape=(1, 3, 224, 224), modelname="test"
+        self, model, model_type, input_shape=(1, 3, 224, 224)
     ):
         """
         @params:
 
         model: a pytorch/onnx/tensorflow model object or a str containing path to the model file
         """
-        if isinstance(model, str):
-            graph = model_file_to_graph(model, model_type)
-        else:
-            graph = model_to_graph(model, model_type, input_shape=input_shape)
+        graph = model_file_to_graph(model, model_type, input_shape)
+        
         # logging.info(graph)
         self.kd.load_graph(graph)
 
@@ -192,6 +199,7 @@ def nn_meter_cli():
     group.add_argument(
         "--torch",      # Jiahang: --torch only can support the model object. The argument specifies 
         type=str,       # the name of the model, and we will look for the model in torch model zoo.
+        nargs='+',
         help="Name of the input torch model from the torch model zoo"
     )
 
@@ -211,6 +219,11 @@ def nn_meter_cli():
         "--onnx",
         type=str,
         help="Path to input ONNX model (*.onnx)"
+    )
+    getir.add_argument(
+        "--output",
+        type=str,
+        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json)"
     )
 
     # Other utils
@@ -241,4 +254,15 @@ def nn_meter_cli():
 
     # Usage 3
     if args.getir:
-        get_nnmeter_ir(args)
+        import json
+        from nn_meter.utils.graph_tool import NumpyEncoder
+        graph = get_nnmeter_ir(args)
+        filename = args.output
+        with open(filename, "w+") as fp:
+            json.dump(graph,
+                fp,
+                indent=4,
+                skipkeys=True,
+                sort_keys=True,
+                cls=NumpyEncoder,
+            )

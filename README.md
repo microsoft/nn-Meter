@@ -52,7 +52,13 @@ nn-meter --predictor <hardware> --nn-meter-ir <json-file>
 
 # for NNI IR (*.json) file
 nn-meter --predictor <hardware> --nni-ir <json-file> 
+
+# for torch (str)
 ```
+# TODO:Sopporting models: tensorflow lite, onnx, nni ir; model object: torch model
+
+# three usages
+
 
 nn-Meter currently supports prediction on the following four config:
 

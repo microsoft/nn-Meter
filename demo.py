@@ -180,5 +180,5 @@ if __name__ == "__main__":
     # for model in input_model_list:
     #     latency = predictor.predict(model, model_type)
     #     logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency}')
-    latency = predictor.predict('data\\testmodels\\shufflenetv2_sample.json', 'json')
+    latency = predictor.predict('..\\data\\testmodels\\ir\\shufflenetv2_sample.json', 'nni')
     

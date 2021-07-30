@@ -7,65 +7,54 @@ from .frozenpb_converter import FrozenPbConverter
 from .torch_converter import TorchConverter
 from .torch_converter.converter import NNIIRConverter
 
-
-def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
+def model_file_to_graph(filename, model_type, input_shape=(1, 3, 224, 224)):
     """
     @params:
 
     input_shape: only accessed when model_type == 'torch'
     """
-    if model_type == "onnx":
-        converter = OnnxConverter(model)
-        result = converter.convert()
-    elif model_type == "pb":
-        raise NotImplementedError
-    elif model_type == "torch":
-        torch = try_import_torch()
-        args = torch.randn(*input_shape)
-        if next(model.parameters()).is_cuda:
-            args = args.to("cuda")
-        converter = TorchConverter(model, args)
-        result = converter.convert()
-    elif model_type == "nni":
-        converter = NNIIRConverter(model)
-        result = converter.convert()
-    else:
-        raise ValueError(f"Unsupported model type: {model_type}")
-
-    return result
-
-
-def model_file_to_graph(filename, model_type=None, input_shape=(1, 3, 224, 224)):
-    """
-    @params:
-
-    input_shape: only accessed when model_type == 'torch'
-    """
-    if model_type is None:
-        if filename.endswith(".onnx"):
-            model_type = "onnx"
-        elif filename.endswith(".pb"):
-            model_type = "pb"
-        elif filename.endswith(".json"):
-            model_type = "json"
-        elif filename.endswith(".pth") or filename.endswith(".pt"):
-            model_type = "torch"
-        else:
-            raise ValueError(f"Unknown file type: {filename}")
-
     if model_type == "onnx":
         onnx = try_import_onnx()
         model = onnx.load(filename)
-        return model_to_graph(model, model_type)
+        return onnx_model_to_graph(model)
+
     elif model_type == "pb":
         converter = FrozenPbConverter(filename)
         return converter.get_flatten_graph()
-    elif model_type == "json":
+
+    elif model_type == "nni":
+        with open(filename, "r") as fp:
+            model = json.load(fp)
+        return nni_model_to_graph(model)
+
+    elif model_type == "nnmeter":
         with open(filename, "r") as fp:
             return json.load(fp)
+
     elif model_type == "torch":
-        torch = try_import_torch()
-        model = torch.load(filename)
-        return model_to_graph(model, model_type, input_shape)
+        onnx = try_import_onnx()
+        model = onnx.load(filename)
+        return torch_model_to_graph(model, input_shape)
+
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
+
+
+def onnx_model_to_graph(model):
+    converter = OnnxConverter(model)
+    return converter.convert()
+
+def nni_model_to_graph(model):
+    converter = NNIIRConverter(model)
+    return converter.convert()
+
+def torch_model_to_graph(model, input_shape=(1, 3, 224, 224)):
+    torch = try_import_torch()
+    args = torch.randn(*input_shape)
+    if next(model.parameters()).is_cuda:
+        args = args.to("cuda")
+    converter = TorchConverter(model, args)
+    return converter.convert()
+    
+
+
