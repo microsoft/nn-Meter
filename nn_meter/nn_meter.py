@@ -120,13 +120,28 @@ def apply_latency_predictor(args):
 
 
 def get_nnmeter_ir(args):
+    import json
+    from nn_meter.utils.graph_tool import NumpyEncoder
     if args.tensorflow:
         graph = model_file_to_graph(args.tensorflow, 'pb')
+        filename = args.output if args.output else args.tensorflow.replace(".pb", "_pb_ir.json") 
     elif args.onnx:
-        graph = model_file_to_graph(args.onnx, 'pb')
+        graph = model_file_to_graph(args.onnx, 'onnx')
+        filename = args.output if args.output else args.onnx.replace(".onnx", "_onnx_ir.json") 
     else:
         raise ValueError(f"Unsupported model.")
-    return graph
+    
+    if not str.endswith(filename, '.json'): filename += '.json'
+    with open(filename, "w+") as fp:
+        json.dump(graph,
+            fp,
+            indent=4,
+            skipkeys=True,
+            sort_keys=True,
+            cls=NumpyEncoder,
+        )
+    
+    logging.result(f'The nn-meter ir graph has been saved. Saved path: {os.path.abspath(filename)}')
 
 
 class nnMeter:
@@ -223,7 +238,7 @@ def nn_meter_cli():
     getir.add_argument(
         "--output",
         type=str,
-        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json)"
+        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json), default to be /path/to/previous/file/<previous_file_name>_ir.json"
     )
 
     # Other utils
@@ -254,15 +269,5 @@ def nn_meter_cli():
 
     # Usage 3
     if args.getir:
-        import json
-        from nn_meter.utils.graph_tool import NumpyEncoder
-        graph = get_nnmeter_ir(args)
-        filename = args.output
-        with open(filename, "w+") as fp:
-            json.dump(graph,
-                fp,
-                indent=4,
-                skipkeys=True,
-                sort_keys=True,
-                cls=NumpyEncoder,
-            )
+        get_nnmeter_ir(args)
+        

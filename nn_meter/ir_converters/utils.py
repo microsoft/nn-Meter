@@ -7,7 +7,7 @@ from .frozenpb_converter import FrozenPbConverter
 from .torch_converter import TorchConverter
 from .torch_converter.converter import NNIIRConverter
 
-def model_file_to_graph(filename, model_type, input_shape=(1, 3, 224, 224)):
+def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 224)):
     """
     @params:
 

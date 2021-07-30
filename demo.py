@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from nn_meter.utils.utils import try_import_torchvision_models
-from nn_meter import load_latency_predictor
+from nn_meter.nn_meter import apply_latency_predictor, get_nnmeter_ir
+from nn_meter import list_latency_predictors
 import argparse
 import os
 import sys
@@ -97,17 +98,21 @@ def test_pytorch_models(args, predictor):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("predict model latency on device")
+    parser = argparse.ArgumentParser('nn-meter')
+
+    # Usage 1: list predictors
     parser.add_argument(
         '--list-predictors',
         help='list all supported predictors',
         action='store_true',
         default=False
     )
+
+    # Usage 2: latency predictors
     parser.add_argument(
-        "--predictor", 
-        type=str, 
-        help="name of target predictor (hardware)",
+        "--predictor",
+        type=str,
+        help="name of target predictor (hardware)"
     )
     parser.add_argument(
         "--predictor-version",
@@ -115,13 +120,7 @@ if __name__ == "__main__":
         default=None,
         help="the version of the latency predictor (If not specified, use the lateast version)",
     )
-    parser.add_argument(
-        "--config",
-        type=str,
-        default="nn_meter/configs/predictors.yaml",
-        help="config file to store current supported edge platform",
-    )
-    group = parser.add_mutually_exclusive_group() # Jiahang: can't handle model_type == "torch" now.
+    group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--tensorflow",
         type=str,
@@ -133,52 +132,73 @@ if __name__ == "__main__":
         help="Path to input ONNX model (*.onnx)"
     )
     group.add_argument(
+        "--nni-ir",
+        type=str,
+        help="Path to input NNI IR model (*.json)"
+    )
+    group.add_argument(
         "--nn-meter-ir",
         type=str,
         help="Path to input nn-Meter IR model (*.json)"
     )
     group.add_argument(
-        "--nni-ir",
-        type=str,
-        help="Path to input NNI IR model (*.json)"
+        "--torch",      # Jiahang: --torch only can support the model object. The argument specifies 
+        type=str,       # the name of the model, and we will look for the model in torch model zoo.
+        nargs='+',
+        help="Name of the input torch model from the torch model zoo"
     )
+
+    # Usage 3: get nn-meter-ir model from tensorflow pbfile or onnx file
+    # Usags: nn-meter getir --tensorflow <pb-file>
+    subprasers = parser.add_subparsers(dest='getir')
+    getir = subprasers.add_parser(
+        'getir',
+        help='specify a model type to convert to nn-meter ir graph'
+    )
+    getir.add_argument(
+        "--tensorflow",
+        type = str,
+        help="Path to input Tensorflow model (*.pb)"
+    )
+    getir.add_argument(
+        "--onnx",
+        type=str,
+        help="Path to input ONNX model (*.onnx)"
+    )
+    getir.add_argument(
+        "--output",
+        type=str,
+        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json)"
+    )
+
+    # Other utils
     parser.add_argument(
         "-v", "--verbose", 
         help="increase output verbosity",
         action="store_true"
     )
-    args = parser.parse_args()
 
+    # parse args
+    args = parser.parse_args()
     if args.verbose:
         logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.INFO)
     else:
         logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.KEYINFO)
-
-    if args.tensorflow:
-        input_model, model_type, model_suffix = args.tensorflow, "pb", ".pb"
-    elif args.onnx:
-        input_model, model_type, model_suffix = args.onnx, "onnx", ".onnx"
-    elif args.nn_meter_ir:
-        input_model, model_type, model_suffix = args.nn_meter_ir, "json", ".json"
-    elif args.nni_ir:
-        input_model, model_type, model_suffix = args.nni_ir, "json", ".json"
-
-    # load predictor
-    predictor = load_latency_predictor(args.predictor, args.predictor_version)
-
-    # # predict latency
-    # input_model_list = []
     
-    # if os.path.isfile(input_model):
-    #     input_model_list = [input_model]
-    # elif os.path.isdir(input_model):
-    #     input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
-    #     logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
-    # else:
-    #     logging.error(f'Cannot find any model satisfying the arguments.')
+    # Usage 1
+    if args.list_predictors:
+        preds = list_latency_predictors()
+        logging.keyinfo("Supported latency predictors:")
+        for p in preds:
+            logging.result(f"[Predictor] {p['name']}: version={p['version']}")
 
-    # for model in input_model_list:
-    #     latency = predictor.predict(model, model_type)
-    #     logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency}')
-    latency = predictor.predict('..\\data\\testmodels\\ir\\shufflenetv2_sample.json', 'nni')
+    # Usage 2
+    if not args.getir:
+        _ = apply_latency_predictor(args)
+
+    # Usage 3
+    if args.getir:
+        get_nnmeter_ir(args)
+
+    # latency = predictor.predict('..\\data\\testmodels\\ir\\shufflenetv2_sample.json', 'nni')
     
