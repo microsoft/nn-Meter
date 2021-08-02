@@ -89,11 +89,11 @@ def apply_latency_predictor(args):
     elif args.onnx:
         input_model, model_type, model_suffix = args.onnx, "onnx", ".onnx"
     elif args.nn_meter_ir:
-        input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter", ".json"
+        input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter-ir", ".json"
     elif args.nni_ir:
-        input_model, model_type, model_suffix = args.nni_ir, "nni", ".json"
-    elif args.torch: # find torch model name from torch model zoo
-        input_model, model_type = args.torch, "torch" # TODO: fix here
+        input_model, model_type, model_suffix = args.nni_ir, "nni-ir", ".json"
+    elif args.torchvison: # find torch model name from torchvision model zoo
+        input_model, model_type = args.torchvison, "torchvison" # TODO: fix here
 
     # load predictor
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
@@ -212,10 +212,10 @@ def nn_meter_cli():
         help="Path to input nn-Meter IR model (*.json)"
     )
     group.add_argument(
-        "--torch",      # Jiahang: --torch only can support the model object. The argument specifies 
-        type=str,       # the name of the model, and we will look for the model in torch model zoo.
+        "--torchvision",      # Jiahang: --torchvision only can support the model object. The argument specifies 
+        type=str,       # the name of the model, and we will look for the model in torchvision model zoo.
         nargs='+',
-        help="Name of the input torch model from the torch model zoo"
+        help="Name of the input torch model from the torchvision model zoo"
     )
 
     # Usage 3: get nn-meter-ir model from tensorflow pbfile or onnx file

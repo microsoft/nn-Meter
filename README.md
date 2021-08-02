@@ -57,15 +57,15 @@ nn-meter --predictor <hardware> --predictor-version <version> --nn-meter-ir <jso
 # for NNI IR (*.json) file
 nn-meter --predictor <hardware> --predictor-version <version> --nni-ir <json-file_or_folder> 
 
-# for torch (str)
-nn-meter --predictor <hardware> --predictor-version <version> --torch <model-name>... 
+# for torch model (str)
+nn-meter --predictor <hardware> --predictor-version <version> --torchvision <model-name>... 
 ```
 
 `--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest verison of the predictor.
 
 nn-Meter can support batch mode prediction. To predict latency for multiple models in the same model type once, user should collect all models in one folder and state the folder after `--<model-type>` liked argument.
 
- It should also be noted that for PyTorch model, nn-meter can only support existing models in torch model zoo. The string followed by `--torch` should exactly be one or more string indicating name(s) of some existing torch models.
+ It should also be noted that for PyTorch model, nn-meter can only support existing models in torchvision model zoo. The string followed by `--torchvision` should exactly be one or more string indicating name(s) of some existing torchvision models.
 
 
 Furthermore, users may be interested to convert tensorflow pb-file or onnx file to nn-meter ir graph. Users could convert nn-meter ir graph and save to `.json` file be running

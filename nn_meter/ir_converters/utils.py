@@ -11,7 +11,7 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
     """
     @params:
 
-    input_shape: only accessed when model_type == 'torch'
+    input_shape: only accessed when model_type == 'torchvision'
     """
     if model_type == "onnx":
         onnx = try_import_onnx()
@@ -22,16 +22,16 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
         converter = FrozenPbConverter(filename)
         return converter.get_flatten_graph()
 
-    elif model_type == "nni":
+    elif model_type == "nni-ir":
         with open(filename, "r") as fp:
             model = json.load(fp)
         return nni_model_to_graph(model)
 
-    elif model_type == "nnmeter":
+    elif model_type == "nnmeter-ir":
         with open(filename, "r") as fp:
             return json.load(fp)
 
-    elif model_type == "torch":
+    elif model_type == "torchvision":
         onnx = try_import_onnx()
         model = onnx.load(filename)
         return torch_model_to_graph(model, input_shape)
