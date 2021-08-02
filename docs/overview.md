@@ -8,6 +8,6 @@ As discussed in nn-Meter paper, the approach is general to any DNN models on div
 
 <img src="imgs/predict_performance.png" alt="drawing" width="800"/>
 
-If your DNN model structures are not included in above models, please read doc [ops](ops.md) and [kernels](kernels.md) to decide whether to build new latency predictor for them.
+If your DNN model structures are not included in above models, please read doc [ops](ops.md) and [kernels](kernel.md) to decide whether to build new latency predictor for them.
 
 If you have a new hardware to predict DNN latency,  a re-run of nn-Meter is required to build latency predictors for the hardware. We will release the building tools very soon.
