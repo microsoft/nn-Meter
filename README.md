@@ -2,12 +2,12 @@ nn-Meter is a novel and efficient system to accurately predict the inference lat
 
 The current supported hardware and inference frameworks:
 
-| Abbr. |       Device       |   Framework   |   Processor   | +-10%  Accuracy |           Hardware name           |
-| :---: | :-----------------: | :------------: | :------------: | :-------------: | :--------------------------------: |
-|  CPU  |       Pixel4       |  TFLite v2.1  | CortexA76 CPU |      99.0%      |  **cortexA76cpu_tflite21**  |
-|  GPU  |         Mi9         |  TFLite v2.1  | Adreno 640 GPU |      99.1%      |  **adreno640gpu_tflite21**  |
-| GPU1 |      Pixel3XL      |  TFLite v2.1  | Adreno 630 GPU |      99.0%      |  **adreno630gpu_tflite21**  |
-|  VPU  | Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |      83.4%      | **myriadvpu_openvino2019r2** |
+|       Device       |   Framework   |   Processor   | +-10%  Accuracy |           Hardware name           |
+| :-----------------: | :------------: | :------------: | :-------------: | :--------------------------------: |
+|       Pixel4       |  TFLite v2.1  | CortexA76 CPU |      99.0%      |  **cortexA76cpu_tflite21**  |
+|         Mi9         |  TFLite v2.1  | Adreno 640 GPU |      99.1%      |  **adreno640gpu_tflite21**  |
+|      Pixel3XL      |  TFLite v2.1  | Adreno 630 GPU |      99.0%      |  **adreno630gpu_tflite21**  |
+| Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |      83.4%      | **myriadvpu_openvino2019r2** |
 
 *nn-Meter has achieved the **Mobisys 21 Best Paper Award!** For more details, please check out paper:*
 
