@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import json
-from nn_meter.utils.utils import try_import_onnx, try_import_torch
+from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_torchvision_models
 from .onnx_converter import OnnxConverter
 from .frozenpb_converter import FrozenPbConverter
 from .torch_converter import TorchConverter
@@ -32,8 +32,26 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
             return json.load(fp)
 
     elif model_type == "torchvision":
-        onnx = try_import_onnx()
-        model = onnx.load(filename)
+        models = try_import_torchvision_models()
+        torchvision_zoo_dict = {
+            'resnet18': 'models.resnet18()',
+            'alexnet': 'models.alexnet()',
+            'vgg16': 'models.vgg16()',
+            'squeezenet': 'models.squeezenet1_0()',
+            'densenet': 'models.densenet161()',
+            'inception': 'models.inception_v3()',
+            'googlenet': 'models.googlenet()',
+            'shufflenet': 'models.shufflenet_v2_x1_0()',
+            'mobilenet_v2': 'models.mobilenet_v2()',  # noqa: F841
+            'resnext50_32x4d': 'models.resnext50_32x4d()',
+            'wide_resnet50_2': 'models.wide_resnet50_2()',
+            'mnasnet': 'models.mnasnet1_0()',
+        }
+        if filename in torchvision_zoo_dict:
+            model = eval(torchvision_zoo_dict[filename])
+        else:
+            suppost_list = ", ".join([k for k in torchvision_zoo_dict])
+            raise ValueError(f"Unsupported model name in torchvision. Supporting list: {suppost_list}")
         return torch_model_to_graph(model, input_shape)
 
     else:

@@ -142,8 +142,8 @@ if __name__ == "__main__":
         help="Path to input nn-Meter IR model (*.json)"
     )
     group.add_argument(
-        "--torchvision",      # Jiahang: --torchvision only can support the model object. The argument specifies 
-        type=str,       # the name of the model, and we will look for the model in torchvision model zoo.
+        "--torchvision",        # Jiahang: --torchvision only can support the model object. The argument specifies 
+        type=str,               # the name of the model, and we will look for the model in torchvision model zoo.
         nargs='+',
         help="Name of the input torch model from the torchvision model zoo"
     )
@@ -200,5 +200,4 @@ if __name__ == "__main__":
     if args.getir:
         get_nnmeter_ir(args)
 
-    # latency = predictor.predict('..\\data\\testmodels\\ir\\shufflenetv2_sample.json', 'nni')
     

@@ -92,22 +92,23 @@ def apply_latency_predictor(args):
         input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter-ir", ".json"
     elif args.nni_ir:
         input_model, model_type, model_suffix = args.nni_ir, "nni-ir", ".json"
-    elif args.torchvison: # find torch model name from torchvision model zoo
-        input_model, model_type = args.torchvison, "torchvison" # TODO: fix here
+    elif args.torchvision: # torch model name from torchvision model zoo to `input_model_list`
+        input_model_list, model_type = args.torchvision, "torchvision" 
 
     # load predictor
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
 
     # specify model for prediction
-    input_model_list = []
-    if os.path.isfile(input_model):
-        input_model_list = [input_model]
-    elif os.path.isdir(input_model):
-        input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
-        input_model_list.sort()
-        logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
-    else:
-        logging.error(f'Cannot find any model satisfying the arguments.')
+    if not args.torchvision: # input of tensorflow, onnx, nnmeter-ir and nni-ir is file name, while input of torchvision is string list
+        input_model_list = []
+        if os.path.isfile(input_model):
+            input_model_list = [input_model]
+        elif os.path.isdir(input_model):
+            input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
+            input_model_list.sort()
+            logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
+        else:
+            logging.error(f'Cannot find any model satisfying the arguments.')
 
     # predict latency
     result = {}
@@ -212,8 +213,8 @@ def nn_meter_cli():
         help="Path to input nn-Meter IR model (*.json)"
     )
     group.add_argument(
-        "--torchvision",      # Jiahang: --torchvision only can support the model object. The argument specifies 
-        type=str,       # the name of the model, and we will look for the model in torchvision model zoo.
+        "--torchvision",        # Jiahang: --torchvision only can support the model object. The argument specifies 
+        type=str,               # the name of the model, and we will look for the model in torchvision model zoo.
         nargs='+',
         help="Name of the input torch model from the torchvision model zoo"
     )
