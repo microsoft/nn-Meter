@@ -1,6 +1,4 @@
-nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction.
-nn-Meter contains two key techniques: (i) kernel detection to automatically detect the execution unit of model inference via a set of well-designed test cases; (ii) adaptive sampling to efficiently sample the most beneficial configurations from a large space to build accurate kernel-level latency predictors.
-We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
+nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
 
 The current supported hardware and inference frameworks:
 
@@ -11,8 +9,9 @@ The current supported hardware and inference frameworks:
 | GPU1 |      Pixel3XL      |  TFLite v2.1  | Adreno 630 GPU |      99.0%      |  **adreno630gpu_tflite21**  |
 |  VPU  | Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |      83.4%      | **myriadvpu_openvino2019r2** |
 
+*nn-Meter has achieved the **Mobisys 21 Best Paper Award!** For more details, please check out paper:*
 
-*nn-Meter has achieved the **Mobisys 21 Best Paper Award!** Please check out the [paper ](https://dl.acm.org/doi/10.1145/3458864.3467882)for details.*
+[nn-Meter: towards accurate latency prediction of deep-learning model inference on diverse edge devices](https://dl.acm.org/doi/10.1145/3458864.3467882)
 
 ## Who should consider using nn-Meter
 
@@ -30,7 +29,7 @@ If you use nn-meter in NNI, make sure NNI version >= 2.4
 
 ## Usage
 
-### Supported input model format
+#### Supported input model format
 
 |       name       | format |
 | :--------------: | :----: |
@@ -39,7 +38,7 @@ If you use nn-meter in NNI, make sure NNI version >= 2.4
 | nnmeter IR graph | .json |
 |   NNI IR graph   | .json |
 
-### To predict a single model: Run nn-Meter demo
+#### To predict a single model: Run nn-Meter demo
 
 After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor, users can run the following commands
 
@@ -71,7 +70,7 @@ nn-Meter currently supports prediction on the following four config:
 
 For the input model file, you can find any example provided under the `data/testmodels`
 
-### Import nn-Meter in your python code
+#### Import nn-Meter in your python code
 
 ```python
 from nn_meter import load_latency_predictor
@@ -108,7 +107,7 @@ python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 
 #### How the demo works
 
-Refer to https://nni.readthedocs.io/en/stable/nas.html for how to perform NAS by NNI.
+Refer to [nni doc ](https://nni.readthedocs.io/en/stable/nas.html)for how to perform NAS by NNI.
 
 To support latency-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
 
