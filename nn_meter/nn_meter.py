@@ -92,7 +92,7 @@ def apply_latency_predictor(args):
         input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter-ir", ".json"
     elif args.nni_ir:
         input_model, model_type, model_suffix = args.nni_ir, "nni-ir", ".json"
-    elif args.torchvision: # torch model name from torchvision model zoo to `input_model_list`
+    elif args.torchvision: # torch model name from torchvision model zoo
         input_model_list, model_type = args.torchvision, "torchvision" 
 
     # load predictor

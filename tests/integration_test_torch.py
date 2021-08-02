@@ -8,11 +8,6 @@ import subprocess
 from nn_meter import download_from_url
 
 
-__model_suffix__ = {
-    "tensorflow": ".pb",
-    "onnx": ".onnx"
-}
-
 # check package status
 def check_package_status():
     try:
@@ -34,12 +29,6 @@ def get_predictors():
     return predictors
 
 
-def get_models(model_type, ppath = "data/testmodels/pb"):
-    models = glob(os.path.join(ppath, "**" + __model_suffix__[model_type]))
-    models.sort() # sort the models list by alphabetical order
-    return models
-
-
 def parse_latency_info(info):
     # [RESULT] predict latency for resnet50_0.pb: 58.965621083020814
     pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?=\n)')
@@ -47,26 +36,17 @@ def parse_latency_info(info):
     latency_list = list(map(lambda x: re.sub('\s*', '', x).split(':'), latency_info))
     return latency_list
     
+
 # integration test to predict model latency
-def integration_test_pd_onnx(model_type, url, ppath, outcsv_name = "tests/test_result.txt"):
+def integration_test_torch(model_type, model_list, outcsv_name = "tests/test_result_torch.txt"):
     """
     download the kernel predictors from the url
     @params:
 
-    model_type: tensorflow, onnx, 
-    url: github release url address for testing model file
-    ppath:  the targeting dir to save the download model file
+    model_type: torch
+    model_list:  the torchvision model waiting for latency prediction
     outcsv_name: a summary file to save the testing results
     """
-    if not os.path.isdir("../data/testmodels"):
-        os.mkdir("../data")
-        os.mkdir("../data/testmodels")
-
-    # download data and unzip
-    if not os.path.isdir(ppath):
-        os.mkdir(ppath)
-        download_from_url(url, ppath)
-
     # if the outcsv is not created, create it and add a title
     if not os.path.isfile(outcsv_name):
         with open(outcsv_name,"w") as f:
@@ -77,10 +57,10 @@ def integration_test_pd_onnx(model_type, url, ppath, outcsv_name = "tests/test_r
         try:
             since = time.time()
             # print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
-            result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
+            result = subprocess.check_output(['nn-meter', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
-            logging.error("Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
+            logging.error("Meets ERROR when checking --torchvision {model_string} --predictor {pred_name} --predictor-version {pred_version}")
 
         latency_list = parse_latency_info(result.decode('utf-8'))
         for model, latency in latency_list:
@@ -89,42 +69,15 @@ def integration_test_pd_onnx(model_type, url, ppath, outcsv_name = "tests/test_r
             with open(outcsv_name, "a") as f:
                 f.write(item)
 
-
-def check_getir_module(model_type, ppath):
-    for model in get_models(model_type, ppath):
-        try:
-            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model])
-            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model, '--output', f'temp.json'])
-            os.remove('temp.json')
-            break # test just one file to avoid time cosuming
-        except NotImplementedError:
-            logging.error("Meets ERROR when checking getir --{model_type} {ppath}'")
-
-
 if __name__ == "__main__":
     check_package_status()
 
-    # check tensorflow model
-    integration_test_pd_onnx(
-        model_type='tensorflow',
-        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip",
-        ppath = "../data/testmodels/pb"
+    # check torch model
+    integration_test_torch(
+        model_type='torch',
+        model_list=[
+            'resnet18', 'alexnet', 'vgg16', 'squeezenet', 'densenet', 'inception', 'googlenet', 
+            'shufflenet', 'mobilenet_v2', 'resnext50_32x4d', 'wide_resnet50_2', 'mnasnet']
     )
 
-    # check onnx model
-    integration_test_pd_onnx(
-        model_type='onnx',
-        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
-        ppath = "../data/testmodels/onnx"
-    )
-
-    # check getir
-    check_getir_module(
-        model_type='tensorflow',
-        ppath = "../data/testmodels/pb"
-    )
-
-    check_getir_module(
-        model_type='onnx',
-        ppath = "../data/testmodels/onnx"
-    )
+    
