@@ -73,7 +73,6 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
     # start testing
-
     for pred_name, pred_version in get_predictors():
         try:
             since = time.time()
@@ -89,7 +88,18 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
             # print(item)
             with open(outcsv_name, "a") as f:
                 f.write(item)
-    
+
+
+def check_getir_module(model_type, ppath):
+    for model in get_models(model_type, ppath):
+        try:
+            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model])
+            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model, '--output', f'temp.json'])
+            os.remove('temp.json')
+            break # test just one file to avoid time cosuming
+        except NotImplementedError:
+            logging.error("Meets ERROR when checking getir --{model_type} {ppath}'")
+
 
 if __name__ == "__main__":
     check_package_status()
@@ -98,12 +108,23 @@ if __name__ == "__main__":
     integration_test(
         model_type='tensorflow',
         url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip",
-        ppath = "../data/testmodels/pb",
+        ppath = "../data/testmodels/pb"
     )
 
     # check onnx model
     integration_test(
         model_type='onnx',
         url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
-        ppath = "../data/testmodels/onnx",
+        ppath = "../data/testmodels/onnx"
+    )
+
+    # check getir
+    check_getir_module(
+        model_type='tensorflow',
+        ppath = "../data/testmodels/pb"
+    )
+
+    check_getir_module(
+        model_type='onnx',
+        ppath = "../data/testmodels/onnx"
     )
