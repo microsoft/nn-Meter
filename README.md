@@ -88,7 +88,7 @@ Output name is default to be `/path/to/previous/file/<previous_file_name>_<model
 
 nn-Meter currently supports prediction on the following four config:
 
-|   Predictor (hardware)   |
+|   Predictor (device_inferenceframework)   |
 | :----------------------: |
 |  cortexA76cpu_tflite21   |
 |  adreno640gpu_tflite21   |
