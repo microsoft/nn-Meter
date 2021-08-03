@@ -3,7 +3,7 @@
 from glob import glob
 from nn_meter.prediction.predictors.predict_by_kernel import nn_predict
 from nn_meter.kerneldetection import KernelDetector
-from nn_meter.ir_converters import model_file_to_graph
+from nn_meter.ir_converters import model_file_to_graph, model_to_graph
 from nn_meter.prediction.load_predictors import loading_to_local
 
 import yaml
@@ -93,7 +93,7 @@ def apply_latency_predictor(args):
     elif args.nni_ir:
         input_model, model_type, model_suffix = args.nni_ir, "nni-ir", ".json"
     elif args.torchvision: # torch model name from torchvision model zoo
-        input_model_list, model_type = args.torchvision, "torchvision" 
+        input_model_list, model_type = args.torchvision, "torch" 
 
     # load predictor
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
@@ -157,14 +157,19 @@ class nnMeter:
         """
         @params:
 
-        model: a pytorch/onnx/tensorflow model object or a str containing path to the model file
+        model: a pytorch/onnx/tensorflow/nni-ir-Graph model object or a str containing path to the model file
         """
-        graph = model_file_to_graph(model, model_type, input_shape)
+        logging.info("Start latency prediction ...")
+        if isinstance(model, str):
+            graph = model_file_to_graph(model, model_type, input_shape)
+        else:
+            graph = model_to_graph(model, model_type, input_shape=input_shape)
         
         # logging.info(graph)
         self.kd.load_graph(graph)
 
         py = nn_predict(self.kernel_predictors, self.kd.kernels)
+        logging.info(f"Predict latency: {py}")
         return py
 
 
@@ -213,7 +218,7 @@ def nn_meter_cli():
         help="Path to input nn-Meter IR model (*.json)"
     )
     group.add_argument(
-        "--torchvision",        # Jiahang: --torchvision only can support the model object. The argument specifies 
+        "--torchvision",        # --torchvision only can support the model object. The argument specifies 
         type=str,               # the name of the model, and we will look for the model in torchvision model zoo.
         nargs='+',
         help="Name of the input torch model from the torchvision model zoo"
@@ -237,9 +242,9 @@ def nn_meter_cli():
         help="Path to input ONNX model (*.onnx)"
     )
     getir.add_argument(
-        "--output",
+        "-o", "--output",
         type=str,
-        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json), default to be /path/to/previous/file/<previous_file_name>_ir.json"
+        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json), default to be /path/to/input/file/<input`_file_name>_ir.json"
     )
 
     # Other utils
@@ -252,9 +257,9 @@ def nn_meter_cli():
     # parse args
     args = parser.parse_args()
     if args.verbose:
-        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.INFO)
+        logging.basicConfig(stream=sys.stdout, format="(nn-Meter) %(message)s", level=logging.INFO)
     else:
-        logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.KEYINFO)
+        logging.basicConfig(stream=sys.stdout, format="(nn-Meter) %(message)s", level=logging.KEYINFO)
     
     # Usage 1
     if args.list_predictors:

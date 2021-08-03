@@ -11,7 +11,7 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
     """
     @params:
 
-    input_shape: only accessed when model_type == 'torchvision'
+    input_shape: only accessed when model_type == 'torch'
     """
     if model_type == "onnx":
         onnx = try_import_onnx()
@@ -31,7 +31,7 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
         with open(filename, "r") as fp:
             return json.load(fp)
 
-    elif model_type == "torchvision":
+    elif model_type == "torch":
         models = try_import_torchvision_models()
         torchvision_zoo_dict = {
             'resnet18': 'models.resnet18()',
@@ -54,6 +54,23 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
             raise ValueError(f"Unsupported model name in torchvision. Supporting list: {suppost_list}")
         return torch_model_to_graph(model, input_shape)
 
+    else:
+        raise ValueError(f"Unsupported model type: {model_type}")
+
+
+def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
+    """
+    @params:
+    input_shape: only accessed when model_type == 'torch'
+    """
+    if model_type == "onnx":
+        return onnx_model_to_graph(model)
+    elif model_type == "torch":
+        return torch_model_to_graph(model, input_shape)
+    elif model_type == "nni-ir":
+        return nni_model_to_graph(model)
+    elif model_type == "nnmeter-ir":
+        return model # nnmeter-ir doesn't need any post-process
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 

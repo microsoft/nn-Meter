@@ -92,7 +92,7 @@ def test_pytorch_models(args, predictor):
     logging.info("start to test")
     for model in models:
         latency = predictor.predict(
-            model, model_type="torchvision", input_shape=(1, 3, 224, 224)
+            model, model_type="torch", input_shape=(1, 3, 224, 224)
         )
         logging.info(model.__class__.__name__, latency)
 
@@ -142,8 +142,8 @@ if __name__ == "__main__":
         help="Path to input nn-Meter IR model (*.json)"
     )
     group.add_argument(
-        "--torchvision",        # Jiahang: --torchvision only can support the model object. The argument specifies 
-        type=str,               # the name of the model, and we will look for the model in torchvision model zoo.
+        "--torchvision",        # --torchvision only can support the model object. The argument specifies the name 
+        type=str,               # of the model, and we will look for the model in torchvision model zoo.
         nargs='+',
         help="Name of the input torch model from the torchvision model zoo"
     )
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         help="Path to input ONNX model (*.onnx)"
     )
     getir.add_argument(
-        "--output",
+        "-o", "--output",
         type=str,
         help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json)"
     )
