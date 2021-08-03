@@ -45,4 +45,4 @@ jobs:
       run: python tests/integration_test_torch.py
     
     - name: Diff result with reference
-      run: diff tests/test_result.txt tests/reference_result_torch.txt
+      run: diff tests/test_result_torch.txt tests/reference_result_torch.txt
