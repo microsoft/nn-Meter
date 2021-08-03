@@ -90,8 +90,6 @@ def apply_latency_predictor(args):
         input_model, model_type, model_suffix = args.onnx, "onnx", ".onnx"
     elif args.nn_meter_ir:
         input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter-ir", ".json"
-    elif args.nni_ir:
-        input_model, model_type, model_suffix = args.nni_ir, "nni-ir", ".json"
     elif args.torchvision: # torch model name from torchvision model zoo
         input_model_list, model_type = args.torchvision, "torch" 
 
@@ -206,11 +204,6 @@ def nn_meter_cli():
         "--onnx",
         type=str,
         help="Path to input ONNX model (*.onnx)"
-    )
-    group.add_argument(
-        "--nni-ir",
-        type=str,
-        help="Path to input NNI IR model (*.json)"
     )
     group.add_argument(
         "--nn-meter-ir",

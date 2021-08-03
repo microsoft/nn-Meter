@@ -27,13 +27,20 @@ If you use nn-meter in NNI, make sure NNI version >= 2.4
 
 ## Usage
 ### Supported input model format
+We have two types of interfaces：
+- command line `nn-meter` after install the package `nn-meter`
+- Python binding provided by the module `nn_meter`
 
-|       name       | format |
-| :--------------: | :----: |
-|    Tensorflow    |  .pb   |
-|       Onnx       | .onnx  |
-| nnmeter IR graph | .json  |
-|   NNI IR graph   | .json  |
+Here is a summary of supported inputs of the two methods.
+
+|       Name        |                     Command Support                 | Python Binding |
+| :--------------:  | :-------------------------------------------------: | :---: |
+|    Tensorflow     |  Checkpoint file dumped by `tf.save(...)` and endwith `.pb`  | ... | 
+|       Torch       | models in `torchvision.models` | object of `nn.Module` |
+|       Onnx        | Checkpoint file dumped by .onnx  | model loaded by (`onnx.load()`) |
+| nn-Meter IR graph | Json file in the format of (...)  | `dict` object following ... | 
+|   NNI IR graph    | -  | `dict` object following (nni doc)
+
 ### To predict a single model: Run nn-Meter demo
 After installation, a command named `nn-meter` is enabled. Users can get all predefined predictors by running
 
@@ -53,9 +60,6 @@ nn-meter --predictor <hardware> --predictor-version <version> --onnx <onnx-file_
 
 # for nn-Meter IR (*.json) file
 nn-meter --predictor <hardware> --predictor-version <version> --nn-meter-ir <json-file_or_folder> 
-
-# for NNI IR (*.json) file
-nn-meter --predictor <hardware> --predictor-version <version> --nni-ir <json-file_or_folder> 
 
 # for torch model (str)
 nn-meter --predictor <hardware> --predictor-version <version> --torchvision <model-name>... 

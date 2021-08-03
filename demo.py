@@ -132,11 +132,6 @@ if __name__ == "__main__":
         help="Path to input ONNX model (*.onnx)"
     )
     group.add_argument(
-        "--nni-ir",
-        type=str,
-        help="Path to input NNI IR model (*.json)"
-    )
-    group.add_argument(
         "--nn-meter-ir",
         type=str,
         help="Path to input nn-Meter IR model (*.json)"
