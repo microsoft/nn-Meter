@@ -1,5 +1,0 @@
-# additional required packages for testing
-tensorflow==1.15.0
-onnx==1.9.0
-torch==1.9.0
-torchvision==0.10.0

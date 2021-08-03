@@ -36,7 +36,10 @@ jobs:
 
     - name: Install dependencies
     #  if: steps.cache.outputs.cache-hit != 'true'
-      run: pip install -r tests/requirements.txt 
+      run: |
+        pip install onnx==1.9.0
+        pip install torch==1.9.0
+        pip install torchvision==0.10.0
         
     - name: Install nn-Meter
       run: pip install .
