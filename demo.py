@@ -26,7 +26,7 @@ def test_ir_graphs(predictor, ppath="data/testmodels"):
     from glob import glob
     from nn_meter import download_from_url
 
-    url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/ir_graphs.zip"
+    url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/ir_graphs.zip"
     download_from_url(url, ppath)
     models = glob(os.path.join(ppath, "**.json"))
     print(models)
@@ -40,7 +40,7 @@ def test_pb_models(predictor, ppath="data/testmodels"):
     from glob import glob
     from nn_meter import download_from_url
 
-    url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip"
+    url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/pb_models.zip"
     download_from_url(url, ppath)
     models = glob(os.path.join(ppath, "**.pb"))
     for model in models:
@@ -53,7 +53,7 @@ def test_onnx_models(predictor, ppath="data/testmodels"):
     from glob import glob
     from nn_meter import download_from_url
 
-    url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip"
+    url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/onnx_models.zip"
     download_from_url(url, ppath)
     models = glob(os.path.join(ppath, "**.onnx"))
     for model in models:

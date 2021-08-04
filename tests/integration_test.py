@@ -107,14 +107,14 @@ if __name__ == "__main__":
     # check tensorflow model
     integration_test_pd_onnx(
         model_type='tensorflow',
-        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip",
+        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/pb_models.zip",
         ppath = "../data/testmodels/pb"
     )
 
     # check onnx model
     integration_test_pd_onnx(
         model_type='onnx',
-        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
+        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/onnx_models.zip",
         ppath = "../data/testmodels/onnx"
     )
 
