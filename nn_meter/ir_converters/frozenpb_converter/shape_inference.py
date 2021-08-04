@@ -920,32 +920,32 @@ class ShapeInference:
                     )
         return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
 
-    def __init__(self, graph):
+    def __init__(self, model_graph):
         """
         Take the graph, and append output shape
         and input shape to the attributes of nodes.
 
         Parameters
         ----------
-        graph : graph
-            The Graph IR class.
+        model_graph : ModelGraph
+            The ModelGraph IR class.
         """
-        graph_item = graph.get_graph()
-        seq = ph.get_graph_seq(graph_item, graph.get_graph_head())
+        graph = model_graph.get_graph()
+        seq = ph.get_graph_seq(graph, model_graph.get_graph_head())
 
         # Pass #1
         for node_name in seq:
-            node_get_shape_name = graph.get_node_type(node_name) + "_get_shape"
+            node_get_shape_name = model_graph.get_node_type(node_name) + "_get_shape"
             if node_get_shape_name in dir(self):
                 input_shape, output_shape = eval("self." + node_get_shape_name)(
-                    graph_item, graph_item[node_name]
+                    graph, graph[node_name]
                 )
                 if output_shape is not None:
-                    graph_item[node_name]["attr"]["output_shape"] = copy.deepcopy(
+                    graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
                         output_shape
                     )
                 if input_shape is not None:
-                    graph_item[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
+                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
                 logging.info(
                     "Input shape of %s op is %s." % (node_name, str(input_shape))
                 )
@@ -953,26 +953,26 @@ class ShapeInference:
                     "Output shape of %s op is %s." % (node_name, str(output_shape))
                 )
             else:
-                logging.error("%s not support yet." % graph.get_node_type(node_name))
+                logging.error("%s not support yet." % model_graph.get_node_type(node_name))
                 logging.info("------ node content --------")
-                logging.info(graph_item[node_name])
+                logging.info(graph[node_name])
                 logging.info("----------------------------")
 
         # Pass #2
         # This is a patching for back-end, since backend extract shapes from
         # those two ops.
         for node_name in seq:
-            if graph.get_node_type(node_name) in ["Packed", "StridedSlice"]:
-                node_get_shape_name = graph.get_node_type(node_name) + "_get_shape"
+            if model_graph.get_node_type(node_name) in ["Packed", "StridedSlice"]:
+                node_get_shape_name = model_graph.get_node_type(node_name) + "_get_shape"
                 input_shape, output_shape = eval("self." + node_get_shape_name)(
-                    graph_item, graph_item[node_name]
+                    graph, graph[node_name]
                 )
                 if output_shape is not None:
-                    graph_item[node_name]["attr"]["output_shape"] = copy.deepcopy(
+                    graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
                         output_shape
                     )
                 if input_shape is not None:
-                    graph_item[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
+                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
                 logging.info(
                     "Second Pass: Input shape of %s op is %s."
                     % (node_name, str(input_shape))

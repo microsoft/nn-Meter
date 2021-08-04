@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from .rule_reader import RuleReader
-from nn_meter.utils.graph_tool import Graph
+from nn_meter.utils.graph_tool import ModelGraph
 from nn_meter.kerneldetection.utils.match_helper import MatchHelper
 from nn_meter.kerneldetection.utils.fusion_aware_graph import FusionAwareGraph
 
@@ -10,19 +10,19 @@ class RuleSplitter:
     def __init__(self, rule_reader: RuleReader):
         self.rule_reader = rule_reader
 
-    def fuse_multiop_blocks(self, graph: Graph):
+    def fuse_multiop_blocks(self, model_graph: ModelGraph):
         for type, blocks in self.rule_reader.fusion_units.items():
             for block in blocks:
-                subgraphs = graph.find_subgraphs(block, MatchHelper.op_type_matcher)
+                subgraphs = model_graph.find_subgraphs(block, MatchHelper.op_type_matcher)
                 for subgraph in subgraphs:
-                    graph.fuse(subgraph.keys(), type)
+                    model_graph.fuse(subgraph.keys(), type)
 
-    def split(self, graph: Graph):
+    def split(self, model_graph: ModelGraph):
         """
         Apply rules to graph
         """
-        self.preprocess(graph)
-        fusion_graph = FusionAwareGraph(graph)
+        self.preprocess(model_graph)
+        fusion_graph = FusionAwareGraph(model_graph)
 
         i = -1
         while i < len(fusion_graph) - 1:
@@ -64,5 +64,5 @@ class RuleSplitter:
 
         return fusion_graph.get_basicblocks()
 
-    def preprocess(self, graph: Graph):
-        self.fuse_multiop_blocks(graph)
+    def preprocess(self, model_graph: ModelGraph):
+        self.fuse_multiop_blocks(model_graph)

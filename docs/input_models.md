@@ -37,7 +37,7 @@ model = ... # model is instance of torch.nn.Module
 lat = predictor.predict(model,model_type='torch', input_shape=(3, 224, 224))
 ```
 
-### nn-Meter IR graph
+### <span id="nnmeter-ir-graph"> nn-Meter IR graph </span>
 
 As introduced, nn-Meter will perform a pre-processing step to convert the above model formats into the nn-Meter IR graphs. Now we introduce the defined IR graph.
 

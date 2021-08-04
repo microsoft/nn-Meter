@@ -1,71 +1,95 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import json
-from nn_meter.utils.utils import try_import_onnx, try_import_torch
+from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_torchvision_models
 from .onnx_converter import OnnxConverter
 from .frozenpb_converter import FrozenPbConverter
 from .torch_converter import TorchConverter
 from .torch_converter.converter import NNIIRConverter
 
+def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 224)):
+    """
+    @params:
+
+    input_shape: only accessed when model_type == 'torch'
+    """
+    if model_type == "onnx":
+        onnx = try_import_onnx()
+        model = onnx.load(filename)
+        return onnx_model_to_graph(model)
+
+    elif model_type == "pb":
+        converter = FrozenPbConverter(filename)
+        return converter.get_flatten_graph()
+
+    elif model_type == "nni-ir":
+        with open(filename, "r") as fp:
+            model = json.load(fp)
+        return nni_model_to_graph(model)
+
+    elif model_type == "nnmeter-ir":
+        with open(filename, "r") as fp:
+            return json.load(fp)
+
+    elif model_type == "torch":
+        models = try_import_torchvision_models()
+        torchvision_zoo_dict = {
+            'resnet18': 'models.resnet18()',
+            'alexnet': 'models.alexnet()',
+            'vgg16': 'models.vgg16()',
+            'squeezenet': 'models.squeezenet1_0()',
+            'densenet': 'models.densenet161()',
+            'inception': 'models.inception_v3()',
+            'googlenet': 'models.googlenet()',
+            'shufflenet': 'models.shufflenet_v2_x1_0()',
+            'mobilenet_v2': 'models.mobilenet_v2()',  # noqa: F841
+            'resnext50_32x4d': 'models.resnext50_32x4d()',
+            'wide_resnet50_2': 'models.wide_resnet50_2()',
+            'mnasnet': 'models.mnasnet1_0()',
+        }
+        if filename in torchvision_zoo_dict:
+            model = eval(torchvision_zoo_dict[filename])
+        else:
+            suppost_list = ", ".join([k for k in torchvision_zoo_dict])
+            raise ValueError(f"Unsupported model name in torchvision. Supporting list: {suppost_list}")
+        return torch_model_to_graph(model, input_shape)
+
+    else:
+        raise ValueError(f"Unsupported model type: {model_type}")
+
 
 def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
     """
     @params:
-
     input_shape: only accessed when model_type == 'torch'
     """
     if model_type == "onnx":
-        converter = OnnxConverter(model)
-        result = converter.convert()
-    elif model_type == "pb":
-        raise NotImplementedError
+        return onnx_model_to_graph(model)
     elif model_type == "torch":
-        torch = try_import_torch()
-        args = torch.randn(*input_shape)
-        if next(model.parameters()).is_cuda:
-            args = args.to("cuda")
-        converter = TorchConverter(model, args)
-        result = converter.convert()
-    elif model_type == "nni":
-        converter = NNIIRConverter(model)
-        result = converter.convert()
+        return torch_model_to_graph(model, input_shape)
+    elif model_type == "nni-ir":
+        return nni_model_to_graph(model)
+    elif model_type == "nnmeter-ir":
+        return model # nnmeter-ir doesn't need any post-process
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
-    return result
+
+def onnx_model_to_graph(model):
+    converter = OnnxConverter(model)
+    return converter.convert()
+
+def nni_model_to_graph(model):
+    converter = NNIIRConverter(model)
+    return converter.convert()
+
+def torch_model_to_graph(model, input_shape=(1, 3, 224, 224)):
+    torch = try_import_torch()
+    args = torch.randn(*input_shape)
+    if next(model.parameters()).is_cuda:
+        args = args.to("cuda")
+    converter = TorchConverter(model, args)
+    return converter.convert()
+    
 
 
-def model_file_to_graph(filename, model_type=None, input_shape=(1, 3, 224, 224)):
-    """
-    @params:
-
-    input_shape: only accessed when model_type == 'torch'
-    """
-    if model_type is None:
-        if filename.endswith(".onnx"):
-            model_type = "onnx"
-        elif filename.endswith(".pb"):
-            model_type = "pb"
-        elif filename.endswith(".json"):
-            model_type = "json"
-        elif filename.endswith(".pth") or filename.endswith(".pt"):
-            model_type = "torch"
-        else:
-            raise ValueError(f"Unknown file type: {filename}")
-
-    if model_type == "onnx":
-        onnx = try_import_onnx()
-        model = onnx.load(filename)
-        return model_to_graph(model, model_type)
-    elif model_type == "pb":
-        converter = FrozenPbConverter(filename)
-        return converter.get_flatten_graph()
-    elif model_type == "json":
-        with open(filename, "r") as fp:
-            return json.load(fp)
-    elif model_type == "torch":
-        torch = try_import_torch()
-        model = torch.load(filename)
-        return model_to_graph(model, model_type, input_shape)
-    else:
-        raise ValueError(f"Unsupported model type: {model_type}")

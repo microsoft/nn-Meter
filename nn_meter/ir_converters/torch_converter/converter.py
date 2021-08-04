@@ -91,6 +91,7 @@ class NNIIRConverter:
 
 class NNIBasedTorchConverter(NNIIRConverter):
     def __init__(self, model, example_inputs):
+        torch = try_import_torch()
         from nni.retiarii.converter import convert_to_graph
         from nni.retiarii.converter.graph_gen import GraphConverterWithShape
 
@@ -98,7 +99,7 @@ class NNIBasedTorchConverter(NNIIRConverter):
         script_module = torch.jit.script(model)
         converter = GraphConverterWithShape()
         ir_model = convert_to_graph(
-            script_module, model, converter, example_inputs=example_inputs
+            script_module, model, converter=converter, dummy_input=example_inputs
         )
 
         super().__init__(ir_model)
@@ -116,4 +117,4 @@ class OnnxBasedTorchConverter(OnnxConverter):
         super().__init__(model)
 
 
-TorchConverter = NNIBasedTorchConverter
+TorchConverter = OnnxBasedTorchConverter

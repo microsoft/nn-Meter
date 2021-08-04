@@ -2,27 +2,27 @@
 # Licensed under the MIT license.
 import numpy as np
 
-from nn_meter.utils.graph_tool import Graph
+from nn_meter.utils.graph_tool import ModelGraph
 from .frozenpb_parser import FrozenPbParser
 from .shape_inference import ShapeInference
 
 
 class FrozenPbConverter:
     def __init__(self, file_name):
-        self.graph = Graph()
+        self.model_graph = ModelGraph()
 
         # Parse pb to graph
         parser = FrozenPbParser(file_name)
-        parser.parse_graph(self.graph)
+        parser.parse_graph(self.model_graph)
 
         # Change split to more firendly scheme
-        parser.fix_split_naming(self.graph)
+        parser.fix_split_naming(self.model_graph)
 
         # Get the static shape
-        ShapeInference(self.graph)
+        ShapeInference(self.model_graph)
 
         # Strip constant and indentity nodes
-        parser.strip_useless_nodes(self.graph)
+        parser.strip_useless_nodes(self.model_graph)
 
     def get_flatten_graph(self):
         def np_encoder(d):
@@ -35,5 +35,5 @@ class FrozenPbConverter:
                     if isinstance(v, (bytes, bytearray)):
                         d[k] = v.decode("utf-8")
 
-        np_encoder(self.graph.get_graph())
-        return self.graph.get_graph()
+        np_encoder(self.model_graph.get_graph())
+        return self.model_graph.get_graph()
