@@ -28,23 +28,26 @@ Please also check the versions of numpy, scikit_learn. The different versions ma
 If you use nn-meter in NNI, make sure NNI version >= 2.4
 
 # Usage
+
 ## Supported input model format
+
 We have two types of interfaces：
+
 - command line `nn-meter` after install the package `nn-meter`
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
 
-|       Name        |                     Command Support                 | Python Binding |
-| :--------------:  | :-------------------------------------------------: | :---: |
-|    Tensorflow     |  Checkpoint file dumped by `tf.saved_model()` and endwith `.pb`  | Checkpoint file dumped by `tf.saved_model` and endwith `.pb` | 
-|       Torch       | Models in `torchvision.models` | Object of `torch.nn.Module` |
-|       Onnx        | Checkpoint file dumped by `onnx.save()` and endwith `.onnx`  | Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()` |
-| nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)  | `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) | 
-|   NNI IR graph    | -  | `dict` object following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation) |
-
+|       Name       |                                   Command Support                                   |                                                   Python Binding                                                   |
+| :---------------: | :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
+|    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and endwith `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and endwith `.pb`                          |
+|       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
+|       Onnx       |           Checkpoint file dumped by `onnx.save()` and endwith `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
+| nn-Meter IR graph | Json file in the format of[nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
+|   NNI IR graph   |                                          -                                          | `dict` object following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation) |
 
 ## Command line Support
+
 ### List all predefined predictors
 
 After installation, a command named `nn-meter` is enabled. Users can get all predefined predictors by running
@@ -61,10 +64,9 @@ nn-Meter currently supports prediction on the following four config:
 |         cortexA76cpu_tflite21         |
 |         adreno640gpu_tflite21         |
 |         adreno630gpu_tflite21         |
-|       myriadvpu_openvino2019r2        |
+|       myriadvpu_openvino2019r2       |
 
 For the input model file, you can find any example provided under the `data/testmodels`
-
 
 ### Predict latency for CNN model
 
@@ -88,8 +90,7 @@ nn-meter --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <j
 
 nn-Meter can support batch mode prediction. To predict latency for multiple models in the same model type once, user should collect all models in one folder and state the folder after `--[model-type]` liked argument.
 
- It should also be noted that for PyTorch model, nn-meter can only support existing models in torchvision model zoo. The string followed by `--torchvision` should be exactly one or more string indicating name(s) of some existing torchvision models.
-
+It should also be noted that for PyTorch model, nn-meter can only support existing models in torchvision model zoo. The string followed by `--torchvision` should be exactly one or more string indicating name(s) of some existing torchvision models.
 
 ### Convert to nn-Meter IR Graph
 
@@ -104,7 +105,6 @@ nn-meter getir --onnx <onnx-file> [--output <output-name>]
 ```
 
 Output name is default to be `/path/to/input/file/<input_file_name>_<model-type>_ir.json` if not specified by users.
-
 
 ## Import nn-Meter in your python code: Python binding
 
@@ -185,3 +185,26 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 The entire codebase is under [MIT license](https://github.com/microsoft/nn-Meter/blob/main/LICENSE)
 
 The dataset is under [Open Use of Data Agreement](https://github.com/Community-Data-License-Agreements/Releases/blob/main/O-UDA-1.0.md)
+
+# Citation
+If you find that nn-Meter helps your research, please consider citing it:
+```
+@inproceedings{nnmeter,
+author = {Zhang, Li Lyna and Han, Shihao and Wei, Jianyu and Zheng, Ningxin and Cao, Ting and Yang, Yuqing and Liu, Yunxin},
+title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
+year = {2021},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3458864.3467882},
+doi = {10.1145/3458864.3467882},
+booktitle = {Proceedings of the 19th Annual International Conference on Mobile Systems, Applications, and Services},
+pages = {81–93},
+}
+
+@misc{nnmetercode,
+author = {Microsoft Research nn-Meter Team},
+title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
+year = {2021},
+url = {https://github.com/microsoft/nn-Meter},
+}
+```
