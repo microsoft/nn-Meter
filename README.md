@@ -149,7 +149,7 @@ python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 
 ### How the demo works
 
-Refer to [nni doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
+Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
 
 To support latency-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
 

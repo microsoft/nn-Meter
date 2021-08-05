@@ -37,6 +37,7 @@ jobs:
     - name: Install dependencies
     #  if: steps.cache.outputs.cache-hit != 'true'
       run: |
+        lsb_release -a
         pip install tensorflow==1.15.0
         pip install onnx==1.9.0
         pip install torch==1.9.0
