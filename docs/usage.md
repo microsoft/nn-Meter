@@ -1,41 +1,8 @@
-Note: This is an alpha (preview) version which is still under refining.
-
-nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
-
-The current supported hardware and inference frameworks:
-
-|       Device       |   Framework   |   Processor   | +-10%  Accuracy |           Hardware name           |
-| :-----------------: | :------------: | :------------: | :-------------: | :--------------------------------: |
-|       Pixel4       |  TFLite v2.1  | CortexA76 CPU |      99.0%      |  **cortexA76cpu_tflite21**  |
-|         Mi9         |  TFLite v2.1  | Adreno 640 GPU |      99.1%      |  **adreno640gpu_tflite21**  |
-|      Pixel3XL      |  TFLite v2.1  | Adreno 630 GPU |      99.0%      |  **adreno630gpu_tflite21**  |
-| Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |      83.4%      | **myriadvpu_openvino2019r2** |
-
-*nn-Meter has achieved the **Mobisys 21 Best Paper Award!** For more details, please check out paper:*
-
-[nn-Meter: towards accurate latency prediction of deep-learning model inference on diverse edge devices](https://dl.acm.org/doi/10.1145/3458864.3467882)
-
-## Who should consider using nn-Meter
-
-- Those who want to get the DNN inference latency on mobile and edge devices with **no deployment efforts on real devices**.
-- Those who want to run **hardware-aware NAS with [NNI](https://github.com/microsoft/nni)**.
-- Those who want to **build latency predictors for their own devices**.
-
-# Installation
-
-To install nn-meter, please first install python3. The test environment uses anaconda python 3.6.10. Install the dependencies via:
-`pip3 install -r requirements.txt`
-Please also check the versions of numpy, scikit_learn. The different versions may change the prediction accuracy of kernel predictors.
-
-If you use nn-meter in NNI, make sure NNI version >= 2.4
-
 # Usage
 
-## Supported input model format
+To apply nn-Meter for hardware latency prediction, we have two types of interfaces：
 
-We have two types of interfaces：
-
-- command line `nn-meter` after install the package `nn-meter`
+- command line `nn-meter` after `nn-meter` [installation](QuickStart.md#Installation).
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
@@ -52,7 +19,7 @@ Here is a summary of supported inputs of the two methods.
 
 ### List all predefined predictors
 
-After installation, a command named `nn-meter` is enabled. Users can get all predefined predictors by running
+After [installation](QuickStart.md#Installation), a command named `nn-meter` is enabled. Users can get all predefined predictors by running
 
 ```bash
 # to list all predefined predictors
@@ -108,7 +75,7 @@ nn-meter getir --onnx <onnx-file> [--output <output-name>]
 
 Output name is default to be `/path/to/input/file/<input_file_name>_<model-type>_ir.json` if not specified by users.
 
-## Import nn-Meter in your python code: Python binding
+## Import nn-Meter in your python code
 
 After installation, users can import nn-Meter in python code
 
@@ -149,7 +116,7 @@ python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 
 ### How the demo works
 
-Refer to [nni doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
+Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
 
 To support latency-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
 
@@ -167,46 +134,3 @@ RetiariiExperiment(base_model, trainer, [], simple_strategy, True, example_input
 ```
 
 Here, `parse_shape=True` means extracting shape info from the torch model as it is required by nn-Meter to predict latency. `example_inputs` is required for tracing shape info.
-
-# Contributing
-
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
-
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-# License
-
-The entire codebase is under [MIT license](https://github.com/microsoft/nn-Meter/blob/main/LICENSE)
-
-The dataset is under [Open Use of Data Agreement](https://github.com/Community-Data-License-Agreements/Releases/blob/main/O-UDA-1.0.md)
-
-# Citation
-If you find that nn-Meter helps your research, please consider citing it:
-```
-@inproceedings{nnmeter,
-author = {Zhang, Li Lyna and Han, Shihao and Wei, Jianyu and Zheng, Ningxin and Cao, Ting and Yang, Yuqing and Liu, Yunxin},
-title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
-year = {2021},
-publisher = {ACM},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3458864.3467882},
-doi = {10.1145/3458864.3467882},
-booktitle = {Proceedings of the 19th Annual International Conference on Mobile Systems, Applications, and Services},
-pages = {81–93},
-}
-
-@misc{nnmetercode,
-author = {Microsoft Research nn-Meter Team},
-title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
-year = {2021},
-url = {https://github.com/microsoft/nn-Meter},
-}
-```
