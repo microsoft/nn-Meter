@@ -1,15 +1,15 @@
 Note: This is an alpha (preview) version which is still under refining.
 
-nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
+**nn-Meter** is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
 
 The current supported hardware and inference frameworks:
 
 |       Device       |   Framework   |   Processor   | +-10%  Accuracy |           Hardware name           |
 | :-----------------: | :------------: | :------------: | :-------------: | :--------------------------------: |
-|       Pixel4       |  TFLite v2.1  | CortexA76 CPU |      99.0%      |  **cortexA76cpu_tflite21**  |
-|         Mi9         |  TFLite v2.1  | Adreno 640 GPU |      99.1%      |  **adreno640gpu_tflite21**  |
-|      Pixel3XL      |  TFLite v2.1  | Adreno 630 GPU |      99.0%      |  **adreno630gpu_tflite21**  |
-| Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |      83.4%      | **myriadvpu_openvino2019r2** |
+|       Pixel4       |  TFLite v2.1  | CortexA76 CPU |      99.0%      |  cortexA76cpu_tflite21  |
+|         Mi9         |  TFLite v2.1  | Adreno 640 GPU |      99.1%      |  adreno640gpu_tflite21  |
+|      Pixel3XL      |  TFLite v2.1  | Adreno 630 GPU |      99.0%      |  adreno630gpu_tflite21  |
+| Intel Movidius NCS2 | OpenVINO2019R2 |   Myriad VPU   |      83.4%      | myriadvpu_openvino2019r2 |
 
 *nn-Meter has achieved the **Mobisys 21 Best Paper Award!** For more details, please check out paper:*
 
@@ -23,56 +23,68 @@ The current supported hardware and inference frameworks:
 
 # Installation
 
-To install nn-meter, please first install python3. The test environment uses anaconda python 3.6.10. Install the dependencies via:
-`pip3 install -r requirements.txt`
-Please also check the versions of numpy, scikit_learn. The different versions may change the prediction accuracy of kernel predictors.
+Currently nn-Meter has been tested on Linux and Windows system. Windows 10, Ubuntu 16.04 and 20.04 with python 3.6.10 are tested and supported. Please first install `python3` before nn-Meter installation.
 
-If you use nn-meter in NNI, make sure NNI version >= 2.4
+We haven't released this package yet, so development installation is required. To install the latest version of nn-Meter, users should install the package through source code. First git clone nn-Meter package to local:
+```Bash
+git clone git@github.com:microsoft/nn-Meter.git
+cd nn-Meter
+```
+Then simply run the following pip install in an environment that has `python >= 3.6`. The command will complete the automatic installation of all necessary dependencies and nn-Meter.
+```Bash
+pip install .
+```
+
+nn-Meter is a latency predictor of models with type of tensorflow, pytorch, onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding pacakges. The well tested versions are listed below:
+
+|  Testing Model Tpye   |                       Requirments                      |
+| :-------------------: | :------------------------------------------------:     |
+|       Tensorflow      |  `tensorflow==1.15.0`                                  |
+|         Torch         |  `onnx==1.9.0`, `torch==1.9.0`, `torchvision==0.10.0`  |
+|          Onnx         |  `onnx==1.9.0`                                         |
+|    nn-Meter IR graph  |   ---                                                  |
+|      NNI IR graph     |  `nni==2.4`                                            |
+
+Please also check the versions of `numpy` and `scikit_learn`. The different versions may change the prediction accuracy of kernel predictors.
+
+The stable version of wheel binary pacakge will be released soon.
+
 
 # Usage
 
-## Supported input model format
+To apply for hardware latency prediction, nn-Meter provides two types of interfaces：
 
-We have two types of interfaces：
-
-- command line `nn-meter` after install the package `nn-meter`
+- command line `nn-meter` after `nn-meter` [installation](QuickStart.md#Installation).
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
 
-|       Name       |                                   Command Support                                   |                                                   Python Binding                                                   |
+|       Testing Model Type       |                                   Command Support                                   |                                                   Python Binding                                                   |
 | :---------------: | :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
 |    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and endwith `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and endwith `.pb`                          |
 |       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
 |       Onnx       |           Checkpoint file dumped by `onnx.save()` and endwith `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
-| nn-Meter IR graph | Json file in the format of[nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
-|   NNI IR graph   |                                          -                                          | `dict` object following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation) |
+| nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
+|   NNI IR graph   |                                          -                                          | `dict` object following [NNI Doc](https://nni.readthedocs.io) |
 
-## Command line Support
+In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:
+| Predictor (device_inferenceframework) | Processor Category | Version |
+| :-----------------------------------: | :----------------: | :-----: |
+|         cortexA76cpu_tflite21         |        CPU         |   1.0   |
+|         adreno640gpu_tflite21         |        GPU         |   1.0   |
+|         adreno630gpu_tflite21         |        GPU         |   1.0   |
+|       myriadvpu_openvino2019r2        |        VPU         |   1.0   |
 
-### List all predefined predictors
-
-After installation, a command named `nn-meter` is enabled. Users can get all predefined predictors by running
+Users can get all predefined predictors and versions by running
 
 ```bash
 # to list all predefined predictors
 nn-meter --list-predictors 
 ```
 
-nn-Meter currently supports prediction on the following four config:
+## Predict latency of saved CNN model
 
-| Predictor (device_inferenceframework) |
-| :-----------------------------------: |
-|         cortexA76cpu_tflite21         |
-|         adreno640gpu_tflite21         |
-|         adreno630gpu_tflite21         |
-|       myriadvpu_openvino2019r2       |
-
-For the input model file, you can find any example provided under the `data/testmodels`
-
-### Predict latency for CNN model
-
-To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands
+After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands
 
 ```bash
 # for Tensorflow (*.pb) file
@@ -108,7 +120,7 @@ nn-meter getir --onnx <onnx-file> [--output <output-name>]
 
 Output name is default to be `/path/to/input/file/<input_file_name>_<model-type>_ir.json` if not specified by users.
 
-## Import nn-Meter in your python code: Python binding
+## Use nn-Meter in your python code
 
 After installation, users can import nn-Meter in python code
 
@@ -117,8 +129,8 @@ from nn_meter import load_latency_predictor
 
 predictor = load_latency_predictor(hardware_name, hardware_predictor_version) # case insensitive in backend
 
-# build your model here
-model = ... # model is instance of torch.nn.Module
+# build your model (e.g., model instance of torch.nn.Module)
+model = ... 
 
 lat = predictor.predict(model)
 ```
@@ -131,12 +143,11 @@ Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model
 
 ## Hardware-aware NAS by nn-Meter and NNI
 
-### Run multi-trial SPOS demo
+To empower affordable DNN on the edge and mobile devices, hardware-aware NAS searches both high accuracy and low latency models. In particular, the search algorithm only considers the models within the target latency constraints during the search process.
 
-Install NNI by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation).
+Currently we provides example of end-to-end multi-trial SPOS. More examples of more hardware-aware NAS and model compression algorithms are coming soon. 
 
-Install nn-Meter from source code (currently we haven't released this package, so development installation is required).
-
+To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation).
 ```bash
 python setup.py develop
 ```
@@ -151,7 +162,7 @@ python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 
 Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
 
-To support latency-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
+To support hardware-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
 
 ```python
 simple_strategy = strategy.Random(model_filter=LatencyFilter(threshold=100, predictor=base_predictor))
@@ -165,8 +176,8 @@ Then, pass this strategy to `RetiariiExperiment` along with some additional argu
 ```python
 RetiariiExperiment(base_model, trainer, [], simple_strategy)
 ```
-
 Here, `applied_mutators=[]` means do not use any mutators.
+
 
 # Contributing
 
@@ -192,21 +203,21 @@ The dataset is under [Open Use of Data Agreement](https://github.com/Community-D
 If you find that nn-Meter helps your research, please consider citing it:
 ```
 @inproceedings{nnmeter,
-author = {Zhang, Li Lyna and Han, Shihao and Wei, Jianyu and Zheng, Ningxin and Cao, Ting and Yang, Yuqing and Liu, Yunxin},
-title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
-year = {2021},
-publisher = {ACM},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3458864.3467882},
-doi = {10.1145/3458864.3467882},
-booktitle = {Proceedings of the 19th Annual International Conference on Mobile Systems, Applications, and Services},
-pages = {81–93},
+    author = {Zhang, Li Lyna and Han, Shihao and Wei, Jianyu and Zheng, Ningxin and Cao, Ting and Yang, Yuqing and Liu, Yunxin},
+    title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
+    year = {2021},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3458864.3467882},
+    doi = {10.1145/3458864.3467882},
+    booktitle = {Proceedings of the 19th Annual International Conference on Mobile Systems, Applications, and Services},
+    pages = {81–93},
 }
 
 @misc{nnmetercode,
-author = {Microsoft Research nn-Meter Team},
-title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
-year = {2021},
-url = {https://github.com/microsoft/nn-Meter},
+    author = {Microsoft Research nn-Meter Team},
+    title = {nn-Meter: Towards Accurate Latency Prediction of Deep-Learning Model Inference on Diverse Edge Devices},
+    year = {2021},
+    url = {https://github.com/microsoft/nn-Meter},
 }
 ```

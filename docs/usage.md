@@ -1,45 +1,38 @@
 # Usage
 
-To apply nn-Meter for hardware latency prediction, we have two types of interfaces：
+To apply for hardware latency prediction, nn-Meter provides two types of interfaces：
 
 - command line `nn-meter` after `nn-meter` [installation](QuickStart.md#Installation).
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
 
-|       Name       |                                   Command Support                                   |                                                   Python Binding                                                   |
+|       Testing Model Type       |                                   Command Support                                   |                                                   Python Binding                                                   |
 | :---------------: | :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
 |    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and endwith `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and endwith `.pb`                          |
 |       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
 |       Onnx       |           Checkpoint file dumped by `onnx.save()` and endwith `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
-| nn-Meter IR graph | Json file in the format of[nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
-|   NNI IR graph   |                                          -                                          | `dict` object following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation) |
+| nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
+|   NNI IR graph   |                                          -                                          | `dict` object following [NNI Doc](https://nni.readthedocs.io) |
 
-## Command line Support
+In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:
+| Predictor (device_inferenceframework) | Processor Category | Version |
+| :-----------------------------------: | :----------------: | :-----: |
+|         cortexA76cpu_tflite21         |        CPU         |   1.0   |
+|         adreno640gpu_tflite21         |        GPU         |   1.0   |
+|         adreno630gpu_tflite21         |        GPU         |   1.0   |
+|       myriadvpu_openvino2019r2        |        VPU         |   1.0   |
 
-### List all predefined predictors
-
-After [installation](QuickStart.md#Installation), a command named `nn-meter` is enabled. Users can get all predefined predictors by running
+Users can get all predefined predictors and versions by running
 
 ```bash
 # to list all predefined predictors
 nn-meter --list-predictors 
 ```
 
-nn-Meter currently supports prediction on the following four config:
+## Predict latency of saved CNN model
 
-| Predictor (device_inferenceframework) |
-| :-----------------------------------: |
-|         cortexA76cpu_tflite21         |
-|         adreno640gpu_tflite21         |
-|         adreno630gpu_tflite21         |
-|       myriadvpu_openvino2019r2       |
-
-For the input model file, you can find any example provided under the `data/testmodels`
-
-### Predict latency for CNN model
-
-To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands
+After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands
 
 ```bash
 # for Tensorflow (*.pb) file
@@ -75,7 +68,7 @@ nn-meter getir --onnx <onnx-file> [--output <output-name>]
 
 Output name is default to be `/path/to/input/file/<input_file_name>_<model-type>_ir.json` if not specified by users.
 
-## Import nn-Meter in your python code
+## Use nn-Meter in your python code
 
 After installation, users can import nn-Meter in python code
 
@@ -84,8 +77,8 @@ from nn_meter import load_latency_predictor
 
 predictor = load_latency_predictor(hardware_name, hardware_predictor_version) # case insensitive in backend
 
-# build your model here
-model = ... # model is instance of torch.nn.Module
+# build your model (e.g., model instance of torch.nn.Module)
+model = ... 
 
 lat = predictor.predict(model)
 ```
@@ -98,12 +91,11 @@ Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model
 
 ## Hardware-aware NAS by nn-Meter and NNI
 
-### Run multi-trial SPOS demo
+To empower affordable DNN on the edge and mobile devices, hardware-aware NAS searches both high accuracy and low latency models. In particular, the search algorithm only considers the models within the target latency constraints during the search process.
 
-Install NNI by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation).
+Currently we provides example of end-to-end multi-trial SPOS. More examples of more hardware-aware NAS and model compression algorithms are coming soon. 
 
-Install nn-Meter from source code (currently we haven't released this package, so development installation is required).
-
+To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation).
 ```bash
 python setup.py develop
 ```
@@ -118,7 +110,7 @@ python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 
 Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
 
-To support latency-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
+To support hardware-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
 
 ```python
 simple_strategy = strategy.Random(model_filter=LatencyFilter(threshold=100, predictor=base_predictor))
