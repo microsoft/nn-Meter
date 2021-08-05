@@ -35,7 +35,7 @@ def loading_to_local(pred_info, dir="data/predictorzoo"):
             model = pickle.load(f)
             predictors[pname] = model
     fusionrule = os.path.join(ppath, "fusion_rules.json")
-    logging.info(fusionrule)
+    # logging.info(fusionrule)
     if not os.path.isfile(fusionrule):
         raise ValueError(
             "check your fusion rule path, file " + fusionrule + " does not exist！"
