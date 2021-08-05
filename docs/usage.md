@@ -13,7 +13,7 @@ Here is a summary of supported inputs of the two methods.
 |       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
 |       Onnx       |           Checkpoint file dumped by `onnx.save()` and endwith `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
 | nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
-|   NNI IR graph   |                                          -                                          | `dict` object following [NNI Doc](https://nni.readthedocs.io) |
+|   NNI IR graph   |                                          -                                          | NNI IR graph object |
 
 In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:
 | Predictor (device_inferenceframework) | Processor Category | Version |
@@ -119,10 +119,15 @@ simple_strategy = strategy.Random(model_filter=LatencyFilter(threshold=100, pred
 `LatencyFilter` will predict the models' latency by using nn-Meter and filter out the models whose latency with the given predictor are larger than the threshold (i.e., `100` in this example).
 You can also build your own strategies and filters to support more flexible NAS such as sorting the models according to latency.
 
-Then, pass this strategy to `RetiariiExperiment` along with some additional arguments: `applied_mutators=[]`:
+Then, pass this strategy to `RetiariiExperiment` along with additional argument: `applied_mutators=[]`:
 
 ```python
-RetiariiExperiment(base_model, trainer, [], simple_strategy)
-```
+exp = RetiariiExperiment(base_model, trainer, [], simple_strategy)
 
-Here, `applied_mutators=[]` means do not use any mutators.
+exp_config = RetiariiExeConfig('local')
+...
+exp_config.dummy_input = [1, 3, 32, 32]
+
+exp.run(exp_config, port)
+```
+Here, `applied_mutators=[]` means do not use any mutators. In `exp_config`, `dummy_input` is required for tracing shape info.

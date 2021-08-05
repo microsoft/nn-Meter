@@ -4,7 +4,7 @@
 
 Currently, nn-Meter has been tested on Linux and Windows system. Windows 10, Ubuntu 16.04 and 20.04 with python 3.6.10 are tested and supported. Please first install `python3` before nn-Meter installation.
 
-To install the latest version of nn-Meter, you should install the package through source code. First git clone nn-Meter package to local:
+We haven't released this package yet, so development installation is required. To install the latest version of nn-Meter, users should install the package through source code. First git clone nn-Meter package to local:
 ```Bash
 git clone git@github.com:microsoft/nn-Meter.git
 cd nn-Meter
