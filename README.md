@@ -154,19 +154,19 @@ Refer to [nni doc](https://nni.readthedocs.io/en/stable/nas.html) for how to per
 To support latency-aware NAS, you first need a `Strategy` that supports filtering the models by latency. We provide such a filter named `LatencyFilter` in NNI and initialize a `Random` strategy with the filter:
 
 ```python
-simple_strategy = strategy.Random(model_filter=LatencyFilter(100)
+simple_strategy = strategy.Random(model_filter=LatencyFilter(threshold=100, predictor=base_predictor))
 ```
 
-`LatencyFilter` will predict the models' latency by using nn-Meter and filter out the models whose latency are larger than the threshold (i.e., `100` in this example).
+`LatencyFilter` will predict the models' latency by using nn-Meter and filter out the models whose latency with the given predictor are larger than the threshold (i.e., `100` in this example).
 You can also build your own strategies and filters to support more flexible NAS such as sorting the models according to latency.
 
-Then, pass this strategy to `RetiariiExperiment` along with some additional arguments: `parse_shape=True, example_inputs=example_inputs`:
+Then, pass this strategy to `RetiariiExperiment` along with some additional arguments: `applied_mutators=[]`:
 
 ```python
-RetiariiExperiment(base_model, trainer, [], simple_strategy, True, example_inputs)
+RetiariiExperiment(base_model, trainer, [], simple_strategy)
 ```
 
-Here, `parse_shape=True` means extracting shape info from the torch model as it is required by nn-Meter to predict latency. `example_inputs` is required for tracing shape info.
+Here, `applied_mutators=[]` means do not use any mutators.
 
 # Contributing
 
