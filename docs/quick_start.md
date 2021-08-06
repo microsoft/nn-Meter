@@ -46,7 +46,7 @@ def main(args):
     predictor = load_latency_predictor(base_predictor) 
 
     # predict the latency based on the given model
-    lat = predictor.predict(model=base_model, model_type='torch', input_shape=[1, 3, 32, 32])
+    lat = predictor.predict(model=base_model, model_type='torch', input_shape=[1, 3, 32, 32]) # in unit of ms
     print(f'Latency for {base_predictor}: {lat}(s)')
 
 if __name__ == '__main__':

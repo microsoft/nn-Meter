@@ -132,10 +132,12 @@ predictor = load_latency_predictor(hardware_name, hardware_predictor_version) # 
 # build your model (e.g., model instance of torch.nn.Module)
 model = ... 
 
-lat = predictor.predict(model)
+lat = predictor.predict(model, model_type) # the resulting latency is in unit of ms
 ```
 
 By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/data`. If the predictor file doesn't exist, it will download from the Github release.
+
+In `predictor.predict`, the allowed items of the parameter `model_type` include `["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]`, representing model types of tensorflow, torch, onnx, nn-meter IR graph and NNI IR graph, respectively.
 
 Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `nn_meter/configs/predictors.yaml`.
 
@@ -145,7 +147,7 @@ Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model
 
 To empower affordable DNN on the edge and mobile devices, hardware-aware NAS searches both high accuracy and low latency models. In particular, the search algorithm only considers the models within the target latency constraints during the search process.
 
-Currently we provides example of end-to-end multi-trial SPOS. More examples of more hardware-aware NAS and model compression algorithms are coming soon. 
+Currently we provides example of end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html), which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space. More examples of more hardware-aware NAS and model compression algorithms are coming soon. 
 
 To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation).
 ```bash

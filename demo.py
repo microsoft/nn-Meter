@@ -31,7 +31,7 @@ def test_ir_graphs(predictor, ppath="data/testmodels"):
     models = glob(os.path.join(ppath, "**.json"))
     print(models)
     for model in models:
-        latency = predictor.predict(model)
+        latency = predictor.predict(model) # in unit of ms
         logging.info(os.path.basename(model), latency)
 
 
@@ -44,7 +44,7 @@ def test_pb_models(predictor, ppath="data/testmodels"):
     download_from_url(url, ppath)
     models = glob(os.path.join(ppath, "**.pb"))
     for model in models:
-        latency = predictor.predict(model)
+        latency = predictor.predict(model) # in unit of ms
         logging.info(os.path.basename(model), latency)
 
 
@@ -57,7 +57,7 @@ def test_onnx_models(predictor, ppath="data/testmodels"):
     download_from_url(url, ppath)
     models = glob(os.path.join(ppath, "**.onnx"))
     for model in models:
-        latency = predictor.predict(model)
+        latency = predictor.predict(model) # in unit of ms
         logging.info(os.path.basename(model), latency)
 
 
@@ -93,7 +93,7 @@ def test_pytorch_models(args, predictor):
     for model in models:
         latency = predictor.predict(
             model, model_type="torch", input_shape=(1, 3, 224, 224)
-        )
+        ) # the resulting latency is in unit of ms
         logging.info(model.__class__.__name__, latency)
 
 

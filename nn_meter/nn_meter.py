@@ -48,13 +48,21 @@ def load_config_file(fname: str, loader=None):
 
 
 def list_latency_predictors():
-    """ return the list of latency predictors specified in ~/.nn_meter/predictors
+    """return the list of latency predictors specified in nn_meter/configs/predictors.yaml
     """
     return load_config_file(__predictors_cfg_filename__)
 
 
 def load_predictor_config(predictor_name: str, predictor_version: float = None):
-    """load predictor config according to name and version
+    """
+    return the information of the predictor model according to the given predictor name and version
+    @params:
+
+    predictor_name: string to specify the name of the target latency predictor. All built-in predictors can be viewed by nn_meter.list_latency_predictors() 
+        or through the config file in nn_meter/configs/predictors.yaml.
+    
+    predictor_version:  string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
+        predictor will be loaded.
     """
     config = load_config_file(__predictors_cfg_filename__)
     preds_info = [p for p in config if p['name'] == predictor_name and (predictor_version is None or p['version'] == predictor_version)]
@@ -75,7 +83,15 @@ def load_predictor_config(predictor_name: str, predictor_version: float = None):
 
 
 def load_latency_predictor(predictor_name: str, predictor_version: float = None):
-    """load predictor model according to name and version
+    """ 
+    return the predictor model according to the given predictor name and version
+    @params:
+
+    predictor_name: string to specify the name of the target latency predictor. All built-in predictors can be viewed by nn_meter.list_latency_predictors() 
+        or through the config file in nn_meter/configs/predictors.yaml.
+    
+    predictor_version:  string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
+        predictor will be loaded.
     """
     pred_info = load_predictor_config(predictor_name, predictor_version)
     kernel_predictors, fusionrule = loading_to_local(pred_info, __user_data_folder__)
@@ -83,6 +99,8 @@ def load_latency_predictor(predictor_name: str, predictor_version: float = None)
 
 
 def apply_latency_predictor(args):
+    """apply latency predictor to predict model latency according to the command line interface arguments
+    """
     # specify model type
     if args.tensorflow:
         input_model, model_type, model_suffix = args.tensorflow, "pb", ".pb"
@@ -111,14 +129,16 @@ def apply_latency_predictor(args):
     # predict latency
     result = {}
     for model in input_model_list:
-        latency = predictor.predict(model, model_type)
+        latency = predictor.predict(model, model_type) # in unit of ms
         result[os.path.basename(model)] = latency
-        logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency}')
+        logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency} ms')
     
     return result
 
 
 def get_nnmeter_ir(args):
+    """convert pb file or onnx file to nn-Meter IR graph according to the command line interface arguments
+    """
     import json
     from nn_meter.utils.graph_tool import NumpyEncoder
     if args.tensorflow:
@@ -153,9 +173,20 @@ class nnMeter:
         self, model, model_type, input_shape=(1, 3, 224, 224)
     ):
         """
+        return the predicted latency in microseconds (ms)
         @params:
 
-        model: a pytorch/onnx/tensorflow/nni-ir-Graph model object or a str containing path to the model file
+        model: the model to be predicted, allowed file include
+            - the path to a saved tensorflow model file (*.pb), `model_type` must be set to "pb"
+            - pytorch model object (nn.Module), `model_type` must be set to "torch"
+            - ONNX model object or the path to a saved ONNX model file (*.onnx), `model_type` must be set to "onnx"
+            - dictionary object following nn-Meter-IR format, `model_type` must be set to "nnmeter-ir"
+            - dictionary object following NNI-IR format, `model_type` must be set to "nni-ir"
+            
+        model_type:  string to specify the type of parameter model, allowed items are ["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]
+      
+        input_shape: the shape of input tensor for inference (if necessary), a random tensor according to the shape will be generated and used. This parameter is only 
+        accessed when model_type == 'torch'
         """
         logging.info("Start latency prediction ...")
         if isinstance(model, str):
@@ -166,8 +197,8 @@ class nnMeter:
         # logging.info(graph)
         self.kd.load_graph(graph)
 
-        py = nn_predict(self.kernel_predictors, self.kd.kernels)
-        logging.info(f"Predict latency: {py}")
+        py = nn_predict(self.kernel_predictors, self.kd.kernels) # in unit of ms
+        logging.info(f"Predict latency: {py}(ms)")
         return py
 
 
@@ -176,7 +207,7 @@ def nn_meter_cli():
 
     # Usage 1: list predictors
     parser.add_argument(
-        '--list-predictors',
+        "--list-predictors",
         help='list all supported predictors',
         action='store_true',
         default=False
@@ -189,7 +220,7 @@ def nn_meter_cli():
         help="name of target predictor (hardware)"
     )
     parser.add_argument(
-        '--predictor-version',
+        "--predictor-version",
         type=float,
         help="the version of the latency predictor (If not specified, use the lateast version)",
         default=None
@@ -221,7 +252,7 @@ def nn_meter_cli():
     # Usags: nn-meter getir --tensorflow <pb-file>
     subprasers = parser.add_subparsers(dest='getir')
     getir = subprasers.add_parser(
-        'getir',
+        "getir",
         help='specify a model type to convert to nn-meter ir graph'
     )
     getir.add_argument(
@@ -237,7 +268,7 @@ def nn_meter_cli():
     getir.add_argument(
         "-o", "--output",
         type=str,
-        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json), default to be /path/to/input/file/<input`_file_name>_ir.json"
+        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json), default to be /path/to/input/file/<input_file_name>_ir.json"
     )
 
     # Other utils

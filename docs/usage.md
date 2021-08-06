@@ -80,10 +80,12 @@ predictor = load_latency_predictor(hardware_name, hardware_predictor_version) # 
 # build your model (e.g., model instance of torch.nn.Module)
 model = ... 
 
-lat = predictor.predict(model)
+lat = predictor.predict(model, model_type) # model_type: select the needed type from: ["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"], the resulting latency is in unit of ms
 ```
 
 By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/data`. If the predictor file doesn't exist, it will download from the Github release.
+
+In `predictor.predict`, the allowed inputs of the parameter `model_type` should be a string from `["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]`, representing model types of tensorflow, torch, onnx, nn-meter IR graph and NNI IR graph, respectively.
 
 Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `nn_meter/configs/predictors.yaml`.
 
