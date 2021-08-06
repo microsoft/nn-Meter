@@ -122,7 +122,7 @@ You can also build your own strategies and filters to support more flexible NAS 
 Then, pass this strategy to `RetiariiExperiment` along with additional argument: `applied_mutators=[]`:
 
 ```python
-exp = RetiariiExperiment(base_model, trainer, [], simple_strategy)
+exp = RetiariiExperiment(base_model, trainer, strategy=simple_strategy)
 
 exp_config = RetiariiExeConfig('local')
 ...
@@ -130,4 +130,4 @@ exp_config.dummy_input = [1, 3, 32, 32]
 
 exp.run(exp_config, port)
 ```
-Here, `applied_mutators=[]` means do not use any mutators. In `exp_config`, `dummy_input` is required for tracing shape info.
+In `exp_config`, `dummy_input` is required for tracing shape info.
