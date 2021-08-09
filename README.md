@@ -173,7 +173,7 @@ simple_strategy = strategy.Random(model_filter=LatencyFilter(threshold=100, pred
 `LatencyFilter` will predict the models' latency by using nn-Meter and filter out the models whose latency with the given predictor are larger than the threshold (i.e., `100` in this example).
 You can also build your own strategies and filters to support more flexible NAS such as sorting the models according to latency.
 
-Then, pass this strategy to `RetiariiExperiment` along with additional argument: `applied_mutators=[]`:
+Then, pass this strategy to `RetiariiExperiment`:
 
 ```python
 exp = RetiariiExperiment(base_model, trainer, strategy=simple_strategy)
