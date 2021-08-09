@@ -41,7 +41,7 @@ def get_models(model_type, ppath = "data/testmodels/pb"):
 
 
 def parse_latency_info(info):
-    # (nn-Meter) [RESULT] predict latency for shufflenetv2_0.onnx: 5.423898780782251(ms)
+    # (nn-Meter) [RESULT] predict latency for shufflenetv2_0.onnx: 5.423898780782251 ms
     pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?= ms\n)')
     latency_info = pattern.findall(info)
     latency_list = list(map(lambda x: re.sub('\s*', '', x).split(':'), latency_info))

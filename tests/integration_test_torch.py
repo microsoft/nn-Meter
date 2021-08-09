@@ -30,8 +30,8 @@ def get_predictors():
 
 
 def parse_latency_info(info):
-    # [RESULT] predict latency for resnet50_0.pb: 58.965621083020814
-    pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?=\n)')
+    # (nn-Meter) [RESULT] predict latency for shufflenetv2_0.onnx: 5.423898780782251 ms
+    pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?= ms\n)') 
     latency_info = pattern.findall(info)
     latency_list = list(map(lambda x: re.sub('\s*', '', x).split(':'), latency_info))
     return latency_list
