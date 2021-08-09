@@ -18,19 +18,29 @@ jobs:
 
     - name: Cache
       uses: actions/cache@v2
+      id: cache
       env: 
         cache-name: download-cache
       with:
         path: |
           /home/runner/work/nn-Meter/data/testmodels
           /home/runner/work/nn-Meter/nn-Meter/~/.nn_meter
+          /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
         key: ${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
 
+    - name: Check cache
+      if: steps.cache.outputs.cache-hit == 'true'
+      run: |
+        ls -R /home/runner/work/nn-Meter/data/testmodels
+        ls -R /home/runner/work/nn-Meter/nn-Meter/~/.nn_meter 
+
     - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         pip install tensorflow==1.15.0
         pip install onnx==1.9.0
         pip install torch==1.9.0
+        # pip install torchvision==0.10.0
         
     - name: Install nn-Meter
       run: pip install .
