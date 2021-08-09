@@ -11,10 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Python 3.6
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.6.10
+    # - name: Set up Python 3.6
+    #   uses: actions/setup-python@v2
+    #   with:
+    #     python-version: 3.6.10
 
     # to cache and restore the download data and python packages.
     # still have bug (Cache not found for input keys)
@@ -44,8 +44,8 @@ jobs:
     - name: Install nn-Meter
       run: pip install .
 
-    # - name: Integration test
-    #   run: python tests/integration_test_torch.py
+    - name: Integration test
+      run: python tests/integration_test_download.py
     
     # - name: Diff result with reference
     #   run: diff tests/test_result_torch.txt tests/reference_result_torch.txt
