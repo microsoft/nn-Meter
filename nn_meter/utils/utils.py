@@ -59,7 +59,7 @@ def try_import_torch(require_version = "1.9.0"):
         exit()
 
 
-def try_import_tensorflow(require_version = "1.9.0"):
+def try_import_tensorflow(require_version = "1.15.0"):
     try:
         import tensorflow
         if version.parse(tensorflow.__version__) != version.parse(require_version):

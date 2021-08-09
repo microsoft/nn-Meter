@@ -30,26 +30,26 @@ def get_predictors():
 
 
 def parse_latency_info(info):
-    # [RESULT] predict latency for resnet50_0.pb: 58.965621083020814
-    pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?=\n)')
+    # (nn-Meter) [RESULT] predict latency for shufflenetv2_0.onnx: 5.423898780782251 ms
+    pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?= ms\n)') 
     latency_info = pattern.findall(info)
     latency_list = list(map(lambda x: re.sub('\s*', '', x).split(':'), latency_info))
     return latency_list
     
 
 # integration test to predict model latency
-def integration_test_torch(model_type, model_list, outcsv_name = "tests/test_result_torch.txt"):
+def integration_test_torch(model_type, model_list, output_name = "tests/test_result_torch.txt"):
     """
     download the kernel predictors from the url
     @params:
 
     model_type: torch
     model_list:  the torchvision model waiting for latency prediction
-    outcsv_name: a summary file to save the testing results
+    output_name: a summary file to save the testing results
     """
-    # if the outcsv is not created, create it and add a title
-    if not os.path.isfile(outcsv_name):
-        with open(outcsv_name,"w") as f:
+    # if the output is not created, create it and add a title
+    if not os.path.isfile(output_name):
+        with open(output_name,"w") as f:
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
     # start testing
@@ -66,7 +66,7 @@ def integration_test_torch(model_type, model_list, outcsv_name = "tests/test_res
         for model, latency in latency_list:
             item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
             # print(item)
-            with open(outcsv_name, "a") as f:
+            with open(output_name, "a") as f:
                 f.write(item)
 
 if __name__ == "__main__":

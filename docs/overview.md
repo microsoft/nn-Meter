@@ -1,5 +1,9 @@
 # Overview
+Note: This is an alpha (preview) version which is still under refining.
 
+nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices.
+
+## Key Techniques
 nn-Meter contains two key techniques: (i) kernel detection to automatically detect the execution unit of model inference via a set of well-designed test cases; (ii) adaptive sampling to efficiently sample the most beneficial configurations from a large space to build accurate kernel-level latency predictors.
 
 nn-Meter currently supports multiple input model formats, please refer [input_models](input_models.md) for more details.
@@ -11,3 +15,8 @@ As discussed in nn-Meter paper, the approach is general to any DNN models on div
 If your DNN model structures are not included in above models, please read doc [ops](ops.md) and [kernels](kernel.md) to decide whether to build new latency predictor for them.
 
 If you have a new hardware to predict DNN latency,  a re-run of nn-Meter is required to build latency predictors for the hardware. We will release the building tools very soon.
+
+## Learn More
+- [Get started](quick_start.md)
+
+- [How to use nn-Meter](usage.md)

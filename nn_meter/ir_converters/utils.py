@@ -9,9 +9,21 @@ from .torch_converter.converter import NNIIRConverter
 
 def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 224)):
     """
+    read the given file and convert the model in the file content to nn-Meter IR graph object 
     @params:
-
-    input_shape: only accessed when model_type == 'torch'
+    filename: string to specify the location of the file
+    
+    model: the model to be predicted, allowed file format include
+        - the path to a saved tensorflow model file (*.pb), `model_type` must be set to "pb"
+        - string to specify the name of a built-in torch model from the torchvision model zoo, `model_type` must be set to "torch"
+        - the path to a saved ONNX model file (*.onnx), `model_type` must be set to "onnx"
+        - the path to a saved dictionary object following nn-Meter-IR format (*.json), `model_type` must be set to "nnmeter-ir"
+        - the path to a saved dictionary object following NNI-IR format(*.json), `model_type` must be set to "nni-ir"
+        
+    model_type:  string to specify the type of parameter model, allowed items are ["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]
+    
+    input_shape: the shape of input tensor for inference (if necessary), a random tensor according to the shape will be generated and used. This parameter is only 
+        accessed when model_type == 'torch'
     """
     if model_type == "onnx":
         onnx = try_import_onnx()
@@ -60,8 +72,17 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
 
 def model_to_graph(model, model_type, input_shape=(1, 3, 224, 224)):
     """
+    convert the given model to nn-Meter IR graph object 
     @params:
-    input_shape: only accessed when model_type == 'torch'
+    model: the model object for converting, allowed file format include
+        - pytorch model object (nn.Module), `model_type` must be set to "torch"
+        - ONNX model object, `model_type` must be set to "onnx"
+        - dictionary object following NNI-IR format, `model_type` must be set to "nni-ir"
+        
+    model_type:  string to specify the type of parameter model, allowed items are ["torch", "onnx", "nnmeter-ir", "nni-ir"]
+    
+    input_shape: the shape of input tensor for inference (if necessary), a random tensor according to the shape will be generated and used. This parameter is only 
+        accessed when model_type == 'torch'
     """
     if model_type == "onnx":
         return onnx_model_to_graph(model)
