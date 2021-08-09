@@ -47,7 +47,7 @@ jobs:
     - name: Integration test
       run: |
         python tests/integration_test_download.py
-        ls ~/.nn_meter/cortexA76cpu_tflite21
+        ls -R ~/.nn_meter
     
     # - name: Diff result with reference
     #   run: diff tests/test_result_torch.txt tests/reference_result_torch.txt
