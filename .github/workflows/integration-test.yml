@@ -49,4 +49,7 @@ jobs:
       run: python tests/integration_test.py
     
     - name: Diff result with reference
-      run: diff tests/test_result.txt tests/reference_result.txt
+      run: |
+        diff tests/test_result.txt tests/reference_result.txt
+        ls
+        # diff tests/test_result_torch.txt tests/reference_result_torch.txt
