@@ -65,6 +65,9 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
     # download data and unzip
     if not os.path.isdir(ppath):
         os.mkdir(ppath)
+        print("###############################")
+        print(os.path.abspath(ppath))
+        print("###############################")
         download_from_url(url, ppath)
 
     # if the output_name is not created, create it and add a title
