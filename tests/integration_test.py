@@ -98,7 +98,8 @@ def check_getir_module(model_type, ppath):
         try:
             _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model])
             _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model, '--output', f'temp.json'])
-            os.remove('temp.json')
+            if os.path.exists('temp.json'):
+                os.remove('temp.json')
             break # test just one file to avoid time cosuming
         except NotImplementedError:
             logging.error("Meets ERROR when checking getir --{model_type} {ppath}'")

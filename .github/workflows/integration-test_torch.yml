@@ -16,22 +16,17 @@ jobs:
       with:
         python-version: 3.6.10
 
-    # to cache and restore the download data and python packages.
-    # still have bug (Cache not found for input keys)
-    # leave the issue to another PR
-    - name: Cache node modules
+    - name: Cache
       uses: actions/cache@v2
-      id: cache
       env: 
-        cache-name: cache-node-modules
+        cache-name: download-cache
       with:
         path: |
-          /home/runner/work/nn-Meter/nn-Meter
+          /home/runner/work/nn-Meter/data/testmodels
           /home/runner/work/nn-Meter/nn-Meter/~/.nn_meter
         key: ${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
 
     - name: Install dependencies
-    #  if: steps.cache.outputs.cache-hit != 'true'
       run: |
         pip install onnx==1.9.0
         pip install torch==1.9.0
@@ -41,7 +36,7 @@ jobs:
       run: pip install .
 
     - name: Integration test
-      run: python tests/integration_test.py
+      run: python tests/integration_test_torch.py
     
     - name: Diff result with reference
       run: diff tests/test_result_torch.txt tests/reference_result_torch.txt
