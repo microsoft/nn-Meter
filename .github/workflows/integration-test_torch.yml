@@ -25,7 +25,7 @@ jobs:
       env: 
         cache-name: cache-node-modules
       with:
-        path: ~/.nn_meter
+        path: /home/runner/work/nn-Meter/nn-Meter/~/.nn_meter
         key: ${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}-${{hashFiles('tests/integration_test_download.py')}}
         # location remider:
         # pwd: /home/runner/work/nn-Meter/nn-Meter
