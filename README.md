@@ -135,13 +135,13 @@ model = ...
 lat = predictor.predict(model, model_type) # the resulting latency is in unit of ms
 ```
 
-By calling `load_latency_predictor`, user selects the target hardware (`Framework-Hardware`) and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/data`. If the predictor file doesn't exist, it will download from the Github release.
+By calling `load_latency_predictor`, user selects the target hardware and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/data`. If the predictor file doesn't exist, it will download from the Github release.
 
 In `predictor.predict`, the allowed items of the parameter `model_type` include `["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]`, representing model types of tensorflow, torch, onnx, nn-meter IR graph and NNI IR graph, respectively.
 
 Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `nn_meter/configs/predictors.yaml`.
 
-Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model_to_graph` by calling the model name or model object and specify the model type. The supporting model types of `model_file_to_graph` include "onnx", "pb", "torch", "nnmeter-ir" and "nni-ir", while the supporting model types of `model_to_graph` include "onnx", "torch", "nnmeter-ir" and "nni-ir".
+Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model_to_graph` by calling the model name or model object and specify the model type. The supporting model types of `model_file_to_graph` include "onnx", "pb", "torch", "nnmeter-ir" and "nni-ir", while the supporting model types of `model_to_graph` include "onnx", "torch" and "nni-ir".
 
 ## Hardware-aware NAS by nn-Meter and NNI
 
@@ -149,7 +149,7 @@ To empower affordable DNN on the edge and mobile devices, hardware-aware NAS sea
 
 Currently we provides example of end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html), which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space. More examples of more hardware-aware NAS and model compression algorithms are coming soon. 
 
-To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation).
+To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation)
 ```bash
 python setup.py develop
 ```

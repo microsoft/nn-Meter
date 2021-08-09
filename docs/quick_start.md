@@ -38,7 +38,7 @@ Here is an example script to predict latency for Resnet18 in torch. To run the e
 from nn_meter import load_latency_predictor
 import torchvision.models as models
 
-def main(args):
+def main():
     base_model = models.resnet18()
     base_predictor = 'cortexA76cpu_tflite21'
 
@@ -47,10 +47,10 @@ def main(args):
 
     # predict the latency based on the given model
     lat = predictor.predict(model=base_model, model_type='torch', input_shape=[1, 3, 32, 32]) # in unit of ms
-    print(f'Latency for {base_predictor}: {lat}(s)')
+    print(f'Latency for {base_predictor}: {lat} ms')
 
 if __name__ == '__main__':
-    main(params)
+    main()
 ```
 
 For more detailed usage of nn-Meter, please refer to [this doc](usage.md).
