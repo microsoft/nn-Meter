@@ -15,7 +15,7 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class Graph:
+class ModelGraph:
     def __init__(self, filename=None, graph=None):
         if filename is not None:
             self.graph = json.load(open(filename, "r"))

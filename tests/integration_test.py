@@ -41,14 +41,14 @@ def get_models(model_type, ppath = "data/testmodels/pb"):
 
 
 def parse_latency_info(info):
-    # [RESULT] predict latency for resnet50_0.pb: 58.965621083020814
-    pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?=\n)')
+    # (nn-Meter) [RESULT] predict latency for shufflenetv2_0.onnx: 5.423898780782251 ms
+    pattern = re.compile(r'(?<=\[RESULT\] predict latency for ).*(?= ms\n)')
     latency_info = pattern.findall(info)
     latency_list = list(map(lambda x: re.sub('\s*', '', x).split(':'), latency_info))
     return latency_list
     
 # integration test to predict model latency
-def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.txt"):
+def integration_test(model_type, url, ppath, output_name = "tests/test_result.txt"):
     """
     download the kernel predictors from the url
     @params:
@@ -56,7 +56,7 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
     model_type: tensorflow, onnx, 
     url: github release url address for testing model file
     ppath:  the targeting dir to save the download model file
-    outcsv_name: a summary file to save the testing results
+    output_name: a summary file to save the testing results
     """
     if not os.path.isdir("../data/testmodels"):
         os.mkdir("../data")
@@ -67,17 +67,16 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
         os.mkdir(ppath)
         download_from_url(url, ppath)
 
-    # if the outcsv is not created, create it and add a title
-    if not os.path.isfile(outcsv_name):
-        with open(outcsv_name,"w") as f:
+    # if the output_name is not created, create it and add a title
+    if not os.path.isfile(output_name):
+        with open(output_name,"w") as f:
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
     # start testing
-
     for pred_name, pred_version in get_predictors():
         try:
             since = time.time()
-            # print(f'nn-meter --{model_type} {model} --predictor {pred_name} --predictor-version {pred_version}')
+            # print(f'nn-meter --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}')
             result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
@@ -87,23 +86,56 @@ def integration_test(model_type, url, ppath, outcsv_name = "tests/test_result.tx
         for model, latency in latency_list:
             item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
             # print(item)
-            with open(outcsv_name, "a") as f:
+            with open(output_name, "a") as f:
                 f.write(item)
-    
+
+
+def check_getir_module(model_type, ppath):
+    for model in get_models(model_type, ppath):
+        try:
+            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model])
+            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model, '--output', f'temp.json'])
+            os.remove('temp.json')
+            break # test just one file to avoid time cosuming
+        except NotImplementedError:
+            logging.error("Meets ERROR when checking getir --{model_type} {ppath}'")
+
 
 if __name__ == "__main__":
     check_package_status()
+    output_name = "tests/test_result.txt"
 
     # check tensorflow model
     integration_test(
         model_type='tensorflow',
-        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/pb_models.zip",
+        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/pb_models.zip",
         ppath = "../data/testmodels/pb",
+        output_name = output_name
     )
 
     # check onnx model
     integration_test(
         model_type='onnx',
-        url = "https://github.com/Lynazhang/nnmeter/releases/download/0.1/onnx_models.zip",
+        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/onnx_models.zip",
         ppath = "../data/testmodels/onnx",
+        output_name = output_name
+    )
+
+    # check nnmeter-ir graph model
+    integration_test(
+        model_type='nn-meter-ir',
+        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/ir_graphs.zip",
+        ppath = "../data/testmodels/ir",
+        output_name = output_name
+    )
+
+    # check getir
+    check_getir_module(
+        model_type='tensorflow',
+        ppath = "../data/testmodels/pb"
+    )
+
+    check_getir_module(
+        model_type='onnx',
+        ppath = "../data/testmodels/onnx"
     )

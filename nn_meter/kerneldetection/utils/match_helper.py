@@ -14,10 +14,10 @@ class MatchHelper:
             return False
 
     @staticmethod
-    def strip_useless_nodes(graph_helper):
+    def strip_useless_nodes(model_graph):
         stripped_nodes = ["Const", "Identity"]
 
-        graph = graph_helper.get_graph()
+        graph = model_graph.get_graph()
         removed_node = []
         for key, value in graph.items():
             if value["attr"]["type"] in stripped_nodes:
@@ -26,18 +26,18 @@ class MatchHelper:
         for key in removed_node:
             del graph[key]
 
-        graph_helper.refresh()
+        model_graph.refresh()
 
     @staticmethod
-    def tag_matched_nodes(graph, matched_subgraph):
+    def tag_matched_nodes(model_graph, matched_subgraph):
         for matched_unit in matched_subgraph:
             for node_name in matched_unit.keys():
-                graph.add_node_attr(node_name, "_tagged", "")
+                model_graph.add_node_attr(node_name, "_tagged", "")
 
     @staticmethod
-    def get_untagged_nodes(graph):
+    def get_untagged_nodes(model_graph):
         untagged_node = []
-        for node in graph.get_graph().keys():
-            if "_tagged" not in graph.get_node_attr(node)["attr"]:
+        for node in model_graph.get_graph().keys():
+            if "_tagged" not in model_graph.get_node_attr(node)["attr"]:
                 untagged_node.append(node)
         return untagged_node

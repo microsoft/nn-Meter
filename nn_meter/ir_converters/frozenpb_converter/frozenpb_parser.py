@@ -20,7 +20,7 @@ class FrozenPbParser:
         self.graph = graph
 
     @staticmethod
-    def strip_useless_nodes(graph_helper):
+    def strip_useless_nodes(model_graph):
         """
         Remove nodes that does not matter with the predict or the structure of model,
         including following types:
@@ -29,7 +29,7 @@ class FrozenPbParser:
 
         Parameters
         ----------
-        graph_helper : Graph
+        model_graph : ModelGraph
             the graph holder
         """
         stripped_nodes_type_all = []
@@ -49,7 +49,7 @@ class FrozenPbParser:
             "/split_dim",
             "/axis",
         ]
-        graph = graph_helper.get_graph()
+        graph = model_graph.get_graph()
         removed_node = []
         for key, value in graph.items():
             if "attr" in value.keys():
@@ -64,10 +64,10 @@ class FrozenPbParser:
         for key in removed_node:
             del graph[key]
 
-        graph_helper.refresh()
+        model_graph.refresh()
 
     @staticmethod
-    def fix_split_naming(graph_helper):
+    def fix_split_naming(model_graph):
         """
         TensorFlow is using "NODE_NAME:NUMBER"  for example "split:0", "split:1"
         as a notation to oredered outputs,
@@ -76,10 +76,10 @@ class FrozenPbParser:
 
         Parameters
         ----------
-        graph_helper : Graph
+        model_graph : ModelGraph
             the graph holder
         """
-        graph = graph_helper.get_graph()
+        graph = model_graph.get_graph()
         graph_nodes = copy.deepcopy(list(graph.keys()))
         remove_node_list = []
         for graph_node in graph_nodes:
@@ -107,7 +107,7 @@ class FrozenPbParser:
         for node in remove_node_list:
             del graph[node]
 
-        graph_helper.refresh()
+        model_graph.refresh()
 
     def fetch_attr_to_dict(self, node):
         """
@@ -233,13 +233,13 @@ class FrozenPbParser:
 
         return attr_dict
 
-    def parse_graph(self, graph_helper, required_shape=False):
+    def parse_graph(self, model_graph, required_shape=False):
         """
         Parse a frozen protobuf file from tensorflow to graph IR
 
         Parameters
         ----------
-        graph_helper : Graph
+        model_graph : ModelGraph
             The Graph IR holder.
         required_shape : bool
             Using dynamic shape inference to fetch the tensor shape.
@@ -248,8 +248,8 @@ class FrozenPbParser:
             shape_fetcher = ShapeFetcher(self.graph)
 
         for node in self.graph.node:
-            graph_helper.node(str(node.name), list(map(str, node.input)))
-            graph_helper.set_node_attr(
+            model_graph.node(str(node.name), list(map(str, node.input)))
+            model_graph.set_node_attr(
                 node.name,
                 {
                     "name": str(node.name),

@@ -1,5 +1,6 @@
 - name: cortexA76cpu_tflite21
   version: 1.0
+  category: cpu
   kernel_predictors:
     - conv-bn-relu
     - dwconv-bn-relu
@@ -17,10 +18,11 @@
     - bnrelu
     - channelshuffle
     - concat
-  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/cortexA76cpu_tflite21.zip
+  download: https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/cortexA76cpu_tflite21.zip
 
 - name: adreno640gpu_tflite21
   version: 1.0
+  category: gpu
   kernel_predictors:
     - conv-bn-relu
     - dwconv-bn-relu
@@ -32,10 +34,11 @@
     - bn
     - bnrelu
     - concat
-  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/adreno640gpu_tflite21.zip
+  download: https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/adreno640gpu_tflite21.zip
 
 - name: adreno630gpu_tflite21
   version: 1.0
+  category: gpu
   kernel_predictors:
     - conv-bn-relu
     - dwconv-bn-relu
@@ -47,10 +50,11 @@
     - bn
     - bnrelu
     - concat
-  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/adreno630gpu_tflite21.zip
+  download: https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/adreno630gpu_tflite21.zip
 
 - name: myriadvpu_openvino2019r2
   version: 1.0
+  category: vpu
   kernel_predictors:
     - conv-bn-relu
     - dwconv-bn-relu
@@ -64,4 +68,4 @@
     - bn
     - bnrelu
     - channelshuffle
-  download: https://github.com/Lynazhang/nnmeter/releases/download/version0.1/myriadvpu_openvino2019r2.zip
+  download: https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/myriadvpu_openvino2019r2.zip

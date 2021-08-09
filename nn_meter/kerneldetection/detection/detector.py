@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 from nn_meter.kerneldetection.rulelib.rule_reader import RuleReader
 from nn_meter.kerneldetection.rulelib.rule_splitter import RuleSplitter
-from nn_meter.utils.graph_tool import Graph
+from nn_meter.utils.graph_tool import ModelGraph
 from nn_meter.kerneldetection.utils.constants import DUMMY_TYPES
 from nn_meter.kerneldetection.utils.ir_tools import convert_nodes
 # import logging
@@ -12,14 +12,14 @@ class KernelDetector:
     def __init__(self, rule_file):
         self.reader = RuleReader(rule_file)
         self.splitter = RuleSplitter(self.reader)
-        self.graph = None
+        self.model_graph = None
         self.bbs = []
 
     def load_graph(self, graph):
         new_graph = convert_nodes(graph)
-        self.graph = Graph(graph=new_graph)
-        self.graph.refresh()
-        self.bbs = self.splitter.split(self.graph)
+        self.model_graph = ModelGraph(graph=new_graph)
+        self.model_graph.refresh()
+        self.bbs = self.splitter.split(self.model_graph)
 
     @property
     def kernels(self):
@@ -33,7 +33,7 @@ class KernelDetector:
         return kernels
 
     def _bb_to_kernel(self, bb):
-        types = [self.graph.get_node_type(node) for node in bb]
+        types = [self.model_graph.get_node_type(node) for node in bb]
         # logging.info(types)
         types = [t for t in types if t and t not in DUMMY_TYPES]
 
@@ -46,9 +46,9 @@ class KernelDetector:
 
             layer = bb[0]
             type = types[0]
-            attr = self.graph.get_node_attr(layer)["attr"]
-            input_shape = self.graph.get_node_attr(layer)["input_shape"]
-            output_shape = self.graph.get_node_attr(layer)["output_shape"]
+            attr = self.model_graph.get_node_attr(layer)["attr"]
+            input_shape = self.model_graph.get_node_attr(layer)["input_shape"]
+            output_shape = self.model_graph.get_node_attr(layer)["output_shape"]
 
             # Remove const from first biasadd of hswish
             if type == "hswish":

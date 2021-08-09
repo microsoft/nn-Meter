@@ -36,7 +36,7 @@ def predict_model(model, predictors):
         kernelname = get_kernel_name(kernel)
         if kernelname in predictors:
             pred = predictors[kernelname]
-            pys = pred.predict(dicts[kernel])
+            pys = pred.predict(dicts[kernel]) # in unit of ms
             if len(pys) != 0:
                 py += sum(pys)
 
