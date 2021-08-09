@@ -7,3 +7,5 @@ if __name__ == "__main__":
         print("complete download in ~/.nn_meter", )
     else:
         print("found ~/.nn_meter/cortexA76cpu_tflite21, download is not needed")
+        for file in os.listdir('~/.nn_meter/cortexA76cpu_tflite21'):
+            print(file)
