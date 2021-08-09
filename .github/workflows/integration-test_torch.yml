@@ -46,6 +46,7 @@ jobs:
 
     - name: Integration test
       run: |
+        mkdir ~/.nn_meter
         python tests/integration_test_download.py
         ls -R ~/.nn_meter
     
