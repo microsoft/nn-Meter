@@ -26,7 +26,7 @@ jobs:
           ~/.nn_meter
           /home/runner/work/nn-Meter/data/testmodels
           /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
-        key: Data-${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
+        key: IT-${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
@@ -34,7 +34,7 @@ jobs:
         pip install tensorflow==1.15.0
         pip install onnx==1.9.0
         pip install torch==1.9.0
-        # pip install torchvision==0.10.0
+        pip install torchvision==0.10.0
         
     - name: Install nn-Meter
       run: pip install .
