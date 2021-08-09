@@ -28,12 +28,6 @@ jobs:
           /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
         key: ${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
 
-    - name: Check cache
-      if: steps.cache.outputs.cache-hit == 'true'
-      run: |
-        ls -R /home/runner/work/nn-Meter/data/testmodels
-        ls -R /home/runner/work/nn-Meter/nn-Meter/~/.nn_meter 
-
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
