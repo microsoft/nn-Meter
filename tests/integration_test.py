@@ -139,13 +139,14 @@ def check_getir_module(model_type, ppath):
 
 if __name__ == "__main__":
     check_package_status()
+    output_name = "tests/test_result.txt"
 
     # check tensorflow model
     integration_test(
         model_type='tensorflow',
         url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/pb_models.zip",
         ppath = "../data/testmodels/pb",
-        output_name = "tests/test_result.txt"
+        output_name=output_name
     )
 
     # check onnx model
@@ -153,25 +154,25 @@ if __name__ == "__main__":
         model_type='onnx',
         url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/onnx_models.zip",
         ppath = "../data/testmodels/onnx",
-        output_name = "tests/test_result.txt"
+        output_name=output_name
     )
 
-    # # check nnmeter-ir graph model
-    # integration_test(
-    #     model_type='nn-meter-ir',
-    #     url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/ir_graphs.zip",
-    #     ppath = "../data/testmodels/ir",
-    #     output_name = "tests/test_result.txt"
-    # )
+    # check nnmeter-ir graph model
+    integration_test(
+        model_type='nn-meter-ir',
+        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/ir_graphs.zip",
+        ppath = "../data/testmodels/ir",
+        output_name=output_name
+    )
 
-    # # check torch model
-    # integration_test_torch(
-    #     model_type='torch',
-    #     model_list=[
-    #         'resnet18', 'alexnet', 'vgg16', 'squeezenet', 'densenet', 'inception', 'googlenet', 
-    #         'shufflenet', 'mobilenet_v2', 'resnext50_32x4d', 'wide_resnet50_2', 'mnasnet'],
-    #     output_name = "tests/test_result_torch.txt"
-    # )
+    # check torch model
+    integration_test_torch(
+        model_type='torch',
+        model_list=[
+            'resnet18', 'alexnet', 'vgg16', 'squeezenet', 'densenet', 'inception', 'googlenet', 
+            'shufflenet', 'mobilenet_v2', 'resnext50_32x4d', 'wide_resnet50_2', 'mnasnet'],
+        output_name=output_name
+    )
 
     # check getir
     check_getir_module(

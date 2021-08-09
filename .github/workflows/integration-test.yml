@@ -23,10 +23,10 @@ jobs:
         cache-name: download-cache
       with:
         path: |
+          ~/.nn_meter
           /home/runner/work/nn-Meter/data/testmodels
-          /home/runner/work/nn-Meter/nn-Meter/~/.nn_meter
           /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
-        key: ${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
+        key: Data-${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
@@ -45,5 +45,5 @@ jobs:
     - name: Diff result with reference
       run: |
         diff tests/test_result.txt tests/reference_result.txt
-        ls
+        ls ~/.nn_meter
         # diff tests/test_result_torch.txt tests/reference_result_torch.txt
