@@ -29,7 +29,7 @@ jobs:
           ~/.nn_meter
           /home/runner/work/nn-Meter/data/testmodels
           /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
-        key: IT-${{hashFiles('setup.py')}}-${{hashFiles('nn_meter/configs/predictors.yaml')}}
+        key: PredictorData-${{hashFiles('nn_meter/configs/predictors.yaml')}}
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
@@ -46,7 +46,5 @@ jobs:
       run: python tests/integration_test.py
     
     - name: Diff result with reference
-      run: |
-        diff tests/test_result.txt tests/reference_result.txt
-        ls ~/.nn_meter
-        # diff tests/test_result_torch.txt tests/reference_result_torch.txt
+      run: diff tests/test_result.txt tests/reference_result.txt
+        
