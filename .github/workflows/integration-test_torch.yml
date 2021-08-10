@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-name: Integrated Test
+name: Integrated Test for Torch Model
 
 on: [push]
 
@@ -43,8 +43,8 @@ jobs:
       run: pip install .
 
     - name: Integration test
-      run: python tests/integration_test.py
+      run: python tests/integration_test_torch.py
     
     - name: Diff result with reference
-      run: diff tests/test_result.txt tests/reference_result.txt
+      run: diff tests/test_result_torch.txt tests/reference_result_torch.txt
         
