@@ -143,6 +143,7 @@ if __name__ == "__main__":
     check_package_status()
     output_name = "tests/test_result.txt"
 
+    since = time.time()
     # check tensorflow model
     integration_test(
         model_type='tensorflow',
@@ -150,7 +151,9 @@ if __name__ == "__main__":
         ppath = "../data/testmodels/pb",
         output_name=output_name
     )
+    print("tensorflow test time: ", time.time() - since)
 
+    since = time.time()
     # check onnx model
     integration_test(
         model_type='onnx',
@@ -158,6 +161,9 @@ if __name__ == "__main__":
         ppath = "../data/testmodels/onnx",
         output_name=output_name
     )
+    print("onnx test time: ", time.time() - since)
+
+    since = time.time()
 
     # check nnmeter-ir graph model
     integration_test(
@@ -166,6 +172,9 @@ if __name__ == "__main__":
         ppath = "../data/testmodels/ir",
         output_name=output_name
     )
+    print("nnmeter-ir test time: ", time.time() - since)
+
+    since = time.time()
 
     # check torch model
     integration_test_torch(
@@ -175,6 +184,7 @@ if __name__ == "__main__":
             'shufflenet', 'mobilenet_v2', 'resnext50_32x4d', 'wide_resnet50_2', 'mnasnet'],
         output_name=output_name
     )
+    print("torch test time: ", time.time() - since)
 
     # check getir
     check_getir_module(
