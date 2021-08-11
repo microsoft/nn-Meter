@@ -62,7 +62,7 @@ class KernelDetector:
             if "split_dim" in attr:
                 kernel["split_dim"] = attr["split_dim"]
 
-            if len(input_shape) == 1:
+            if len(input_shape) >= 1:
                 if len(input_shape[0]) == 4:
                     kernel["inputh"] = input_shape[0][1]
                     kernel["inputw"] = input_shape[0][2]
