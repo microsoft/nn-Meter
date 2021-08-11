@@ -48,7 +48,7 @@ def try_import_onnx(require_version = "1.9.0"):
         exit()
 
 
-def try_import_torch(require_version = "1.9.0"):
+def try_import_torch(require_version = "1.7.1"):
     try:
         import torch
         if version.parse(torch.__version__) != version.parse(require_version):
