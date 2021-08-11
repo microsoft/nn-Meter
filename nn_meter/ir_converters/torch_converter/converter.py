@@ -119,4 +119,4 @@ class OnnxBasedTorchConverter(OnnxConverter):
         super().__init__(model)
 
 
-TorchConverter = OnnxBasedTorchConverter
+TorchConverter = NNIBasedTorchConverter
