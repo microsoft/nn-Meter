@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 from nn_meter.utils.utils import try_import_onnx, try_import_torch
 import tempfile
+from onnxsim import simplify
 from nn_meter.ir_converters.onnx_converter import OnnxConverter
 
 
@@ -116,7 +117,11 @@ class OnnxBasedTorchConverter(OnnxConverter):
             fp.seek(0)
             model = onnx.load(fp, load_external_data=False)
 
-        super().__init__(model)
+        # convert model
+        model_simp, check = simplify(model)
+
+        assert check, "Simplified ONNX model could not be validated"
+        super().__init__(model_simp)
 
 
-TorchConverter = NNIBasedTorchConverter
+TorchConverter = OnnxBasedTorchConverter
