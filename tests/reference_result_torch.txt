@@ -4,10 +4,10 @@ alexnet, torch, cortexA76cpu_tflite21, 1.0, 96.5713
 vgg16, torch, cortexA76cpu_tflite21, 1.0, 1668.5085
 squeezenet, torch, cortexA76cpu_tflite21, 1.0, 98.3766
 densenet161, torch, cortexA76cpu_tflite21, 1.0, 917.2059
-inception_v3, torch, cortexA76cpu_tflite21, 1.0, 586.301
+inception_v3, torch, cortexA76cpu_tflite21, 1.0, 586.2565
 googlenet, torch, cortexA76cpu_tflite21, 1.0, 167.5816
 shufflenet_v2, torch, cortexA76cpu_tflite21, 1.0, 21.3181
-mobilenet_v2, torch, cortexA76cpu_tflite21, 1.0, 43.5412
+mobilenet_v2, torch, cortexA76cpu_tflite21, 1.0, 43.9635
 resnext50_32x4d, torch, cortexA76cpu_tflite21, 1.0, 1218.8905
 wide_resnet50_2, torch, cortexA76cpu_tflite21, 1.0, 1218.8905
 mnasnet, torch, cortexA76cpu_tflite21, 1.0, 45.8056
@@ -16,7 +16,7 @@ alexnet, torch, adreno640gpu_tflite21, 1.0, 13.1267
 vgg16, torch, adreno640gpu_tflite21, 1.0, 219.2648
 squeezenet, torch, adreno640gpu_tflite21, 1.0, 18.6742
 densenet161, torch, adreno640gpu_tflite21, 1.0, 186.5604
-inception_v3, torch, adreno640gpu_tflite21, 1.0, 129.6636
+inception_v3, torch, adreno640gpu_tflite21, 1.0, 127.9842
 googlenet, torch, adreno640gpu_tflite21, 1.0, 32.7581
 shufflenet_v2, torch, adreno640gpu_tflite21, 1.0, 5.4239
 mobilenet_v2, torch, adreno640gpu_tflite21, 1.0, 9.9207
@@ -28,7 +28,7 @@ alexnet, torch, adreno630gpu_tflite21, 1.0, 16.8673
 vgg16, torch, adreno630gpu_tflite21, 1.0, 286.5998
 squeezenet, torch, adreno630gpu_tflite21, 1.0, 21.095
 densenet161, torch, adreno630gpu_tflite21, 1.0, 193.0796
-inception_v3, torch, adreno630gpu_tflite21, 1.0, 162.5346
+inception_v3, torch, adreno630gpu_tflite21, 1.0, 161.3187
 googlenet, torch, adreno630gpu_tflite21, 1.0, 37.9612
 shufflenet_v2, torch, adreno630gpu_tflite21, 1.0, 5.5792
 mobilenet_v2, torch, adreno630gpu_tflite21, 1.0, 9.9861
@@ -43,7 +43,7 @@ densenet161, torch, myriadvpu_openvino2019r2, 1.0, 144.1079
 inception_v3, torch, myriadvpu_openvino2019r2, 1.0, 59.3455
 googlenet, torch, myriadvpu_openvino2019r2, 1.0, 17.0897
 shufflenet_v2, torch, myriadvpu_openvino2019r2, 1.0, 20.8282
-mobilenet_v2, torch, myriadvpu_openvino2019r2, 1.0, 21.4955
+mobilenet_v2, torch, myriadvpu_openvino2019r2, 1.0, 22.0187
 resnext50_32x4d, torch, myriadvpu_openvino2019r2, 1.0, 130.4383
 wide_resnet50_2, torch, myriadvpu_openvino2019r2, 1.0, 130.4383
 mnasnet, torch, myriadvpu_openvino2019r2, 1.0, 24.3526
