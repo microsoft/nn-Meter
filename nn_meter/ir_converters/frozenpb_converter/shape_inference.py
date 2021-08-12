@@ -11,6 +11,53 @@ logging = logging.getLogger(__name__)
 
 
 class ShapeInference:
+
+    # Ops that only need to calculate the prodcast for shapes
+    TF_PRODCAST_MATH_OPS = [
+        "Add",
+        "AddN", # AddN does not support prodcast really
+        "AddV2",
+        "Subtract",
+        "MulNoNan",
+        "Multiply"
+        "Div",
+        "DivNoNan",
+        "Equal",
+    ]
+
+    # Ops that only need to propagate the shapes
+    TF_PROPAGATE_MATH_OPS = [
+        "Abs",
+        "Acos",
+        "ACosh",
+        "Asin",
+        "Asinh",
+        "Atan",
+        "Atanh",
+        "Cos",
+        "Cosh",
+        "Exp",
+        "Floor",
+        "Sin",
+        "Sinh",
+        "Sqrt",
+        "Square",
+
+        "FusedBatchNorm",
+        "FusedBatchNormV2",
+        "FusedBatchNormV3",
+        "BiasAdd",
+
+        "Relu",
+        "Relu6",
+        "Selu",
+        "LeakyReLU",
+        "Elu"
+        "Softmax",
+
+        "NoOp"
+    ]
+
     @staticmethod
     def eval_prodcast(graph, node):
         """
@@ -142,6 +189,41 @@ class ShapeInference:
             The node in Graph IR in dict format.
         """
         return [], [graph[node["inbounds"][0]]["attr"]["output_shape"][0]]
+    
+    @staticmethod
+    def Pad_get_shape(graph, node):
+        """
+        Get shape of a Pad operator.
+        This is not well implemented, will move a more robust later.
+
+        Parameters
+        ----------
+        graph : dict
+            The Graph IR in dict format.
+        node   : dict
+            The node in Graph IR in dict format.
+        """
+        in_shape = [graph[node["inbounds"][0]]["attr"]["output_shape"][0]]
+        paddings = node["attr"]["attr"]["paddings"]
+        out_shape = []
+        for dim in range(len(in_shape)):
+            out_shape.append(in_shape[dim] + sum(paddings[dim]))
+        return in_shape, out_shape
+    
+    @staticmethod
+    def PadV2_get_shape(graph, node):
+        """
+        Get shape of a PadV2 operator.
+        This is not well implemented, will move a more robust later.
+
+        Parameters
+        ----------
+        graph : dict
+            The Graph IR in dict format.
+        node   : dict
+            The node in Graph IR in dict format.
+        """
+        return ShapeInference.Pad_get_shape(graph, node)
 
     @staticmethod
     def propogate_shape(graph, node):
@@ -159,111 +241,6 @@ class ShapeInference:
         logging.info("Propogate through op %s.", node["attr"]["name"])
         in_shape = [graph[node["inbounds"][0]]["attr"]["output_shape"][0]]
         return in_shape, in_shape
-
-    @staticmethod
-    def FusedBatchNorm_get_shape(graph, node):
-        """
-        Get shape of a FusedBatchNorm operator.
-        Just propogate the shape.
-
-        Parameters
-        ----------
-        graph : dict
-            The Graph IR in dict format.
-        node   : dict
-            The node in Graph IR in dict format.
-        """
-        return ShapeInference.propogate_shape(graph, node)
-
-    @staticmethod
-    def BiasAdd_get_shape(graph, node):
-        """
-        Get shape of a BiasAdd operator.
-        Just propogate the shape.
-
-        Parameters
-        ----------
-        graph : dict
-            The Graph IR in dict format.
-        node   : dict
-            The node in Graph IR in dict format.
-        """
-        return ShapeInference.propogate_shape(graph, node)
-
-    @staticmethod
-    def Relu_get_shape(graph, node):
-        """
-        Get shape of a Relu operator.
-        Just propogate the shape.
-
-        Parameters
-        ----------
-        graph : dict
-            The Graph IR in dict format.
-        node   : dict
-            The node in Graph IR in dict format.
-        """
-        return ShapeInference.propogate_shape(graph, node)
-
-    @staticmethod
-    def Relu6_get_shape(graph, node):
-        """
-        Get shape of a Relu6 operator.
-        Just propogate the shape.
-
-        Parameters
-        ----------
-        graph : dict
-            The Graph IR in dict format.
-        node   : dict
-            The node in Graph IR in dict format.
-        """
-        return ShapeInference.propogate_shape(graph, node)
-
-    @staticmethod
-    def LeakyReLU_get_shape(graph, node):
-        """
-        Get shape of a LeakyReLU operator.
-        Just propogate the shape.
-
-        Parameters
-        ----------
-        graph : dict
-            The Graph IR in dict format.
-        node   : dict
-            The node in Graph IR in dict format.
-        """
-        return ShapeInference.propogate_shape(graph, node)
-
-    @staticmethod
-    def Add_get_shape(graph, node):
-        """
-        Get shape of an Add operator.
-        Just propogate the shape.
-
-        Parameters
-        ----------
-        graph : dict
-            The Graph IR in dict format.
-        node   : dict
-            The node in Graph IR in dict format.
-        """
-        return ShapeInference.eval_prodcast(graph, node)
-
-    @staticmethod
-    def Mul_get_shape(graph, node):
-        """
-        Get shape of an FusedBatchNorm operator.
-        Just propogate the shape.
-
-        Parameters
-        ----------
-        graph : dict
-            The Graph IR in dict format.
-        node   : dict
-            The node in Graph IR in dict format.
-        """
-        return ShapeInference.eval_prodcast(graph, node)
 
     @staticmethod
     def Pool_get_shape(graph, node):
@@ -351,6 +328,20 @@ class ShapeInference:
 
     @staticmethod
     def MaxPool_get_shape(graph, node):
+        """
+        Get shape of a MaxPool operator.
+
+        Parameters
+        ----------
+        graph : dict
+            The Graph IR in dict format.
+        node   : dict
+            The node in Graph IR in dict format.
+        """
+        return ShapeInference.Pool_get_shape(graph, node)
+    
+    @staticmethod
+    def MaxPoolV2_get_shape(graph, node):
         """
         Get shape of a MaxPool operator.
 
@@ -920,7 +911,7 @@ class ShapeInference:
                     )
         return [[0, 0, 0, 0]], [[0, 0, 0, 0]]
 
-    def __init__(self, model_graph):
+    def __init__(self, model_graph, dynamic_fetcher):
         """
         Take the graph, and append output shape
         and input shape to the attributes of nodes.
@@ -935,28 +926,45 @@ class ShapeInference:
 
         # Pass #1
         for node_name in seq:
-            node_get_shape_name = model_graph.get_node_type(node_name) + "_get_shape"
-            if node_get_shape_name in dir(self):
-                input_shape, output_shape = eval("self." + node_get_shape_name)(
-                    graph, graph[node_name]
-                )
-                if output_shape is not None:
-                    graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
-                        output_shape
+            node_type = model_graph.get_node_type(node_name)
+            node_get_shape_name = node_type + "_get_shape"
+
+            # if node type find in supported ops, use faster static inference
+            if node_type in self.TF_PRODCAST_MATH_OPS or \
+                node_type in self.TF_PROPAGATE_MATH_OPS or \
+                node_get_shape_name in dir(self) :
+
+                if node_type in self.TF_PRODCAST_MATH_OPS:
+                    input_shape, output_shape = ShapeInference.eval_prodcast(graph, graph[node_name])
+                elif node_type in self.TF_PROPAGATE_MATH_OPS:
+                    input_shape, output_shape = ShapeInference.propogate_shape(graph, graph[node_name])
+                else:
+                    input_shape, output_shape = eval("self." + node_get_shape_name)(
+                        graph, graph[node_name]
                     )
-                if input_shape is not None:
-                    graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
-                logging.info(
-                    "Input shape of %s op is %s." % (node_name, str(input_shape))
-                )
-                logging.info(
-                    "Output shape of %s op is %s." % (node_name, str(output_shape))
-                )
+
+            # fallback to dynamic inference
+            # To be aware, dynamic infernce does not process the shape at all, 
+            # like removing weight shape from inputs. This may yield false prediction.
             else:
-                logging.error("%s not support yet." % model_graph.get_node_type(node_name))
-                logging.info("------ node content --------")
-                logging.info(graph[node_name])
-                logging.info("----------------------------")
+                logging.warn("%s is not supported by static inference yet." % model_graph.get_node_type(node_name))
+                logging.warn("Failling back to dynamic fetcher, this may yield low inference speed.")
+                input_shape, output_shape = dynamic_fetcher.get_shape_by_name(node_name)
+
+
+            if output_shape is not None:
+                graph[node_name]["attr"]["output_shape"] = copy.deepcopy(
+                    output_shape
+                )
+            if input_shape is not None:
+                graph[node_name]["attr"]["input_shape"] = copy.deepcopy(input_shape)
+            logging.info(
+                "Input shape of %s op is %s." % (node_name, str(input_shape))
+            )
+            logging.info(
+                "Output shape of %s op is %s." % (node_name, str(output_shape))
+            )
+
 
         # Pass #2
         # This is a patching for back-end, since backend extract shapes from
