@@ -40,9 +40,7 @@ jobs:
         pip install torchvision==0.8.2
         
     - name: Install nn-Meter
-      run: |
-        pip uninstall nn-meter
-        pip install .
+      run: pip install -U .
 
     - name: Integration test
       run: python tests/integration_test_torch.py
