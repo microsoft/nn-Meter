@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 nni_type_map = {
     "aten::mul": "mul",
     "aten::floordiv": "div",
