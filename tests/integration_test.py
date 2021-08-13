@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import re
 import os
 import time
@@ -13,12 +15,14 @@ __model_suffix__ = {
     "onnx": ".onnx"
 }
 
+
 # check package status
 def check_package_status():
     try:
         output1 = subprocess.check_output(['nn-meter', '-h'])
     except NotImplementedError:
         logging.error("Meets ERROR when checking 'nn-meter -h'")
+
 
 # check predictors list
 def get_predictors():
@@ -47,6 +51,7 @@ def parse_latency_info(info):
     latency_list = list(map(lambda x: re.sub('\s*', '', x).split(':'), latency_info))
     return latency_list
     
+
 # integration test to predict model latency
 def integration_test(model_type, url, ppath, output_name = "tests/test_result.txt"):
     """
@@ -95,7 +100,8 @@ def check_getir_module(model_type, ppath):
         try:
             _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model])
             _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model, '--output', f'temp.json'])
-            os.remove('temp.json')
+            if os.path.exists('temp.json'):
+                os.remove('temp.json')
             break # test just one file to avoid time cosuming
         except NotImplementedError:
             logging.error("Meets ERROR when checking getir --{model_type} {ppath}'")
@@ -108,25 +114,25 @@ if __name__ == "__main__":
     # check tensorflow model
     integration_test(
         model_type='tensorflow',
-        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/pb_models.zip",
-        ppath = "../data/testmodels/pb",
-        output_name = output_name
+        url="https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/pb_models.zip",
+        ppath="../data/testmodels/pb",
+        output_name=output_name
     )
 
     # check onnx model
     integration_test(
         model_type='onnx',
-        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/onnx_models.zip",
-        ppath = "../data/testmodels/onnx",
-        output_name = output_name
+        url="https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/onnx_models.zip",
+        ppath="../data/testmodels/onnx",
+        output_name=output_name
     )
 
     # check nnmeter-ir graph model
     integration_test(
         model_type='nn-meter-ir',
-        url = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/ir_graphs.zip",
-        ppath = "../data/testmodels/ir",
-        output_name = output_name
+        url="https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/ir_graphs.zip",
+        ppath="../data/testmodels/ir",
+        output_name=output_name
     )
 
     # check getir
