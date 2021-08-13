@@ -115,18 +115,8 @@ class GoogLeNet(nn.Module):
             self._initialize_weights()
 
     def _initialize_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                import scipy.stats as stats
-                X = stats.truncnorm(-2, 2, scale=0.01)
-                values = torch.as_tensor(X.rvs(m.weight.numel()), dtype=m.weight.dtype)
-                values = values.view(m.weight.size())
-                with torch.no_grad():
-                    m.weight.copy_(values)
-            elif isinstance(m, nn.BatchNorm2d):
-                torch.nn.init.constant_(m.weight, 1)
-                torch.nn.init.constant_(m.bias, 0)
-
+        pass
+    
     def _transform_input(self, x):
         # type: (Tensor) -> Tensor
         if self.transform_input:

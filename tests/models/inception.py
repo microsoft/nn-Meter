@@ -110,19 +110,7 @@ class Inception3(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.dropout = nn.Dropout()
         self.fc = nn.Linear(2048, num_classes)
-        if init_weights:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                    import scipy.stats as stats
-                    stddev = m.stddev if hasattr(m, 'stddev') else 0.1
-                    X = stats.truncnorm(-2, 2, scale=stddev)
-                    values = torch.as_tensor(X.rvs(m.weight.numel()), dtype=m.weight.dtype)
-                    values = values.view(m.weight.size())
-                    with torch.no_grad():
-                        m.weight.copy_(values)
-                elif isinstance(m, nn.BatchNorm2d):
-                    torch.nn.init.constant_(m.weight, 1)
-                    torch.nn.init.constant_(m.bias, 0)
+        
 
     def _transform_input(self, x):
         if self.transform_input:

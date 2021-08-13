@@ -20,11 +20,16 @@ if __name__ == "__main__":
         'wide_resnet50_2': 'models.wide_resnet50_2()',
         'mnasnet': 'models.mnasnet1_0()',
     }
-    for model_name in torchvision_zoo_dict:
-        print("################################# ", model_name, " #################################")
-        model = eval(torchvision_zoo_dict[model_name])
-        try:
-            predictors.predict(model, "torch")
-        except:
-            pass
+    # for model_name in torchvision_zoo_dict:
+    #     print("################################# ", model_name, " #################################")
+    #     model = eval(torchvision_zoo_dict[model_name])
+    #     try:
+    #         predictors.predict(model, "torch")
+    #     except:
+    #         pass
+    
+    model_name = "shufflenet_v2"
+    print("################################# ", model_name, " #################################")
+    model = eval(torchvision_zoo_dict[model_name])
+    predictors.predict(model, "torch")
     

@@ -137,19 +137,7 @@ class MNASNet(torch.nn.Module):
         return self.classifier(x)
 
     def _initialize_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight, mode="fan_out",
-                                        nonlinearity="relu")
-                if m.bias is not None:
-                    torch.nn.init.zeros_(m.bias)
-            elif isinstance(m, nn.BatchNorm2d):
-                torch.nn.init.ones_(m.weight)
-                torch.nn.init.zeros_(m.bias)
-            elif isinstance(m, nn.Linear):
-                torch.nn.init.kaiming_uniform_(m.weight, mode="fan_out",
-                                         nonlinearity="sigmoid")
-                torch.nn.init.zeros_(m.bias)
+        pass
 
     def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
                               missing_keys, unexpected_keys, error_msgs):

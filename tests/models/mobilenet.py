@@ -1,6 +1,6 @@
 import nni.retiarii.nn.pytorch as nn
 from .utils import load_state_dict_from_url
-import torch
+
 
 __all__ = ['MobileNetV2', 'mobilenet_v2']
 
@@ -144,19 +144,6 @@ class MobileNetV2(nn.Module):
             nn.Dropout(0.2),
             nn.Linear(self.last_channel, num_classes),
         )
-
-        # weight initialization
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                torch.nn.init.kaiming_normal_(m.weight, mode='fan_out')
-                if m.bias is not None:
-                    torch.nn.init.zeros_(m.bias)
-            elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
-                torch.nn.init.ones_(m.weight)
-                torch.nn.init.zeros_(m.bias)
-            elif isinstance(m, nn.Linear):
-                torch.nn.init.normal_(m.weight, 0, 0.01)
-                torch.nn.init.zeros_(m.bias)
 
     def _forward_impl(self, x):
         # This exists since TorchScript doesn't support inheritance, so the superclass method

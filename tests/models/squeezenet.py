@@ -1,6 +1,5 @@
 import torch
 import nni.retiarii.nn.pytorch as nn
-import torch.nn.init as init
 from .utils import load_state_dict_from_url
 
 __all__ = ['SqueezeNet', 'squeezenet1_0', 'squeezenet1_1']
@@ -86,15 +85,6 @@ class SqueezeNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.AdaptiveAvgPool2d((1, 1))
         )
-
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                if m is final_conv:
-                    init.normal_(m.weight, mean=0.0, std=0.01)
-                else:
-                    init.kaiming_uniform_(m.weight)
-                if m.bias is not None:
-                    init.constant_(m.bias, 0)
 
     def forward(self, x):
         x = self.features(x)
