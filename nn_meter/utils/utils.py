@@ -77,4 +77,13 @@ def try_import_torchvision_models():
     except ImportError:
         logging.error(f'You have not install the torchvision package, please install torchvision and try again.')
         exit()
-        
+
+
+def try_import_onnxsim():
+    try:
+        from onnxsim import simplify
+        return simplify
+    except ImportError:
+        logging.error(f'You have not install the onnx-simplifier package, please install onnx-simplifier and try again.')
+        exit()
+    
