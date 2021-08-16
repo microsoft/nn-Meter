@@ -14,7 +14,7 @@ class FrozenPbParser:
     def __init__(self, pb_file):
         tf = try_import_tensorflow()
         f = open(pb_file, "rb")
-        graph = tf.GraphDef()
+        graph = tf.compat.v1.GraphDef()
         graph.ParseFromString(f.read())
 
         self.graph = graph
@@ -233,7 +233,7 @@ class FrozenPbParser:
 
         return attr_dict
 
-    def parse_graph(self, model_graph, required_shape=False):
+    def parse_graph(self, model_graph):
         """
         Parse a frozen protobuf file from tensorflow to graph IR
 
@@ -241,11 +241,7 @@ class FrozenPbParser:
         ----------
         model_graph : ModelGraph
             The Graph IR holder.
-        required_shape : bool
-            Using dynamic shape inference to fetch the tensor shape.
         """
-        if required_shape:
-            shape_fetcher = ShapeFetcher(self.graph)
 
         for node in self.graph.node:
             model_graph.node(str(node.name), list(map(str, node.input)))
@@ -254,9 +250,7 @@ class FrozenPbParser:
                 {
                     "name": str(node.name),
                     "type": str(node.op),
-                    "output_shape": shape_fetcher.shape_results[node.name + ":0"]
-                    if required_shape
-                    else [],
+                    "output_shape": [], # This will be filled later
                     "attr": self.fetch_attr_to_dict(node),
                 },
             )
