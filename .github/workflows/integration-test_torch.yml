@@ -38,9 +38,10 @@ jobs:
         pip install onnx==1.9.0
         pip install torch==1.7.1
         pip install torchvision==0.8.2
+        pip install onnx-simplifier
         
     - name: Install nn-Meter
-      run: pip install .
+      run: pip install -U .
 
     - name: Integration test
       run: python tests/integration_test_torch.py
