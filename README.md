@@ -35,12 +35,12 @@ Then simply run the following pip install in an environment that has `python >= 
 pip install .
 ```
 
-nn-Meter is a latency predictor of models with type of tensorflow, pytorch, onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding pacakges. The well tested versions are listed below:
+nn-Meter is a latency predictor of models with type of tensorflow, pytorch, onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding required pacakges. The well tested versions are listed below:
 
 |  Testing Model Tpye   |                       Requirments                      |
 | :-------------------: | :------------------------------------------------:     |
 |       Tensorflow      |  `tensorflow==1.15.0`                                  |
-|         Torch         |  `onnx==1.9.0`, `torch==1.7.1`, `torchvision==0.8.2`  |
+|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, `onnx==1.9.0`, `onnx-simplifier==0.3.6`  |
 |          Onnx         |  `onnx==1.9.0`                                         |
 |    nn-Meter IR graph  |   ---                                                  |
 |      NNI IR graph     |  `nni==2.4`                                            |
@@ -63,7 +63,7 @@ Here is a summary of supported inputs of the two methods.
 | :---------------: | :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
 |    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and endwith `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and endwith `.pb`                          |
 |       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
-|       Onnx       |           Checkpoint file dumped by `onnx.save()` and endwith `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
+|       Onnx       |           Checkpoint file dumped by `torch.onnx.export()` or `onnx.save()` and endwith `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
 | nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
 |   NNI IR graph   |                                          -                                          | NNI IR graph object |
 

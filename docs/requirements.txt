@@ -9,4 +9,3 @@ PyYAML==5.4.1
 scikit_learn==0.24.2
 flake8==3.9.2
 packaging==21.0
-onnx-simplifier==0.3.6

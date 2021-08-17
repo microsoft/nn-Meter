@@ -5,7 +5,7 @@ import numpy as np
 from nn_meter.utils.graph_tool import ModelGraph
 from .frozenpb_parser import FrozenPbParser
 from .shape_inference import ShapeInference
-
+from .shape_fetcher import ShapeFetcher
 
 class FrozenPbConverter:
     def __init__(self, file_name):
@@ -14,12 +14,13 @@ class FrozenPbConverter:
         # Parse pb to graph
         parser = FrozenPbParser(file_name)
         parser.parse_graph(self.model_graph)
+        dynamic_fetcher = ShapeFetcher(parser.graph)
 
         # Change split to more firendly scheme
         parser.fix_split_naming(self.model_graph)
 
         # Get the static shape
-        ShapeInference(self.model_graph)
+        ShapeInference(self.model_graph, dynamic_fetcher)
 
         # Strip constant and indentity nodes
         parser.strip_useless_nodes(self.model_graph)
