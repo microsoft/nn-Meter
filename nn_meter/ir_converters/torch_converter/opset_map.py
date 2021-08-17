@@ -30,6 +30,7 @@ nni_attr_map = {
         "kernel_size": ("ks", int_to_list_modifier),
         "padding": ("pads", int_to_list_modifier),
         "stride": ("strides", int_to_list_modifier),
+        "groups": ("group", None),
     },
     "concat": {
         "dim": ("axis", None),

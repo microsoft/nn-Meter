@@ -16,7 +16,7 @@ class NumpyEncoder(json.JSONEncoder):
 
 if __name__ == "__main__":
     base_predictor = 'cortexA76cpu_tflite21'
-    # predictors = load_latency_predictor(base_predictor)
+    predictors = load_latency_predictor(base_predictor)
 
     torchvision_zoo_dict = {
         'resnet18': 'models.resnet18()',
@@ -36,15 +36,14 @@ if __name__ == "__main__":
     input_shape=(1, 3, 224, 224)
     example_inputs = torch.randn(*input_shape)
 
-    model_name = 'mnasnet'
-    # for model_name in torchvision_zoo_dict:
+    model_name = 'shufflenet_v2'
+    
     print("################################# ", model_name, " #################################")
     model = eval(torchvision_zoo_dict[model_name])
-    # predictors.predict(model, "torch")
-    
+    predictors.predict(model, "torch")
+
     print(torch.jit.script(model))
     graph = model_to_graph(model, "torch")
-    # if not str.endswith(filename, '.json'): filename += '.json'
     with open(f"{model_name}.json", "w+") as fp:
         json.dump(graph,
             fp,
@@ -54,9 +53,3 @@ if __name__ == "__main__":
             cls=NumpyEncoder,
         )
 
-    
-    # model_name = "shufflenet_v2"
-    # print("################################# ", model_name, " #################################")
-    # model = eval(torchvision_zoo_dict[model_name])
-    # predictors.predict(model, "torch")
-    

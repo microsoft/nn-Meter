@@ -152,9 +152,11 @@ class Inception3(nn.Module):
         # N x 768 x 17 x 17
         x = self.Mixed_6e(x)
         # N x 768 x 17 x 17
-        aux_defined = self.training and self.aux_logits
-        if aux_defined:
-            aux = self.AuxLogits(x)
+        if self.training:
+            if self.aux_logits:
+                aux = self.AuxLogits(x)
+            else:
+                aux = None
         else:
             aux = None
         # N x 768 x 17 x 17
@@ -177,17 +179,21 @@ class Inception3(nn.Module):
 
     @torch.jit.unused
     def eager_outputs(self, x: torch.Tensor, aux: Optional[Tensor]) -> InceptionOutputs:
-        if self.training and self.aux_logits:
-            return InceptionOutputs(x, aux)
+        if self.training:
+            if self.aux_logits:
+                return InceptionOutputs(x, aux)
+            else:
+                return x  # type: ignore[return-value]
         else:
             return x  # type: ignore[return-value]
 
     def forward(self, x):
         x = self._transform_input(x)
         x, aux = self._forward(x)
-        aux_defined = self.training and self.aux_logits
         if torch.jit.is_scripting():
-            if not aux_defined:
+            if not self.training:
+                warnings.warn("Scripted Inception3 always returns Inception3 Tuple")
+            elif not self.aux_logits:
                 warnings.warn("Scripted Inception3 always returns Inception3 Tuple")
             return InceptionOutputs(x, aux)
         else:
