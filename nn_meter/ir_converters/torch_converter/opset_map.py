@@ -23,6 +23,8 @@ nni_type_map = {
 def int_to_list_modifier(attr):
     if isinstance(attr, int):
         return [attr, attr]
+    else:
+        return list(attr)
 
 
 nni_attr_map = {
