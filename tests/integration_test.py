@@ -16,6 +16,22 @@ __model_suffix__ = {
 }
 
 
+__torchvision_model_zoo__ = {
+        'resnet18': 'models.resnet18()',
+        'alexnet': 'models.alexnet()',
+        'vgg16': 'models.vgg16()',
+        'squeezenet': 'models.squeezenet1_0()',
+        'densenet161': 'models.densenet161()',
+        'inception_v3': 'models.inception_v3()',
+        'googlenet': 'models.googlenet()',
+        'shufflenet_v2': 'models.shufflenet_v2_x1_0()',
+        'mobilenet_v2': 'models.mobilenet_v2()',
+        'resnext50_32x4d': 'models.resnext50_32x4d()',
+        'wide_resnet50_2': 'models.wide_resnet50_2()',
+        'mnasnet': 'models.mnasnet1_0()',
+    }
+
+
 # check package status
 def check_package_status():
     try:
@@ -85,7 +101,7 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
             result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
-            logging.error("Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
+            logging.error(f"Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
 
         latency_list = parse_latency_info(result.decode('utf-8'))
         for model, latency in latency_list:
@@ -94,6 +110,39 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
             with open(output_name, "a") as f:
                 f.write(item)
 
+
+# integration test to predict model latency
+def integration_test_for_nni_based_torch(model_type, output_name = "tests/test_result_nni_based_torch.txt"):
+    """
+    download the kernel predictors from the url
+    @params:
+
+    model_type: torch
+    url: github release url address for testing model file
+    ppath:  the targeting dir to save the download model file
+    output_name: a summary file to save the testing results
+    """
+    import torchmodels as models
+    from nn_meter import load_latency_predictor
+
+    # if the output_name is not created, create it and add a title
+    if not os.path.isfile(output_name):
+        with open(output_name,"w") as f:
+            f.write('model_name, model_type, predictor, predictor_version, latency\n')
+    
+    # start testing
+    for pred_name, pred_version in get_predictors():
+        predictors = load_latency_predictor(pred_name, float(pred_version))
+        for model_name in __torchvision_model_zoo__:
+            try:
+                model = eval(__torchvision_model_zoo__[model_name])
+                latency = predictors.predict(model, "torch", apply_nni=True)
+                item = f'{model_name}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
+                with open(output_name, "a") as f:
+                    f.write(item)
+            except NotImplementedError:
+                logging.error(f"Meets ERROR when checking {model_name}")            
+    
 
 def check_getir_module(model_type, ppath):
     for model in get_models(model_type, ppath):
@@ -133,6 +182,11 @@ if __name__ == "__main__":
         url="https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/ir_graphs.zip",
         ppath="../data/testmodels/ir",
         output_name=output_name
+    )
+
+    # check NNI-based torch converter
+    integration_test_for_nni_based_torch(
+        model_type='torch'
     )
 
     # check getir

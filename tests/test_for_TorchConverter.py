@@ -1,18 +1,7 @@
-import models
+import torchmodels as models
 from nn_meter import load_latency_predictor, model_to_graph
 import json
 import torch
-from nni.retiarii.converter import convert_to_graph
-from nni.retiarii.converter.graph_gen import GraphConverter, GraphConverterWithShape
-import numpy as np
-
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, (bytes, bytearray)):
-            return obj.decode("utf-8")
-        return json.JSONEncoder.default(self, obj)
 
 if __name__ == "__main__":
     base_predictor = 'cortexA76cpu_tflite21'
@@ -41,15 +30,3 @@ if __name__ == "__main__":
     print("################################# ", model_name, " #################################")
     model = eval(torchvision_zoo_dict[model_name])
     predictors.predict(model, "torch")
-
-    print(torch.jit.script(model))
-    graph = model_to_graph(model, "torch")
-    with open(f"{model_name}.json", "w+") as fp:
-        json.dump(graph,
-            fp,
-            indent=4,
-            skipkeys=True,
-            sort_keys=True,
-            cls=NumpyEncoder,
-        )
-

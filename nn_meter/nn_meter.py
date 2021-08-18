@@ -170,7 +170,7 @@ class nnMeter:
         self.kd = KernelDetector(self.fusionrule)
 
     def predict(
-        self, model, model_type, input_shape=(1, 3, 224, 224)
+        self, model, model_type, input_shape=(1, 3, 224, 224), apply_nni=False
     ):
         """
         return the predicted latency in microseconds (ms)
@@ -187,12 +187,18 @@ class nnMeter:
       
         input_shape: the shape of input tensor for inference (if necessary), a random tensor according to the shape will be generated and used. This parameter is only 
         accessed when model_type == 'torch'
+
+        apply_nni: switch the torch converter used for torch model parsing. If apply_nni==True, NNI-based converter is used for torch model conversion, which requires 
+            nni>=2.4 installation and should use nn interface from NNI `import nni.retiarii.nn.pytorch as nn` to define the PyTorch modules. Otherwise Onnx-based torch 
+            converter is used, which requires onnx installation (well tested version is onnx==1.9.0). NNI-based converter is much faster while the conversion is unstable 
+            as it could fail in some case. Onnx-based converter is much slower but stable compared to NNI-based converter. This parameter is only accessed when 
+            model_type == 'torch'
         """
         logging.info("Start latency prediction ...")
         if isinstance(model, str):
-            graph = model_file_to_graph(model, model_type, input_shape)
+            graph = model_file_to_graph(model, model_type, input_shape, apply_nni=apply_nni)
         else:
-            graph = model_to_graph(model, model_type, input_shape=input_shape)
+            graph = model_to_graph(model, model_type, input_shape=input_shape, apply_nni=apply_nni)
         
         # logging.info(graph)
         self.kd.load_graph(graph)

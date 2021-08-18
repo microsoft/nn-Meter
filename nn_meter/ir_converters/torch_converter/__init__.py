@@ -1,3 +1,3 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from .converter import TorchConverter
+from .converter import OnnxBasedTorchConverter, NNIBasedTorchConverter
