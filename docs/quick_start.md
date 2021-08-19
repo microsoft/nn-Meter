@@ -14,25 +14,27 @@ Then simply run the following pip install in an environment that has `python >= 
 pip install .
 ```
 
-nn-Meter is a latency predictor of models with type of tensorflow, pytorch, onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding required pacakges. The well tested versions are listed below:
+nn-Meter is a latency predictor of models with type of Tensorflow, PyTorch, Onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding required packages. The well tested versions are listed below:
 
-|  Testing Model Tpye   |                       Requirments                      |
+|  Testing Model Type   |                       Requirements                      |
 | :-------------------: | :------------------------------------------------:     |
 |       Tensorflow      |  `tensorflow==1.15.0`                                  |
-|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, `onnx==1.9.0`, `onnx-simplifier==0.3.6`  |
+|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`]$^{[1]}$ |
 |          Onnx         |  `onnx==1.9.0`                                         |
 |    nn-Meter IR graph  |   ---                                                  |
 |      NNI IR graph     |  `nni==2.4`                                            |
 
+${[1]}$ Please refer to [nn-Meter Usage](usage.md#torch-model-converters) for more information.
+
 Please also check the versions of `numpy` and `scikit_learn`. The different versions may change the prediction accuracy of kernel predictors.
 
-The stable version of wheel binary pacakge will be released soon.
+The stable version of wheel binary package will be released soon.
 
 
 ## "Hello World" example on torch model
 nn-Meter is an accurate inference latency predictor for DNN models on diverse edge devices. nn-Meter supports tensorflow pb-file, onnx file, torch model and nni IR model for latency prediction.
 
-Here is an example script to predict latency for Resnet18 in torch. To run the example, package `torch`, `torchvision` and `onnx` are required. The well tested versions are `torch==1.7.1`, `torchvision==0.8.2`, `onnx==1.9.0` and `onnx-simplifier==0.3.6`.   
+Here is an example script to predict latency for Resnet18 in torch. To run the example, package `torch`, `torchvision`, `onnx` and `onnx-simplifier` are required. The well tested versions are `torch==1.7.1`, `torchvision==0.8.2`, `onnx==1.9.0` and `onnx-simplifier==0.3.6`.   
 
 ```python
 from nn_meter import load_latency_predictor
