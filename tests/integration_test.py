@@ -112,7 +112,7 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
 
 
 # integration test to predict model latency
-def integration_test_for_nni_based_torch(model_type, output_name = "tests/test_result_nni_based_torch.txt"):
+def integration_test_for_nni_based_torch(output_name = "tests/test_result_nni_based_torch.txt"):
     """
     download the kernel predictors from the url
     @params:
@@ -137,7 +137,7 @@ def integration_test_for_nni_based_torch(model_type, output_name = "tests/test_r
             try:
                 model = eval(__torchvision_model_zoo__[model_name])
                 latency = predictors.predict(model, "torch", apply_nni=True)
-                item = f'{model_name}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
+                item = f'{model_name}, torch, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
                 with open(output_name, "a") as f:
                     f.write(item)
             except NotImplementedError:
@@ -185,9 +185,7 @@ if __name__ == "__main__":
     )
 
     # check NNI-based torch converter
-    integration_test_for_nni_based_torch(
-        model_type='torch'
-    )
+    integration_test_for_nni_based_torch()
 
     # check getir
     check_getir_module(

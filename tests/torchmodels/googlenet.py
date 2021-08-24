@@ -184,8 +184,11 @@ class GoogLeNet(nn.Module):
 
     @torch.jit.unused
     def eager_outputs(self, x: Tensor, aux2: Tensor, aux1: Optional[Tensor]) -> GoogLeNetOutputs:
-        if self.training and self.aux_logits:
-            return _GoogLeNetOutputs(x, aux2, aux1)
+        if self.training:
+            if self.aux_logits:
+                return _GoogLeNetOutputs(x, aux2, aux1)
+            else:
+                return x   # type: ignore[return-value]
         else:
             return x   # type: ignore[return-value]
 
@@ -193,10 +196,10 @@ class GoogLeNet(nn.Module):
         # type: (Tensor) -> GoogLeNetOutputs
         x = self._transform_input(x)
         x, aux1, aux2 = self._forward(x)
-        aux_defined = self.training and self.aux_logits
+        # aux_defined = self.training and self.aux_logits
         if torch.jit.is_scripting():
-            if not aux_defined:
-                warnings.warn("Scripted GoogleNet always returns GoogleNetOutputs Tuple")
+            # if not aux_defined:
+            #     warnings.warn("Scripted GoogleNet always returns GoogleNetOutputs Tuple")
             return GoogLeNetOutputs(x, aux2, aux1)
         else:
             return self.eager_outputs(x, aux2, aux1)
