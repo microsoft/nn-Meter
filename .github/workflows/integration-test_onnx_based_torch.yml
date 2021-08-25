@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-name: Integrated Test for Torch Model
+name: Integrated Test for Torch Model Based on ONNX
 
 on: [push]
 
