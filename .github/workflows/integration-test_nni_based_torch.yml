@@ -39,15 +39,24 @@ jobs:
         pip install torch==1.7.1
         pip install torchvision==0.8.2
         pip install onnx-simplifier
+    
+    - name: Install nni from scource
+      if: python -c 'import pkgutil; exit(pkgutil.find_loader("nni"))'
+      run: |
+        cd ..
+        git clone -b https://github.com/microsoft/nni.git
+        cd nni
+        python -m pip install -U -r dependencies/setup.txt
+        python -m pip install -r dependencies/develop.txt
+        python setup.py develop
+        cd ../nn-Meter
         
     - name: Install nn-Meter
       run: pip install -U .
 
     - name: Integration test
-      run: python tests/integration_test.py
+      run: python tests/integration_test_torch.py --apply-nni
     
     - name: Diff result with reference
-      run: |
-        diff tests/test_result.txt tests/reference_result.txt
-        diff tests/test_result_nni_based_torch.txt tests/reference_result_nni_based_torch.txt
+      run: diff tests/reference_result_nni_based_torch.txt tests/test_result_nni_based_torch.txt
         

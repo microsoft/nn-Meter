@@ -39,15 +39,13 @@ jobs:
         pip install torch==1.7.1
         pip install torchvision==0.8.2
         pip install onnx-simplifier
-        # the test version of nni==2.4
-        python3 -m pip install --user --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple nni==2.4a4
         
     - name: Install nn-Meter
       run: pip install -U .
 
     - name: Integration test
-      run: python tests/integration_test_torch.py
+      run: python tests/integration_test_torch.py --apply-onnx
     
     - name: Diff result with reference
-      run: diff tests/test_result_torch.txt tests/reference_result_torch.txt
+      run: diff tests/reference_result_onnx_based_torch.txt tests/test_result_onnx_based_torch.txt
         
