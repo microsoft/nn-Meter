@@ -44,7 +44,7 @@ jobs:
       if: python -c 'import pkgutil; exit(pkgutil.find_loader("nni"))'
       run: |
         cd ..
-        git clone -b https://github.com/microsoft/nni.git
+        git clone -b https://github.com/JiahangXu/nni.git # TODO: change the link after PR merged
         cd nni
         python -m pip install -U -r dependencies/setup.txt
         python -m pip install -r dependencies/develop.txt
