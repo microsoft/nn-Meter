@@ -40,15 +40,8 @@ jobs:
         pip install torchvision==0.8.2
         pip install onnx-simplifier
     
-    - name: Install nni from source
-      run: |
-        cd ..
-        git clone https://github.com/JiahangXu/nni.git # TODO: change the link after PR merged
-        cd nni
-        python -m pip install -U -r dependencies/setup.txt
-        python -m pip install -r dependencies/develop.txt
-        python setup.py develop
-        cd ../nn-Meter
+    - name: Install nni
+      run: pip install nni==2.4
         
     - name: Install nn-Meter
       run: pip install -U .
