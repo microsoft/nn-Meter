@@ -7,9 +7,23 @@ setup(
     name='nn_meter',
     version='1.0',
     description='nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices.',
-    author='',
-    author_email='',
+    long_description = open('README.md', encoding='utf-8').read(),
+    long_description_content_type = 'text/markdown',
+    author='Microsoft nn-Meter Team',
+    author_email='nn-meter-dev@microsoft.com',
     url='https://github.com/microsoft/nn-Meter',
+    project_urls={
+        'prediction models and fusion rules': 'https://github.com/microsoft/nn-Meter/releases/tag/v1.0-data'
+    },
+    license = 'MIT',
+    classifiers = [
+            'License :: OSI Approved :: MIT License',
+            'Operating System :: MacOS :: MacOS X',
+            'Operating System :: Microsoft :: Windows :: Windows 10',
+            'Operating System :: POSIX :: Linux',
+            'Programming Language :: Python :: 3 :: Only',
+            'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        ],
     packages=find_packages(),
     package_data={
         'nn_meter': ['configs/*.yaml', 'kerneldetection/fusionlib/*.json'],
