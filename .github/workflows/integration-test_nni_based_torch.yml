@@ -40,8 +40,7 @@ jobs:
         pip install torchvision==0.8.2
         pip install onnx-simplifier
     
-    - name: Install nni from scource
-      if: python -c 'import pkgutil; exit(pkgutil.find_loader("nni"))' == 'true'
+    - name: Install nni from source
       run: |
         cd ..
         git clone -b https://github.com/JiahangXu/nni.git # TODO: change the link after PR merged
