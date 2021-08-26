@@ -27,7 +27,7 @@ __torchvision_model_zoo__ = {
 
     
 # integration test to predict model latency
-def integration_test_onnx_based_torch(model_type, model_list, output_name = "tests/test_result_torch.txt"):
+def integration_test_onnx_based_torch(model_type, model_list, output_name = "tests/test_result_onnx_based_torch.txt"):
     """
     download the kernel predictors from the url
     @params:
