@@ -47,6 +47,7 @@ jobs:
         cd nni
         python -m pip install -U -r dependencies/setup.txt
         python -m pip install -r dependencies/develop.txt
+        /home/runner/work/nn-Meter/nni/toolchain/yarn/bin/yarn build
         python setup.py develop
         cd ../nn-Meter
         
