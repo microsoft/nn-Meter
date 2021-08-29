@@ -62,6 +62,7 @@ class RuleSplitter:
             if fused:
                 i -= 1
 
+        self._fusion_graph = fusion_graph
         return fusion_graph.get_basicblocks()
 
     def preprocess(self, model_graph: ModelGraph):

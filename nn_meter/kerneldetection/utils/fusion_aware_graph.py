@@ -83,6 +83,9 @@ class FusionAwareGraph:
         bbs = [bb for bb in bbs if bb]
         return bbs
 
+    def find_root(self, node):
+        return self[self._uf.find(node)]
+
     def is_fused(self, node):
         return self._uf.find(node) != node
 
