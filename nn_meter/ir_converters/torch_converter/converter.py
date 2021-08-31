@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.utils import try_import_onnx, try_import_torch
+from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_onnxsim
 import tempfile
-from onnxsim import simplify
 from nn_meter.ir_converters.onnx_converter import OnnxConverter
 
 
@@ -118,10 +117,9 @@ class OnnxBasedTorchConverter(OnnxConverter):
             model = onnx.load(fp, load_external_data=False)
 
         # convert model
+        simplify = try_import_onnxsim()
         model_simp, check = simplify(model)
 
         assert check, "Simplified ONNX model could not be validated"
         super().__init__(model_simp)
 
-
-TorchConverter = OnnxBasedTorchConverter

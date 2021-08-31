@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-name: Integrated Test
+name: Integrated Test for Torch Model Based on ONNX
 
 on: [push]
 
@@ -44,8 +44,8 @@ jobs:
       run: pip install -U .
 
     - name: Integration test
-      run: python tests/integration_test.py
+      run: python tests/integration_test_torch.py --apply-onnx
     
     - name: Diff result with reference
-      run: diff tests/test_result.txt tests/reference_result.txt
+      run: diff tests/reference_result_onnx_based_torch.txt tests/test_result_onnx_based_torch.txt
         

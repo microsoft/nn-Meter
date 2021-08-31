@@ -85,15 +85,15 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
             result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
-            logging.error("Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
+            logging.error(f"Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
 
         latency_list = parse_latency_info(result.decode('utf-8'))
         for model, latency in latency_list:
             item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
             # print(item)
             with open(output_name, "a") as f:
-                f.write(item)
-
+                f.write(item)       
+    
 
 def check_getir_module(model_type, ppath):
     for model in get_models(model_type, ppath):

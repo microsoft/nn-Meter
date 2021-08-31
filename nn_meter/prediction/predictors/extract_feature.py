@@ -5,8 +5,6 @@ from sklearn.metrics import mean_squared_error
 import logging
 
 
-
-
 def get_flop(input_channel, output_channel, k, H, W, stride):
     paras = output_channel * (k * k * input_channel + 1)
     flops = 2 * H / stride * W / stride * paras
@@ -49,7 +47,7 @@ def get_predict_features(config):
             cout = item["cout"]
             cin = item["cin"]
             ks = item["ks"][1]
-            s = item["strides"][1]
+            s = item["strides"][1] if "strides" in item else 1
             inputh = item["inputh"]
         if op in ["channelshuffle", "split"]:
             [b, inputh, inputw, cin] = item["input_tensors"][0]
@@ -111,6 +109,9 @@ def get_predict_features(config):
             cin1 = itensors[0][3]
             cin2 = itensors[1][3]
             features = [inputh, cin1, cin2]
+        else: # indicates that there is no matching predictor for this op
+            # logging.warning(f'There is no matching predictor for op {op}.')
+            continue
         mdicts[layer] = {}
         mdicts[layer][op] = features
         layer += 1

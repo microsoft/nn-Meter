@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-name: Integrated Test for Torch Model
+name: Integrated Test for Torch Model Based on NNI
 
 on: [push]
 
@@ -29,7 +29,7 @@ jobs:
           ~/.nn_meter
           /home/runner/work/nn-Meter/data/testmodels
           /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages
-        key: Dependencies-${{hashFiles('setup.py')}}-Data-${{hashFiles('nn_meter/configs/predictors.yaml')}}
+        key: Data-${{hashFiles('nn_meter/configs/predictors.yaml')}}-Test-${{hashFiles('tests/integration_test.py')}}
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
@@ -39,13 +39,16 @@ jobs:
         pip install torch==1.7.1
         pip install torchvision==0.8.2
         pip install onnx-simplifier
+    
+    - name: Install nni
+      run: pip install nni==2.4
         
     - name: Install nn-Meter
       run: pip install -U .
 
     - name: Integration test
-      run: python tests/integration_test_torch.py
+      run: python tests/integration_test_torch.py --apply-nni
     
     - name: Diff result with reference
-      run: diff tests/test_result_torch.txt tests/reference_result_torch.txt
+      run: diff tests/reference_result_nni_based_torch.txt tests/test_result_nni_based_torch.txt
         
