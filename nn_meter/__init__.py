@@ -1,5 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+
+try:
+    import pkg_resources  # part of setuptools
+    __version__ = pkg_resources.require("nn-meter")[0].version
+except ModuleNotFoundError:
+    __version__ = 'UNKNOWN'
+
 from .nn_meter import (
     nnMeter,
     load_latency_predictor,
