@@ -14,6 +14,7 @@ class KernelDetector:
         self.splitter = RuleSplitter(self.reader)
         self.model_graph = None
         self.bbs = []
+        self._global_index = 0
 
     def load_graph(self, graph):
         new_graph = convert_nodes(graph)
@@ -23,14 +24,41 @@ class KernelDetector:
 
     @property
     def kernels(self):
+        """
+        TODO: Should be a method and renamed to get_kernels()
+        """
         kernels = []
+        self._global_index = 0
+        self._layer_kernel_dict = {}
 
         for bb in self.bbs:
             kernel = self._bb_to_kernel(bb)
+            self._global_index += 1
             if kernel is not None:
                 kernels.append(kernel)
 
+        self._fetch_connections(kernels)
         return kernels
+
+    def _fetch_connections(self, kernels):
+        fusion_graph = self.splitter._fusion_graph
+
+        for kernel in kernels:
+            kernel["inbounds"] = []
+
+        for i in range(len(fusion_graph)):
+            layer = fusion_graph[i]
+            kernel = self._layer_kernel_dict.get(layer)
+
+            if kernel:
+                outbounds = [fusion_graph.find_root(outbound) for outbound in fusion_graph.get_outbounds(i)]
+                outbounds = [self._layer_kernel_dict[outbound] for outbound in outbounds]
+
+                for outbound in outbounds:
+                    outbound["inbounds"].append(kernel["name"])
+
+                outbounds = [outbound["name"] for outbound in outbounds]
+                kernel["outbounds"] = outbounds
 
     def _bb_to_kernel(self, bb):
         types = [self.model_graph.get_node_type(node) for node in bb]
@@ -39,12 +67,15 @@ class KernelDetector:
 
         if types:
             type = "-".join(types)
+            name = f"{type}#{self._global_index}"
 
             kernel = {
                 "op": type,
+                "name": name,
             }
 
             layer = bb[0]
+            self._layer_kernel_dict[layer] = kernel
             type = types[0]
             attr = self.model_graph.get_node_attr(layer)["attr"]
             input_shape = self.model_graph.get_node_attr(layer)["input_shape"]
