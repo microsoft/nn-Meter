@@ -40,12 +40,12 @@ nn-Meter is a latency predictor of models with type of Tensorflow, PyTorch, Onnx
 |  Testing Model Type   |                       Requirements                      |
 | :-------------------: | :------------------------------------------------:     |
 |       Tensorflow      |  `tensorflow==1.15.0`                                  |
-|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`]$^{[1]}$  |
+|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`][1]  |
 |          Onnx         |  `onnx==1.9.0`                                         |
 |    nn-Meter IR graph  |   ---                                                  |
 |      NNI IR graph     |  `nni==2.4`                                            |
 
-${[1]}$ Please refer to [nn-Meter Usage](#torch-model-converters) for more information
+[1] Please refer to [nn-Meter Usage](#torch-model-converters) for more information.
 
 
 Please also check the versions of `numpy` and `scikit_learn`. The different versions may change the prediction accuracy of kernel predictors.
@@ -92,16 +92,16 @@ After installation, a command named `nn-meter` is enabled. To predict the latenc
 
 ```bash
 # for Tensorflow (*.pb) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
 
 # for ONNX (*.onnx) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
 
 # for torch model from torchvision model zoo (str)
-nn-meter --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
 
 # for nn-Meter IR (*.json) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
 ```
 
 `--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest version of the predictor.
@@ -116,10 +116,10 @@ Furthermore, users may be interested to convert tensorflow pb-file or onnx file 
 
 ```bash
 # for Tensorflow (*.pb) file
-nn-meter getir --tensorflow <pb-file> [--output <output-name>]
+nn-meter get_ir --tensorflow <pb-file> [--output <output-name>]
 
 # for ONNX (*.onnx) file
-nn-meter getir --onnx <onnx-file> [--output <output-name>]
+nn-meter get_ir --onnx <onnx-file> [--output <output-name>]
 ```
 
 Output name is default to be `/path/to/input/file/<input_file_name>_<model-type>_ir.json` if not specified by users.

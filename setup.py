@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='nn_meter',
+    name='nn-meter',
     version='1.0',
     description='nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices.',
     long_description = open('README.md', encoding='utf-8').read(),
@@ -13,7 +13,7 @@ setup(
     author_email='nn-meter-dev@microsoft.com',
     url='https://github.com/microsoft/nn-Meter',
     project_urls={
-        'prediction models and fusion rules': 'https://github.com/microsoft/nn-Meter/releases/tag/v1.0-data'
+        'Data of models': 'https://github.com/microsoft/nn-Meter/releases/tag/v1.0-data',
     },
     license = 'MIT',
     classifiers = [
@@ -29,7 +29,7 @@ setup(
         'nn_meter': ['configs/*.yaml', 'kerneldetection/fusionlib/*.json'],
     },
     entry_points={
-        'console_scripts': ['nn-meter=nn_meter.nn_meter:nn_meter_cli'],
+        'console_scripts': ['nn-meter=nn_meter.nn_meter_cli:nn_meter_cli'],
     },
     install_requires=[
         'numpy', 'tqdm', 'networkx', 'requests', 'protobuf', 'PyYAML', 'scikit_learn', 'packaging'
