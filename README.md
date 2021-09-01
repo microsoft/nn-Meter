@@ -92,16 +92,16 @@ After installation, a command named `nn-meter` is enabled. To predict the latenc
 
 ```bash
 # for Tensorflow (*.pb) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
 
 # for ONNX (*.onnx) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
 
 # for torch model from torchvision model zoo (str)
-nn-meter --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
 
 # for nn-Meter IR (*.json) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
 ```
 
 `--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest version of the predictor.
@@ -116,10 +116,10 @@ Furthermore, users may be interested to convert tensorflow pb-file or onnx file 
 
 ```bash
 # for Tensorflow (*.pb) file
-nn-meter getir --tensorflow <pb-file> [--output <output-name>]
+nn-meter get_ir --tensorflow <pb-file> [--output <output-name>]
 
 # for ONNX (*.onnx) file
-nn-meter getir --onnx <onnx-file> [--output <output-name>]
+nn-meter get_ir --onnx <onnx-file> [--output <output-name>]
 ```
 
 Output name is default to be `/path/to/input/file/<input_file_name>_<model-type>_ir.json` if not specified by users.
