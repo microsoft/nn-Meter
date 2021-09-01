@@ -82,29 +82,29 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
         try:
             since = time.time()
             # print(f'nn-meter --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}')
-            result = subprocess.check_output(['nn-meter', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
+            result = subprocess.check_output(['nn-meter', 'lat_pred', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
-            logging.error("Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
+            logging.error(f"Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
 
         latency_list = parse_latency_info(result.decode('utf-8'))
         for model, latency in latency_list:
             item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
             # print(item)
             with open(output_name, "a") as f:
-                f.write(item)
-
+                f.write(item)       
+    
 
 def check_getir_module(model_type, ppath):
     for model in get_models(model_type, ppath):
         try:
-            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model])
-            _ = subprocess.check_output(['nn-meter', 'getir', f'--{model_type}', model, '--output', f'temp.json'])
+            _ = subprocess.check_output(['nn-meter', 'get_ir', f'--{model_type}', model])
+            _ = subprocess.check_output(['nn-meter', 'get_ir', f'--{model_type}', model, '--output', f'temp.json'])
             if os.path.exists('temp.json'):
                 os.remove('temp.json')
             break # test just one file to avoid time cosuming
         except NotImplementedError:
-            logging.error("Meets ERROR when checking getir --{model_type} {ppath}'")
+            logging.error("Meets ERROR when checking get_ir --{model_type} {ppath}'")
 
 
 if __name__ == "__main__":

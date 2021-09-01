@@ -20,3 +20,5 @@ If you have a new hardware to predict DNN latency,  a re-run of nn-Meter is requ
 - [Get started](quick_start.md)
 
 - [How to use nn-Meter](usage.md)
+
+- [nn-meter in hardware-aware NAS](hardware-aware-model-design.md)

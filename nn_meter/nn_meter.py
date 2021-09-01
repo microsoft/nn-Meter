@@ -98,71 +98,6 @@ def load_latency_predictor(predictor_name: str, predictor_version: float = None)
     return nnMeter(kernel_predictors, fusionrule)
 
 
-def apply_latency_predictor(args):
-    """apply latency predictor to predict model latency according to the command line interface arguments
-    """
-    # specify model type
-    if args.tensorflow:
-        input_model, model_type, model_suffix = args.tensorflow, "pb", ".pb"
-    elif args.onnx:
-        input_model, model_type, model_suffix = args.onnx, "onnx", ".onnx"
-    elif args.nn_meter_ir:
-        input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter-ir", ".json"
-    elif args.torchvision: # torch model name from torchvision model zoo
-        input_model_list, model_type = args.torchvision, "torch" 
-
-    # load predictor
-    predictor = load_latency_predictor(args.predictor, args.predictor_version)
-
-    # specify model for prediction
-    if not args.torchvision: # input of tensorflow, onnx, nnmeter-ir and nni-ir is file name, while input of torchvision is string list
-        input_model_list = []
-        if os.path.isfile(input_model):
-            input_model_list = [input_model]
-        elif os.path.isdir(input_model):
-            input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
-            input_model_list.sort()
-            logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
-        else:
-            logging.error(f'Cannot find any model satisfying the arguments.')
-
-    # predict latency
-    result = {}
-    for model in input_model_list:
-        latency = predictor.predict(model, model_type) # in unit of ms
-        result[os.path.basename(model)] = latency
-        logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency} ms')
-    
-    return result
-
-
-def get_nnmeter_ir(args):
-    """convert pb file or onnx file to nn-Meter IR graph according to the command line interface arguments
-    """
-    import json
-    from nn_meter.utils.graph_tool import NumpyEncoder
-    if args.tensorflow:
-        graph = model_file_to_graph(args.tensorflow, 'pb')
-        filename = args.output if args.output else args.tensorflow.replace(".pb", "_pb_ir.json") 
-    elif args.onnx:
-        graph = model_file_to_graph(args.onnx, 'onnx')
-        filename = args.output if args.output else args.onnx.replace(".onnx", "_onnx_ir.json") 
-    else:
-        raise ValueError(f"Unsupported model.")
-    
-    if not str.endswith(filename, '.json'): filename += '.json'
-    with open(filename, "w+") as fp:
-        json.dump(graph,
-            fp,
-            indent=4,
-            skipkeys=True,
-            sort_keys=True,
-            cls=NumpyEncoder,
-        )
-    
-    logging.result(f'The nn-meter ir graph has been saved. Saved path: {os.path.abspath(filename)}')
-
-
 class nnMeter:
     def __init__(self, predictors, fusionrule):
         self.kernel_predictors = predictors
@@ -170,7 +105,7 @@ class nnMeter:
         self.kd = KernelDetector(self.fusionrule)
 
     def predict(
-        self, model, model_type, input_shape=(1, 3, 224, 224)
+        self, model, model_type, input_shape=(1, 3, 224, 224), apply_nni=False
     ):
         """
         return the predicted latency in microseconds (ms)
@@ -187,12 +122,18 @@ class nnMeter:
       
         input_shape: the shape of input tensor for inference (if necessary), a random tensor according to the shape will be generated and used. This parameter is only 
         accessed when model_type == 'torch'
+
+        apply_nni: switch the torch converter used for torch model parsing. If apply_nni==True, NNI-based converter is used for torch model conversion, which requires 
+            nni>=2.4 installation and should use nn interface from NNI `import nni.retiarii.nn.pytorch as nn` to define the PyTorch modules. Otherwise Onnx-based torch 
+            converter is used, which requires onnx installation (well tested version is onnx==1.9.0). NNI-based converter is much faster while the conversion is unstable 
+            as it could fail in some case. Onnx-based converter is much slower but stable compared to NNI-based converter. This parameter is only accessed when 
+            model_type == 'torch'
         """
         logging.info("Start latency prediction ...")
         if isinstance(model, str):
-            graph = model_file_to_graph(model, model_type, input_shape)
+            graph = model_file_to_graph(model, model_type, input_shape, apply_nni=apply_nni)
         else:
-            graph = model_to_graph(model, model_type, input_shape=input_shape)
+            graph = model_to_graph(model, model_type, input_shape=input_shape, apply_nni=apply_nni)
         
         # logging.info(graph)
         self.kd.load_graph(graph)
@@ -200,104 +141,3 @@ class nnMeter:
         py = nn_predict(self.kernel_predictors, self.kd.kernels) # in unit of ms
         logging.info(f"Predict latency: {py} ms")
         return py
-
-
-def nn_meter_cli():
-    parser = argparse.ArgumentParser('nn-meter')
-
-    # Usage 1: list predictors
-    parser.add_argument(
-        "--list-predictors",
-        help='list all supported predictors',
-        action='store_true',
-        default=False
-    )
-
-    # Usage 2: latency predictors
-    parser.add_argument(
-        "--predictor",
-        type=str,
-        help="name of target predictor (hardware)"
-    )
-    parser.add_argument(
-        "--predictor-version",
-        type=float,
-        help="the version of the latency predictor (If not specified, use the lateast version)",
-        default=None
-    )
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        "--tensorflow",
-        type=str,
-        help="Path to input Tensorflow model (*.pb)"
-    )
-    group.add_argument(
-        "--onnx",
-        type=str,
-        help="Path to input ONNX model (*.onnx)"
-    )
-    group.add_argument(
-        "--nn-meter-ir",
-        type=str,
-        help="Path to input nn-Meter IR model (*.json)"
-    )
-    group.add_argument(
-        "--torchvision",        # --torchvision only can support the model object. The argument specifies 
-        type=str,               # the name of the model, and we will look for the model in torchvision model zoo.
-        nargs='+',
-        help="Name of the input torch model from the torchvision model zoo"
-    )
-
-    # Usage 3: get nn-meter-ir model from tensorflow pbfile or onnx file
-    # Usags: nn-meter getir --tensorflow <pb-file>
-    subprasers = parser.add_subparsers(dest='getir')
-    getir = subprasers.add_parser(
-        "getir",
-        help='specify a model type to convert to nn-meter ir graph'
-    )
-    getir.add_argument(
-        "--tensorflow",
-        type = str,
-        help="Path to input Tensorflow model (*.pb)"
-    )
-    getir.add_argument(
-        "--onnx",
-        type=str,
-        help="Path to input ONNX model (*.onnx)"
-    )
-    getir.add_argument(
-        "-o", "--output",
-        type=str,
-        help="Path to save the output nn-meter ir graph for tensorflow and onnx (*.json), default to be /path/to/input/file/<input_file_name>_ir.json"
-    )
-
-    # Other utils
-    parser.add_argument(
-        "-v", "--verbose", 
-        help="increase output verbosity",
-        action="store_true"
-    )
-
-    # parse args
-    args = parser.parse_args()
-    if args.verbose:
-        logging.basicConfig(stream=sys.stdout, format="(nn-Meter) %(message)s", level=logging.INFO)
-    else:
-        logging.basicConfig(stream=sys.stdout, format="(nn-Meter) %(message)s", level=logging.KEYINFO)
-    
-    # Usage 1
-    if args.list_predictors:
-        preds = list_latency_predictors()
-        logging.keyinfo("Supported latency predictors:")
-        for p in preds:
-            logging.result(f"[Predictor] {p['name']}: version={p['version']}")
-        return
-
-    # Usage 2
-    if not args.getir:
-        _ = apply_latency_predictor(args)
-
-    # Usage 3
-    if args.getir:
-        get_nnmeter_ir(args)
-        

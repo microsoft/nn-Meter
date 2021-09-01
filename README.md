@@ -39,19 +39,22 @@ Then simply run the following pip install in an environment that has `python >= 
 pip install .
 ```
 
-nn-Meter is a latency predictor of models with type of tensorflow, pytorch, onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding required pacakges. The well tested versions are listed below:
+nn-Meter is a latency predictor of models with type of Tensorflow, PyTorch, Onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding required packages. The well tested versions are listed below:
 
-|  Testing Model Tpye   |                       Requirments                      |
+|  Testing Model Type   |                       Requirements                      |
 | :-------------------: | :------------------------------------------------:     |
 |       Tensorflow      |  `tensorflow==1.15.0`                                  |
-|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, `onnx==1.9.0`, `onnx-simplifier==0.3.6`  |
+|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`][1]  |
 |          Onnx         |  `onnx==1.9.0`                                         |
 |    nn-Meter IR graph  |   ---                                                  |
 |      NNI IR graph     |  `nni==2.4`                                            |
 
+[1] Please refer to [nn-Meter Usage](#torch-model-converters) for more information.
+
+
 Please also check the versions of `numpy` and `scikit_learn`. The different versions may change the prediction accuracy of kernel predictors.
 
-The stable version of wheel binary pacakge will be released soon.
+The stable version of wheel binary package will be released soon.
 
 
 # Usage
@@ -65,13 +68,14 @@ Here is a summary of supported inputs of the two methods.
 
 |       Testing Model Type       |                                   Command Support                                   |                                                   Python Binding                                                   |
 | :---------------: | :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
-|    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and endwith `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and endwith `.pb`                          |
+|    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and end with `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and end with `.pb`                          |
 |       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
-|       Onnx       |           Checkpoint file dumped by `torch.onnx.export()` or `onnx.save()` and endwith `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
+|       Onnx       |           Checkpoint file dumped by `torch.onnx.export()` or `onnx.save()` and end with `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
 | nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
 |   NNI IR graph   |                                          -                                          | NNI IR graph object |
 
 In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:
+
 | Predictor (device_inferenceframework) | Processor Category | Version |
 | :-----------------------------------: | :----------------: | :-----: |
 |         cortexA76cpu_tflite21         |        CPU         |   1.0   |
@@ -92,23 +96,23 @@ After installation, a command named `nn-meter` is enabled. To predict the latenc
 
 ```bash
 # for Tensorflow (*.pb) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
 
 # for ONNX (*.onnx) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
 
 # for torch model from torchvision model zoo (str)
-nn-meter --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
 
 # for nn-Meter IR (*.json) file
-nn-meter --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
+nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
 ```
 
-`--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest verison of the predictor.
+`--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest version of the predictor.
 
 nn-Meter can support batch mode prediction. To predict latency for multiple models in the same model type once, user should collect all models in one folder and state the folder after `--[model-type]` liked argument.
 
-It should also be noted that for PyTorch model, nn-meter can only support existing models in torchvision model zoo. The string followed by `--torchvision` should be exactly one or more string indicating name(s) of some existing torchvision models.
+It should also be noted that for PyTorch model, nn-meter can only support existing models in torchvision model zoo. The string followed by `--torchvision` should be exactly one or more string indicating name(s) of some existing torchvision models. To apply latency prediction for torchvision model in command line, `onnx` and `onnx-simplifier` packages are required.
 
 ### Convert to nn-Meter IR Graph
 
@@ -116,10 +120,10 @@ Furthermore, users may be interested to convert tensorflow pb-file or onnx file 
 
 ```bash
 # for Tensorflow (*.pb) file
-nn-meter getir --tensorflow <pb-file> [--output <output-name>]
+nn-meter get_ir --tensorflow <pb-file> [--output <output-name>]
 
 # for ONNX (*.onnx) file
-nn-meter getir --onnx <onnx-file> [--output <output-name>]
+nn-meter get_ir --onnx <onnx-file> [--output <output-name>]
 ```
 
 Output name is default to be `/path/to/input/file/<input_file_name>_<model-type>_ir.json` if not specified by users.
@@ -141,7 +145,24 @@ lat = predictor.predict(model, model_type) # the resulting latency is in unit of
 
 By calling `load_latency_predictor`, user selects the target hardware and loads the corresponding predictor. nn-Meter will try to find the right predictor file in `~/.nn_meter/data`. If the predictor file doesn't exist, it will download from the Github release.
 
-In `predictor.predict`, the allowed items of the parameter `model_type` include `["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]`, representing model types of tensorflow, torch, onnx, nn-meter IR graph and NNI IR graph, respectively.
+In `predictor.predict()`, the allowed items of the parameter `model_type` include `["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]`, representing model types of tensorflow, torch, onnx, nn-meter IR graph and NNI IR graph, respectively.
+
+<span id="torch-model-converters"> For Torch models, the shape of feature maps is unknown merely based on the given network structure, which is, however, significant parameters in latency prediction. Therefore, torch model requires a shape of input tensor for inference as a input of `predictor.predict()`. Based on the given input shape, a random tensor according to the shape will be generated and used. Another thing for Torch model prediction is that users can install the `onnx` and `onnx-simplifier` packages for latency prediction (referred to as Onnx-based latency prediction for torch model), or alternatively install the `nni` package (referred to as NNI-based latency prediction for torch model). Note that the `nni` option does not support command line calls. In addition, if users use `nni` for latency prediction, the PyTorch modules should be defined by the `nn` interface from NNI `import nni.retiarii.nn.pytorch as nn` (view [NNI doc](https://nni.readthedocs.io/en/stable/NAS/QuickStart.html#define-base-model) for more information), and the parameter `apply_nni` should be set as `True` in the function `predictor.predict()`. Here is an example of NNI-based latency prediction for Torch model:
+
+```python
+import nni.retiarii.nn.pytorch as nn
+from nn_meter import load_latency_predictor
+
+predictor = load_latency_predictor(...)
+
+# build your model using nni.retiarii.nn.pytorch as nn
+model = nn.Module ...
+
+input_shape = (1, 3, 224, 224)
+lat = predictor.predict(model, model_type='torch', input_shape=input_shape, apply_nni=True) 
+```
+
+The Onnx-based latency prediction for torch model is stable but slower, while the NNI-based latency prediction for torch model is unstable as it could fail in some case but much faster compared to the Onnx-based model. The Onnx-based model is set as the default one for Torch model latency prediction in nn-Meter. Users could choose which one they preferred to use according to their needs. </span>
 
 Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `nn_meter/configs/predictors.yaml`.
 
