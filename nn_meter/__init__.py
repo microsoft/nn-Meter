@@ -15,6 +15,7 @@ from .nn_meter import (
     model_to_graph
 )
 from .utils.utils import download_from_url
+from .dataset import bench_dataset # TODO: add GNNDataloader and GNNDataset here @wenxuan
 import logging
 from functools import partial, partialmethod
 

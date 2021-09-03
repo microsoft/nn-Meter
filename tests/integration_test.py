@@ -4,7 +4,6 @@ import re
 import os
 import time
 from glob import glob
-from tqdm import tqdm
 import logging
 import subprocess
 from nn_meter import download_from_url
@@ -70,6 +69,7 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
     # download data and unzip
     if not os.path.isdir(ppath):
         os.mkdir(ppath)
+        logging.keyinfo(f'Download from {url} ...')
         download_from_url(url, ppath)
 
     # if the output_name is not created, create it and add a title

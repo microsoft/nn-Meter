@@ -25,6 +25,7 @@ def loading_to_local(pred_info, dir="data/predictorzoo"):
 
     isdownloaded = check_predictors(ppath, pred_info["kernel_predictors"])
     if not isdownloaded:
+        logging.keyinfo(f'Download from {pred_info["download"]} ...')
         download_from_url(pred_info["download"], dir)
 
     # load predictors
