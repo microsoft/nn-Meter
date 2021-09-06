@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import os
+import os, sys
 from nn_meter.prediction import latency_metrics
 from glob import glob
 
@@ -22,6 +22,8 @@ def bench_dataset(url="https://github.com/microsoft/nn-Meter/releases/download/v
     return datasets
         
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stdout, format="(nn-Meter) %(message)s", level=logging.KEYINFO)
+
     datasets = bench_dataset()
     hws = list_latency_predictors()
     
@@ -33,11 +35,11 @@ if __name__ == '__main__':
             Pred_lat = []
             index = 0
             with jsonlines.open(filename) as data_reader:
-                for item in data_reader:
+                for i, item in enumerate(data_reader):
                     graph = item["graph"]
                     pred_lat = predictor.predict(graph, model_type="nnmeter-ir")
                     real_lat = item[hw_name]
-                    logging.result(f'{filename}: predict: {pred_lat}, real: {real_lat}')
+                    logging.result(f'{filename}[{i}]: predict: {pred_lat}, real: {real_lat}')
                     if real_lat != None:
                         True_lat.append(real_lat)
                         Pred_lat.append(pred_lat)
@@ -45,5 +47,5 @@ if __name__ == '__main__':
             if len(True_lat) > 0:
                 rmse, rmspe, error, acc5, acc10, _ = latency_metrics(Pred_lat, True_lat)
                 logging.result(
-                    f'{filename} on {hw}: rmse: {rmse}, 5%accuracy: {acc5}, 10%accuracy: {acc10}'
+                    f'{filename} on {hw_name}: rmse: {rmse}, 5%accuracy: {acc5}, 10%accuracy: {acc10}'
                 )
