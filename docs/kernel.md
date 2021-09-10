@@ -28,4 +28,4 @@ We apply the adaptive data sampling algorithm to sample data for building kernel
 
 Note: since the latency difference of conv-related kernels are negligible, we only build latency predictor for conv-bn-relu kernel to reduce the sampling and engineering efforts. And we use this kernel latency predictor to predict other conv-related kernels. For the same reason, we build latency predictor for dwconv-bn-relu kernel. Our experiment results demonstrate the effectiveness of this trick.
 
-For each kernel latency predictor, we store them in .pkl format. You can find them in your local directory `~/.nn_meter/predictors/hardware_name/` after downloading it.
+For each kernel latency predictor, we store them in .pkl format. You can find them in your local directory `~/.nn_meter/config/predictors.yaml` after downloading it.
