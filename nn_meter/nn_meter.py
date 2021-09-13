@@ -8,8 +8,6 @@ from nn_meter.prediction.load_predictors import loading_to_local
 
 import yaml
 import os
-import sys
-import argparse
 import pkg_resources
 from shutil import copyfile
 from packaging import version

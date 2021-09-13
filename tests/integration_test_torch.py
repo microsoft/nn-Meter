@@ -1,11 +1,8 @@
 import re
 import os
 import time
-from glob import glob
-from tqdm import tqdm
 import logging
 import subprocess
-from nn_meter import download_from_url
 from integration_test import *
 import argparse
 

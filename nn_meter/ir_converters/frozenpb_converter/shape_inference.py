@@ -226,9 +226,9 @@ class ShapeInference:
         return ShapeInference.Pad_get_shape(graph, node)
 
     @staticmethod
-    def propogate_shape(graph, node):
+    def propagate_shape(graph, node):
         """
-        For operator who does not affact the shapes.
+        For operator who does not affect the shapes.
         Just take the input shapes as output.
 
         Parameters
@@ -238,7 +238,7 @@ class ShapeInference:
         node   : dict
             The node in Graph IR in dict format.
         """
-        logging.info("Propogate through op %s.", node["attr"]["name"])
+        logging.info("Propagate through op %s.", node["attr"]["name"])
         in_shape = [graph[node["inbounds"][0]]["attr"]["output_shape"][0]]
         return in_shape, in_shape
 
@@ -372,7 +372,7 @@ class ShapeInference:
     def Placeholder_get_shape(graph, node):
         """
         Get shape of a Placeholder operator.
-        This fetch the shape from the shape attibute of the operator.
+        This fetch the shape from the shape attribute of the operator.
 
         Parameters
         ----------
@@ -686,7 +686,7 @@ class ShapeInference:
     def Reshape_get_shape(graph, node):
         """
         Get shape of a Reshape operator.
-        It normally should take from the shape attibution,
+        It normally should take from the shape attribution,
         but we patch it for Pack-StrideSlice-Reshape, and
         prevent the program from dynamic inference.
 
@@ -699,7 +699,7 @@ class ShapeInference:
         """
         if "shape" in node["attr"]["attr"].keys():
             logging.info(
-                "Shape attr find in %s op, propogate with normal.", node["attr"]["name"]
+                "Shape attr find in %s op, propagate with normal.", node["attr"]["name"]
             )
             input_shape = copy.deepcopy(
                 graph[node["inbounds"][0]]["attr"]["output_shape"][0]
@@ -937,14 +937,14 @@ class ShapeInference:
                 if node_type in self.TF_PRODCAST_MATH_OPS:
                     input_shape, output_shape = ShapeInference.eval_prodcast(graph, graph[node_name])
                 elif node_type in self.TF_PROPAGATE_MATH_OPS:
-                    input_shape, output_shape = ShapeInference.propogate_shape(graph, graph[node_name])
+                    input_shape, output_shape = ShapeInference.propagate_shape(graph, graph[node_name])
                 else:
                     input_shape, output_shape = eval("self." + node_get_shape_name)(
                         graph, graph[node_name]
                     )
 
             # fallback to dynamic inference
-            # To be aware, dynamic infernce does not process the shape at all, 
+            # To be aware, dynamic inference does not process the shape at all, 
             # like removing weight shape from inputs. This may yield false prediction.
             else:
                 logging.warn("%s is not supported by static inference yet." % model_graph.get_node_type(node_name))
