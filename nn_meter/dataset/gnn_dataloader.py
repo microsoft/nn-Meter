@@ -2,9 +2,8 @@
 # Licensed under the MIT license.
 import torch
 import jsonlines
-from nn_meter import download_from_url
+from .bench_dataset import bench_dataset
 import os
-import logging
 import random
 import dgl
 
@@ -20,7 +19,7 @@ hws = [
 
 
 class GNNDataset(torch.utils.data.Dataset):
-    def __init__(self, data_dir='./dataset', train=True, device='cpu', split_ratio=0.8):
+    def __init__(self, data_dir=__user_dataset_folder__, train=True, device="cortexA76cpu_tflite21", split_ratio=0.8):
         """
         Dataloader of the Latency Dataset
 
@@ -39,16 +38,9 @@ class GNNDataset(torch.utils.data.Dataset):
         split_ratio: float
             The ratio to split the train dataset and the test dataset.
         """
-        err_str = "Only support device type cpu/gpu640/gpu630/vpu"
-        assert device in ['cpu', 'gpu640', 'gpu630', 'vpu'], err_str
-        if device == 'cpu':
-            self.device = hws[0]
-        elif device == 'gpu640':
-            self.device = hws[1]
-        elif device == 'gpu630':
-            self.device = hws[2]
-        else:
-            self.device = hws[3]
+        err_str = "Not supported device type"
+        assert device in hws, err_str
+        self.device = device
         self.data_dir = data_dir
         self.train = train
         self.split_ratio = split_ratio
@@ -70,10 +62,7 @@ class GNNDataset(torch.utils.data.Dataset):
         op_num = len(self.op_types)
 
     def download_data(self):
-        if not os.path.isdir(__user_dataset_folder__):
-            os.makedirs(__user_dataset_folder__)
-            logging.keyinfo(f'Download from {RAW_DATA_URL} ...')
-            download_from_url(RAW_DATA_URL, __user_dataset_folder__)
+        datasets = bench_dataset()
 
     def load_model_archs_and_latencies(self, data_dir):
         filelist = os.listdir(data_dir)
