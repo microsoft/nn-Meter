@@ -14,6 +14,11 @@ from .nn_meter import (
     model_file_to_graph,
     model_to_graph
 )
+from .nn_meter_builder import (
+    get_fusionrule,
+    get_testcases,
+    run_testcases
+)
 from .utils.utils import download_from_url
 from .prediction import latency_metrics
 from .dataset import bench_dataset # TODO: add GNNDataloader and GNNDataset here @wenxuan
