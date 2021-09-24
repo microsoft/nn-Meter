@@ -43,10 +43,9 @@ class NNIIRConverter:
                     "attr": {
                         k: v
                         for k, v in node.operation.parameters.items()
-                        if k not in ["input_shape", "output_shape"]
                     },
-                    "input_shape": _nchw_to_nhwc(node.operation.parameters["input_shape"]),
-                    "output_shape": _nchw_to_nhwc(node.operation.parameters["output_shape"]),
+                    "input_shape": _nchw_to_nhwc(node.input_shape),
+                    "output_shape": _nchw_to_nhwc(node.output_shape),
                     "type": node.operation.type,
                 },
                 "inbounds": [],
