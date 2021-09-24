@@ -1,2 +1,0 @@
-# GNN and Latency Dataset
-For Latency Dataset in `nn-Meter`, users may need an end-to-end approach based on graph neural networks to predict latency for model structures in it. `GNNDataset` and `GNNDataloader` in `gnn_dataloader.py` build the model structure of the Dataset in `.jsonl` format into our required Dataset and Dataloader. For specific use cases, please refer to `../examples/gnn_for_bench_dataset.ipynb`.
