@@ -17,9 +17,9 @@ hws = [
     "myriadvpu_openvino2019r2",
 ]
 
-
+__user_dataset_folder__ = os.path.expanduser('~/.nn_meter/dataset')
 class GNNDataset(torch.utils.data.Dataset):
-    def __init__(self, data_dir=__user_dataset_folder__, train=True, device="cortexA76cpu_tflite21", split_ratio=0.8):
+    def __init__(self, train=True, device="cortexA76cpu_tflite21", split_ratio=0.8):
         """
         Dataloader of the Latency Dataset
 
@@ -41,7 +41,7 @@ class GNNDataset(torch.utils.data.Dataset):
         err_str = "Not supported device type"
         assert device in hws, err_str
         self.device = device
-        self.data_dir = data_dir
+        self.data_dir = __user_dataset_folder__
         self.train = train
         self.split_ratio = split_ratio
         self.adjs = {}
@@ -58,9 +58,7 @@ class GNNDataset(torch.utils.data.Dataset):
         self.construct_attrs()
         self.name_list = list(
             filter(lambda x: x in self.latencies, self.name_list))
-        global op_num
-        op_num = len(self.op_types)
-
+            
     def download_data(self):
         datasets = bench_dataset()
 

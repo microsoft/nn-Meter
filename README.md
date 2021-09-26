@@ -215,7 +215,7 @@ In `exp_config`, `dummy_input` is required for tracing shape info.
 
 [BRP-NAS](https://arxiv.org/abs/2007.08668v2) proposes an end-to-end latency predictor which consists of a GCN. Their GCN predictor demonstrates significant improvement over the layer-wise predictor on [NAS-Bench-201](https://arxiv.org/abs/2001.00326). While on our bench dataset, the preformance of BRP-NAS is consistently poor. As discussed in our paper, the reason is the model graph difference between training and testing set. GNN learns the representation of model graphs. Although the models in our bench dataset have largely overlapped operator types, the operator configurations, edges, and model latency ranges are different.
 
-To better deal with the problems above, we give our GNN example. `GNNDataset` and `GNNDataloader` in `nn_meter/dataset/gnn_dataloader.py` build the model structure of the Dataset in `.jsonl` format into our required Dataset and Dataloader. And for specific use cases, please refer to `examples/gnn_for_bench_dataset.ipynb`.
+To better deal with the problems above, we give a GNN example with graph representation improved. We build the data structure of our model in `GNNDataset` and `GNNDataloader` from `nn_meter/dataset/gnn_dataloader.py` to convert the Dataset in `.jsonl` format into GNN required Dataset and Dataloader. And for specific use cases, please refer to `examples/gnn_for_bench_dataset.ipynb`.
 
 # Contributing
 
