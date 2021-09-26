@@ -17,7 +17,7 @@ hws = [
     "myriadvpu_openvino2019r2",
 ]
 
-__user_dataset_folder__ = os.path.expanduser('~/.nn_meter/dataset')
+
 class GNNDataset(torch.utils.data.Dataset):
     def __init__(self, train=True, device="cortexA76cpu_tflite21", split_ratio=0.8):
         """
@@ -58,7 +58,7 @@ class GNNDataset(torch.utils.data.Dataset):
         self.construct_attrs()
         self.name_list = list(
             filter(lambda x: x in self.latencies, self.name_list))
-            
+
     def download_data(self):
         datasets = bench_dataset()
 
