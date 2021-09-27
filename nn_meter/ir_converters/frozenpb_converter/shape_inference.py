@@ -18,8 +18,10 @@ class ShapeInference:
         "AddN", # AddN does not support prodcast really
         "AddV2",
         "Subtract",
+        "Sub",
         "MulNoNan",
-        "Multiply"
+        "Multiply",
+        "Mul",
         "Div",
         "DivNoNan",
         "Equal",
@@ -866,7 +868,7 @@ class ShapeInference:
         return [input_shape], [exp_output_shape]
 
     @staticmethod
-    def Packed_get_shape(graph, node):
+    def Pack_get_shape(graph, node):
         """
         Get shape of a Transpose operator.
         Patched for kernel detector.
@@ -970,7 +972,7 @@ class ShapeInference:
         # This is a patching for back-end, since backend extract shapes from
         # those two ops.
         for node_name in seq:
-            if model_graph.get_node_type(node_name) in ["Packed", "StridedSlice"]:
+            if model_graph.get_node_type(node_name) in ["Pack", "StridedSlice"]:
                 node_get_shape_name = model_graph.get_node_type(node_name) + "_get_shape"
                 input_shape, output_shape = eval("self." + node_get_shape_name)(
                     graph, graph[node_name]
