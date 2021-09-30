@@ -4,8 +4,8 @@ Note: This is an alpha (preview) version which is still under refining.
 
 The current supported hardware and inference frameworks:
 
-|       Device       |   Framework   |   Processor   | +-10%  Accuracy |           Hardware name           |
-| :-----------------: | :------------: | :------------: | :-------------: | :--------------------------------: |
+|       Device       |   Framework   |   Processor   | +-10%  Accuracy |      Hardware name      |
+| :-----------------: | :------------: | :------------: | :-------------: | :----------------------: |
 |       Pixel4       |  TFLite v2.1  | CortexA76 CPU |      99.0%      |  cortexA76cpu_tflite21  |
 |         Mi9         |  TFLite v2.1  | Adreno 640 GPU |      99.1%      |  adreno640gpu_tflite21  |
 |      Pixel3XL      |  TFLite v2.1  | Adreno 630 GPU |      99.0%      |  adreno630gpu_tflite21  |
@@ -20,6 +20,7 @@ The current supported hardware and inference frameworks:
 - Those who want to get the DNN inference latency on mobile and edge devices with **no deployment efforts on real devices**.
 - Those who want to run **hardware-aware NAS with [NNI](https://github.com/microsoft/nni)**.
 - Those who want to **build latency predictors for their own devices**.
+- Those who want to use the 26k latency [benchmark dataset](https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip).
 
 # Installation
 
@@ -30,58 +31,59 @@ pip install nn-meter
 ```
 
 If you want to try latest code, please install nn-Meter from source code. First git clone nn-Meter package to local:
+
 ```Bash
 git clone git@github.com:microsoft/nn-Meter.git
 cd nn-Meter
 ```
+
 Then simply run the following pip install in an environment that has `python >= 3.6`. The command will complete the automatic installation of all necessary dependencies and nn-Meter.
+
 ```Bash
 pip install .
 ```
 
 nn-Meter is a latency predictor of models with type of Tensorflow, PyTorch, Onnx, nn-meter IR graph and [NNI IR graph](https://github.com/microsoft/nni). To use nn-Meter for specific model type, you also need to install corresponding required packages. The well tested versions are listed below:
 
-|  Testing Model Type   |                       Requirements                      |
-| :-------------------: | :------------------------------------------------:     |
-|       Tensorflow      |  `tensorflow==1.15.0`                                  |
-|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`][1]  |
-|          Onnx         |  `onnx==1.9.0`                                         |
-|    nn-Meter IR graph  |   ---                                                  |
-|      NNI IR graph     |  `nni==2.4`                                            |
+| Testing Model Type |                                                       Requirements                                                       |
+| :----------------: | :-----------------------------------------------------------------------------------------------------------------------: |
+|     Tensorflow     |                                                  `tensorflow==1.15.0`                                                  |
+|       Torch       | `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`][1] |
+|        Onnx        |                                                      `onnx==1.9.0`                                                      |
+| nn-Meter IR graph |                                                            ---                                                            |
+|    NNI IR graph    |                                                       `nni==2.4`                                                       |
 
 [1] Please refer to [nn-Meter Usage](#torch-model-converters) for more information.
-
 
 Please also check the versions of `numpy` and `scikit_learn`. The different versions may change the prediction accuracy of kernel predictors.
 
 The stable version of wheel binary package will be released soon.
 
-
 # Usage
 
 To apply for hardware latency prediction, nn-Meter provides two types of interfaces：
 
-- command line `nn-meter` after `nn-meter` [installation](QuickStart.md#Installation).
+- command line `nn-meter` after `nn-meter`[installation](QuickStart.md#Installation).
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
 
-|       Testing Model Type       |                                   Command Support                                   |                                                   Python Binding                                                   |
-| :---------------: | :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
-|    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and end with `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and end with `.pb`                          |
-|       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
-|       Onnx       |           Checkpoint file dumped by `torch.onnx.export()` or `onnx.save()` and end with `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
-| nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)          |
-|   NNI IR graph   |                                          -                                          | NNI IR graph object |
+| Testing Model Type |                                       Command Support                                       |                                          Python Binding                                          |
+| :----------------: | :-----------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------: |
+|     Tensorflow     |             Checkpoint file dumped by `tf.saved_model()` and end with `.pb`             |                 Checkpoint file dumped by `tf.saved_model` and end with `.pb`                 |
+|       Torch       |                              Models in `torchvision.models`                              |                                   Object of `torch.nn.Module`                                   |
+|        Onnx        | Checkpoint file dumped by `torch.onnx.export()` or `onnx.save()` and end with `.onnx` |           Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`           |
+| nn-Meter IR graph |     Json file in the format of[nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)     | `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |
+|    NNI IR graph    |                                              -                                              |                                        NNI IR graph object                                        |
 
 In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:
 
 | Predictor (device_inferenceframework) | Processor Category | Version |
 | :-----------------------------------: | :----------------: | :-----: |
-|         cortexA76cpu_tflite21         |        CPU         |   1.0   |
-|         adreno640gpu_tflite21         |        GPU         |   1.0   |
-|         adreno630gpu_tflite21         |        GPU         |   1.0   |
-|       myriadvpu_openvino2019r2        |        VPU         |   1.0   |
+|         cortexA76cpu_tflite21         |        CPU        |   1.0   |
+|         adreno640gpu_tflite21         |        GPU        |   1.0   |
+|         adreno630gpu_tflite21         |        GPU        |   1.0   |
+|       myriadvpu_openvino2019r2       |        VPU        |   1.0   |
 
 Users can get all predefined predictors and versions by running
 
@@ -147,7 +149,7 @@ By calling `load_latency_predictor`, user selects the target hardware and loads 
 
 In `predictor.predict()`, the allowed items of the parameter `model_type` include `["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]`, representing model types of tensorflow, torch, onnx, nn-meter IR graph and NNI IR graph, respectively.
 
-<span id="torch-model-converters"> For Torch models, the shape of feature maps is unknown merely based on the given network structure, which is, however, significant parameters in latency prediction. Therefore, torch model requires a shape of input tensor for inference as a input of `predictor.predict()`. Based on the given input shape, a random tensor according to the shape will be generated and used. Another thing for Torch model prediction is that users can install the `onnx` and `onnx-simplifier` packages for latency prediction (referred to as Onnx-based latency prediction for torch model), or alternatively install the `nni` package (referred to as NNI-based latency prediction for torch model). Note that the `nni` option does not support command line calls. In addition, if users use `nni` for latency prediction, the PyTorch modules should be defined by the `nn` interface from NNI `import nni.retiarii.nn.pytorch as nn` (view [NNI doc](https://nni.readthedocs.io/en/stable/NAS/QuickStart.html#define-base-model) for more information), and the parameter `apply_nni` should be set as `True` in the function `predictor.predict()`. Here is an example of NNI-based latency prediction for Torch model:
+`<span id="torch-model-converters">` For Torch models, the shape of feature maps is unknown merely based on the given network structure, which is, however, significant parameters in latency prediction. Therefore, torch model requires a shape of input tensor for inference as a input of `predictor.predict()`. Based on the given input shape, a random tensor according to the shape will be generated and used. Another thing for Torch model prediction is that users can install the `onnx` and `onnx-simplifier` packages for latency prediction (referred to as Onnx-based latency prediction for torch model), or alternatively install the `nni` package (referred to as NNI-based latency prediction for torch model). Note that the `nni` option does not support command line calls. In addition, if users use `nni` for latency prediction, the PyTorch modules should be defined by the `nn` interface from NNI `import nni.retiarii.nn.pytorch as nn` (view [NNI doc](https://nni.readthedocs.io/en/stable/NAS/QuickStart.html#define-base-model) for more information), and the parameter `apply_nni` should be set as `True` in the function `predictor.predict()`. Here is an example of NNI-based latency prediction for Torch model:
 
 ```python
 import nni.retiarii.nn.pytorch as nn
@@ -162,19 +164,26 @@ input_shape = (1, 3, 224, 224)
 lat = predictor.predict(model, model_type='torch', input_shape=input_shape, apply_nni=True) 
 ```
 
-The Onnx-based latency prediction for torch model is stable but slower, while the NNI-based latency prediction for torch model is unstable as it could fail in some case but much faster compared to the Onnx-based model. The Onnx-based model is set as the default one for Torch model latency prediction in nn-Meter. Users could choose which one they preferred to use according to their needs. </span>
+The Onnx-based latency prediction for torch model is stable but slower, while the NNI-based latency prediction for torch model is unstable as it could fail in some case but much faster compared to the Onnx-based model. The Onnx-based model is set as the default one for Torch model latency prediction in nn-Meter. Users could choose which one they preferred to use according to their needs. 
 
 Users could view the information all built-in predictors by `list_latency_predictors` or view the config file in `nn_meter/configs/predictors.yaml`.
 
 Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model_to_graph` by calling the model name or model object and specify the model type. The supporting model types of `model_file_to_graph` include "onnx", "pb", "torch", "nnmeter-ir" and "nni-ir", while the supporting model types of `model_to_graph` include "onnx", "torch" and "nni-ir".
 
+## Benchmark Dataset
+
+To evaluate the effectiveness of a prediction model on an arbitrary DNN model, we need a representative dataset that covers a large prediction scope. As there is no such available latency dataset, nn-Meter collects and generates 26k CNN models. It contains various operators, configurations, and edge connections, with covering different levels of FLOPs and latency. (Please refer the paper for the dataset generation method and dataset numbers.)
+
+We release the dataset, and provide an interface of `nn_meter.dataset` for users to get access to the dataset. Users can also download the data from the [Download Link](https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip) for testing nn-Meter or their own prediction models. 
+
 ## Hardware-aware NAS by nn-Meter and NNI
 
 To empower affordable DNN on the edge and mobile devices, hardware-aware NAS searches both high accuracy and low latency models. In particular, the search algorithm only considers the models within the target latency constraints during the search process.
 
-Currently we provides example of end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html), which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space. More examples of more hardware-aware NAS and model compression algorithms are coming soon. 
+Currently we provides example of end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html), which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space. More examples of more hardware-aware NAS and model compression algorithms are coming soon.
 
 To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation)
+
 ```bash
 python setup.py develop
 ```
@@ -209,7 +218,14 @@ exp_config.dummy_input = [1, 3, 32, 32]
 
 exp.run(exp_config, port)
 ```
+
 In `exp_config`, `dummy_input` is required for tracing shape info.
+
+## Bench Dataset
+
+[BRP-NAS](https://arxiv.org/abs/2007.08668v2) proposes an end-to-end latency predictor which consists of a GCN. Their GCN predictor demonstrates significant improvement over the layer-wise predictor on [NAS-Bench-201](https://arxiv.org/abs/2001.00326). While on our bench dataset, the preformance of BRP-NAS is consistently poor. As discussed in our paper, the reason is the model graph difference between training and testing set. GNN learns the representation of model graphs. Although the models in our bench dataset have largely overlapped operator types, the operator configurations, edges, and model latency ranges are different.
+
+To better deal with the problems above, we give a GNN example with graph representation improved. We build the data structure of our model in `GNNDataset` and `GNNDataloader` from `nn_meter/dataset/gnn_dataloader.py` to convert the Dataset in `.jsonl` format into GNN required Dataset and Dataloader. And for specific use cases, please refer to `examples/gnn_for_bench_dataset.ipynb`.
 
 
 
@@ -234,7 +250,9 @@ The entire codebase is under [MIT license](https://github.com/microsoft/nn-Meter
 The dataset is under [Open Use of Data Agreement](https://github.com/Community-Data-License-Agreements/Releases/blob/main/O-UDA-1.0.md)
 
 # Citation
+
 If you find that nn-Meter helps your research, please consider citing it:
+
 ```
 @inproceedings{nnmeter,
     author = {Zhang, Li Lyna and Han, Shihao and Wei, Jianyu and Zheng, Ningxin and Cao, Ting and Yang, Yuqing and Liu, Yunxin},
