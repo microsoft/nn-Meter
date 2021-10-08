@@ -2,10 +2,10 @@
 # Licensed under the MIT license.
 import torch
 import jsonlines
-from .bench_dataset import bench_dataset
 import os
 import random
-import dgl
+from .bench_dataset import bench_dataset
+from nn_meter.utils.utils import try_import_dgl
 
 RAW_DATA_URL = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip"
 __user_dataset_folder__ = os.path.expanduser('~/.nn_meter/dataset')
@@ -240,6 +240,7 @@ class GNNDataloader(torch.utils.data.DataLoader):
         self.construct_graphs()
 
     def construct_graphs(self):
+        dgl = try_import_dgl()
         for gid in range(self.length):
             (adj, attrs), latency, op_types = self.dataset[gid]
             u, v = torch.nonzero(adj, as_tuple=True)
@@ -261,6 +262,7 @@ class GNNDataloader(torch.utils.data.DataLoader):
         return self.length
 
     def __next__(self):
+        dgl = try_import_dgl()
         start = self.pos
         end = min(start + self.batchsize, self.length)
         self.pos = end
