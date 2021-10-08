@@ -223,9 +223,9 @@ In `exp_config`, `dummy_input` is required for tracing shape info.
 
 ## Bench Dataset
 
-[BRP-NAS](https://arxiv.org/abs/2007.08668v2) proposes an end-to-end latency predictor which consists of a GCN. Their GCN predictor demonstrates significant improvement over the layer-wise predictor on [NAS-Bench-201](https://arxiv.org/abs/2001.00326). While on our bench dataset, the preformance of BRP-NAS is consistently poor. As discussed in our paper, the reason is the model graph difference between training and testing set. GNN learns the representation of model graphs. Although the models in our bench dataset have largely overlapped operator types, the operator configurations, edges, and model latency ranges are different.
+To evaluate the effectiveness of a prediction model on an arbitrary DNN model, we need a representative dataset that covers a large prediction scope. nn-Meter collects and generates 26k CNN models. (Please refer the paper for the dataset generation method.)
 
-To better deal with the problems above, we give a GNN example with graph representation improved. We build the data structure of our model in `GNNDataset` and `GNNDataloader` from `nn_meter/dataset/gnn_dataloader.py` to convert the Dataset in `.jsonl` format into GNN required Dataset and Dataloader. And for specific use cases, please refer to `examples/gnn_for_bench_dataset.ipynb`.
+We release the dataset, and provide an interface of `nn_meter.dataset` for users to get access to the dataset. Users can also download the data from the [Download Link](https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip) on their own. 
 
 
 

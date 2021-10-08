@@ -22,7 +22,6 @@ Finally, we provide more hardware-ware NAS examples in NNI.
 2. [Use nn-Meter with the bench dataset](nn-meter_for_bench_dataset.ipynb)
 3. [Use bench dataset for GNN training](gnn_for_bench_dataset.ipynb)
 4. Use nn-Meter to construct latency constraint in SPOS NAS (TBD)
-
    - [Use nn-Meter in search part](https://github.com/microsoft/nni/blob/master/examples/nas/oneshot/spos/multi_trial.py)
    - [Use nn-Meter in sampling part](https://github.com/microsoft/nni/blob/master/examples/nas/oneshot/spos/supernet.py)
 5. [Use nn-Meter to construct latency penalty in Proxyless NAS](https://github.com/microsoft/nni/tree/master/examples/nas/oneshot/proxylessnas)
