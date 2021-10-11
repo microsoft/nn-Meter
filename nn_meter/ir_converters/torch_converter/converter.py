@@ -19,10 +19,13 @@ def _nchw_to_nhwc(shapes):
 
 class NNIIRConverter:
     def __init__(self, ir_model):
-        from nni.retiarii.converter.graph_gen import GraphConverterWithShape
-
-        self.ir_model = ir_model.fork()
-        GraphConverterWithShape().flatten(self.ir_model)
+        try:
+            from nni.retiarii.converter.utils import flatten_model_graph
+            self.ir_model = flatten_model_graph(ir_model)
+        except:
+            from nni.retiarii.converter.graph_gen import GraphConverterWithShape
+            self.ir_model = ir_model.fork()
+            GraphConverterWithShape().flatten(self.ir_model)
 
     def convert(self):
         graph = self._to_graph_layout()
@@ -44,12 +47,12 @@ class NNIIRConverter:
                         k: v
                         for k, v in node.operation.parameters.items()
                     },
-                    "input_shape": _nchw_to_nhwc(node.operation.parameters["input_shape"]
+                    "input_shape": _nchw_to_nhwc(node.operation.parameters.get("input_shape")
                                                  if "input_shape" in node.operation.parameters 
-                                                 else node.input_shape),
-                    "output_shape": _nchw_to_nhwc(node.operation.parameters["output_shape"] 
+                                                 else node.operation.attr.get('input_shape')),
+                    "output_shape": _nchw_to_nhwc(node.operation.parameters.get("output_shape") 
                                                  if "output_shape" in node.operation.parameters 
-                                                 else node.output_shape),
+                                                 else node.operation.attr.get('output_shape')),
                     "type": node.operation.type,
                 },
                 "inbounds": [],

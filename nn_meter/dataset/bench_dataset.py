@@ -4,21 +4,22 @@ import os, sys
 from nn_meter.prediction import latency_metrics
 from glob import glob
 
-from nn_meter.nn_meter import list_latency_predictors, load_latency_predictor
+from nn_meter.nn_meter import list_latency_predictors, load_latency_predictor, get_user_data_folder
 from nn_meter import download_from_url
 import jsonlines
 import logging
 
 
-__user_dataset_folder__ = os.path.expanduser('~/.nn_meter/dataset')
+__user_dataset_folder__ = os.path.join(get_user_data_folder(), 'dataset')
 
-def bench_dataset(url="https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip"):
-    if not os.path.isdir(__user_dataset_folder__):
-        os.makedirs(__user_dataset_folder__)
+def bench_dataset(url="https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip",
+                  data_folder=__user_dataset_folder__):
+    if not os.path.isdir(data_folder):
+        os.makedirs(data_folder)
         logging.keyinfo(f'Download from {url} ...')
-        download_from_url(url, __user_dataset_folder__)
+        download_from_url(url, data_folder)
 
-    datasets = glob(os.path.join(__user_dataset_folder__, "**.jsonl"))
+    datasets = glob(os.path.join(data_folder, "**.jsonl"))
     return datasets
         
 if __name__ == '__main__':
