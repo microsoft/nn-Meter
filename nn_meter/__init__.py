@@ -12,7 +12,9 @@ from .nn_meter import (
     load_latency_predictor,
     list_latency_predictors,
     model_file_to_graph,
-    model_to_graph
+    model_to_graph,
+    create_user_configs,
+    change_user_data_folder
 )
 from .utils.utils import download_from_url
 from .prediction import latency_metrics

@@ -5,10 +5,11 @@ import jsonlines
 import os
 import random
 from .bench_dataset import bench_dataset
+from nn_meter.nn_meter import get_user_data_folder
 from nn_meter.utils.utils import try_import_dgl
 
 RAW_DATA_URL = "https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip"
-__user_dataset_folder__ = os.path.expanduser('~/.nn_meter/dataset')
+__user_dataset_folder__ = os.path.join(get_user_data_folder(), 'dataset')
 
 hws = [
     "cortexA76cpu_tflite21",
