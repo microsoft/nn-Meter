@@ -49,10 +49,10 @@ class NNIIRConverter:
                     },
                     "input_shape": _nchw_to_nhwc(node.operation.parameters.get("input_shape")
                                                  if "input_shape" in node.operation.parameters 
-                                                 else node.operation.attr.get('input_shape')),
+                                                 else node.operation.attributes.get('input_shape')),
                     "output_shape": _nchw_to_nhwc(node.operation.parameters.get("output_shape") 
                                                  if "output_shape" in node.operation.parameters 
-                                                 else node.operation.attr.get('output_shape')),
+                                                 else node.operation.attributes.get('output_shape')),
                     "type": node.operation.type,
                 },
                 "inbounds": [],
