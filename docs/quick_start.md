@@ -23,10 +23,10 @@ nn-Meter is a latency predictor of models with type of Tensorflow, PyTorch, Onnx
 |  Testing Model Type   |                       Requirements                      |
 | :-------------------: | :------------------------------------------------:     |
 |       Tensorflow      |  `tensorflow==1.15.0`                                  |
-|         Torch         |  `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`][1] |
+|         Torch         |  `torch==1.9.0`, `torchvision==0.10.0`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni>=2.4`][1] |
 |          Onnx         |  `onnx==1.9.0`                                         |
 |    nn-Meter IR graph  |   ---                                                  |
-|      NNI IR graph     |  `nni==2.4`                                            |
+|      NNI IR graph     |  `nni>=2.4`                                            |
 
 [1] Please refer to [nn-Meter Usage](usage.md#torch-model-converters) for more information.
 
