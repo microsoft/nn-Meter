@@ -6,7 +6,7 @@ name: Integrated Test for Torch Model Based on NNI
 on: [push]
 
 jobs:
-  build-linux:
+  torch-model-test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
@@ -42,7 +42,7 @@ jobs:
     
     - name: Install nni
       run: pip install nni==2.4
-        
+
     - name: Install nn-Meter
       run: pip install -U .
 
