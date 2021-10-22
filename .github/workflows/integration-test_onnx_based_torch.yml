@@ -44,7 +44,7 @@ jobs:
       run: pip install -U .
 
     - name: Integration test
-      run: python tests/integration_test_torch.py --apply-onnx
+      run: nn-meter lat_pred --torchvision resnet18 alexnet vgg16 squeezenet densenet161 inception_v3 googlenet shufflenet_v2 mobilenet_v2 resnext50_32x4d wide_resnet50_2 mnasnet --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
     
     - name: Diff result with reference
       run: diff tests/reference_result_onnx_based_torch.txt tests/test_result_onnx_based_torch.txt
