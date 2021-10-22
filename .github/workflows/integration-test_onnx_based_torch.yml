@@ -36,8 +36,8 @@ jobs:
       run: |
         pip install tensorflow==1.15.0
         pip install onnx==1.9.0
-        pip install torch==1.9.0
-        pip install torchvision==0.10.0
+        pip install torch==1.7.1
+        pip install torchvision==0.8.2
         pip install onnx-simplifier
         
     - name: Install nn-Meter
