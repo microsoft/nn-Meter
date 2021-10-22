@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.utils import try_import_nni, try_import_onnx, try_import_torch, try_import_onnxsim, try_import_nni
+from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_onnxsim, try_import_nni
 import tempfile
 from nn_meter.ir_converters.onnx_converter import OnnxConverter
 
