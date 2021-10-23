@@ -48,10 +48,10 @@ nn-Meter is a latency predictor of models with type of Tensorflow, PyTorch, Onnx
 | Testing Model Type |                                                       Requirements                                                       |
 | :----------------: | :-----------------------------------------------------------------------------------------------------------------------: |
 |     Tensorflow     |                                                  `tensorflow==1.15.0`                                                  |
-|       Torch       | `torch==1.7.1`, `torchvision==0.8.2`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni==2.4`][1] |
+|       Torch       | `torch==1.9.0`, `torchvision==0.10.0`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni>=2.4`][1] |
 |        Onnx        |                                                      `onnx==1.9.0`                                                      |
 | nn-Meter IR graph |                                                            ---                                                            |
-|    NNI IR graph    |                                                       `nni==2.4`                                                       |
+|    NNI IR graph    |                                                       `nni>=2.4`                                                       |
 
 [1] Please refer to [nn-Meter Usage](#torch-model-converters) for more information.
 
@@ -73,7 +73,7 @@ Here is a summary of supported inputs of the two methods.
 |     Tensorflow     |             Checkpoint file dumped by `tf.saved_model()` and end with `.pb`             |                 Checkpoint file dumped by `tf.saved_model` and end with `.pb`                 |
 |       Torch       |                              Models in `torchvision.models`                              |                                   Object of `torch.nn.Module`                                   |
 |        Onnx        | Checkpoint file dumped by `torch.onnx.export()` or `onnx.save()` and end with `.onnx` |           Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`           |
-| nn-Meter IR graph |     Json file in the format of[nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)     | `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |
+| nn-Meter IR graph |     Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)     | `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |
 |    NNI IR graph    |                                              -                                              |                                        NNI IR graph object                                        |
 
 In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:

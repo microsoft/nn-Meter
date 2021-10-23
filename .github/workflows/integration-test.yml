@@ -6,7 +6,7 @@ name: Integrated Test
 on: [push]
 
 jobs:
-  build-linux:
+  model-test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
