@@ -18,7 +18,7 @@ from .nn_meter import (
 )
 from .utils.utils import download_from_url
 from .prediction import latency_metrics
-from .dataset import bench_dataset # TODO: add GNNDataloader and GNNDataset here @wenxuan
+from .dataset import bench_dataset
 import logging
 from functools import partial, partialmethod
 
