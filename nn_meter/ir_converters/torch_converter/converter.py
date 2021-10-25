@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_onnxsim
+from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_onnxsim, try_import_nni
 import tempfile
 from nn_meter.ir_converters.onnx_converter import OnnxConverter
 
@@ -19,10 +19,14 @@ def _nchw_to_nhwc(shapes):
 
 class NNIIRConverter:
     def __init__(self, ir_model):
-        from nni.retiarii.converter.graph_gen import GraphConverterWithShape
-
-        self.ir_model = ir_model.fork()
-        GraphConverterWithShape().flatten(self.ir_model)
+        try_import_nni()
+        try:
+            from nni.retiarii.converter.utils import flatten_model_graph
+            self.ir_model = flatten_model_graph(ir_model)
+        except:
+            from nni.retiarii.converter.graph_gen import GraphConverterWithShape
+            self.ir_model = ir_model.fork()
+            GraphConverterWithShape().flatten(self.ir_model)
 
     def convert(self):
         graph = self._to_graph_layout()
@@ -43,10 +47,13 @@ class NNIIRConverter:
                     "attr": {
                         k: v
                         for k, v in node.operation.parameters.items()
-                        if k not in ["input_shape", "output_shape"]
                     },
-                    "input_shape": _nchw_to_nhwc(node.operation.parameters["input_shape"]),
-                    "output_shape": _nchw_to_nhwc(node.operation.parameters["output_shape"]),
+                    "input_shape": _nchw_to_nhwc(node.operation.parameters.get("input_shape")
+                                                 if "input_shape" in node.operation.parameters 
+                                                 else node.operation.attributes.get('input_shape')),
+                    "output_shape": _nchw_to_nhwc(node.operation.parameters.get("output_shape") 
+                                                 if "output_shape" in node.operation.parameters 
+                                                 else node.operation.attributes.get('output_shape')),
                     "type": node.operation.type,
                 },
                 "inbounds": [],
@@ -94,6 +101,7 @@ class NNIIRConverter:
 class NNIBasedTorchConverter(NNIIRConverter):
     def __init__(self, model, example_inputs):
         torch = try_import_torch()
+        try_import_nni()
         from nni.retiarii.converter import convert_to_graph
         from nni.retiarii.converter.graph_gen import GraphConverterWithShape
 

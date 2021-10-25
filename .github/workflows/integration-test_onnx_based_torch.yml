@@ -6,7 +6,7 @@ name: Integrated Test for Torch Model Based on ONNX
 on: [push]
 
 jobs:
-  build-linux:
+  torch-model-test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5

@@ -46,7 +46,7 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
             result = subprocess.check_output(['nn-meter', 'lat_pred', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
-            logging.error("Meets ERROR when checking --torchvision {model_string} --predictor {pred_name} --predictor-version {pred_version}")
+            logging.error("Meets ERROR when checking --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}")
 
         latency_list = parse_latency_info(result.decode('utf-8'))
         for model, latency in latency_list:

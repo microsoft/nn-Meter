@@ -14,7 +14,7 @@ from packaging import version
 import logging
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
-__user_data_folder__ = os.path.expanduser('~/.nn_meter/data')
+__default_user_data_folder__ = os.path.expanduser('~/.nn_meter/data')
 
 __predictors_cfg_filename__ = 'predictors.yaml'
 
@@ -26,6 +26,33 @@ def create_user_configs():
     # TODO/backlog: to handle config merging when upgrading
     for f in pkg_resources.resource_listdir(__name__, 'configs'):
         copyfile(pkg_resources.resource_filename(__name__, f'configs/{f}'), os.path.join(__user_config_folder__, f))
+    # make default setting yaml file
+    with open(os.path.join(__user_config_folder__, 'settings.yaml'), 'w') as fp:
+        yaml.dump({'data_folder': __default_user_data_folder__}, fp)
+
+
+def get_user_data_folder():
+    """get user data folder in settings.yaml
+    """
+    filepath = os.path.join(__user_config_folder__, 'settings.yaml')
+    try:
+        with open(filepath) as fp:
+            return os.path.join(yaml.load(fp, yaml.FullLoader)['data_folder'])
+    except FileNotFoundError:
+        logging.info(f"setting file {filepath} not found, created")
+        create_user_configs()
+        return get_user_data_folder()
+
+
+def change_user_data_folder(new_folder):
+    """change user data folder in settings.yaml
+    """
+    os.makedirs(new_folder, exist_ok=True)
+    with open(os.path.join(__user_config_folder__, 'settings.yaml')) as fp:
+        setting = yaml.load(fp, yaml.FullLoader)
+    with open(os.path.join(__user_config_folder__, 'settings.yaml'), 'w') as fp:
+        setting['data_folder'] = new_folder
+        yaml.dump(setting, fp)
 
 
 def load_config_file(fname: str, loader=None):
@@ -91,8 +118,9 @@ def load_latency_predictor(predictor_name: str, predictor_version: float = None)
     predictor_version:  string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
         predictor will be loaded.
     """
+    user_data_folder = get_user_data_folder()
     pred_info = load_predictor_config(predictor_name, predictor_version)
-    kernel_predictors, fusionrule = loading_to_local(pred_info, __user_data_folder__)
+    kernel_predictors, fusionrule = loading_to_local(pred_info, os.path.join(user_data_folder, 'predictor'))
     return nnMeter(kernel_predictors, fusionrule)
 
 
