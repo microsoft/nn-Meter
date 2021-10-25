@@ -57,7 +57,7 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
 
 
 # integration test to predict model latency
-def integration_test_nni_based_torch(output_name = "tests/test_result_nni_based_torch.txt"):
+def integration_test_nni_based_torch(output_name = "tests/test_result_nni_based_torch.txt", output = True):
     """
     download the kernel predictors from the url
     @params:
@@ -67,11 +67,11 @@ def integration_test_nni_based_torch(output_name = "tests/test_result_nni_based_
     ppath:  the targeting dir to save the download model file
     output_name: a summary file to save the testing results
     """
-    import torchmodels as models
+    import data.torchmodels as models
     from nn_meter import load_latency_predictor
 
     # if the output_name is not created, create it and add a title
-    if not os.path.isfile(output_name):
+    if not os.path.isfile(output_name) and output:
         with open(output_name,"w") as f:
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
@@ -83,8 +83,9 @@ def integration_test_nni_based_torch(output_name = "tests/test_result_nni_based_
                 model = eval(__torchvision_model_zoo__[model_name])
                 latency = predictors.predict(model, "torch", apply_nni=True)
                 item = f'{model_name}, torch, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
-                with open(output_name, "a") as f:
-                    f.write(item)
+                if output:
+                    with open(output_name, "a") as f:
+                        f.write(item)
             except NotImplementedError:
                 logging.error(f"Meets ERROR when checking {model_name}")     
 
@@ -93,6 +94,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser('integration-test-torch')
     parser.add_argument("--apply-onnx", help='apply onnx-based torch converter for torch model', action='store_true', default=False)
     parser.add_argument("--apply-nni", help='apply nni-based torch converter for torch model', action='store_true', default=False)
+    parser.add_argument("--no-output", help='do not output result', action='store_true', default=False)
     args = parser.parse_args()
 
     check_package_status()
@@ -104,7 +106,7 @@ if __name__ == "__main__":
     # check torch model
     if args.apply_nni:
         # check NNI-based torch converter
-        integration_test_nni_based_torch()
+        integration_test_nni_based_torch(output= not args.no_output)
     if args.apply_onnx:
         # check ONNX-based torch converter
         integration_test_onnx_based_torch(

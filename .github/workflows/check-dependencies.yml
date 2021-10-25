@@ -1,0 +1,44 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
+name: Integrated Test for Torch Model Based on NNI
+
+on: [push]
+
+jobs:
+  check-dependencies:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6.10
+
+    - name: Install nn-Meter
+      run: pip install -U .
+    
+    - name: Test Without Dependencies
+      run: nn-meter --list-predictors
+
+    - name: Test Tensorflow
+      run: |
+        pip install tensorflow==1.15.0
+        nn-meter lat_pred --tensorflow tests/data/tensorflow_file.pb --predictor myriadvpu_openvino2019r2
+        pip uninstall tensorflow -y
+
+    - name: Test PyTorch
+      run: |
+        pip install torch==1.7.1 torchvision==0.8.2
+
+        pip install nni==2.4
+        python tests/integration_test_torch.py --apply-nni
+        pip uninstall nni -y
+
+        pip install onnx==1.9.0
+        pip install onnx-simplifier
+        nn-meter lat_pred --torchvision resnet18 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
