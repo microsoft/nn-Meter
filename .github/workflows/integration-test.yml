@@ -47,5 +47,8 @@ jobs:
       run: python tests/integration_test.py
     
     - name: Diff result with reference
-      run: diff tests/test_result.txt tests/reference_result.txt
+      run: diff tests/reference_result.txt tests/test_result.txt
+    
+    - name: clean env
+      run: rm tests/test_result.txt  
         

@@ -60,7 +60,7 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
                 # print(item)
                 with open(output_name, "a") as f:
                     f.write(item)
-            os.system(f'cat {output_name}')
+            # os.system(f'cat {output_name}')
         except NotImplementedError:
             logging.error(f"Meets ERROR when checking --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}")
 
