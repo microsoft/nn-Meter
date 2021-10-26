@@ -86,6 +86,7 @@ def integration_test_nni_based_torch(output_name = "tests/test_result_nni_based_
                 if output:
                     with open(output_name, "a") as f:
                         f.write(item)
+                else: return
             except NotImplementedError:
                 logging.error(f"Meets ERROR when checking {model_name}")     
 
