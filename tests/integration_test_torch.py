@@ -49,22 +49,20 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
             try:
                 result = subprocess.check_output(['nn-meter', 'lat_pred', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             except:
-                print(f'MEET ERROR in nn-meter lat_pred --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}')
-                os.system(f'nn-meter lat_pred --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}')
+                print(f'MEET ERROR in nn-meter lat_pred --torchvision {" ".join(model_list)} --predictor {pred_name} --predictor-version {pred_version}')
+                os.system(f'nn-meter lat_pred --torchvision {" ".join(model_list)} --predictor {pred_name} --predictor-version {pred_version}')
                 print('Complete os.system run')
             runtime = time.time() - since
             print(runtime)
+            latency_list = parse_latency_info(result.decode('utf-8'))
+            for model, latency in latency_list:
+                item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
+                # print(item)
+                with open(output_name, "a") as f:
+                    f.write(item)
             os.system(f'cat {output_name}')
         except NotImplementedError:
             logging.error(f"Meets ERROR when checking --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}")
-
-        latency_list = parse_latency_info(result.decode('utf-8'))
-        for model, latency in latency_list:
-            item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
-            # print(item)
-            with open(output_name, "a") as f:
-                f.write(item)
-
 
 # integration test to predict model latency
 def integration_test_nni_based_torch(output_name = "tests/test_result_nni_based_torch.txt", output = True):
