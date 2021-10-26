@@ -37,6 +37,9 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
     if not os.path.isfile(output_name):
         with open(output_name,"w") as f:
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
+    else:
+        print(f"Found exist file {output_name}")
+        os.system(f'cat {output_name}')
     
     # start testing
     for pred_name, pred_version in get_predictors():
@@ -51,6 +54,7 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
                 print('Complete os.system run')
             runtime = time.time() - since
             print(runtime)
+            os.system(f'cat {output_name}')
         except NotImplementedError:
             logging.error(f"Meets ERROR when checking --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}")
 
