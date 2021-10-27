@@ -47,7 +47,7 @@ jobs:
       run: python tests/integration_test_torch.py --apply-onnx
     
     - name: Diff result with reference
-      run: diff tests/reference_result_onnx_based_torch.txt tests/test_result_onnx_based_torch.txt
+      run: diff tests/data/reference_result_onnx_based_torch.txt tests/test_result_onnx_based_torch.txt
 
     - name: clean env
       run: rm tests/test_result_onnx_based_torch.txt

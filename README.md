@@ -1,4 +1,4 @@
-Note: This is an alpha (preview) version which is still under refining.
+Note: This is an beta (preview) version which is still under refining.
 
 **nn-Meter** is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
 
@@ -63,7 +63,7 @@ The stable version of wheel binary package will be released soon.
 
 To apply for hardware latency prediction, nn-Meter provides two types of interfaces：
 
-- command line `nn-meter` after `nn-meter`[installation](QuickStart.md#Installation).
+- command line `nn-meter` after `nn-meter` [installation](QuickStart.md#Installation).
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
