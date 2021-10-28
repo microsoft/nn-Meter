@@ -1,4 +1,5 @@
-from backends.base import BaseBackend
+from nn_meter.builder.backends.base import BaseBackend
+from nn_meter.builder.ruletest.model_builder.utils import get_inputs_by_shapes, get_tensor_by_shapes
 from .parser import TFLiteGPUParser
 from .runner import TFLiteGPURunner
 import tensorflow as tf
@@ -21,6 +22,8 @@ class Backend(BaseBackend):
         self.remote_model_dir = self.params['REMOTE_MODEL_DIR']
 
     def profile(self, model, model_name, shapes=None):
+        # build input shapes
+        model(get_tensor_by_shapes(shapes))
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
         tflite_model = converter.convert()
         graph_path = os.path.join(self.model_dir, model_name + '.tflite')

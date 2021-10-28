@@ -1,7 +1,6 @@
 from nn_meter.builder.utils.latency import Latency
-from utils.path import get_filename_without_ext
+from nn_meter.builder.utils.path import get_filename_without_ext
 import tensorflow as tf
-
 
 class BaseBackend:
     parser_class = None
@@ -23,4 +22,10 @@ class BaseBackend:
     def profile_model_file(self, model_path, shapes=None):
         model_name = get_filename_without_ext(model_path)
         model = tf.keras.models.load_model(model_path)
+        print("### model path: ", model_path)
         return self.profile(model, model_name, shapes)
+
+    def test_connection(self):
+        pass
+        # open/close_connection
+        # check_healthy

@@ -1,7 +1,8 @@
 from nn_meter.builder.config import app_config
 from nn_meter.builder.utils.latency import Latency
-from ..model_builder.utils import get_model_by_ops
+from ..model_builder.utils import get_model_by_ops, get_tensor_by_shapes
 from tensorflow.python import keras
+import tensorflow as tf
 
 import os
 
@@ -28,16 +29,18 @@ class RuleTestBase:
 
     def _gen_testcase(self):
         testcase = {}
+        model, shapes = self._model_block()
         testcase['block'] = {
-            'model': self._model_block(),
-            'shapes': None,
+            'model': model,
+            'shapes': shapes,
         }
 
         for _, ops in self.cases.items():
             for op in ops:
+                model, shapes = getattr(self, '_model_' + op)()
                 testcase[op] = {
-                    'model': getattr(self, '_model_' + op)(),
-                    'shapes': None
+                    'model': model,
+                    'shapes': shapes
                 }
 
         return testcase
@@ -47,6 +50,7 @@ class RuleTestBase:
 
         for op, model in testcase.items():
             model_path = os.path.join(self.model_dir, self.name + '_' + op)
+            model['model'](get_tensor_by_shapes(model['shapes']))
             keras.models.save_model(model['model'], model_path)
             testcase[op]['model'] = model_path
 
@@ -92,7 +96,7 @@ class RuleTestBase:
 
         x = keras.layers.ReLU()(input_layer)
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_dwconv_relu(self):
         input_layer = keras.Input(shape=self.input_shape)
@@ -100,7 +104,7 @@ class RuleTestBase:
         x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
         x = keras.layers.ReLU()(x)
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_add(self):
         input_1 = keras.Input(shape=self.input_shape)
@@ -108,21 +112,21 @@ class RuleTestBase:
 
         x = keras.layers.Add()([input_1, input_2])
 
-        return keras.models.Model([input_1, input_2], x)
+        return keras.models.Model([input_1, input_2], x), [self.input_shape, self.input_shape]
 
     def _model_dwconv(self):
         input_layer = keras.Input(shape=self.input_shape)
 
         x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_conv(self):
         input_layer = keras.Input(shape=self.input_shape)
 
         x = keras.layers.Conv2D(self.filters, self.kernel_size, padding='same')(input_layer)
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_block(self):
         pass
@@ -283,7 +287,7 @@ class MultipleOutNodes(RuleTestBase):
         branch_2 = keras.layers.ReLU(negative_slope=2)(x)
         branch_2 = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(branch_2)
 
-        return keras.models.Model(input_layer, [branch_1, branch_2])
+        return keras.models.Model(input_layer, [branch_1, branch_2]), [self.input_shape]
 
     def _model_relu_relu(self):
         input_layer = keras.Input(shape=self.input_shape)
@@ -291,7 +295,7 @@ class MultipleOutNodes(RuleTestBase):
         x = keras.layers.ReLU()(input_layer)
         x = keras.layers.ReLU()(x)
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_dwconv_relu_relu(self):
         input_layer = keras.Input(shape=self.input_shape)
@@ -300,7 +304,7 @@ class MultipleOutNodes(RuleTestBase):
         x = keras.layers.ReLU()(x)
         x = keras.layers.ReLU()(x)
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_relu_dwconv(self):
         input_layer = keras.Input(shape=self.input_shape)
@@ -308,7 +312,7 @@ class MultipleOutNodes(RuleTestBase):
         x = keras.layers.ReLU()(input_layer)
         x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(x)
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
 
 class ConvBranchContext(SingleCaseBase):
@@ -327,7 +331,7 @@ class ConvBranchContext(SingleCaseBase):
 
         output_layer = keras.layers.Concatenate()([branch_1, branch_2, branch_3])
 
-        return keras.models.Model(input_layer, output_layer)
+        return keras.models.Model(input_layer, output_layer), [self.input_shape]
 
     def _model_concat3(self):
         input_1 = keras.Input(shape=self.input_shape)
@@ -336,7 +340,7 @@ class ConvBranchContext(SingleCaseBase):
 
         output_layer = keras.layers.Concatenate()([input_1, input_2, input_3])
 
-        return keras.models.Model([input_1, input_2, input_3], output_layer)
+        return keras.models.Model([input_1, input_2, input_3], output_layer), [self.input_shape, self.input_shape, self.input_shape]
 
 
 class ReLUBranchContext(SingleCaseBase):
@@ -355,7 +359,7 @@ class ReLUBranchContext(SingleCaseBase):
         branch_2 = keras.layers.ReLU(negative_slope=0.5)(x)
         branch_3 = keras.layers.ReLU(negative_slope=2)(x)
 
-        return keras.models.Model(input_layer, [branch_1, branch_2, branch_3])
+        return keras.models.Model(input_layer, [branch_1, branch_2, branch_3]), [self.input_shape]
 
     def _model_3xrelu(self):
         input_layer = keras.Input(shape=self.input_shape)
@@ -364,7 +368,7 @@ class ReLUBranchContext(SingleCaseBase):
         branch_2 = keras.layers.ReLU(negative_slope=0.5)(input_layer)
         branch_3 = keras.layers.ReLU(negative_slope=2)(input_layer)
 
-        return keras.models.Model(input_layer, [branch_1, branch_2, branch_3])
+        return keras.models.Model(input_layer, [branch_1, branch_2, branch_3]), [self.input_shape]
 
 
 class ReadyTensor(RuleTestBase):
@@ -390,7 +394,7 @@ class ReadyTensor(RuleTestBase):
 
         output_2 = keras.layers.ReLU()(branch_3)
 
-        return keras.Model(input_layer, [output_1, output_2])
+        return keras.Model(input_layer, [output_1, output_2]), [self.input_shape]
 
     def _model_dwconv_add(self):
         input_layer = keras.Input(shape=self.input_shape)
@@ -398,7 +402,7 @@ class ReadyTensor(RuleTestBase):
         x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
         x = keras.layers.Add()([x, input_layer])
 
-        return keras.models.Model(input_layer, x)
+        return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_dwconv_add_add(self):
         input_1 = keras.Input(shape=self.input_shape)
@@ -408,4 +412,4 @@ class ReadyTensor(RuleTestBase):
         x = keras.layers.Add()([x, input_1])
         x = keras.layers.Add()([x, input_2])
 
-        return keras.models.Model([input_1, input_2], x)
+        return keras.models.Model([input_1, input_2], x), [self.input_shape, self.input_shape]

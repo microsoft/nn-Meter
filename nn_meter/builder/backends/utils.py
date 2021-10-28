@@ -43,7 +43,7 @@ def get_backend(backend, params):
     """
     if isinstance(backend, str):
         backend_module = importlib.import_module(BACKENDS[backend] + '.base')
-        backend_cls = getattr(backend_module, 'Backend')(params)
+        backend_cls = getattr(backend_module, 'Backend')
     else:
         backend_cls = backend
     return backend_cls(params)
