@@ -47,7 +47,9 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
             since = time.time()
             # print(f'nn-meter --torchvision ' + " ".join(model_list) + f' --predictor {pred_name} --predictor-version {pred_version}')
             try:
-                result = subprocess.check_output(['nn-meter', 'lat_pred', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
+                result = subprocess.check_output(
+                    ['nn-meter', 'lat_pred', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'],
+                    timeout=3600)
             except:
                 print(f'MEET ERROR in nn-meter lat_pred --torchvision {" ".join(model_list)} --predictor {pred_name} --predictor-version {pred_version}')
                 os.system(f'nn-meter lat_pred --torchvision {" ".join(model_list)} --predictor {pred_name} --predictor-version {pred_version}')
