@@ -37,32 +37,24 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
     if not os.path.isfile(output_name):
         with open(output_name,"w") as f:
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
-    else:
-        print(f"Found exist file {output_name}")
-        os.system(f'cat {output_name}')
     
     # start testing
-    for pred_name, pred_version in get_predictors():
+    for pred_name, pred_version in get_predictors()[::-1]:
         try:
             since = time.time()
-            # print(f'nn-meter --torchvision ' + " ".join(model_list) + f' --predictor {pred_name} --predictor-version {pred_version}')
-            try:
-                result = subprocess.check_output(
-                    ['nn-meter', 'lat_pred', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'],
-                    timeout=3600)
-            except:
-                print(f'MEET ERROR in nn-meter lat_pred --torchvision {" ".join(model_list)} --predictor {pred_name} --predictor-version {pred_version}')
-                os.system(f'nn-meter lat_pred --torchvision {" ".join(model_list)} --predictor {pred_name} --predictor-version {pred_version}')
-                print('Complete os.system run')
+            print(" ".join(['nn-meter', 'lat_pred', '--torchvision'] + model_list + ['--predictor', pred_name, '--predictor-version', pred_version]))
+            result = subprocess.run(
+                ['nn-meter', 'lat_pred', '--torchvision'] + model_list + ['--predictor', pred_name, '--predictor-version', pred_version],
+                stdout=subprocess.PIPE)
+            print(result.stderr, result.stdout)
+
             runtime = time.time() - since
-            print(runtime)
-            latency_list = parse_latency_info(result.decode('utf-8'))
+            print("Run time: ", runtime)
+            latency_list = parse_latency_info(result.stdout.decode('utf-8'))
             for model, latency in latency_list:
                 item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
-                # print(item)
                 with open(output_name, "a") as f:
                     f.write(item)
-            # os.system(f'cat {output_name}')
         except NotImplementedError:
             logging.error(f"Meets ERROR when checking --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}")
 
