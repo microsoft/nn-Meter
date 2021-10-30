@@ -39,7 +39,7 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
             f.write('model_name, model_type, predictor, predictor_version, latency\n')
     
     # start testing
-    for pred_name, pred_version in get_predictors()[::-1]:
+    for pred_name, pred_version in get_predictors():
         try:
             since = time.time()
             print(" ".join(['nn-meter', 'lat_pred', '--torchvision'] + model_list + ['--predictor', pred_name, '--predictor-version', pred_version]))
