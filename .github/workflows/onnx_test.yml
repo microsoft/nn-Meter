@@ -1,0 +1,98 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
+name: Integrated Test for Torch Model Based on ONNX
+
+on: [push]
+
+jobs:
+  torch-model-test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6.10
+
+    - name: Cache
+      uses: actions/cache@v2
+      id: cache
+      env: 
+        cache-name: download-cache
+      with:
+        path: |
+          ~/.nn_meter
+          /home/runner/work/nn-Meter/data/testmodels
+        key: ${{hashFiles('nn_meter/configs/predictors.yaml')}}-${{hashFiles('tests/integration_test.py')}}
+
+    - name: Install dependencies
+      run: |
+        pip install onnx==1.9.0
+        pip install torch==1.9.0
+        pip install torchvision==0.10.0
+        pip install onnx-simplifier
+        
+    - name: Install nn-Meter
+      run: pip install -U .
+
+    - name: Cli call
+      run: |
+        nn-meter lat_pred --torchvision resnet18 --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision alexnet --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision vgg16 --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision squeezenet --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision densenet161 --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision inception_v3 --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision googlenet --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision shufflenet_v2 --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mobilenet_v2 --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision resnext50_32x4d --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision wide_resnet50_2 --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mnasnet --predictor cortexA76cpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision resnet18 --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision alexnet --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision vgg16 --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision squeezenet --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision densenet161 --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision inception_v3 --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision googlenet --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision shufflenet_v2 --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mobilenet_v2 --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision resnext50_32x4d --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision wide_resnet50_2 --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mnasnet --predictor adreno630gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision resnet18 --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision alexnet --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision vgg16 --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision squeezenet --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision densenet161 --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision inception_v3 --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision googlenet --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision shufflenet_v2 --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mobilenet_v2 --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision resnext50_32x4d --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision wide_resnet50_2 --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mnasnet --predictor adreno640gpu_tflite21 --predictor-version 1.0
+        nn-meter lat_pred --torchvision resnet18 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision alexnet --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision vgg16 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision squeezenet --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision densenet161 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision inception_v3 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision googlenet --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision shufflenet_v2 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mobilenet_v2 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision resnext50_32x4d --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision wide_resnet50_2 --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+        nn-meter lat_pred --torchvision mnasnet --predictor myriadvpu_openvino2019r2 --predictor-version 1.0
+
+    - name: Subprocess call
+      run: python tests/onnx_test.py
+    
+    - name: view test file
+      run: cat tests/onnx_test.txt

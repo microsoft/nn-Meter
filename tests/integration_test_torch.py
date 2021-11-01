@@ -115,7 +115,7 @@ if __name__ == "__main__":
         integration_test_onnx_based_torch(
             model_type='torch',
             model_list=[
-                'resnet18', 'alexnet', 'vgg16', 'squeezenet', 'densenet161', 'inception_v3', 'googlenet', 
+                'resnet18', 'alexnet', 'squeezenet', 'densenet161', 'inception_v3', 'googlenet', 
                 'shufflenet_v2', 'mobilenet_v2', 'resnext50_32x4d', 'wide_resnet50_2', 'mnasnet']
         )
     
