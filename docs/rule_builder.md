@@ -5,23 +5,26 @@ This part generates and profiles models (what we call "test cases") on a given d
 ## End-to-End Demo
 
 ```python
-from nn_meter import get_testcases, run_testcases, get_fusionrule
-from nn_meter.backends.utils import get_backend
+# initialize backend
+backend = get_backend(
+    backend = 'tflite_cpu', 
+    params = {
+        'MODEL_DIR': '/data/jiahang/test_models',
+        'REMOTE_MODEL_DIR': '/mnt/sdcard/tflite_bench',
+        'KERNEL_PATH': '/mnt/sdcard/tflite_bench/kernel.cl',
+        'BENCHMARK_MODEL_PATH': '/data/local/tmp/benchmark_model_fixed_group_size',
+        'DEVICE_SERIAL': '0000028e2c780e4e',
+    }
+)
 
 # generate testcases
-testcases = get_testcases('~/test_models')
-# initialize backend
-backend = get_backend('tflite_cpu', {
-    'MODEL_DIR': '',
-    'REMOTE_MODEL_DIR': '',
-    'KERNEL_PATH': '',
-    'BENCHMARK_MODEL_PATH': '',
-    'DEVICE_SERIAL': '',
-})
+testcases = get_testcases(model_dir='/data/jiahang/test_models')
+
 # run testcases and collect profiling results
 profile_results = run_testcases(backend, testcases)
+
 # determine fusion rules from profiling results
-result = get_fusionrule(profile_results)
+detect_results = get_fusionrule(profile_results)
 ```
 
 `backend` refers to device and framework to execute the model. Currently we support TFLite on CPU, GPU and OpenVINO on VPU. Refer to [backend guide](./backend.md) for how to setup the device and backend.

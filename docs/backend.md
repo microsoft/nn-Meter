@@ -8,9 +8,10 @@ Currently we support TFLite on CPU, GPU and OpenVINO on VPU. Following we will e
 
 ### Prepare Android Device
 
+> Follow [ADB Guide](https://developer.android.com/studio/command-line/adb) to install adb on your host device.
+
 > Follow the [tensorflow official guide](https://www.tensorflow.org/lite/performance/measurement) for a more detailed guide to build and deploy `benchmark_model` onto the device.
 
-> Follow [ADB Guide](https://developer.android.com/studio/command-line/adb) to install adb on your host device.
 
 Download tensorflow source code and type following lines in tensorflow root folder:
 ```
