@@ -4,7 +4,6 @@ import sys
 
 import tensorflow as tf
 from google.protobuf import text_format
-from tensorflow import gfile
 from tensorflow import io
 
 

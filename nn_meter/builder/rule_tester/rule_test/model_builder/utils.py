@@ -1,23 +1,10 @@
-import tensorflow as tf
-from tensorflow import keras
 from . import layers
 from .simple_model import SingleOpModel, TwoOpModel
+from nn_meter.builder.utils import get_inputs_by_shapes
 
 
 def get_layer_by_name(name, input_shape):
     return getattr(layers, name)(input_shape)
-
-def get_inputs_by_shapes(shapes):
-    if len(shapes) == 1:
-        return keras.Input(shape=shapes[0])
-    else:
-        return [keras.Input(shape=shape) for shape in shapes]
-
-def get_tensor_by_shapes(shapes):
-    if len(shapes) == 1:
-        return tf.random.normal(shape=[1] + shapes[0])
-    else:
-        return [tf.random.normal(shape=[1] + shape) for shape in shapes]
 
 def get_model_by_ops(op1, op2, input_shape):
     layer1, op1_output_shape, op1_is_two_inputs = get_layer_by_name(op1, input_shape)

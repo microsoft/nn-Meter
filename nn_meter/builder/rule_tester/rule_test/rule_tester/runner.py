@@ -1,6 +1,6 @@
 import networkx as nx
-from nn_meter.builder.config import app_config
 from .rules import rules
+from ...config_manager import config
 
 
 class RuleTester:
@@ -47,7 +47,7 @@ class RuleTester:
                 rule = rule_cls()
                 rule.load_latency(profile_results[name])
                 obey = rule.test()
-                if app_config.get('detail', 'ruletest'):
+                if config.get('detail', 'ruletest'):
                     latency = {key: str(value) for key, value in rule.latency.items()}
                     result[name]['latency'] = latency
 

@@ -3,7 +3,7 @@ from tensorflow.python.framework.convert_to_constants import convert_variables_t
 import os
 
 
-def keras_model_to_frozen_pb(model, frozen_out_path, frozen_graph_filename, shapes, dtype=tf.dtypes.float32):
+def keras_model_to_frozenpb(model, frozen_out_path, frozen_graph_filename, shapes, dtype=tf.dtypes.float32):
     full_model = tf.function(lambda x: model(x))
     if len(shapes) == 1:
         tensor_specs = tf.TensorSpec([1] + shapes[0], dtype)

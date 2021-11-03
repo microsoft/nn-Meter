@@ -1,10 +1,8 @@
-from nn_meter.builder.config import app_config
+import os
 from nn_meter.builder.utils.latency import Latency
+from ...config_manager import config
 from ..model_builder.utils import get_model_by_ops, get_tensor_by_shapes
 from tensorflow import keras
-import tensorflow as tf
-
-import os
 
 
 rules = {}
@@ -77,13 +75,13 @@ class RuleTestBase:
         return self.true_case
 
     def load_config(self):
-        self.input_shape = self.input_shape or app_config.get('default_input_shape', 'ruletest')
-        self.kernel_size = app_config.get('kernel_size', 'ruletest')
-        self.filters = app_config.get('filters', 'ruletest')
-        self.enabled = self.name in app_config.get('enabled', 'ruletest')
-        self.model_dir = app_config.get('model_dir', 'ruletest')
+        self.input_shape = self.input_shape or config.get('default_input_shape', 'ruletest')
+        self.kernel_size = config.get('kernel_size', 'ruletest')
+        self.filters = config.get('filters', 'ruletest')
+        self.enabled = self.name in config.get('enabled', 'ruletest')
+        self.model_dir = config.get('model_dir', 'ruletest')
 
-        for key, value in app_config.get('params', 'ruletest').get(self.name, {}).items():
+        for key, value in config.get('params', 'ruletest').get(self.name, {}).items():
             setattr(self, key, value)
 
     @classmethod
@@ -154,8 +152,8 @@ class BasicFusionImpl(RuleTestBase):
 
     def load_config(self):
         super().load_config()
-        self.enabled = 'BF' in app_config.get('enabled', 'ruletest')
-        self.eps = app_config.get('params', 'ruletest')['BF']['eps']
+        self.enabled = 'BF' in config.get('enabled', 'ruletest')
+        self.eps = config.get('params', 'ruletest')['BF']['eps']
 
     def test(self):
         secondary_op_lat = min(lat for op, lat in self.latency.items() if op != 'block' or op != self.false_case)
@@ -255,9 +253,9 @@ class BasicFusion(RuleTestBase):
                 'ops': [op1, op2],
             }
             if op1 in cls.d1_required_layers or op2 in cls.d1_required_layers:
-                input_shape = app_config.get('d1_input_shape', 'ruletest')
+                input_shape = config.get('d1_input_shape', 'ruletest')
             else:
-                input_shape = app_config.get('default_input_shape', 'ruletest')
+                input_shape = config.get('default_input_shape', 'ruletest')
             bf_cls = type(classname, (BasicFusionImpl,), {
                 'name': name,
                 'cases': cases,

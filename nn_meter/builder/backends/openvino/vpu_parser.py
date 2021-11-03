@@ -1,5 +1,5 @@
-from nn_meter.builder.utils.latency import Latency
 import re
+from nn_meter.builder.utils.latency import Latency
 
 
 class VPUParser:
