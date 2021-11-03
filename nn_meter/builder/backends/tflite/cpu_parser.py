@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import re
 from nn_meter.builder.utils.latency import Latency
 

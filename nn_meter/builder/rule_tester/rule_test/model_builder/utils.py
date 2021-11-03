@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from . import layers
 from .simple_model import SingleOpModel, TwoOpModel
 from nn_meter.builder.utils import get_inputs_by_shapes

@@ -1,4 +1,17 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+from nn_meter.builder.utils import Latency
+
+
 class TestCase:
+    def __init__(self, data):
+        self.data = {}
+        for key, value in data.items():
+            pass
+
+        pass
+
+class TestCases:
     '''
     testcase[op] = {
                     'model': model,
@@ -7,9 +20,13 @@ class TestCase:
     '''
     def __init__(self):
         self.data = {}
-        self.after_run = False # check whether the test cases are run
-        self.after_detect = False # check whether the test cases are detected
+        self.profiled = False # check whether the test cases are profiled
+        self.detected = False # check whether the test cases are detected by fusion rule
     
+    def feed(self, data):
+        for name, testcase in data.items():
+            self.add(name, testcase)
+
     def add(self, key, value):
         self.data[key] = value
 
@@ -27,4 +44,4 @@ class TestCase:
         pass
     
     def _dump(self):
-        return {name: graph._dump() for name, graph in self.graphs.items()}
+        return {name: testcase._dump() for name, testcase in self.data.items()}

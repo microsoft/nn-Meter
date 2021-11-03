@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import networkx as nx
 from .rules import rules
 from ...config_manager import config

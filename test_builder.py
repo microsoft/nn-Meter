@@ -63,11 +63,19 @@ def run_testcases(backend, testcases, case_save_path='./data/profiled_testcases.
 
 
 def get_fusionrule(testcases, case_save_path='./data/detected_testcases.json'):
+    """
+    @params:
+
+    - testcases: The TestCases class or the path of the testcase json file
+
+    - case_save_path: Path to save the testcase json file
+
+    """
     if isinstance(testcases, str):
         with open(testcases, 'r') as fp:
-            testcases = json.load(fp)
+            testcases = json.load(fp) # TODO: if use json file, latency should be refine
 
-    assert testcases.profiled == False
+    # assert testcases.profiled == False
     tester = RuleTester()
     testcases = tester.analyze(testcases)
     

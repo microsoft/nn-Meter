@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import tensorflow as tf
 from tensorflow import keras
 from ...config_manager import config
