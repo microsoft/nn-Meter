@@ -1,6 +1,7 @@
 import importlib
 
-
+# TODO: test the connection
+# command: nn-meter device/backend test
 BACKENDS = {
     'tflite_gpu': 'nn_meter.builder.backends.tflite_gpu',
     'tflite_cpu': 'nn_meter.builder.backends.tflite_cpu',

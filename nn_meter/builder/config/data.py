@@ -35,3 +35,26 @@ class ConfigData:
 
     def load_from_config_file(self, config_file, module=''):
         raise NotImplementedError()
+
+class ConfigManager:
+    def __init__(self):
+        # self.data = ConfigData
+        # # load from file
+        # # default config
+        pass
+    
+    def _init_config(self):
+        self._global_settings['ruletest'] = {
+            'default_input_shape': [28, 28, 16],
+            'd1_input_shape': [428],
+            'filters': 256,
+            'kernel_size': 3,
+            'enabled': ['BF', 'MON', 'RT'],
+            'params': {
+                'BF': {
+                    'eps': 0.5,
+                }
+            },
+            'model_dir': '',
+            'detail': False,
+        }

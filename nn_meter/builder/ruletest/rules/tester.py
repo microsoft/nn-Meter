@@ -17,7 +17,7 @@ class RuleTester:
 
         self._dag = list(nx.topological_sort(dag))
 
-    def gen(self):
+    def generate(self):
         testcases = {}
 
         for name, cls in self._rules.items():

@@ -1,7 +1,7 @@
 from nn_meter.builder.config import app_config
 from nn_meter.builder.utils.latency import Latency
 from ..model_builder.utils import get_model_by_ops, get_tensor_by_shapes
-from tensorflow.python import keras
+from tensorflow import keras
 import tensorflow as tf
 
 import os

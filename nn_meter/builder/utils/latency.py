@@ -7,6 +7,8 @@ class Latency:
             avg, std = avg.split('+-')
             self.avg = float(avg)
             self.std = float(std)
+        elif isinstance(avg, Latency):
+            self.avg, self.std = avg.avg, avg.std
         else:
             self.avg = avg
             self.std = std
@@ -40,3 +42,9 @@ class Latency:
 
     def __sub__(self, rhs):
         return self + rhs.__neg__()
+    
+    def _dump(self):
+        return {
+            'avg': self.avg,
+            'std': self.std
+        }
