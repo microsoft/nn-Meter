@@ -1,3 +1,4 @@
+import os
 import json
 
 
@@ -17,15 +18,16 @@ class ConfigData:
 
 class ConfigManager(ConfigData):
     def __init__(self, config_path=None, save_path='./data/ruletest_config.json'):
-
+        super().__init__()
         if config_path: # load config from file
             self._load_from_config_file(config_path)
         else: # set default config
             self._set_default_config()
 
         if save_path:
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
             with open(save_path, 'w') as fp:
-                json.dump(self.data, fp, indent=4)
+                json.dump(self._global_settings, fp, indent=4)
 
     def _set_default_config(self):
         self._global_settings['ruletest'] = {

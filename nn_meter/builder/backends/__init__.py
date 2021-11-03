@@ -5,3 +5,4 @@ from .tflite import (
 from .openvino import (
     VPUBackend
 )
+from .interface import get_backend

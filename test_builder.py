@@ -1,18 +1,19 @@
-from nn_meter.builder.ruletest.rules.tester import RuleTester
 import copy
 import json
-from nn_meter.builder.config import app_config
-from nn_meter.builder.backends.utils import get_backend
+from nn_meter.builder.rule_tester import config
+from nn_meter.builder.backends import get_backend
+from nn_meter.builder.rule_tester import RuleTester
 
 def get_testcases(model_dir):
     """
     @params:
+
     model_dir: directory to save testcase models @jiahang: is it the same with "directory on host to save temporary tflite models
     
     "
     """
-    app_config.set('model_dir', model_dir, 'ruletest')
-    print(app_config.get_settings())
+    config.set('model_dir', model_dir, 'ruletest')
+    print(config.get_settings())
 
     tester = RuleTester()
     testcases = tester.generate()
@@ -35,11 +36,11 @@ def get_fusionrule(profile_results):
 
 if __name__ == '__main__':    
 
-    # # generate testcases
-    # testcases = get_testcases('/data/jiahang/test_models')
-    # import pdb; pdb.set_trace()
-    # with open('testcases.json', 'w') as fp:
-    #     json.dump(testcases, fp, indent=4)
+    # generate testcases
+    testcases = get_testcases('/data/jiahang/test_models')
+
+    with open('testcases.json', 'w') as fp:
+        json.dump(testcases, fp, indent=4)
 
     with open('testcases.json', 'r') as fp:
         testcases = json.load(fp)

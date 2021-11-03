@@ -1,15 +1,15 @@
-from nn_meter.builder.ruletest.rules.tester import RuleTester
 import copy
 import json
-from nn_meter.builder.config import app_config
-from nn_meter.builder.backends.utils import get_backend
+from nn_meter.builder.rule_tester import config
+from nn_meter.builder.backends import get_backend
+from nn_meter.builder.rule_tester import RuleTester
 
 def get_testcases(model_dir):
     """
     @params:
     model_dir: directory to save testcase models
     """
-    app_config.set('model_dir', model_dir, 'ruletest')
+    config.set('model_dir', model_dir, 'ruletest')
 
     tester = RuleTester()
     testcases = tester.generate()

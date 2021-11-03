@@ -1,8 +1,10 @@
 import os
-from nn_meter.builder.utils.latency import Latency
-from ...config_manager import config
-from ..model_builder.utils import get_model_by_ops, get_tensor_by_shapes
 from tensorflow import keras
+
+from ...config_manager import config
+from ..model_builder.utils import get_model_by_ops
+from nn_meter.builder.utils import get_tensor_by_shapes
+from nn_meter.builder.utils.latency import Latency
 
 
 rules = {}
