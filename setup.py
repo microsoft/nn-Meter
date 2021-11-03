@@ -26,7 +26,7 @@ setup(
         ],
     packages=find_packages(),
     package_data={
-        'nn_meter': ['configs/*.yaml', 'kerneldetection/fusionlib/*.json'],
+        'nn_meter': ['configs/*.yaml', 'kernel_detector/fusionlib/*.json'],
     },
     entry_points={
         'console_scripts': ['nn-meter=nn_meter.nn_meter_cli:nn_meter_cli'],

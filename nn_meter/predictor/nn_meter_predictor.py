@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from glob import glob
-from nn_meter.prediction.predictors.predict_by_kernel import nn_predict
-from nn_meter.kerneldetection import KernelDetector
-from nn_meter.ir_converters import model_file_to_graph, model_to_graph
-from nn_meter.prediction.load_predictors import loading_to_local
+from nn_meter.predictor.predictors.predict_by_kernel import nn_predict
+from nn_meter.kernel_detector import KernelDetector
+from nn_meter.ir_converter import model_file_to_graph, model_to_graph
+from .utils import loading_to_local
 
 import yaml
 import os
@@ -12,64 +12,9 @@ import pkg_resources
 from shutil import copyfile
 from packaging import version
 import logging
-
-__user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
-__default_user_data_folder__ = os.path.expanduser('~/.nn_meter/data')
+from nn_meter.utils import load_config_file, get_user_data_folder
 
 __predictors_cfg_filename__ = 'predictors.yaml'
-
-
-def create_user_configs():
-    """create user configs from distributed configs
-    """
-    os.makedirs(__user_config_folder__, exist_ok=True)
-    # TODO/backlog: to handle config merging when upgrading
-    for f in pkg_resources.resource_listdir(__name__, 'configs'):
-        copyfile(pkg_resources.resource_filename(__name__, f'configs/{f}'), os.path.join(__user_config_folder__, f))
-    # make default setting yaml file
-    with open(os.path.join(__user_config_folder__, 'settings.yaml'), 'w') as fp:
-        yaml.dump({'data_folder': __default_user_data_folder__}, fp)
-
-
-def get_user_data_folder():
-    """get user data folder in settings.yaml
-    """
-    filepath = os.path.join(__user_config_folder__, 'settings.yaml')
-    try:
-        with open(filepath) as fp:
-            return os.path.join(yaml.load(fp, yaml.FullLoader)['data_folder'])
-    except FileNotFoundError:
-        logging.info(f"setting file {filepath} not found, created")
-        create_user_configs()
-        return get_user_data_folder()
-
-
-def change_user_data_folder(new_folder):
-    """change user data folder in settings.yaml
-    """
-    os.makedirs(new_folder, exist_ok=True)
-    with open(os.path.join(__user_config_folder__, 'settings.yaml')) as fp:
-        setting = yaml.load(fp, yaml.FullLoader)
-    with open(os.path.join(__user_config_folder__, 'settings.yaml'), 'w') as fp:
-        setting['data_folder'] = new_folder
-        yaml.dump(setting, fp)
-
-
-def load_config_file(fname: str, loader=None):
-    """load config file from __user_config_folder__;
-    if the file not located in __user_config_folder__, copy it from distribution
-    """
-    filepath = os.path.join(__user_config_folder__, fname)
-    try:
-        with open(filepath) as fp:
-            if loader is None:
-                return yaml.load(fp, yaml.FullLoader)
-            else:
-                return loader(fp)
-    except FileNotFoundError:
-        logging.info(f"config file {filepath} not found, created")
-        create_user_configs()
-        return load_config_file(fname)
 
 
 def list_latency_predictors():
@@ -121,10 +66,10 @@ def load_latency_predictor(predictor_name: str, predictor_version: float = None)
     user_data_folder = get_user_data_folder()
     pred_info = load_predictor_config(predictor_name, predictor_version)
     kernel_predictors, fusionrule = loading_to_local(pred_info, os.path.join(user_data_folder, 'predictor'))
-    return nnMeter(kernel_predictors, fusionrule)
+    return nnMeterPredictor(kernel_predictors, fusionrule)
 
 
-class nnMeter:
+class nnMeterPredictor:
     def __init__(self, predictors, fusionrule):
         self.kernel_predictors = predictors
         self.fusionrule = fusionrule

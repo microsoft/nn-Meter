@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os, sys
-from nn_meter.prediction import latency_metrics
+from nn_meter.predictor import latency_metrics
 from glob import glob
 
 from nn_meter.nn_meter import list_latency_predictors, load_latency_predictor, get_user_data_folder

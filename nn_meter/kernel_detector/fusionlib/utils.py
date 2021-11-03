@@ -3,7 +3,7 @@
 import os
 import json
 from nn_meter.utils.graph_tool import ModelGraph
-from nn_meter.kerneldetection.utils.ir_tools import convert_nodes
+from nn_meter.kernel_detector.utils.ir_tools import convert_nodes
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
