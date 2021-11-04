@@ -66,13 +66,11 @@ def get_fusionrule(testcases, case_save_path='./data/detected_testcases.json'):
         with open(testcases, 'r') as fp:
             testcases = read_testcases(json.load(fp))
 
-    # assert testcases.profiled == False
     tester = RuleTester()
-    testcases = tester.analyze(testcases)
+    result = tester.analyze(testcases)
     
     if case_save_path:
         os.makedirs(os.path.dirname(case_save_path), exist_ok=True)
         with open(case_save_path, 'w') as fp:
-            # json.dump(testcases._dump(), fp, indent=4)
-            json.dump(dump_testcases(testcases), fp, indent=4)
-    return testcases
+            json.dump(result, fp, indent=4)
+    return result
