@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import numpy as np
 from typing import List
-from nn_meter.utils.utils import try_import_tensorflow
+from nn_meter.utils.import_package import try_import_tensorflow
 
 class ShapeFetcher:
     def __init__(self, input_graph):
