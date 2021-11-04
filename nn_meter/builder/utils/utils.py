@@ -24,7 +24,7 @@ def dump_testcases(testcases):
     testcases_copy = copy.deepcopy(testcases)
     for item in testcases_copy.values():
         for model in item.values():
-            if hasattr(model, 'latency'):
+            if 'latency' in model:
                 model['latency'] = str(model['latency'])
     return testcases_copy
 
@@ -33,6 +33,6 @@ def read_testcases(testcases):
     testcases_copy = copy.deepcopy(testcases)
     for item in testcases_copy.values():
         for model in item.values():
-            if hasattr(model, 'latency'):
+            if 'latency' in model:
                 model['latency'] = Latency(model['latency'])
     return testcases_copy
