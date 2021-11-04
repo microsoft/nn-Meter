@@ -16,7 +16,7 @@ from .nn_meter import (
     create_user_configs,
     change_user_data_folder
 )
-from .nn_meter_builder import (
+from .builder import (
     get_fusionrule,
     get_testcases,
     run_testcases
