@@ -43,7 +43,7 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
         try:
             since = time.time()
             # print(f'nn-meter --torchvision ' + " ".join(model_list) + f' --predictor {pred_name} --predictor-version {pred_version}')
-            result = subprocess.check_output(['nn-meter', 'lat_pred', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
+            result = subprocess.check_output(['nn-meter', 'predict', f'--torchvision'] + model_list + ['--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
             logging.error("Meets ERROR when checking --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}")

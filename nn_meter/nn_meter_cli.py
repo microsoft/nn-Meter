@@ -113,7 +113,7 @@ def nn_meter_cli():
     subparsers = parser.add_subparsers()
 
     # Usage 1: latency predictors
-    lat_pred = subparsers.add_parser('lat_pred', help='apply latency predictor for testing model')
+    lat_pred = subparsers.add_parser('predict', help='apply latency predictor for testing model')
     lat_pred.add_argument(
         "--predictor",
         type=str,

@@ -98,16 +98,16 @@ After installation, a command named `nn-meter` is enabled. To predict the latenc
 
 ```bash
 # for Tensorflow (*.pb) file
-nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
+nn-meter predict --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
 
 # for ONNX (*.onnx) file
-nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
+nn-meter predict --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
 
 # for torch model from torchvision model zoo (str)
-nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
+nn-meter predict --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
 
 # for nn-Meter IR (*.json) file
-nn-meter lat_pred --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
+nn-meter predict --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
 ```
 
 `--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest version of the predictor.
