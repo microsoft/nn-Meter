@@ -15,9 +15,11 @@ def create_user_configs():
     """create user configs from distributed configs
     """
     os.makedirs(__user_config_folder__, exist_ok=True)
-    # TODO/backlog: to handle config merging when upgrading
-    for f in pkg_resources.resource_listdir(__name__, 'configs'):
-        copyfile(pkg_resources.resource_filename(__name__, f'configs/{f}'), os.path.join(__user_config_folder__, f))
+    # TODO/backlog: to handle config merging when upgrading    
+    for f in pkg_resources.resource_listdir(".".join(__name__.split('.')[:-2]), 'configs'):
+        copyfile(
+            pkg_resources.resource_filename(".".join(__name__.split('.')[:-2]), f'configs/{f}'), 
+            os.path.join(__user_config_folder__, f))
     # make default setting yaml file
     with open(os.path.join(__user_config_folder__, 'settings.yaml'), 'w') as fp:
         yaml.dump({'data_folder': __default_user_data_folder__}, fp)
