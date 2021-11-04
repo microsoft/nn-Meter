@@ -34,7 +34,7 @@ jobs:
       run: |
         pip install torch==1.9.0
         pip install torchvision==0.10.0
-        pip install --extra-index-url https://test.pypi.org/simple/ nni==2.5b1
+        pip install nni==2.5
 
     - name: Install nn-Meter
       run: pip install -U .
