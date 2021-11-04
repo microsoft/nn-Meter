@@ -5,12 +5,7 @@ import os
 import sys
 import argparse
 import logging
-from nn_meter.nn_meter import *
-
-__user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
-__user_data_folder__ = os.path.expanduser('~/.nn_meter/data')
-
-__predictors_cfg_filename__ = 'predictors.yaml'
+from nn_meter import *
 
 
 def list_latency_predictors_cli():
@@ -61,6 +56,7 @@ def apply_latency_predictor_cli(args):
         logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency} ms')
     
     return result
+
 
 def get_nnmeter_ir_cli(args):
     """convert pb file or onnx file to nn-Meter IR graph according to the command line interface arguments

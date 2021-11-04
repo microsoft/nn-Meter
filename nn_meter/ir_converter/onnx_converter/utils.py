@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-
-
 def get_tensor_shape(tensor):
     shape = []
     for dim in tensor.type.tensor_type.shape.dim:

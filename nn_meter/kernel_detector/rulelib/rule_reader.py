@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import json
+from ..fusionlib import get_fusion_unit
 from nn_meter.utils.graph_tool import ModelGraph
-from nn_meter.kernel_detector.fusionlib import get_fusion_unit
 
 
 class RuleReader:

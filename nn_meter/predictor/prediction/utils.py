@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-
 import numpy as np
 from sklearn.metrics import mean_squared_error
+
 
 def get_kernel_name(optype):
     """
@@ -33,6 +33,7 @@ def get_kernel_name(optype):
         optype = "se"
 
     return optype
+
 
 def get_accuracy(y_pred, y_true, threshold=0.01):
     a = (y_true - y_pred) / y_true

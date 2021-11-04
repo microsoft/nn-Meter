@@ -1,11 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.kernel_detector.rulelib.rule_reader import RuleReader
-from nn_meter.kernel_detector.rulelib.rule_splitter import RuleSplitter
 from nn_meter.utils.graph_tool import ModelGraph
-from nn_meter.kernel_detector.utils.constants import DUMMY_TYPES
-from nn_meter.kernel_detector.utils.ir_tools import convert_nodes
-# import logging
+from .utils.constants import DUMMY_TYPES
+from .utils.ir_tools import convert_nodes
+from .rulelib.rule_reader import RuleReader
+from .rulelib.rule_splitter import RuleSplitter
 
 
 class KernelDetector:

@@ -7,7 +7,7 @@ from zipfile import ZipFile
 from tqdm import tqdm
 import requests
 import logging
-from nn_meter.utils.utils import download_from_url
+from nn_meter.utils import download_from_url
 
 
 def loading_to_local(pred_info, dir="data/predictorzoo"):

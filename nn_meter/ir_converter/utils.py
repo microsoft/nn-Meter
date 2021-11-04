@@ -2,10 +2,11 @@
 # Licensed under the MIT license.
 import json
 import logging
-from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_torchvision_models
+from nn_meter.utils.import_package import try_import_onnx, try_import_torch, try_import_torchvision_models
 from .onnx_converter import OnnxConverter
 from .frozenpb_converter import FrozenPbConverter
 from .torch_converter import NNIBasedTorchConverter, OnnxBasedTorchConverter, NNIIRConverter
+
 
 def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 224), apply_nni=False):
     """
@@ -106,9 +107,11 @@ def onnx_model_to_graph(model):
     converter = OnnxConverter(model)
     return converter.convert()
 
+
 def nni_model_to_graph(model):
     converter = NNIIRConverter(model)
     return converter.convert()
+
 
 def torch_model_to_graph(model, input_shape=(1, 3, 224, 224), apply_nni=False):
     torch = try_import_torch()

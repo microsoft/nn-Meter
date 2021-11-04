@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.utils import try_import_onnx
+import logging
 import networkx as nx
+from itertools import chain
 from .utils import get_tensor_shape
 from .constants import SLICE_TYPE
-from itertools import chain
-import logging
+from nn_meter.utils.import_package import try_import_onnx
 
 
 class OnnxConverter:

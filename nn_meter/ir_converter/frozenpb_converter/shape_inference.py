@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from .protobuf_helper import ProtobufHelper as ph
 from functools import reduce
 import copy
 import math
 import logging
+from .protobuf_helper import ProtobufHelper as ph
 
 
 logging = logging.getLogger(__name__)

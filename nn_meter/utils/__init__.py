@@ -6,3 +6,4 @@ from config_manager import (
     change_user_data_folder,
     load_config_file
 )
+from utils import download_from_url

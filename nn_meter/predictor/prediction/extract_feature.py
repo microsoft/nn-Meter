@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import logging
 import numpy as np
 from sklearn.metrics import mean_squared_error
-import logging
 
 
 def get_flop(input_channel, output_channel, k, H, W, stride):

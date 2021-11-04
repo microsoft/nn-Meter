@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.utils import try_import_tensorflow
 import numpy as np
 from typing import List
-
+from nn_meter.utils.utils import try_import_tensorflow
 
 class ShapeFetcher:
     def __init__(self, input_graph):

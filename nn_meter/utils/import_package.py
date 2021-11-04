@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from packaging import version
 import logging
+from packaging import version
 
 
 def try_import_onnx(require_version = ["1.9.0"]):

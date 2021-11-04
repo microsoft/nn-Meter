@@ -2,10 +2,10 @@
 # Licensed under the MIT license.
 import numpy as np
 
-from nn_meter.utils.graph_tool import ModelGraph
 from .frozenpb_parser import FrozenPbParser
 from .shape_inference import ShapeInference
 from .shape_fetcher import ShapeFetcher
+from nn_meter.utils.graph_tool import ModelGraph
 
 class FrozenPbConverter:
     def __init__(self, file_name):

@@ -1,14 +1,9 @@
-from glob import glob
-from nn_meter.predictor.predictors.predict_by_kernel import nn_predict
-from nn_meter.kernel_detector import KernelDetector
-from nn_meter.ir_converter import model_file_to_graph, model_to_graph
-from nn_meter.predictor.load_predictors import loading_to_local
-
 import yaml
 import os
+import logging
 import pkg_resources
 from shutil import copyfile
-import logging
+
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 __default_user_data_folder__ = os.path.expanduser('~/.nn_meter/data')

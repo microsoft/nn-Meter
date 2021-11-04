@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.utils import try_import_tensorflow
-from .protobuf_helper import ProtobufHelper
-from .shape_fetcher import ShapeFetcher
-import copy
 import re
+import copy
 import logging
+
+from .protobuf_helper import ProtobufHelper
+from nn_meter.utils.import_package import try_import_tensorflow
+
 
 logging = logging.getLogger(__name__)
 

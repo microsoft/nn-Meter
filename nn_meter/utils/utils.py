@@ -20,7 +20,7 @@ def download_from_url(urladdr, ppath):
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
-    # logging.keyinfo(f'Download from {urladdr}')
+    logging.keyinfo(f'Download from {urladdr}')
     response = requests.get(urladdr, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     block_size = 2048  # 2 Kibibyte

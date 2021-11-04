@@ -1,11 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.utils import try_import_onnx, try_import_torch, try_import_onnxsim, try_import_nni
 import tempfile
-from nn_meter.ir_converter.onnx_converter import OnnxConverter
-
-
+from ..onnx_converter import OnnxConverter
 from .opset_map import nni_attr_map, nni_type_map
+from nn_meter.utils.import_package import try_import_onnx, try_import_torch, try_import_onnxsim, try_import_nni
 
 
 def _nchw_to_nhwc(shapes):

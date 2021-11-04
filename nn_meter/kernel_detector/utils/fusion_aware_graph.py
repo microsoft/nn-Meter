@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.graph_tool import ModelGraph
-from .union_find import UF
 import networkx as nx
+from .union_find import UF
+from nn_meter.utils.graph_tool import ModelGraph
 
 
 class FusionAwareGraph:
