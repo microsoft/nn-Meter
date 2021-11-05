@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import re
+from .tflite_runner import TFLiteRunner
+from .tflite_backend import TFLiteBackend
 from nn_meter.builder.utils.latency import Latency
 
 
@@ -50,4 +52,12 @@ class TFLiteCPUParser:
     @property
     def latency(self):
         return self.total_latency
-        
+
+
+class TFLiteCPURunner(TFLiteRunner):
+    use_gpu = False
+
+
+class Backend(TFLiteBackend):
+    parser_class = TFLiteCPUParser
+    runner_class = TFLiteCPURunner
