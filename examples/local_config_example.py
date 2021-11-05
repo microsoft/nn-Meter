@@ -32,9 +32,9 @@ BACKENDS = {
     'vpu': {
         'ENGINE': 'backends.vpu',
         'PARAMS': {
-            'MOVIDIUS_ENV': os.path.join(BASE_DIR, 'movidius_env'),
+            'OPENVINO_ENV': os.path.join(BASE_DIR, 'openvino_env'),
             'OPTIMIZER_PATH': '/data/openvino_2019.2.242/deployment_tools/model_optimizer/mo_tf.py',
-            'TMP_DIR': os.path.join(HOME_DIR, 'benchmarks/movidius'),
+            'TMP_DIR': os.path.join(HOME_DIR, 'benchmarks/openvino'),
             'OPENVINO_RUNTIME_DIR': '/data/openvino_2019.2.242/bin',
             'DEVICE_SERIAL': '/dev/ttyUSB4',
             'DATA_TYPE': 'FP16',

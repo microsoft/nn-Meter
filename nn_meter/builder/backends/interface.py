@@ -50,15 +50,15 @@ def get_backend(backend, params):
 
     - params: Available backend and required params:
 
-        - tflite_gpu or tflite_cpu: {
+        - tflite: {
             'MODEL_DIR': '',  # directory on host to save the generated tflite models
             'REMOTE_MODEL_DIR': '',  # directory on mobile phone to place models
             'KERNEL_PATH': '',  # directory on mobile phone where kernel code files will be generated
             'BENCHMARK_MODEL_PATH': '',  # path to bin of `benchmark_model`
             'DEVICE_SERIAL': '',  # serial id of the device. set to '' if there is only one device connected to your host.
         }
-        - openvino_vpu: {
-            'MOVIDIUS_ENV': '',  # path to movidius virtualenv (movidius_requirements.txt is provided)
+        - openvino: {
+            'OPENVINO_ENV': '',  # path to openvino virtualenv (openvino_requirements.txt is provided)
             'OPTIMIZER_PATH': '',  # path to openvino optimizer
             'TMP_DIR': '',  # tmp directory where temp model and profiling results will be generated
             'OPENVINO_RUNTIME_DIR': '',  # directory to openvino runtime

@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import re
+from .openvino_runner import OpenVINORunner
+from .openvino_backend import OpenVINOBackend
 from nn_meter.builder.utils.latency import Latency
 
 
@@ -37,3 +39,12 @@ class VPUParser:
     @property
     def latency(self):
         return self.comp_layer_latency
+
+
+class VPURunner(OpenVINORunner):
+    device = "MYRIAD"
+
+
+class VPUBackend(OpenVINOBackend):
+    parser_class = VPUParser
+    runner_class = VPURunner

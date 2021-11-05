@@ -51,19 +51,19 @@ Follow [OpenVINO Installation Guide](https://docs.openvinotoolkit.org/latest/ins
 Because some tools for VPU use a different tensorflow and python version from nn_meter, so you need to provide seperate environments for the main tool and VPU. We recommend to use [virtualenv](https://virtualenv.pypa.io/en/latest/). We use python3.6 as our test enviroment.
 
 ```
-virtualenv movidius_env
-source movidius_env/bin/activate
-pip install -r movidius_requirements.txt
+virtualenv openvino_env
+source openvino_env/bin/activate
+pip install -r openvino_env.txt
 deactivate
 ```
 
 ### Usage
 
-Suppose you place the python environments at `~/movidius_env`.
+Suppose you place the python environments at `~/openvino_env`.
 
 ```python
 backend = get_backend('vpu', {
-    'MOVIDIUS_ENV': '~/movidius_env',
+    'OPENVINO_ENV': '~/openvino_env',
     'OPTIMIZER_PATH': '/data/openvino_2019.2.242/deployment_tools/model_optimizer/mo_tf.py',
     'TMP_DIR': '~/models',
     'OPENVINO_RUNTIME_DIR': '/data/openvino_2019.2.242/bin',
