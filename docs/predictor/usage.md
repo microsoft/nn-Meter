@@ -1,8 +1,8 @@
-# Usage
+# Usage of nn-Meter Predictor
 
 To apply for hardware latency prediction, nn-Meter provides two types of interfaces：
 
-- command line `nn-meter` after `nn-meter` [installation](QuickStart.md#Installation).
+- command line `nn-meter` after `nn-meter` [installation](../quick_start.md#Installation).
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
@@ -12,7 +12,7 @@ Here is a summary of supported inputs of the two methods.
 |    Tensorflow    |         Checkpoint file dumped by `tf.saved_model()` and end with `.pb`         |                          Checkpoint file dumped by `tf.saved_model` and end with `.pb`                          |
 |       Torch       |                          Models in `torchvision.models`                          |                                            Object of `torch.nn.Module`                                            |
 |       Onnx       |           Checkpoint file dumped by `onnx.save()` and end with `.onnx`           |                    Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`                    |
-| nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](input_models.md#nnmeter-ir-graph)          |
+| nn-Meter IR graph | Json file in the format of [nn-Meter IR Graph](../input_models.md#nnmeter-ir-graph) |          `dict` object following the format of [nn-Meter IR Graph](../input_models.md#nnmeter-ir-graph)          |
 |   NNI IR graph   |                                          -                                          | NNI IR graph object |
 
 In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:

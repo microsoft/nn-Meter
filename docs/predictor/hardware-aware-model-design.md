@@ -16,7 +16,7 @@ Next, we introduce our hardware-aware NAS framework[[1]](https://openaccess.thec
 
 Our HW-NAS framework firstly automatically selects the hardware-friendly operators (or blocks) by considering both representation capacity and hardware efficiency. The selected operators could establish a ***hardware-aware search space*** for most of existing NAS algorithms.
 
-**Latency Prediction in search process by nn-Meter.** Different with other simple predictors (e.g., look-up table for operators/blocks, linear regression models), [nn-Meter](overview.md) conducts kernel-level prediction, which captures the complex model graph optimizations on edge devices. nn-Meter is the first accurate latency prediction tool for DNNs on edge devices.
+**Latency Prediction in search process by nn-Meter.** Different with other simple predictors (e.g., look-up table for operators/blocks, linear regression models), [nn-Meter](../overview.md) conducts kernel-level prediction, which captures the complex model graph optimizations on edge devices. nn-Meter is the first accurate latency prediction tool for DNNs on edge devices.
 
 Besides the search space specialization, our HW-NAS framework also allows combining nn-Meter with existing NAS algorithms in the optimization objectives and constraints. As described in [[4]](http://arxiv.org/abs/2101.09336), the HW-NAS algorithms often consider hardware efficiency metrics as the constraints of existing NAS formulation or part of the scalarized loss functions (e.g., the loss is weighted sum of both cross entropy loss and hardware-aware penalty). Since the NAS process may sample up to millions of candidate model architectures, the obtaining of hardware metrics must be accurate and efficient.
 
