@@ -180,8 +180,9 @@ We release the dataset, and provide an interface of `nn_meter.dataset` for users
 
 To empower affordable DNN on the edge and mobile devices, hardware-aware NAS searches both high accuracy and low latency models. In particular, the search algorithm only considers the models within the target latency constraints during the search process.
 
-Currently we provides example of end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html), which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space. More examples of more hardware-aware NAS and model compression algorithms are coming soon.
+Currently we provide two examples of hardware-aware NAS, including end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html) which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space, and [proxyless NAS](https://nni.readthedocs.io/en/stable/NAS/Proxylessnas.html), which is a one-shot NAS algorithm with hardware-efficient loss function. More examples of more hardware-aware NAS and model compression algorithms are coming soon.
 
+### Multi-trial SPOS Demo
 To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation)
 
 ```bash
@@ -194,7 +195,7 @@ Then run multi-trail SPOS demo:
 python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 ```
 
-### How the demo works
+#### How the demo works
 
 Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
 
@@ -220,6 +221,20 @@ exp.run(exp_config, port)
 ```
 
 In `exp_config`, `dummy_input` is required for tracing shape info.
+
+### Proxyless NAS Demo
+
+To run the one-shot proxyless NAS demo, users should run proxyless NAS training demo:
+
+```bash
+python ${NNI_ROOT}/examples/nas/oneshot/proxylessnas/main.py --applied_hardware <hardware> --reference_latency <reference latency (ms)>
+```
+
+#### How the demo works
+
+Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
+
+Proxyless NAS applied the expected latency of the model to build a differentiable metric and design efficient neural network architectures for hardware. The latency loss was added as a regularization term for architecture parameter optimization. In our repo, a `HardwareLatencyEstimator` will predict expected latency for the mixed operation based on the path weight of `ProxylessLayerChoice`. The latency estimator can be called by calling "`--applied_hardware <hardware> --reference_latency <reference latency (ms)>`" in the [example](https://github.com/microsoft/nni/blob/master/examples/nas/oneshot/proxylessnas/main.py).
 
 ## Bench Dataset
 
