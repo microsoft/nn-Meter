@@ -7,20 +7,26 @@ try:
 except ModuleNotFoundError:
     __version__ = 'UNKNOWN'
 
-from .nn_meter import (
-    nnMeter,
+import logging
+from functools import partial, partialmethod
+
+from .predictor import (
+    nnMeterPredictor,
     load_latency_predictor,
     list_latency_predictors,
+    latency_metrics
+)
+from .ir_converter import (
     model_file_to_graph,
-    model_to_graph,
+    model_to_graph
+)
+from .utils import (
     create_user_configs,
     change_user_data_folder
 )
-from .utils.utils import download_from_url
-from .prediction import latency_metrics
 from .dataset import bench_dataset
-import logging
-from functools import partial, partialmethod
+from .utils import download_from_url
+
 
 logging.KEYINFO = 22
 logging.addLevelName(logging.KEYINFO, 'KEYINFO')
