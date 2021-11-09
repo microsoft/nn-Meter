@@ -171,7 +171,7 @@ class GPURunner(TFLiteRunner):
     use_gpu = True
 
 
-class TFLiteGPUBackend(TFLiteBackend):
+class GPUBackend(TFLiteBackend):
     parser_class = GPULatencyParser
     runner_class = GPURunner
     

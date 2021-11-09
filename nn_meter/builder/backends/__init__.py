@@ -11,3 +11,9 @@ from .openvino import (
     OpenVINORunner,
     VPUBackend
 )
+from .interface import (
+    BaseBackend,
+    ProfileResults,
+    register_backend,
+    get_backend
+)
