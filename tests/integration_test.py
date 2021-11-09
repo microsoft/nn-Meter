@@ -82,7 +82,7 @@ def integration_test(model_type, url, ppath, output_name = "tests/test_result.tx
         try:
             since = time.time()
             # print(f'nn-meter --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}')
-            result = subprocess.check_output(['nn-meter', 'lat_pred', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
+            result = subprocess.check_output(['nn-meter', 'predict', f'--{model_type}', f'{ppath}', '--predictor', f'{pred_name}', '--predictor-version', f'{pred_version}'])
             runtime = time.time() - since
         except NotImplementedError:
             logging.error(f"Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")

@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os, sys
-from nn_meter.prediction import latency_metrics
+import logging
+import jsonlines
 from glob import glob
 
-from nn_meter.nn_meter import list_latency_predictors, load_latency_predictor, get_user_data_folder
-from nn_meter import download_from_url
-import jsonlines
-import logging
+from nn_meter.predictor import latency_metrics, list_latency_predictors, load_latency_predictor
+from nn_meter.utils import download_from_url, get_user_data_folder
 
 
 __user_dataset_folder__ = os.path.join(get_user_data_folder(), 'dataset')
