@@ -4,15 +4,13 @@ In this folder, we provide several examples to show the usage of nn-Meter packag
 
 The first example [1. Use nn-Meter Predictor for models with different format](nn-meter_predictor_for_different_model_format.ipynb) shows the basic python binding usage of nn-meter with models with different format of Tensorflow, PyTorch and ONNX model.
 
-#### Benchmark dataset
-
 To evaluate the effectiveness of a prediction model on an arbitrary DNN model, we need a representative dataset that covers a large prediction scope. nn-Meter collects and generates 26k CNN models. (Please refer the paper for the dataset generation method.)
 
 We release the dataset, and provide an interface of `nn_meter.dataset` for users to get access to the dataset. Users can also download the data from the [Download Link](https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip) on their own. 
 
 Example [2. Use nn-Meter with the bench dataset](nn-meter_predictor_for_bench_dataset.ipynb) shows how to use nn-Meter to predict latency for the bench dataset.
 
-Since the dataset is encoded in a graph format, we also provide an example [3. Use nn-Meter bench dataset for GNN training](nn-meter_dataset_for_gnn.ipynb) of using GCN to predict the model latency with the bench dataset.
+Since the dataset is encoded in a graph format, we also provide an example [3. Use nn-Meter bench dataset for GNN training](nn-meter_dataset_for_gnn.ipynb) of using GNN to predict the model latency with the bench dataset.
 
 Finally, we provide more hardware-ware NAS examples in NNI.
 
