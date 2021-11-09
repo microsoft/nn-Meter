@@ -2,18 +2,8 @@
 # Licensed under the MIT license.
 import copy
 import json
-import numpy as np
 import logging
-
-
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, (bytes, bytearray)):
-            return obj.decode("utf-8")
-        return json.JSONEncoder.default(self, obj)
-
+from .utils import NumpyEncoder
 
 class ModelGraph:
     def __init__(self, filename=None, graph=None):
