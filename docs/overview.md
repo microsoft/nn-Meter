@@ -23,4 +23,4 @@ If you have a new hardware to predict DNN latency,  a re-run of nn-Meter is requ
 
 - [nn-Meter in hardware-aware NAS](predictor/hardware-aware-model-design.md)
 
-- [nn-Meter bench dataset](dataset.py)
+- [nn-Meter bench dataset](dataset.md)
