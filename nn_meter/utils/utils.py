@@ -34,4 +34,3 @@ def download_from_url(urladdr, ppath):
     zipfile.close() 
     progress_bar.close()
     os.remove(file_name)
-

@@ -1,4 +1,4 @@
-Note: This is an alpha (preview) version which is still under refining.
+Note: This is an beta (preview) version which is still under refining.
 
 **nn-Meter** is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
 
@@ -63,7 +63,7 @@ The stable version of wheel binary package will be released soon.
 
 To apply for hardware latency prediction, nn-Meter provides two types of interfaces：
 
-- command line `nn-meter` after `nn-meter`[installation](QuickStart.md#Installation).
+- command line `nn-meter` after `nn-meter` [installation](QuickStart.md#Installation).
 - Python binding provided by the module `nn_meter`
 
 Here is a summary of supported inputs of the two methods.
@@ -180,8 +180,9 @@ We release the dataset, and provide an interface of `nn_meter.dataset` for users
 
 To empower affordable DNN on the edge and mobile devices, hardware-aware NAS searches both high accuracy and low latency models. In particular, the search algorithm only considers the models within the target latency constraints during the search process.
 
-Currently we provides example of end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html), which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space. More examples of more hardware-aware NAS and model compression algorithms are coming soon.
+Currently we provide two examples of hardware-aware NAS, including end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html) which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space, and the popular [ProxylessNAS](https://nni.readthedocs.io/en/stable/NAS/Proxylessnas.html), which is a one-shot NAS algorithm with hardware-efficient loss function. More examples of other widely-used hardware-aware NAS and model compression algorithms are coming soon.
 
+### Multi-trial SPOS Demo
 To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation)
 
 ```bash
@@ -194,7 +195,7 @@ Then run multi-trail SPOS demo:
 python ${NNI_ROOT}/examples/nas/oneshot/spos/multi_trial.py
 ```
 
-### How the demo works
+#### How the demo works
 
 Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
 
@@ -220,6 +221,20 @@ exp.run(exp_config, port)
 ```
 
 In `exp_config`, `dummy_input` is required for tracing shape info.
+
+### ProxylessNAS Demo
+
+To run the one-shot ProxylessNAS demo, users can run the NNI ProxylessNAS training demo:
+
+```bash
+python ${NNI_ROOT}/examples/nas/oneshot/proxylessnas/main.py --applied_hardware <hardware> --reference_latency <reference latency (ms)>
+```
+
+#### How the demo works
+
+Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to perform NAS by NNI.
+
+ProxylessNAS currently builds a lookup table, that stores the measured latency of each candidate building block in the search space. The latency sum of all building blocks in a candidate model will be treated as the model inference latency. With leveraging nn-Meter in NNI, users can apply ProxylessNAS to search efficient DNN models on more types of edge devices. In NNI implementation, a `HardwareLatencyEstimator` predicts expected latency for the mixed operation based on the path weight of `ProxylessLayerChoice`. To call nn-Meter in NNI ProxylessNAS, users can add the arguments of "`--applied_hardware <hardware> --reference_latency <reference latency (ms)>`" in the [example](https://github.com/microsoft/nni/blob/master/examples/nas/oneshot/proxylessnas/main.py).
 
 ## Bench Dataset
 
