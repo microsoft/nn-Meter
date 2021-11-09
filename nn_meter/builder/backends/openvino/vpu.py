@@ -6,7 +6,7 @@ from .openvino_backend import OpenVINOBackend
 from nn_meter.builder.utils.latency import Latency
 
 
-class VPUParser:
+class VPULatencyParser:
     def __init__(self):
         pass
 
@@ -46,5 +46,5 @@ class VPURunner(OpenVINORunner):
 
 
 class VPUBackend(OpenVINOBackend):
-    parser_class = VPUParser
+    parser_class = VPULatencyParser
     runner_class = VPURunner
