@@ -180,7 +180,7 @@ We release the dataset, and provide an interface of `nn_meter.dataset` for users
 
 To empower affordable DNN on the edge and mobile devices, hardware-aware NAS searches both high accuracy and low latency models. In particular, the search algorithm only considers the models within the target latency constraints during the search process.
 
-Currently we provide two examples of hardware-aware NAS, including end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html) which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space, and the popular [proxylessNAS](https://nni.readthedocs.io/en/stable/NAS/Proxylessnas.html), which is a one-shot NAS algorithm with hardware-efficient loss function. More examples of other widely-used hardware-aware NAS and model compression algorithms are coming soon.
+Currently we provide two examples of hardware-aware NAS, including end-to-end [multi-trial NAS](https://nni.readthedocs.io/en/stable/NAS/multi_trial_nas.html) which is a [random search algorithm](https://arxiv.org/abs/1902.07638) on [SPOS NAS](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123610528.pdf) search space, and the popular [ProxylessNAS](https://nni.readthedocs.io/en/stable/NAS/Proxylessnas.html), which is a one-shot NAS algorithm with hardware-efficient loss function. More examples of other widely-used hardware-aware NAS and model compression algorithms are coming soon.
 
 ### Multi-trial SPOS Demo
 To run multi-trail SPOS demo, NNI should be installed through source code by following [NNI Doc](https://nni.readthedocs.io/en/stable/Tutorial/InstallationLinux.html#installation)
