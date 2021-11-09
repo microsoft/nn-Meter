@@ -5,7 +5,8 @@ from zipfile import ZipFile
 from tqdm import tqdm
 import requests
 import logging
-
+import json
+import numpy as np
 
 def download_from_url(urladdr, ppath):
     """
@@ -34,3 +35,12 @@ def download_from_url(urladdr, ppath):
     zipfile.close() 
     progress_bar.close()
     os.remove(file_name)
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, (bytes, bytearray)):
+            return obj.decode("utf-8")
+        return json.JSONEncoder.default(self, obj)

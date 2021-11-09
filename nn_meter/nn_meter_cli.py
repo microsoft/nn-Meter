@@ -62,7 +62,7 @@ def get_nnmeter_ir_cli(args):
     """convert pb file or onnx file to nn-Meter IR graph according to the command line interface arguments
     """
     import json
-    from nn_meter.utils.graph_tool import NumpyEncoder
+    from nn_meter.utils.utils import NumpyEncoder
     if args.tensorflow:
         graph = model_file_to_graph(args.tensorflow, 'pb')
         filename = args.output if args.output else args.tensorflow.replace(".pb", "_pb_ir.json") 
