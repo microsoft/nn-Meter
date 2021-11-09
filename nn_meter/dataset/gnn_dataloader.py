@@ -42,7 +42,6 @@ class GNNDataset(torch.utils.data.Dataset):
         err_str = "Not supported device type"
         assert device in hws, err_str
         self.device = device
-        self.data_dir = __user_dataset_folder__
         self.train = train
         self.split_ratio = split_ratio
         self.adjs = {}
@@ -54,34 +53,25 @@ class GNNDataset(torch.utils.data.Dataset):
         self.raw_data = {}
         self.name_list = []
         self.latencies = {}
-        self.download_data()
+        self.data_dir = bench_dataset(data_folder=__user_dataset_folder__)
         self.load_model_archs_and_latencies(self.data_dir)
         self.construct_attrs()
-        self.name_list = list(
-            filter(lambda x: x in self.latencies, self.name_list))
-
-    def download_data(self):
-        datasets = bench_dataset()
+        self.name_list = list(filter(lambda x: x in self.latencies, self.name_list))
 
     def load_model_archs_and_latencies(self, data_dir):
-        filelist = os.listdir(data_dir)
-        for filename in filelist:
-            if os.path.splitext(filename)[-1] != '.jsonl':
-                continue
-            self.load_model(os.path.join(data_dir, filename))
+        for filename in data_dir:
+            self.load_model(filename)
 
     def load_model(self, fpath):
         """
         Load a concrete model type.
         """
-        # print('Loading models in ', fpath)
         assert os.path.exists(fpath), '{} does not exists'.format(fpath)
 
         with jsonlines.open(fpath) as reader:
             _names = []
             for obj in reader:
                 if obj[self.device]:
-                    # print(obj['id'])
                     _names.append(obj['id'])
                     self.latencies[obj['id']] = float(obj[self.device])
 
@@ -245,7 +235,6 @@ class GNNDataloader(torch.utils.data.DataLoader):
         for gid in range(self.length):
             (adj, attrs), latency, op_types = self.dataset[gid]
             u, v = torch.nonzero(adj, as_tuple=True)
-            # import pdb; pdb.set_trace()
             graph = dgl.graph((u, v))
             MAX_NORM = torch.tensor([1]*len(op_types) + [6963, 6963, 224, 224, 11, 4])
             attrs = attrs / MAX_NORM

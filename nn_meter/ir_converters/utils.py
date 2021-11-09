@@ -60,7 +60,7 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
             'inception_v3': 'models.inception_v3()',
             'googlenet': 'models.googlenet()',
             'shufflenet_v2': 'models.shufflenet_v2_x1_0()',
-            'mobilenet_v2': 'models.mobilenet_v2()',  # noqa: F841
+            'mobilenet_v2': 'models.mobilenet_v2()',
             'resnext50_32x4d': 'models.resnext50_32x4d()',
             'wide_resnet50_2': 'models.wide_resnet50_2()',
             'mnasnet': 'models.mnasnet1_0()',
@@ -69,7 +69,7 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
             model = eval(torchvision_zoo_dict[filename])
         else:
             suppost_list = ", ".join([k for k in torchvision_zoo_dict])
-            raise ValueError(f"Unsupported model name in torchvision. Supporting list: {suppost_list}")
+            raise ValueError(f"Unsupported model name: {filename} in torchvision. Supporting list: {suppost_list}")
         return torch_model_to_graph(model, input_shape, apply_nni)
 
     else:

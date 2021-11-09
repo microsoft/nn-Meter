@@ -1,5 +1,5 @@
 # Overview
-Note: This is an alpha (preview) version which is still under refining.
+Note: This is an beta (preview) version which is still under refining.
 
 nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices.
 
