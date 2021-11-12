@@ -174,8 +174,11 @@ def nn_meter_cli():
     )
     get_ir.set_defaults(func=get_nnmeter_ir_cli)
     
-    # Usage 3: register and unregister backend #TODO
+    # Usage 3: nn-Meter builder: register and unregister backend #TODO
     # Usage: nn-meter build register  <path/to/workspace>
+    
+    # Usage 3: nn-Meter builder: test connection to backend #TODO 
+    # Usage: nn-meter build connect --backend <backend name>
     
     
     
@@ -199,6 +202,7 @@ def nn_meter_cli():
         help="path to input nn-Meter IR model (*.json file or floder)"
     )
     create_config.set_defaults(func=apply_latency_predictor_cli)
+
     
     # Usage 5: change data floder #TODO 
     # Usage: nn-meter set change --data <path/to/new-folder>

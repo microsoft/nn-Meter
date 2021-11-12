@@ -3,7 +3,7 @@
 import copy
 import tensorflow as tf
 from tensorflow import keras
-from .latency import Latency
+from .profiled_results import Latency
 
 
 def get_inputs_by_shapes(shapes):

@@ -8,9 +8,9 @@ from nn_meter.utils.path import get_filename_without_ext
 
 
 BACKENDS_PATH = {
-    'tflite_gpu': ['nn_meter.builder.backends', 'GPUBackend'],
-    'tflite_cpu': ['nn_meter.builder.backends', 'CPUBackend'],
-    'openvino_vpu': ['nn_meter.builder.backends', 'VPUBackend'],
+    'tflite_gpu': ['nn_meter.builder.backends', 'TFLiteGPUBackend'],
+    'tflite_cpu': ['nn_meter.builder.backends', 'TFLiteCPUBackend'],
+    'openvino_vpu': ['nn_meter.builder.backends', 'OpenVINOVPUBackend'],
 }
 
 

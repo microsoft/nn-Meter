@@ -31,7 +31,7 @@ def load_predictor_config(predictor_name: str, predictor_version: float = None):
     predictor_name: string to specify the name of the target latency predictor. All built-in predictors can be viewed by nn_meter.list_latency_predictors() 
         or through the config file in nn_meter/configs/predictors.yaml.
     
-    predictor_version:  string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
+    predictor_version: string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
         predictor will be loaded.
     """
     config = load_config_file(__predictors_cfg_filename__)
@@ -60,7 +60,7 @@ def load_latency_predictor(predictor_name: str, predictor_version: float = None)
     predictor_name: string to specify the name of the target latency predictor. All built-in predictors can be viewed by nn_meter.list_latency_predictors() 
         or through the config file in nn_meter/configs/predictors.yaml.
     
-    predictor_version:  string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
+    predictor_version: string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
         predictor will be loaded.
     """
     user_data_folder = get_user_data_folder()
@@ -89,7 +89,7 @@ class nnMeterPredictor:
             - dictionary object following nn-Meter-IR format, `model_type` must be set to "nnmeter-ir"
             - dictionary object following NNI-IR format, `model_type` must be set to "nni-ir"
             
-        model_type:  string to specify the type of parameter model, allowed items are ["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]
+        model_type: string to specify the type of parameter model, allowed items are ["pb", "torch", "onnx", "nnmeter-ir", "nni-ir"]
       
         input_shape: the shape of input tensor for inference (if necessary), a random tensor according to the shape will be generated and used. This parameter is only 
         accessed when model_type == 'torch'

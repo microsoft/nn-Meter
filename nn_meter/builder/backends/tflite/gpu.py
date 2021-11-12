@@ -3,10 +3,10 @@
 import re
 from .tflite_runner import TFLiteRunner
 from .tflite_backend import TFLiteBackend
-from nn_meter.builder.utils.latency import Latency
+from nn_meter.builder.utils.profiled_results import Latency
 
 
-class GPULatencyParser:
+class TFLiteGPULatencyParser:
     def __init__(self):
         self.kernels = []
         self.realtime = 0
@@ -167,11 +167,11 @@ class GPULatencyParser:
         return errors
 
 
-class GPURunner(TFLiteRunner):
+class TFLiteGPURunner(TFLiteRunner):
     use_gpu = True
 
 
-class GPUBackend(TFLiteBackend):
-    parser_class = GPULatencyParser
-    runner_class = GPURunner
+class TFLiteGPUBackend(TFLiteBackend):
+    parser_class = TFLiteGPULatencyParser
+    runner_class = TFLiteGPURunner
     

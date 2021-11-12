@@ -33,6 +33,7 @@ class TFLiteRunner:
         :param preserve: tflite file exists in remote dir. No need to push it again.
         :param clean: remove tflite file after running.
         """
+        #TODO: adb python
         base_adb_cmd = 'adb' + (f' -s {self._serial}' if self._serial != '' else '')
         push_cmd = base_adb_cmd + f' push {self._graph_path} {self._dst_graph_path}'
         taskset_cmd = ''

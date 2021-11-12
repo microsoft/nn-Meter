@@ -3,10 +3,10 @@
 import re
 from .tflite_runner import TFLiteRunner
 from .tflite_backend import TFLiteBackend
-from nn_meter.builder.utils.latency import Latency
+from nn_meter.builder.utils.profiled_results import Latency
 
 
-class CPULatencyParser:
+class TFLiteCPULatencyParser:
     def __init__(self):
         self.nodes = []
         self.total_latency = Latency()
@@ -54,10 +54,10 @@ class CPULatencyParser:
         return self.total_latency
 
 
-class CPURunner(TFLiteRunner):
+class TFLiteCPURunner(TFLiteRunner):
     use_gpu = False
 
 
-class CPUBackend(TFLiteBackend):
-    parser_class = CPULatencyParser
-    runner_class = CPURunner
+class TFLiteCPUBackend(TFLiteBackend):
+    parser_class = TFLiteCPULatencyParser
+    runner_class = TFLiteCPURunner

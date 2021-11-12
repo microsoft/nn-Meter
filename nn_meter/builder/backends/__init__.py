@@ -3,13 +3,13 @@
 from .tflite import (
     TFLiteBackend,
     TFLiteRunner,
-    CPUBackend,
-    GPUBackend
+    TFLiteCPUBackend,
+    TFLiteGPUBackend
 )
 from .openvino import (
     OpenVINOBackend,
     OpenVINORunner,
-    VPUBackend
+    OpenVINOVPUBackend
 )
 from .interface import (
     BaseBackend,

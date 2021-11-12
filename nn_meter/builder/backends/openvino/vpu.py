@@ -3,10 +3,10 @@
 import re
 from .openvino_runner import OpenVINORunner
 from .openvino_backend import OpenVINOBackend
-from nn_meter.builder.utils.latency import Latency
+from nn_meter.builder.utils.profiled_results import Latency
 
 
-class VPULatencyParser:
+class OpenVINOVPULatencyParser:
     def __init__(self):
         pass
 
@@ -41,10 +41,10 @@ class VPULatencyParser:
         return self.comp_layer_latency
 
 
-class VPURunner(OpenVINORunner):
+class OpenVINOVPURunner(OpenVINORunner):
     device = "MYRIAD"
 
 
-class VPUBackend(OpenVINOBackend):
-    parser_class = VPULatencyParser
-    runner_class = VPURunner
+class OpenVINOVPUBackend(OpenVINOBackend):
+    parser_class = OpenVINOVPULatencyParser
+    runner_class = OpenVINOVPURunner
