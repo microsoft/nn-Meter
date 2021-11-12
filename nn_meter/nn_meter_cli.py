@@ -113,6 +113,7 @@ def nn_meter_cli():
     subparsers = parser.add_subparsers()
 
     # Usage 1: latency predictors
+    # Usage: nn-meter predict --predictor <hardware> --tensorflow <pb-file>
     lat_pred = subparsers.add_parser('predict', aliases=['lat_pred'], help='apply latency predictor for testing model')
     lat_pred.add_argument(
         "--predictor",
@@ -172,6 +173,37 @@ def nn_meter_cli():
         help="path to save the output nn-meter ir graph for tensorflow and onnx (*.json), default to be /path/to/input/file/<input_file_name>_ir.json"
     )
     get_ir.set_defaults(func=get_nnmeter_ir_cli)
+    
+    # Usage 3: register and unregister backend #TODO
+    # Usage: nn-meter build register  <path/to/workspace>
+    
+    
+    
+    # Usage 4: create workspace folder for nn-Meter builder #TODO 
+    # Usage: nn-meter build create <path/to/workspace>
+    create_config = subparsers.add_parser('create', help='create workspace folder for nn-Meter builder')
+    platform = create_config.add_mutually_exclusive_group()
+    platform.add_argument(
+        "--tflite-workspace",
+        type=str,
+        help="path to input Tensorflow model (*.pb file or floder)"
+    )
+    platform.add_argument(
+        "--openvino-workspace",
+        type=str,
+        help="path to input ONNX model (*.onnx file or floder)"
+    )
+    platform.add_argument(
+        "--customized-workspace",
+        type=str,
+        help="path to input nn-Meter IR model (*.json file or floder)"
+    )
+    create_config.set_defaults(func=apply_latency_predictor_cli)
+    
+    # Usage 5: change data floder #TODO 
+    # Usage: nn-meter set change --data <path/to/new-folder>
+    
+
 
     # parse args
     args = parser.parse_args()

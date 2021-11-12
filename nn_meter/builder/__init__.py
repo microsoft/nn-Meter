@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from .nn_meter_builder import (
-    get_testcases,
+    create_testcases,
     run_testcases,
-    get_fusionrule
+    detect_fusionrule
 )
 from .rule_tester import config
-from .backends import get_backend
+from .backends import connect_backend
 from .rule_tester import RuleTester
 from .utils.utils import dump_testcases, read_testcases

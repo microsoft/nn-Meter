@@ -4,13 +4,14 @@ from .rule_tester import config
 from .rule_tester import RuleTester
 from .utils.utils import dump_testcases, read_testcases
 
-def get_testcases(model_dir, case_save_path='./data/testcases.json'):
+def create_testcases(model_dir, case_save_path='./data/testcases.json'):
     """
     @params:
 
-    - model_dir: Directory to save testcase models
+    model_dir: directory to save testcase models #TODO：refine interface
+        
 
-    - case_save_path: Path to save the testcase json file
+    case_save_path: path to save the testcase json file
 
     """
     config.set('model_dir', model_dir, 'ruletest')
@@ -30,11 +31,11 @@ def run_testcases(backend, testcases, case_save_path='./data/profiled_testcases.
     """
     @params:
 
-    - backend: Applied backend with its config, a subclass of BaseBackend
+    backend: applied backend with its config, should be a subclass of BaseBackend
 
-    - testcases: The TestCases class or the path of the testcase json file
+    testcases: the Dict of testcases or the path of the testcase json file
 
-    - case_save_path: Path to save the testcase json file
+    case_save_path: path to save the testcase json file
 
     """
     if isinstance(testcases, str):
@@ -53,13 +54,13 @@ def run_testcases(backend, testcases, case_save_path='./data/profiled_testcases.
     return testcases
 
 
-def get_fusionrule(testcases, case_save_path='./data/detected_testcases.json'):
+def detect_fusionrule(testcases, case_save_path='./data/detected_testcases.json'):
     """
     @params:
 
-    - testcases: The TestCases class or the path of the testcase json file
+    testcases: the Dict of testcases or the path of the testcase json file
 
-    - case_save_path: Path to save the testcase json file
+    case_save_path: path to save the testcase json file
 
     """
     if isinstance(testcases, str):

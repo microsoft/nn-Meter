@@ -22,10 +22,10 @@ adb shell chmod +x /data/local/tmp/benchmark_model
 
 ### Usage
 
-Use api `get_backend` to initialize the Android CPU or GPU backend.
+Use api `connect_backend` to initialize the Android CPU or GPU backend.
 
 ```python
-backend = get_backend('tflite_cpu', {
+backend = connect_backend('tflite_cpu', {
     'MODEL_DIR': '~/models',  # directory on host to save temporary tflite models
     'REMOTE_MODEL_DIR': '/data/local/tmp/models',  # directory on mobile phone to place models
     'KERNEL_PATH': '/data/local/tmp/kernels.cl',  # directory on mobile phone where kernel code files will be generated
@@ -62,7 +62,7 @@ deactivate
 Suppose you place the python environments at `~/openvino_env`.
 
 ```python
-backend = get_backend('vpu', {
+backend = connect_backend('vpu', {
     'OPENVINO_ENV': '~/openvino_env',
     'OPTIMIZER_PATH': '/data/openvino_2019.2.242/deployment_tools/model_optimizer/mo_tf.py',
     'TMP_DIR': '~/models',

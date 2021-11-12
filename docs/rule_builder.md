@@ -6,7 +6,7 @@ This part generates and profiles models (what we call "test cases") on a given d
 
 ```python
 # initialize backend
-backend = get_backend(
+backend = connect_backend(
     backend = 'tflite_cpu', 
     params = {
         'MODEL_DIR': '/data/jiahang/test_models',
@@ -18,13 +18,13 @@ backend = get_backend(
 )
 
 # generate testcases
-testcases = get_testcases(model_dir='/data/jiahang/test_models')
+testcases = create_testcases(model_dir='/data/jiahang/test_models')
 
 # run testcases and collect profiling results
 profile_results = run_testcases(backend, testcases)
 
 # determine fusion rules from profiling results
-detect_results = get_fusionrule(profile_results)
+detect_results = detect_fusionrule(profile_results)
 ```
 
 `backend` refers to device and framework to execute the model. Currently we support TFLite on CPU, GPU and OpenVINO on VPU. Refer to [backend guide](./backend.md) for how to setup the device and backend.

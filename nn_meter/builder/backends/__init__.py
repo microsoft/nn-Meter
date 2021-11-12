@@ -15,5 +15,5 @@ from .interface import (
     BaseBackend,
     ProfileResults,
     register_backend,
-    get_backend
+    connect_backend
 )
