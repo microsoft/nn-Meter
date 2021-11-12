@@ -3,7 +3,7 @@
 import importlib
 from typing import List
 import tensorflow as tf
-from ..rule_tester.config_manager import load_backend_configs
+from .config_manager import load_backend_config
 from nn_meter.utils.path import get_filename_without_ext
 
 
@@ -121,7 +121,8 @@ def connect_backend(backend, workspace_path=""):
     else:
         backend_cls = backend
         backend_name = backend.name
-    params=load_backend_configs(workspace_path)
+    platform_type = backend_name.split('_')[0]
+    params=load_backend_config(platform_type, workspace_path)
     return backend_cls(backend_name, params)
 
 

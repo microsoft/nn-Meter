@@ -12,7 +12,7 @@ nn-Meter also provides the ability to build your own customized backends, and al
 Introduction of Android Device and TFLite platform
 
 #### 1. Install ADB and Android SDK
-
+TODO: @Jianyu
 Follow [ADB Guide](https://developer.android.com/studio/command-line/adb) to install adb on your host device.
 
 Install android sdk/ndk
@@ -86,7 +86,7 @@ nn-meter create --openvino-workspace <path/to/place/workspace/>
 nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
 ```
 
-A folder will be created and a yaml file named `ruletest_config.yaml` will be placed in `./configs/`. Users could open `./configs/ruletest_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
+A folder will be created and a yaml file named `backend_config.yaml` will be placed in `./configs/`. Users could open `./configs/backend_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
 
 ## Connect to Backend
 

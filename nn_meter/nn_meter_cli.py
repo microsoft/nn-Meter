@@ -85,6 +85,38 @@ def get_nnmeter_ir_cli(args):
     logging.result(f'The nn-meter ir graph has been saved. Saved path: {os.path.abspath(filename)}')
 
 
+def create_ruletest_workspace_cli(args):
+    """create a workspace folder and copy the corresponding config file to the workspace
+    """
+    if args.customized_workspace:
+        backend_name, workspace_path, config_path = args.customized_workspace
+        os.makedirs(workspace_path, exist_ok=True)
+        
+        from builder.backends.config_manager import copy_cusconfig_to_workspace
+        copy_cusconfig_to_workspace(workspace_path, config_path)
+        from builder.rule_tester.config_manager import copy_to_workspace
+        copy_to_workspace(workspace_path)
+        
+        logging.keyinfo(f'Create workspace at {workspace_path}.')
+        return
+    
+    if args.tflite_workspace:
+        platform_type = "tflite"
+        workspace_path = args.tflite_workspace
+    elif args.openvino_workspace:
+        platform_type = "openvino"
+        workspace_path = args.openvino_workspace
+
+    os.makedirs(workspace_path, exist_ok=True)
+    
+    from builder.backends.config_manager import copy_to_workspace
+    copy_to_workspace(platform_type, workspace_path)
+    from builder.rule_tester.config_manager import copy_to_workspace
+    copy_to_workspace(workspace_path)
+    
+    return
+    
+
 def nn_meter_info(args):
     if args.list_predictors:
         list_latency_predictors_cli()
@@ -182,26 +214,30 @@ def nn_meter_cli():
     
     
     
-    # Usage 4: create workspace folder for nn-Meter builder #TODO 
+    # Usage 4: create workspace folder for nn-Meter builder 
     # Usage: nn-meter build create <path/to/workspace>
-    create_config = subparsers.add_parser('create', help='create workspace folder for nn-Meter builder')
-    platform = create_config.add_mutually_exclusive_group()
+    create_workspace = subparsers.add_parser('create', help='create a workspace folder for nn-Meter builder')
+    platform = create_workspace.add_mutually_exclusive_group()
     platform.add_argument(
         "--tflite-workspace",
         type=str,
-        help="path to input Tensorflow model (*.pb file or floder)"
+        help="path to place a tflite workspace for rule testing"
     )
     platform.add_argument(
         "--openvino-workspace",
         type=str,
-        help="path to input ONNX model (*.onnx file or floder)"
+        help="path to place a openvino workspace for rule testing"
     )
     platform.add_argument(
         "--customized-workspace",
         type=str,
-        help="path to input nn-Meter IR model (*.json file or floder)"
+        nargs='+',
+        help="create a customized backend workspace for rule testing. The first word indicates the name of the ' \
+            'customized backend, the second word indicates the path to place the customized backend workspace, ' \
+            'and the third word indicates the path to the customized config .yaml file. The customized backend ' \
+            'should be register first (refer to `nn-meter backend reg --h` for more help)."
     )
-    create_config.set_defaults(func=apply_latency_predictor_cli)
+    create_workspace.set_defaults(func=create_ruletest_workspace_cli)
 
     
     # Usage 5: change data floder #TODO 

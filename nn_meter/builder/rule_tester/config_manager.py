@@ -2,7 +2,8 @@
 # Licensed under the MIT license.
 import os
 import json
-
+import pkg_resources
+from shutil import copyfile
 
 class ConfigData:
     def __init__(self, global_setting=None):
@@ -19,38 +20,26 @@ class ConfigData:
 
 
 class ConfigManager(ConfigData):
-    def __init__(self, config_path=None, save_path='./data/ruletest_config.json'):
+    def __init__(self, workspace_path):
         super().__init__()
-        if config_path: # load config from file
-            self._load_from_config_file(config_path)
-        else: # set default config
-            self._set_default_config()
-
-        if save_path:
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            with open(save_path, 'w') as fp:
-                json.dump(self._global_settings, fp, indent=4)
-
-    def _set_default_config(self):
-        self._global_settings['ruletest'] = {
-            'default_input_shape': [28, 28, 16],
-            'd1_input_shape': [428],
-            'filters': 256,
-            'kernel_size': 3,
-            'enabled': ['BF', 'MON', 'RT'],
-            'params': {
-                'BF': {
-                    'eps': 0.5,
-                }
-            },
-            'model_dir': '',
-            'detail': False,
-        }
+        if os.path.isdir(workspace_path):
+            config_file = os.path.join(workspace_path, 'configs', 'ruletester_config.yaml')
+        elif os.path.isfile(workspace_path):
+            config_file = workspace_path
+        self._load_from_config_file(config_file)
     
-    def _load_from_config_file(self, config_path):
-        with open(config_path, 'r') as fp:
+    def _load_from_config_file(self, config_file):
+        with open(config_file, 'r') as fp:
             setting = json.load(fp)
         self._global_settings = setting
 
+config = ConfigManager(workspace_path)
 
-config = ConfigManager()
+
+def copy_to_workspace(workspace_path):
+    """copy the default config file to user's workspace
+    """
+    os.makedirs(os.path.join(workspace_path, 'configs'), exist_ok=True)
+    copyfile(
+        pkg_resources.resource_filename(".".join(__name__.split('.')[:-3]), f'configs/builder/ruletester_config.yaml'), 
+        os.path.join(os.path.join(workspace_path, 'configs'), 'ruletester_config.yaml'))
