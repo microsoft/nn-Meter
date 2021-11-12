@@ -13,7 +13,6 @@ from .openvino import (
 )
 from .interface import (
     BaseBackend,
-    ProfileResults,
     register_backend,
     connect_backend
 )
