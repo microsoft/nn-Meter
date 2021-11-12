@@ -1,73 +1,106 @@
 # Setup Device and Backend
 
-To run a model on the device, we implement several backends. These backends will run the model and parse the command line outputs to get latency results. We provide a consistent API for such backends. You can inherit the `BaseBackend` and implement a backend for your own device that's not included here.
+To run a model and get the inference latency on the mobile device, we implement several backends. These backends will run the model and parse the command line outputs to get latency results. We provide a consistent API for such backends. Currently we provide three instance on two platforms, i.e., CPU backend, GPU backend with TFLite platform, and VPU backend with OpenVINO platform. Following we will explain how to setup the device and get connection to the backend.
 
-Currently we support TFLite on CPU, GPU and OpenVINO on VPU. Following we will explain how to setup the device and backend.
+nn-Meter also provides the ability to build your own customized backends, and allows users to install the customized backend as a builtin algorithm, in order for users to use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md). 
 
-## Android Guide
 
-### Prepare Android Device
+## Setup Device
 
-> Follow [ADB Guide](https://developer.android.com/studio/command-line/adb) to install adb on your host device.
+### TFLite Android Guide
 
+Introduction of Android Device and TFLite platform
+
+#### 1. Install ADB and Android SDK
+
+Follow [ADB Guide](https://developer.android.com/studio/command-line/adb) to install adb on your host device.
+
+Install android sdk/ndk
+
+#### 2. Build TFLite Benchmark Tool
 > Follow the [tensorflow official guide](https://www.tensorflow.org/lite/performance/measurement) for a more detailed guide to build and deploy `benchmark_model` onto the device.
 
-
-Download tensorflow source code and type following lines in tensorflow root folder:
-```
+use bazel to build a benchmark_model file. Please refer to https://dev.azure.com/v-wjiany/Personal/_git/tensorflow_modified?path=/tensorflow/lite/tools/benchmark/android/README.md&_a=preview
+Follow the tensorflow official guide for a more detailed guide to build and deploy benchmark_model onto the device.
+``` Bash
 bazel build -c opt //tensorflow/lite/tools/benchmark:benchmark_model
-adb push bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model /data/local/tmp
+```
+
+#### 3. Setup Benckmark Tool on Device
+2. Push the benchmark_model to edge device by specifying its serial.
+``` Bash
+adb -s <device-serial> push bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model /data/local/tmp
 adb shell chmod +x /data/local/tmp/benchmark_model
 ```
 
-### Usage
-
-Use api `connect_backend` to initialize the Android CPU or GPU backend.
-
-```python
-backend = connect_backend('tflite_cpu', {
-    'MODEL_DIR': '~/models',  # directory on host to save temporary tflite models
-    'REMOTE_MODEL_DIR': '/data/local/tmp/models',  # directory on mobile phone to place models
-    'KERNEL_PATH': '/data/local/tmp/kernels.cl',  # directory on mobile phone where kernel code files will be generated
-    'BENCHMARK_MODEL_PATH': '/data/local/tmp/benchmark_model',  # path to bin of `benchmark_model`
-    'DEVICE_SERIAL': '',  # serial id of the device. set to '' if there is only one device connected to your host
-})
-```
-
-### Modified Build for TFLite GPU
-
-TODO
-
-## VPU Guide
-
-### Prerequisits
-
-#### OpenVINO
+### OpenVINO VPU Guide
 
 Follow [OpenVINO Installation Guide](https://docs.openvinotoolkit.org/latest/installation_guides.html) to install openvino on your host.
 
-#### Python Environments
+Because some tools for VPU use a different tensorflow and python version from nn_meter, so you need to provide seperate environments for the main tool and VPU. We recommend to use [virtualenv](https://virtualenv.pypa.io/en/latest/). We use python3.6 as our test environment.
 
-Because some tools for VPU use a different tensorflow and python version from nn_meter, so you need to provide seperate environments for the main tool and VPU. We recommend to use [virtualenv](https://virtualenv.pypa.io/en/latest/). We use python3.6 as our test enviroment.
-
-```
+``` Bash
 virtualenv openvino_env
 source openvino_env/bin/activate
-pip install -r openvino_env.txt
+pip install -r docs/requirements/openvino_requirements.txt
 deactivate
 ```
 
-### Usage
+## Prepare Config File
 
-Suppose you place the python environments at `~/openvino_env`.
+When connecting to backend, a series of configs should be declared and appointed by users. Specifically, for Android CPU or GPU backends, the required parameters include:
+
+- `MODEL_DIR`: path to the folder (on host device) where temporary models will be generated.
+- `REMOTE_MODEL_DIR`: path to the folder (on mobile device) where temporary models will be copied to.
+- `KERNEL_PATH`: path (on mobile device) where the kernel implementations will be dumped.
+- `BENCHMARK_MODEL_PATH`: path (on android device) where the binary file `benchmark_model` is deployed.
+- `DEVICE_SERIAL`: if there are multiple adb devices connected to your host, you need to provide the corresponding serial id. Set to `''` if there is only one device connected to your host.
+
+For VPU backends with OpenVINO, the required parameters include:
+
+- `OPENVINO_ENV`: path to openvino virtual environment (./docs/requirements/openvino_requirements.txt is provided)
+- OPTIMIZER_PATH`: path to openvino optimizer
+- `TMP_DIR`: tmp directory where temp model and profiling results will be generated
+- `OPENVINO_RUNTIME_DIR`: directory to openvino runtime
+- `DEVICE_SERIAL`: serial id of the device
+- `DATA_TYPE`: data type of the model (e.g., fp16, fp32)
+
+Other optional configs also include:
+- `DEFAULT_INPUT_SHAPE`: default resolution and channels of your input image. Default to be #TODO
+- `D1_INPUT_SHAPE`: input shapes of 1d operations like `dense`. Default to be #TODO
+- `FILTERS`: filter numbers of conv and dwconv. Default to be #TODO
+- `KERNEL_SIZE`: kernel size. Default to be #TODO
+- `ENABLED`: rules to be tested. Default to be (I can't understand here) #TODO
+- `DETAIL`: whether or not dump the detail inference time in rule files. Default to be #TODO
+
+Before connecting to the backend, a workspace folder should be created. Run following command to create a workspace folder
+
+``` Bash
+# for TFLite platform
+nn-meter create --tflite-workspace <path/to/place/workspace/>
+
+# for OpenVINO platform
+nn-meter create --openvino-workspace <path/to/place/workspace/>
+
+# for customized platform
+nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
+```
+
+A folder will be created and a yaml file named `ruletest_config.yaml` will be placed in `./configs/`. Users could open `./configs/ruletest_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
+
+## Connect to Backend
+
+Users could test if the connection is healthy by running
+``` Bash
+nn-meter connect ...
+```
+
+To apply the backend for model running, nn-Meter provides an interface `connect_backend` to initialize the backend connection. `connect_backend` has two parameters, namely `backend`, indicating name of the required backend, and `configs_path`, indicating the path to the workspace folder. 
 
 ```python
-backend = connect_backend('vpu', {
-    'OPENVINO_ENV': '~/openvino_env',
-    'OPTIMIZER_PATH': '/data/openvino_2019.2.242/deployment_tools/model_optimizer/mo_tf.py',
-    'TMP_DIR': '~/models',
-    'OPENVINO_RUNTIME_DIR': '/data/openvino_2019.2.242/bin',
-    'DEVICE_SERIAL': '/dev/ttyUSB4',
-    'DATA_TYPE': 'FP16',
-})
+from nn_meter.builder.backend import connect_backend
+
+workspace_path = "" # text the path to the workspace folder created in the previous step
+backend = connect_backend('tflite_cpu', workspace_path=workspace_path)
+...
 ```

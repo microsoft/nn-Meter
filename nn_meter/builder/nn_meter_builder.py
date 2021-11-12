@@ -9,7 +9,6 @@ def create_testcases(model_dir, case_save_path='./data/testcases.json'):
     @params:
 
     model_dir: directory to save testcase models #TODO：refine interface
-        
 
     case_save_path: path to save the testcase json file
 

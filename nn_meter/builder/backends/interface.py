@@ -3,7 +3,7 @@
 import importlib
 from typing import List
 import tensorflow as tf
-
+from ..rule_tester.config_manager import load_backend_configs
 from nn_meter.utils.path import get_filename_without_ext
 
 
@@ -32,9 +32,10 @@ class BaseBackend:
     runner_class = None
     parser_class = None
 
-    def __init__(self, params):
+    def __init__(self, name, params):
         """class initialization with required params
         """
+        self.name = name
         self.params = params
         self.update_params()
         self.parser = self.parser_class(**self.parser_kwargs)
@@ -79,27 +80,29 @@ class BaseBackend:
         return self.profile(model, model_name, input_shape, metrics)
 
     def test_connection(self):
-        """check the status of backend interface connection, idealy including open/close/check_healthy...
+        """check the status of backend interface connection, ideally including open/close/check_healthy...
         TODO: add command line interface: nn-meter device/backend connect
         """
         pass
 
 
-def connect_backend(backend, params):
+def connect_backend(backend, workspace_path=""):
     """ 
     Return the required backend class, and feed params to the backend
     
     @params:
     backend: str of path to module or subclass of `BaseBackend`
 
-    params: Available backend and required params:
+    configs_path: path to the config parameter. Users could refer to docs/builder/backend.md for further information. 
+        Available backend and required params:
 
         - For backend based on TFLite platform: {
-            'MODEL_DIR': '',  # directory on host to save the generated tflite models
-            'REMOTE_MODEL_DIR': '',  # directory on mobile device to place models
-            'KERNEL_PATH': '',  # directory on mobile device where kernel code files will be generated
-            'BENCHMARK_MODEL_PATH': '',  # path to binary file of `benchmark_model`
-            'DEVICE_SERIAL': '',  # serial id of the device. set to '' if there is only one device connected to your host.
+            'MODEL_DIR': '',  # path to the folder (on host device) where temporary models will be generated.
+            'REMOTE_MODEL_DIR': '',  # path to the folder (on mobile device) where temporary models will be copied to.
+            'KERNEL_PATH': '',  # path (on mobile device) where the kernel implementations will be dumped.
+            'BENCHMARK_MODEL_PATH': '',  # path (on android device) where the binary file `benchmark_model` is deployed.
+            'DEVICE_SERIAL': '',  # if there are multiple adb devices connected to your host, you need to provide the \\
+                                  # corresponding serial id. Set to '' if there is only one device connected to your host.
         }
         - For backend based on OpenVINO platform: {
             'OPENVINO_ENV': '',  # path to openvino virtualenv (./docs/requirements/openvino_requirements.txt is provided)
@@ -114,9 +117,12 @@ def connect_backend(backend, params):
         module, attr = BACKENDS_PATH[backend]
         backend_module = importlib.import_module(module)
         backend_cls = getattr(backend_module, attr)
+        backend_name = backend
     else:
         backend_cls = backend
-    return backend_cls(params)
+        backend_name = backend.name
+    params=load_backend_configs(workspace_path)
+    return backend_cls(backend_name, params)
 
 
 def register_backend(backend_name, engine_path, cls_name):
