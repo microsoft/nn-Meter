@@ -20,8 +20,8 @@ class ConfigData:
 
 
 class ConfigManager(ConfigData):
-    def __init__(self, workspace_path):
-        super().__init__()
+
+    def init(self,workspace_path ):
         if os.path.isdir(workspace_path):
             config_file = os.path.join(workspace_path, 'configs', 'ruletester_config.yaml')
         elif os.path.isfile(workspace_path):
@@ -33,7 +33,7 @@ class ConfigManager(ConfigData):
             setting = json.load(fp)
         self._global_settings = setting
 
-config = ConfigManager(workspace_path)
+config = ConfigManager()
 
 
 def copy_to_workspace(workspace_path):

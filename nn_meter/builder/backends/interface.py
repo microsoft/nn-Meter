@@ -93,8 +93,9 @@ def connect_backend(backend, workspace_path=""):
     @params:
     backend: str of path to module or subclass of `BaseBackend`
 
-    configs_path: path to the config parameter. Users could refer to docs/builder/backend.md for further information. 
-        Available backend and required params:
+    workspace_path: path to the workspace. Users could refer to docs/builder/backend.md for further information. 
+        Available backend and required params: 
+        TODO: refine here, remove ws path and load it in config
 
         - For backend based on TFLite platform: {
             'MODEL_DIR': '',  # path to the folder (on host device) where temporary models will be generated.
@@ -122,7 +123,7 @@ def connect_backend(backend, workspace_path=""):
         backend_cls = backend
         backend_name = backend.name
     platform_type = backend_name.split('_')[0]
-    params=load_backend_config(platform_type, workspace_path)
+    params = load_backend_config(platform_type, workspace_path)
     return backend_cls(backend_name, params)
 
 

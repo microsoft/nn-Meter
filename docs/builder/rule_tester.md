@@ -4,7 +4,6 @@ A rule tester creates a series of models (what we call "test cases" in nn-Meter)
 
 ## 1. Create testcases
 ```python
-from nn_meter.builder.backend import connect_backend
 from nn_meter.builder import create_testcases
 
 workspace_path = "" # text the path to the workspace folder. refer to ./backend.md for further information.
@@ -46,7 +45,6 @@ profiled_testcases = run_testcases(backend, origin_testcases, workspace_path=wor
 
 ## 3. Detect Fusion Rule
 ```python
-from nn_meter.builder.backend import connect_backend
 from nn_meter.builder import detect_fusionrule
 
 workspace_path = "" # text the path to the workspace folder. refer to ./backend.md for further information.
@@ -104,7 +102,7 @@ In this instance, `BF_dwconv_relu` is the name of a rule. Here, there are three 
 ## End-to-end Demo
 Here is an end-to-end demo for the progress of the rule tester:
 ```python
-from nn_meter.builder.backend import connect_backend
+from nn_meter.builder.backends import connect_backend
 from nn_meter.builder import create_testcases, run_testcases, detect_fusionrule
 
 workspace_path = "" # text the path to the workspace folder. refer to ./backend.md for further information.

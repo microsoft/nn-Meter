@@ -106,6 +106,13 @@ def create_ruletest_workspace_cli(args):
     elif args.openvino_workspace:
         platform_type = "openvino"
         workspace_path = args.openvino_workspace
+        #TODO: create openvino_env
+        '''
+        virtualenv openvino_env
+        source openvino_env/bin/activate
+        pip install -r docs/requirements/openvino_requirements.txt
+        deactivate
+        '''
 
     os.makedirs(workspace_path, exist_ok=True)
     
