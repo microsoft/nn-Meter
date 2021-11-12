@@ -3,7 +3,7 @@
 import re
 from .tflite_runner import TFLiteRunner
 from .tflite_backend import TFLiteBackend
-from nn_meter.builder.utils.profiled_results import Latency
+from nn_meter.builder.utils.profiled_results import Latency, ProfiledResults
 
 
 class TFLiteCPULatencyParser:
@@ -52,6 +52,11 @@ class TFLiteCPULatencyParser:
     @property
     def latency(self):
         return self.total_latency
+
+    @property
+    def results(self):
+        results = ProfiledResults({'latency': self.latency})
+        return results
 
 
 class TFLiteCPURunner(TFLiteRunner):

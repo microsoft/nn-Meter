@@ -3,7 +3,7 @@
 import re
 from .tflite_runner import TFLiteRunner
 from .tflite_backend import TFLiteBackend
-from nn_meter.builder.utils.profiled_results import Latency
+from nn_meter.builder.utils.profiled_results import Latency, ProfiledResults
 
 
 class TFLiteGPULatencyParser:
@@ -165,6 +165,11 @@ class TFLiteGPULatencyParser:
                 errors.append(match[1])
 
         return errors
+
+    @property
+    def results(self):
+        results = ProfiledResults({'latency': self.latency})
+        return results
 
 
 class TFLiteGPURunner(TFLiteRunner):

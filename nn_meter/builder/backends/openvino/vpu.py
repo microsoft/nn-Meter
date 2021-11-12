@@ -3,7 +3,7 @@
 import re
 from .openvino_runner import OpenVINORunner
 from .openvino_backend import OpenVINOBackend
-from nn_meter.builder.utils.profiled_results import Latency
+from nn_meter.builder.utils.profiled_results import Latency, ProfiledResults
 
 
 class OpenVINOVPULatencyParser:
@@ -39,6 +39,11 @@ class OpenVINOVPULatencyParser:
     @property
     def latency(self):
         return self.comp_layer_latency
+    
+    @property
+    def results(self):
+        results = ProfiledResults({'latency': self.latency})
+        return results
 
 
 class OpenVINOVPURunner(OpenVINORunner):

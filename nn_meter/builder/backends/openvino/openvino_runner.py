@@ -14,18 +14,18 @@ class OpenVINORunner:
 
     device = None
 
-    def __init__(self, venv, optimizer, runtime_dir, serial, graph_path='', output_dir='', data_type='FP16'):
+    def __init__(self, venv, optimizer, runtime_dir, serial, graph_path='', _dst_graph_path='', data_type='FP16'):
         self._graph_path = graph_path
         self._venv = venv
         self._optimizer = optimizer
-        self._output_dir = output_dir
+        self._dst_graph_path = _dst_graph_path
         self._runtime_dir = runtime_dir
         self._serial = serial
         self._data_type = data_type
 
-    def load_graph(self, graph_path, output_dir):
+    def load_graph(self, graph_path, dst_graph_path):
         self._graph_path = graph_path
-        self._output_dir = output_dir
+        self._dst_graph_path = dst_graph_path
 
     def run(self, shapes, retry=2):
         interpreter_path = os.path.join(self._venv, 'bin/python')
@@ -34,14 +34,14 @@ class OpenVINORunner:
         subprocess.run(
             f'{interpreter_path} {self._optimizer} '
             f'--input_model {self._graph_path} '
-            f'--output_dir {self._output_dir} '
+            f'--output_dir {self._dst_graph_path} '
             f'--data_type {self._data_type}',
             shell=True
         )
 
         filename = os.path.splitext(os.path.basename(self._graph_path))[0]
 
-        input_path = os.path.join(self._output_dir, 'inputs')
+        input_path = os.path.join(self._dst_graph_path, 'inputs')
         if os.path.exists(input_path):
             shutil.rmtree(input_path)
 
@@ -60,10 +60,10 @@ class OpenVINORunner:
                 f'. {os.path.join(self._runtime_dir, "setupvars.sh")} -pyver {pyver}; '
                 f'{os.path.join(self._runtime_dir, "benchmark_app")} '
                 f'-i {input_path} '
-                f'-m {os.path.join(self._output_dir, filename + ".xml")} '
+                f'-m {os.path.join(self._dst_graph_path, filename + ".xml")} '
                 f'-d {self.device} '
                 f'-report_type detailed_counters '
-                f'-report_folder {self._output_dir} '
+                f'-report_folder {self._dst_graph_path} '
                 f'-niter 50 '
                 f'-nireq 1 '
                 f'-api sync'
@@ -76,7 +76,7 @@ class OpenVINORunner:
                         shell=True,
                         timeout=30,
                     )
-                    output = open(os.path.join(self._output_dir, 'benchmark_detailed_counters_report.csv'), 'r').read()
+                    output = open(os.path.join(self._dst_graph_path, 'benchmark_detailed_counters_report.csv'), 'r').read()
                     break
                 except subprocess.TimeoutExpired as e:
                     print(e)

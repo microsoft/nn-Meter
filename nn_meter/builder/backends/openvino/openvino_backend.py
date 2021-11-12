@@ -13,8 +13,10 @@ class OpenVINOBackend(BaseBackend):
     parser_class = None
     runner_class = None
 
-    def get_params(self):
-        super().get_params()
+    def update_params(self):
+        """update the config parameters for OpenVINO platform
+        """
+        super().update_params()
         self.runner_kwargs.update({
             'venv': self.params['OPENVINO_ENV'],
             'optimizer': self.params['OPTIMIZER_PATH'],
@@ -24,15 +26,19 @@ class OpenVINOBackend(BaseBackend):
         })
         self.tmp_dir = self.params['TMP_DIR']
         self.venv = self.params['OPENVINO_ENV']
-
-    def profile(self, model, model_name, shapes):
+    
+    def convert_model(self, model, model_name, input_shape=None):
+        """convert the Keras model instance to frozen pb file
+        """
         model_tmp_dir = os.path.join(self.tmp_dir, model_name)
-        pb_path, _ = keras_model_to_frozenpb(model, model_tmp_dir, model_name, shapes)
+        pb_path, _ = keras_model_to_frozenpb(model, model_tmp_dir, model_name, input_shape)
         patched_pb_path = patch_frozenpb(pb_path, os.path.join(self.venv, 'bin/python'))
-        self.runner.load_graph(patched_pb_path, model_tmp_dir)
-        return self.parser.parse(self.runner.run(shapes)).latency
+        return patched_pb_path
 
-    def profile_model_file(self, model_path, shapes):
-        model_name = get_filename_without_ext(model_path)
-        model = tf.keras.models.load_model(model_path)
-        return self.profile(model, model_name, shapes)
+    def profile(self, model, model_name, input_shape, metrics=['latency']):
+        """convert the model to the backend platform and run the model on the backend, return required metrics 
+        of the running results. We only support latency for metric by now.
+        """
+        patched_pb_path = self.convert_model(model, model_name, input_shape)
+        self.runner.load_graph(patched_pb_path, os.path.join(self.tmp_dir, model_name))
+        return self.parser.parse(self.runner.run(input_shape)).results.get(metrics)

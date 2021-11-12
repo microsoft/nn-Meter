@@ -8,10 +8,11 @@ class TFLiteRunner:
 
     def __init__(self, dst_kernel_path, benchmark_model_path, graph_path='', dst_graph_path='', serial='', num_threads=1, num_runs=50, warm_ups=10):
         """
-        :param graph_path: graph file. path on host server
-        :param dst_graph_path: graph file. path on android device
-        :param kernel_path: dest kernel output file. path on android device
-        :param benchmark_model_path: path to benchmark_model on android device
+        @params:
+        graph_path: graph file. path on host server
+        dst_graph_path: graph file. path on android device
+        kernel_path: dest kernel output file. path on android device
+        benchmark_model_path: path to benchmark_model on android device
         """
         self._serial = serial
         self._graph_path = graph_path
@@ -26,12 +27,11 @@ class TFLiteRunner:
         self._graph_path = graph_path
         self._dst_graph_path = dst_graph_path
 
-        return self
-
     def run(self, preserve=False, clean=False, taskset='70'):
         """
-        :param preserve: tflite file exists in remote dir. No need to push it again.
-        :param clean: remove tflite file after running.
+        @params:
+        preserve: tflite file exists in remote dir. No need to push it again.
+        clean: remove tflite file after running.
         """
         #TODO: adb python
         base_adb_cmd = 'adb' + (f' -s {self._serial}' if self._serial != '' else '')
