@@ -6,6 +6,4 @@ from .nn_meter_builder import (
     detect_fusionrule
 )
 from .backends import connect_backend
-from .rule_tester import RuleTester
 from .utils.utils import dump_testcases, read_testcases
-from .utils.config_manager import builder_config

@@ -89,16 +89,15 @@ def create_ruletest_workspace_cli(args):
     """create a workspace folder and copy the corresponding config file to the workspace
     """
     if args.customized_workspace:
-        backend_name, workspace_path, config_path = args.customized_workspace
-        os.makedirs(workspace_path, exist_ok=True)
+        # backend_name, workspace_path, config_path = args.customized_workspace
+        # os.makedirs(workspace_path, exist_ok=True)
         
-        from builder.backends.config_manager import copy_cusconfig_to_workspace
-        copy_cusconfig_to_workspace(workspace_path, config_path)
-        from builder.rule_tester.config_manager import copy_to_workspace
-        copy_to_workspace(workspace_path)
+        # from nn_meter.builder import copy_cusconfig_to_workspace
+        # copy_cusconfig_to_workspace(workspace_path, config_path)
         
-        logging.keyinfo(f'Create workspace at {workspace_path}.')
-        return
+        # logging.keyinfo(f'Create workspace at {workspace_path}.')
+        # return
+        pass
     
     if args.tflite_workspace:
         platform_type = "tflite"
@@ -106,22 +105,15 @@ def create_ruletest_workspace_cli(args):
     elif args.openvino_workspace:
         platform_type = "openvino"
         workspace_path = args.openvino_workspace
-        #TODO: create openvino_env
-        '''
-        virtualenv openvino_env
-        source openvino_env/bin/activate
-        pip install -r docs/requirements/openvino_requirements.txt
-        deactivate
-        '''
-
-    os.makedirs(workspace_path, exist_ok=True)
+        # create openvino_env
+        openvino_env = os.path.join(workspace_path, 'openvino_env')
+        os.system(f"virtualenv {openvino_env}")
+        os.system("source {openvino_env}/bin/activate")
+        os.system("pip install -r docs/requirements/openvino_requirements.txt")
+        os.system("deactivate")
     
-    from builder.backends.config_manager import copy_to_workspace
+    from nn_meter.builder.utils import copy_to_workspace
     copy_to_workspace(platform_type, workspace_path)
-    from builder.rule_tester.config_manager import copy_to_workspace
-    copy_to_workspace(workspace_path)
-    
-    return
     
 
 def nn_meter_info(args):
@@ -223,7 +215,10 @@ def nn_meter_cli():
     
     # Usage 4: create workspace folder for nn-Meter builder 
     # Usage: nn-meter build create <path/to/workspace>
-    create_workspace = subparsers.add_parser('create', help='create a workspace folder for nn-Meter builder')
+    create_workspace = subparsers.add_parser(
+        'create', 
+        help='create a workspace folder for nn-Meter builder'
+    )
     platform = create_workspace.add_mutually_exclusive_group()
     platform.add_argument(
         "--tflite-workspace",
@@ -249,8 +244,6 @@ def nn_meter_cli():
     
     # Usage 5: change data floder #TODO 
     # Usage: nn-meter set change --data <path/to/new-folder>
-    
-
 
     # parse args
     args = parser.parse_args()

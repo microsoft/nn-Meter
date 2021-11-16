@@ -1,13 +1,14 @@
 import os
 import json
-from .rule_tester import RuleTester
-from .utils.utils import dump_testcases, read_testcases
 import logging
-from nn_meter.builder import builder_config as config
+from .utils import builder_config as config
+from .utils.utils import dump_testcases, read_testcases
+
 
 def create_testcases():
     """create testcases and save the testcase models in the workspace
     """
+    from .rule_tester import RuleTester
     tester = RuleTester()
     testcases = tester.generate()
     
@@ -55,6 +56,7 @@ def detect_fusionrule(testcases):
 
     testcases: the Dict of testcases or the path of the testcase json file
     """
+    from .rule_tester import RuleTester
     if isinstance(testcases, str):
         with open(testcases, 'r') as fp:
             testcases = read_testcases(json.load(fp))

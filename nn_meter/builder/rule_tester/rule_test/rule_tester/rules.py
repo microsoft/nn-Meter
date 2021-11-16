@@ -3,11 +3,10 @@
 import os
 from tensorflow import keras
 
-from nn_meter.builder import builder_config as config
 from ..model_builder.utils import get_model_by_ops
 from nn_meter.builder.utils import get_tensor_by_shapes
+from nn_meter.builder.utils import builder_config as config
 from nn_meter.builder.utils.profiled_results import Latency
-
 
 rules = {}
 

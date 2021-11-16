@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import tensorflow as tf
 from tensorflow import keras
-from nn_meter.builder import builder_config as config
+from nn_meter.builder.utils import builder_config as config
 
 
 def reshape(input_shape):

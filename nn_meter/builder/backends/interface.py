@@ -3,7 +3,7 @@
 import importlib
 from typing import List
 import tensorflow as tf
-from .config_manager import load_backend_config
+from nn_meter.builder.utils import builder_config as config
 from nn_meter.utils.path import get_filename_without_ext
 
 
@@ -86,7 +86,7 @@ class BaseBackend:
         pass
 
 
-def connect_backend(backend, workspace_path=""):
+def connect_backend(backend):
     """ 
     Return the required backend class, and feed params to the backend
     
@@ -122,8 +122,7 @@ def connect_backend(backend, workspace_path=""):
     else:
         backend_cls = backend
         backend_name = backend.name
-    platform_type = backend_name.split('_')[0]
-    params = load_backend_config(platform_type, workspace_path)
+    params = config.get_module('backend')
     return backend_cls(backend_name, params)
 
 

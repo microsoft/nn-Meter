@@ -77,4 +77,5 @@ class ConfigManager(ConfigData):
         self.set_module(ruletest, 'ruletest')
         self.set(self, 'model_dir', os.path.join(self.workspace_path, "testcases"), 'ruletest')
 
+
 builder_config = ConfigManager()
