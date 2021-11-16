@@ -1,9 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
-import yaml
-import pkg_resources
-from shutil import copyfile
 from packaging import version
 import logging
 
