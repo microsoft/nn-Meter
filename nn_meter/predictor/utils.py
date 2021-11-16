@@ -3,14 +3,14 @@
 import pickle
 import os
 from glob import glob
-from zipfile import ZipFile
-from tqdm import tqdm
-import requests
 import logging
-from nn_meter.utils import download_from_url
+import yaml
+from nn_meter.utils import download_from_url, create_user_configs
+
+__user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 
 
-def loading_to_local(pred_info, dir="data/predictorzoo"):
+def loading_to_local(pred_info, dir):
     """
     @params:
 
@@ -63,3 +63,20 @@ def check_predictors(ppath, kernel_predictors):
         return True
     else:
         return False
+
+
+def load_config_file(fname: str, loader=None):
+    """load config file from __user_config_folder__;
+    if the file not located in __user_config_folder__, copy it from distribution
+    """
+    filepath = os.path.join(__user_config_folder__, fname)
+    try:
+        with open(filepath) as fp:
+            if loader is None:
+                return yaml.load(fp, yaml.FullLoader)
+            else:
+                return loader(fp)
+    except FileNotFoundError:
+        logging.info(f"config file {filepath} not found, created")
+        create_user_configs()
+        return load_config_file(fname)
