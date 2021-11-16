@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import networkx as nx
 from .rules import rules
-from ...config_manager import config
+from nn_meter.builder import builder_config as config
 
 
 class RuleTester:
