@@ -1,16 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
-import yaml
-import pkg_resources
-from shutil import copyfile
 from packaging import version
 import logging
 
-from .utils import loading_to_local
+from .utils import load_config_file, loading_to_local
 from .prediction.predict_by_kernel import nn_predict
 from nn_meter.kernel_detector import KernelDetector
-from nn_meter.utils import load_config_file, get_user_data_folder
+from nn_meter.utils import get_user_data_folder
 from nn_meter.ir_converter import model_file_to_graph, model_to_graph
 
 
