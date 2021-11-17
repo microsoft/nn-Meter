@@ -3,7 +3,6 @@
 from .config_manager import (
     create_user_configs,
     get_user_data_folder,
-    change_user_data_folder,
-    load_config_file
+    change_user_data_folder
 )
 from .utils import download_from_url

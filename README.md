@@ -47,7 +47,7 @@ nn-Meter is a latency predictor of models with type of Tensorflow, PyTorch, Onnx
 
 | Testing Model Type |                                                       Requirements                                                       |
 | :----------------: | :-----------------------------------------------------------------------------------------------------------------------: |
-|     Tensorflow     |                                                  `tensorflow==1.15.0`                                                  |
+|     Tensorflow     |                                                  `tensorflow==2.6.0`                                                  |
 |       Torch       | `torch==1.9.0`, `torchvision==0.10.0`, (alternative)[`onnx==1.9.0`, `onnx-simplifier==0.3.6`] or [`nni>=2.4`][1] |
 |        Onnx        |                                                      `onnx==1.9.0`                                                      |
 | nn-Meter IR graph |                                                            ---                                                            |
@@ -170,11 +170,6 @@ Users could view the information all built-in predictors by `list_latency_predic
 
 Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model_to_graph` by calling the model name or model object and specify the model type. The supporting model types of `model_file_to_graph` include "onnx", "pb", "torch", "nnmeter-ir" and "nni-ir", while the supporting model types of `model_to_graph` include "onnx", "torch" and "nni-ir".
 
-## Benchmark Dataset
-
-To evaluate the effectiveness of a prediction model on an arbitrary DNN model, we need a representative dataset that covers a large prediction scope. As there is no such available latency dataset, nn-Meter collects and generates 26k CNN models. It contains various operators, configurations, and edge connections, with covering different levels of FLOPs and latency. (Please refer the paper for the dataset generation method and dataset numbers.)
-
-We release the dataset, and provide an interface of `nn_meter.dataset` for users to get access to the dataset. Users can also download the data from the [Download Link](https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip) for testing nn-Meter or their own prediction models. 
 
 ## Hardware-aware NAS by nn-Meter and NNI
 
@@ -236,7 +231,7 @@ Refer to [NNI Doc](https://nni.readthedocs.io/en/stable/nas.html) for how to per
 
 ProxylessNAS currently builds a lookup table, that stores the measured latency of each candidate building block in the search space. The latency sum of all building blocks in a candidate model will be treated as the model inference latency. With leveraging nn-Meter in NNI, users can apply ProxylessNAS to search efficient DNN models on more types of edge devices. In NNI implementation, a `HardwareLatencyEstimator` predicts expected latency for the mixed operation based on the path weight of `ProxylessLayerChoice`. To call nn-Meter in NNI ProxylessNAS, users can add the arguments of "`--applied_hardware <hardware> --reference_latency <reference latency (ms)>`" in the [example](https://github.com/microsoft/nni/blob/master/examples/nas/oneshot/proxylessnas/main.py).
 
-## Bench Dataset
+## Benchmark Dataset
 
 To evaluate the effectiveness of a prediction model on an arbitrary DNN model, we need a representative dataset that covers a large prediction scope. nn-Meter collects and generates 26k CNN models. (Please refer the paper for the dataset generation method.)
 

@@ -47,20 +47,3 @@ def change_user_data_folder(new_folder):
     with open(os.path.join(__user_config_folder__, 'settings.yaml'), 'w') as fp:
         setting['data_folder'] = new_folder
         yaml.dump(setting, fp)
-
-
-def load_config_file(fname: str, loader=None):
-    """load config file from __user_config_folder__;
-    if the file not located in __user_config_folder__, copy it from distribution
-    """
-    filepath = os.path.join(__user_config_folder__, fname)
-    try:
-        with open(filepath) as fp:
-            if loader is None:
-                return yaml.load(fp, yaml.FullLoader)
-            else:
-                return loader(fp)
-    except FileNotFoundError:
-        logging.info(f"config file {filepath} not found, created")
-        create_user_configs()
-        return load_config_file(fname)
