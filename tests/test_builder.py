@@ -6,14 +6,14 @@ silence_tensorflow()
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder import create_testcases, run_testcases, detect_fusionrule
 
-workspace_path = "" # text the path to the workspace folder. refer to ./backend.md for further information.
+workspace_path = "/data/jiahang/working/nn-Meter/tftest" # text the path to the workspace folder. refer to ./backend.md for further information.
 
-
-from nn_meter.builder import builder_config
-builder_config.init(workspace_path)
+from nn_meter.builder.utils import builder_config
+builder_config.init("tflite", workspace_path)
 
 # initialize backend
 backend = connect_backend(backend='tflite_cpu')
+import pdb; pdb.set_trace()
 
 # generate testcases
 origin_testcases = create_testcases()

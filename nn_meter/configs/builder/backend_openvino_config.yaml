@@ -1,4 +1,4 @@
-OPENVINO_ENV: ''
+OPENVINO_ENV: 
 OPTIMIZER_PATH': /data/openvino_2019.2.242/deployment_tools/model_optimizer/mo_tf.py
 TMP_DIR': benchmarks/openvino
 OPENVINO_RUNTIME_DIR': /data/openvino_2019.2.242/bin

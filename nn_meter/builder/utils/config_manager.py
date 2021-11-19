@@ -22,7 +22,7 @@ def copy_to_workspace(platform_type, workspace_path):
         config_name = __backend_openvino_cfg_filename__
     copyfile(
         pkg_resources.resource_filename(".".join(__name__.split('.')[:-3]), 'configs/builder/' + config_name), 
-        os.path.join(os.path.join(workspace_path, 'configs'), 'backend_config.yaml'))
+        os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
     # rule test config
     copyfile(
         pkg_resources.resource_filename(".".join(__name__.split('.')[:-3]), f'configs/builder/' + __ruletest_cfg_filename__), 
@@ -50,8 +50,8 @@ def load_config_file(platform_type, workspace_path):
 
 class ConfigData:
     def __init__(self):
-        self.workspace_path = None
-        self._global_settings = None
+        self.workspace_path = {}
+        self._global_settings = {}
 
     def set(self, name, value, module=''):
         self._global_settings[module][name] = value
@@ -61,6 +61,9 @@ class ConfigData:
         
     def get(self, name, module=''):
         return self._global_settings[module].get(name)
+
+    def get_module(self, module=''):
+        return self._global_settings[module]
 
     def get_settings(self):
         return self._global_settings
@@ -73,9 +76,17 @@ class ConfigManager(ConfigData):
     
     def _load_from_config_file(self, platform_type, workspace_path):
         backend, ruletest = load_config_file(platform_type, workspace_path)
+        print(backend)
+        print(ruletest)
         self.set_module(backend, 'backend')
+        print(1)
         self.set_module(ruletest, 'ruletest')
-        self.set(self, 'model_dir', os.path.join(self.workspace_path, "testcases"), 'ruletest')
+        print(2)
+        self.set('model_dir', os.path.join(self.workspace_path, "testcases"), 'ruletest')
+        print(3)
+        self.set('MODEL_DIR', os.path.join(self.workspace_path, "testcases"), 'backend')
+        print(4)
+        # TODO: add model dir for backend config
 
 
 builder_config = ConfigManager()

@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nn-meter',
-    version='1.1',
+    version='1.1dev',
     description='nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices.',
     long_description = open('README.md', encoding='utf-8').read(),
     long_description_content_type = 'text/markdown',
@@ -26,7 +26,7 @@ setup(
         ],
     packages=find_packages(),
     package_data={
-        'nn_meter': ['configs/*.yaml', 'kernel_detector/fusionlib/*.json'],
+        'nn_meter': ['configs/*.yaml', 'configs/builder/*.yaml', 'kernel_detector/fusionlib/*.json'],
     },
     entry_points={
         'console_scripts': ['nn-meter=nn_meter.nn_meter_cli:nn_meter_cli'],
