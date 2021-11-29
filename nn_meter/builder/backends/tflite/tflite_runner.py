@@ -34,7 +34,7 @@ class TFLiteRunner:
         clean: remove tflite file after running.
         """
         #TODO: adb python
-        base_adb_cmd = 'adb' + (f' -s {self._serial}' if self._serial != '' else '')
+        base_adb_cmd = 'adb' + (f' -s {self._serial}' if self._serial != None else '')
         push_cmd = base_adb_cmd + f' push {self._graph_path} {self._dst_graph_path}'
         taskset_cmd = ''
         if taskset:
