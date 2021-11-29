@@ -76,17 +76,10 @@ class ConfigManager(ConfigData):
     
     def _load_from_config_file(self, platform_type, workspace_path):
         backend, ruletest = load_config_file(platform_type, workspace_path)
-        print(backend)
-        print(ruletest)
         self.set_module(backend, 'backend')
-        print(1)
         self.set_module(ruletest, 'ruletest')
-        print(2)
         self.set('model_dir', os.path.join(self.workspace_path, "testcases"), 'ruletest')
-        print(3)
         self.set('MODEL_DIR', os.path.join(self.workspace_path, "testcases"), 'backend')
-        print(4)
-        # TODO: add model dir for backend config
 
 
 builder_config = ConfigManager()

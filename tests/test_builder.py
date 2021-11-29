@@ -1,3 +1,4 @@
+import os
 import warnings
 from silence_tensorflow import silence_tensorflow
 warnings.filterwarnings('ignore')
@@ -13,13 +14,14 @@ builder_config.init("tflite", workspace_path)
 
 # initialize backend
 backend = connect_backend(backend='tflite_cpu')
-import pdb; pdb.set_trace()
 
 # generate testcases
 origin_testcases = create_testcases()
+# origin_testcases = os.path.join(workspace_path, "results", "origin_testcases.json")
 
 # run testcases and collect profiling results
 profiled_testcases = run_testcases(backend, origin_testcases)
+# profiled_testcases = os.path.join(workspace_path, "results", "profiled_testcases.json")
 
 # determine fusion rules from profiling results
 detected_testcases = detect_fusionrule(profiled_testcases)

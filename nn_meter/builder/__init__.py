@@ -6,4 +6,4 @@ from .nn_meter_builder import (
     detect_fusionrule
 )
 from .backends import connect_backend
-from .utils.utils import dump_testcases, read_testcases
+from .utils.utils import dump_testcases_with_latency, read_testcases_with_latency

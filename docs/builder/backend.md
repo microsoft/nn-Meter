@@ -46,11 +46,28 @@ pip install -r docs/requirements/openvino_requirements.txt
 deactivate
 ```
 
-## Prepare Config File
+## Create Workspace and Prepare Config File
+
+### Create Workspace
+A workspace in nn-Meter is a direction to save experiment configs, test case models, and test cases json files for a group of experiments. Before connecting to the backend, a workspace folder should be created. Users could create a workspace folder by running the following command:
+
+``` Bash
+# for TFLite platform
+nn-meter create --tflite-workspace <path/to/place/workspace/>
+
+# for OpenVINO platform
+nn-meter create --openvino-workspace <path/to/place/workspace/>
+
+# for customized platform
+nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
+```
+
+After running the python code or command line statement, a workspace folder will be created and a yaml file named `backend_config.yaml` will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
+
+### Prepare Configs
 
 When connecting to backend, a series of configs should be declared and appointed by users. Specifically, for Android CPU or GPU backends, the required parameters include:
 
-- `MODEL_DIR`: path to the folder (on host device) where temporary models will be generated.
 - `REMOTE_MODEL_DIR`: path to the folder (on mobile device) where temporary models will be copied to.
 - `KERNEL_PATH`: path (on mobile device) where the kernel implementations will be dumped.
 - `BENCHMARK_MODEL_PATH`: path (on android device) where the binary file `benchmark_model` is deployed.
@@ -73,20 +90,7 @@ Other optional configs also include:
 - `ENABLED`: rules to be tested. Default to be (I can't understand here) #TODO
 - `DETAIL`: whether or not dump the detail inference time in rule files. Default to be #TODO
 
-Before connecting to the backend, a workspace folder should be created. Run following command to create a workspace folder
-
-``` Bash
-# for TFLite platform
-nn-meter create --tflite-workspace <path/to/place/workspace/>
-
-# for OpenVINO platform
-nn-meter create --openvino-workspace <path/to/place/workspace/>
-
-# for customized platform
-nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
-```
-
-A folder will be created and a yaml file named `backend_config.yaml` will be placed in `./configs/`. Users could open `./configs/backend_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
+To edit the configs, users could open `<workspace-path>/configs/backend_config.yaml` and edit the content after creating workspace. The config will take effect after the the config file is saved and closed.
 
 ## Connect to Backend
 

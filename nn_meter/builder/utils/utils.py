@@ -20,7 +20,7 @@ def get_tensor_by_shapes(shapes):
         return [tf.random.normal(shape=[1] + shape) for shape in shapes]
 
 
-def dump_testcases(testcases):
+def dump_testcases_with_latency(testcases):
     testcases_copy = copy.deepcopy(testcases)
     for item in testcases_copy.values():
         for model in item.values():
@@ -29,7 +29,7 @@ def dump_testcases(testcases):
     return testcases_copy
 
 
-def read_testcases(testcases):
+def read_testcases_with_latency(testcases):
     testcases_copy = copy.deepcopy(testcases)
     for item in testcases_copy.values():
         for model in item.values():
