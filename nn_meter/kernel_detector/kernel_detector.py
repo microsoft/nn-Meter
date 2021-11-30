@@ -21,11 +21,7 @@ class KernelDetector:
         self.model_graph.refresh()
         self.bbs = self.splitter.split(self.model_graph)
 
-    @property
-    def kernels(self):
-        """
-        TODO: Should be a method and renamed to get_kernels()
-        """
+    def get_kernels(self):
         kernels = []
         self._global_index = 0
         self._layer_kernel_dict = {}

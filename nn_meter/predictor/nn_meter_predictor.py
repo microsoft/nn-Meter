@@ -106,6 +106,6 @@ class nnMeterPredictor:
         # logging.info(graph)
         self.kd.load_graph(graph)
 
-        py = nn_predict(self.kernel_predictors, self.kd.kernels) # in unit of ms
+        py = nn_predict(self.kernel_predictors, self.kd.get_kernels()) # in unit of ms
         logging.info(f"Predict latency: {py} ms")
         return py
