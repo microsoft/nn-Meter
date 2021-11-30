@@ -205,16 +205,17 @@ def nn_meter_cli():
     )
     get_ir.set_defaults(func=get_nnmeter_ir_cli)
     
-    # Usage 3: nn-Meter builder: register and unregister backend #TODO
+    # Usage 3: nn-Meter builder: 
+    # register and unregister backend 
     # Usage: nn-meter build register  <path/to/workspace>
+    #TODO
     
-    # Usage 3: nn-Meter builder: test connection to backend #TODO 
+    # test connection to backend 
     # Usage: nn-meter build connect --backend <backend name>
-    
-    
-    
+    #TODO
+
     # Usage 4: create workspace folder for nn-Meter builder 
-    # Usage: nn-meter build create <path/to/workspace>
+    # Usage: nn-meter create <path/to/workspace>
     create_workspace = subparsers.add_parser(
         'create', 
         help='create a workspace folder for nn-Meter builder'
@@ -242,8 +243,9 @@ def nn_meter_cli():
     create_workspace.set_defaults(func=create_ruletest_workspace_cli)
 
     
-    # Usage 5: change data floder #TODO 
+    # Usage 5: change data floder
     # Usage: nn-meter set change --data <path/to/new-folder>
+    #TODO
 
     # parse args
     args = parser.parse_args()

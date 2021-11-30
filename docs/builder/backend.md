@@ -82,14 +82,6 @@ For VPU backends with OpenVINO, the required parameters include:
 - `DEVICE_SERIAL`: serial id of the device
 - `DATA_TYPE`: data type of the model (e.g., fp16, fp32)
 
-Other optional configs also include:
-- `DEFAULT_INPUT_SHAPE`: default resolution and channels of your input image. Default to be #TODO
-- `D1_INPUT_SHAPE`: input shapes of 1d operations like `dense`. Default to be #TODO
-- `FILTERS`: filter numbers of conv and dwconv. Default to be #TODO
-- `KERNEL_SIZE`: kernel size. Default to be #TODO
-- `ENABLED`: rules to be tested. Default to be (I can't understand here) #TODO
-- `DETAIL`: whether or not dump the detail inference time in rule files. Default to be #TODO
-
 To edit the configs, users could open `<workspace-path>/configs/backend_config.yaml` and edit the content after creating workspace. The config will take effect after the the config file is saved and closed.
 
 ## Connect to Backend

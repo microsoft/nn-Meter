@@ -88,31 +88,30 @@ class BaseBackend:
 
 def connect_backend(backend):
     """ 
-    Return the required backend class, and feed params to the backend
+    Return the required backend class, and feed params to the backend. Supporting backend: tflite_cpu, tflite_gpu, openvino_vpu.
+    
+    Available backend and corresponding configs: 
+    - For backend based on TFLite platform: {
+        'MODEL_DIR': path to the folder (on host device) where temporary models will be generated.
+        'REMOTE_MODEL_DIR': path to the folder (on mobile device) where temporary models will be copied to.
+        'KERNEL_PATH': path (on mobile device) where the kernel implementations will be dumped.
+        'BENCHMARK_MODEL_PATH': path (on android device) where the binary file `benchmark_model` is deployed.
+        'DEVICE_SERIAL': if there are multiple adb devices connected to your host, you need to provide the \\
+                         corresponding serial id. Set to '' if there is only one device connected to your host.
+    }
+    - For backend based on OpenVINO platform: {
+        'OPENVINO_ENV': path to openvino virtualenv (./docs/requirements/openvino_requirements.txt is provided)
+        'OPTIMIZER_PATH': path to openvino optimizer
+        'TMP_DIR': tmp directory where temp model and profiling results will be generated
+        'OPENVINO_RUNTIME_DIR': directory to openvino runtime
+        'DEVICE_SERIAL': serial id of the device
+        'DATA_TYPE': data type of the model (e.g., fp16, fp32)
+    }
+    
+    The config can be declared and modified after create a workspace. Users could follow guidance from ./docs/builder/backend.md
     
     @params:
-    backend: str of path to module or subclass of `BaseBackend`
-
-    workspace_path: path to the workspace. Users could refer to docs/builder/backend.md for further information. 
-        Available backend and required params: 
-        TODO: refine here, remove ws path and load it in config
-
-        - For backend based on TFLite platform: {
-            'MODEL_DIR': '',  # path to the folder (on host device) where temporary models will be generated.
-            'REMOTE_MODEL_DIR': '',  # path to the folder (on mobile device) where temporary models will be copied to.
-            'KERNEL_PATH': '',  # path (on mobile device) where the kernel implementations will be dumped.
-            'BENCHMARK_MODEL_PATH': '',  # path (on android device) where the binary file `benchmark_model` is deployed.
-            'DEVICE_SERIAL': '',  # if there are multiple adb devices connected to your host, you need to provide the \\
-                                  # corresponding serial id. Set to '' if there is only one device connected to your host.
-        }
-        - For backend based on OpenVINO platform: {
-            'OPENVINO_ENV': '',  # path to openvino virtualenv (./docs/requirements/openvino_requirements.txt is provided)
-            'OPTIMIZER_PATH': '',  # path to openvino optimizer
-            'TMP_DIR': '',  # tmp directory where temp model and profiling results will be generated
-            'OPENVINO_RUNTIME_DIR': '',  # directory to openvino runtime
-            'DEVICE_SERIAL': '',  # serial id of the device
-            'DATA_TYPE': '',  # data type of the model (e.g., fp16, fp32)
-        }
+    backend: name of backend or backend class (subclass instance of `BaseBackend`). 
     """
     if isinstance(backend, str):
         module, attr = BACKENDS_PATH[backend]

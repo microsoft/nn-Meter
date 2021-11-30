@@ -34,8 +34,10 @@ builder_config.init(
     workspace_path="path/to/workspace/folder"
 ) # change the text to required platform type and workspace path
 ```
+
 ## Step 2. Create testcases
-According to `<workspace-path>/configs/ruletest_config.yaml`, the testcases can be created by running:
+
+Following configuration from `<workspace-path>/configs/ruletest_config.yaml`, the test cases can be created by running:
 
 ```python
 from nn_meter.builder import create_testcases
@@ -47,6 +49,7 @@ origin_testcases = create_testcases()
 The test case models will be saved in `<workspace-path>/testcases/`, and the test case dictionary will be saved in `<workspace-path>/results/origin_testcases.json`.
 
 ## Step 3. Run Test Cases on Given Backend
+
 Given required backend, users could run test cases model and get profiled latency value by running:
 
 ```python
@@ -64,6 +67,9 @@ profiled_testcases = run_testcases(backend, origin_testcases)
 The profiled test cases dictionary will be saved in `<workspace-path>/results/profiled_testcases.json`.
 
 ## Step 4. Detect Fusion Rule
+
+Finally, users could detect the fusion rule according to profiled test cases by running:
+
 ```python
 from nn_meter.builder import detect_fusionrule
 
@@ -71,10 +77,31 @@ from nn_meter.builder import detect_fusionrule
 detected_testcases = detect_fusionrule(profiled_testcases)
 ```
 
-Two ops will be considered as fused if ... #TODO
+Two operators $Op1$ and $Op2$ are regarded as being fused as fused as $Op1 +Op2$ fused if the time of operators follows:
+$$
+T_{Op1} + T_{Op2} - T_{Op1,Op2} > \alpha * min(T_{Op1}, T_{Op2})
+$$
+
+After running `detect_fusionrule`, a json file named `<workspace-path>/results/detected_testcases.json` will be created as the detection result. The result shows each test case obeys the fusion rule or not. Two instances from the detection result are shown below:
+
+```json
+"BF_se_relu": {
+    "latency": {
+        "block": "20.3537 +- 1.0",
+        "se": "20.521 +- 1.0",
+        "relu": "2.6194 +- 2.0",
+        "ops": "23.1404 +- 2.23606797749979"
+    },
+    "obey": true
+},
+...
+```
+In the results, four `"latency"` value represents the running time of ops `"block"` (which indicates $T_{Op1,Op2}$), two single ops `"se"` ($T_{Op1})$) and `"relu"` ($T_{Op2}$),  and the sum of two ops `"ops"` ($T_{Op1} + T_{Op2}$), respectively. `"obey"` shows whether the test case obeys the fusion rule, with `true` indicates the two testing ops is fused on the backend, while `false` indicates not.
+
+Note that the latency value will be save only when `"detail"` set as `True` in `<workspace-path>/configs/ruletest_config.yaml`.
 
 ## Data Structure of TestCases
-Each test case consists of several test models to profile, indicating two ops and a block combining the two ops, respectively. In each part, `"model"` points to its directory to the path of this ops' Keras model, `"shapes"` indicates the input shape of the tensor to test, and `"latency"` reports the profiled results after running `run_testcases`. This is a json dump of generated testcases. Note that the `"latency"` attribute appears after the testcases running.
+Each test case consists of several test models to profile, indicating two ops and a block combining the two ops, respectively. In each part, `"model"` points to its directory to the path of this ops' Keras model, `"shapes"` indicates the input shape of the tensor to test, and `"latency"` reports the profiled results after running `run_testcases`. This is a json dump of generated testcases. Note that the `"latency"` attribute appears after running and profiling the test cases.
 
 ```json
 {

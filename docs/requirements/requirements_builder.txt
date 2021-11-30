@@ -1,0 +1,3 @@
+tensorflow
+serial
+# pure-python-adb
