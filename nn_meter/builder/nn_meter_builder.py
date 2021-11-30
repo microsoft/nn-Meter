@@ -5,7 +5,7 @@ from .utils import builder_config as config
 from .utils.utils import dump_testcases_with_latency, read_testcases_with_latency
 
 
-def create_testcases(save_as=None):
+def create_testcases():
     """create testcases and save the testcase models and testcase json file in the workspace
     """
     from .rule_tester import RuleTester
@@ -13,7 +13,7 @@ def create_testcases(save_as=None):
     testcases = tester.generate()
     
     workspace_path = config.workspace_path
-    case_save_path = save_as or os.path.join(workspace_path, "results", "origin_testcases.json")
+    case_save_path = os.path.join(workspace_path, "results", "origin_testcases.json")
     os.makedirs(os.path.dirname(case_save_path), exist_ok=True)
     with open(case_save_path, 'w') as fp:
         json.dump(testcases, fp, indent=4)
@@ -21,14 +21,13 @@ def create_testcases(save_as=None):
     return testcases
 
 
-def run_testcases(backend, testcases, metrics=["latency"], save_as=None):
+def run_testcases(backend, testcases, metrics=["latency"]):
     """ run testcases with given backend and return latency of testcase models
     @params:
 
     backend: applied backend with its config, should be a subclass of BaseBackend
     testcases: the Dict of testcases or the path of the testcase json file
     metrics: required metrics to report. We only support latency for metric by now.
-    save_as: the customized path to save testcases dictionary. Set as None by default.
 
     """
     if isinstance(testcases, str):

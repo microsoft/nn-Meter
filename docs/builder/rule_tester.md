@@ -4,7 +4,7 @@ A rule tester creates a series of models (what we call "test cases" in nn-Meter)
 
 ## Step 1. Prepare Backends and Create Workspace
 
-The first step to run rule_tester is to prepare a backends. Users could follow guidance [here](./backend.md) to prepare workspace and create workspace.
+The first step to run rule_tester is to prepare backends and create workspace. Users could follow guidance [here](./backend.md) for this step.
 
 After creating the workspace, a yaml file named `ruletest_config.yaml` will be placed in `<workspace-path>/configs/`. The ruletest configs includes:
 
