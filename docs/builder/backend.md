@@ -62,7 +62,7 @@ nn-meter create --openvino-workspace <path/to/place/workspace/>
 nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
 ```
 
-After running the python code or command line statement, a workspace folder will be created and a yaml file named `backend_config.yaml` will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
+After running the command, a workspace folder will be created and a yaml file named `backend_config.yaml` will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content to change configuration. The config will take effect after the the config file is saved and closed.
 
 ### Prepare Configs
 

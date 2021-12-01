@@ -24,7 +24,7 @@ TODO: @Jianyu
 
 Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
 
-The workspace folder should be declared before building the rule_tester:
+After creating the workspace and completing configuration, users could initialize workspace in `builder_config` module before building the rule_tester:
 
 ```python
 from nn_meter.builder.utils import builder_config
