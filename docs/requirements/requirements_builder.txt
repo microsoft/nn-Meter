@@ -1,3 +1,5 @@
 tensorflow
 serial
-# pure-python-adb
+pure-python-adb
+typing
+networkx
