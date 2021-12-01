@@ -33,32 +33,30 @@ class TFLiteRunner:
         preserve: tflite file exists in remote dir. No need to push it again.
         clean: remove tflite file after running.
         """
-        #TODO: use pure-python-adb to refine script
-        base_adb_cmd = 'adb' + (f' -s {self._serial}' if self._serial != None else '')
-        push_cmd = base_adb_cmd + f' push {self._graph_path} {self._dst_graph_path}'
-        taskset_cmd = ''
-        if taskset:
-            taskset_cmd = f'taskset {taskset}'
-        run_cmd = base_adb_cmd + f' shell {taskset_cmd} {self._benchmark_model_path}' \
-                                 f' --kernel_path={self._dst_kernel_path}' \
-                                 f' --num_threads={self._num_threads}' \
-                                 f' --num_runs={self._num_runs}' \
-                                 f' --warm_umps={self._warm_ups}' \
-                                 f' --graph={self._dst_graph_path}' \
-                                 f' --enable_op_profiling=true' \
-                                 f' --use_gpu={"true" if self.use_gpu else "false"}'
-        rm_cmd = base_adb_cmd + f' shell rm {self._dst_graph_path}'
+        from ppadb.client import Client as AdbClient
+        client = AdbClient(host="127.0.0.1", port=5037)
+        if self._serial:
+            device = client.device(self._serial)
+        else:
+            device = client.devices()[0]
+
+        taskset_cmd = f'taskset {taskset}' if taskset else '' 
 
         if not preserve:
-            subprocess.check_output(push_cmd, shell=True)
+            device.push(self._graph_path, self._dst_graph_path)
         try:
-            res = subprocess.check_output(run_cmd, shell=True)
+            res = device.shell(f' {taskset_cmd} {self._benchmark_model_path}' \
+                               f' --kernel_path={self._dst_kernel_path}' \
+                               f' --num_threads={self._num_threads}' \
+                               f' --num_runs={self._num_runs}' \
+                               f' --warm_umps={self._warm_ups}' \
+                               f' --graph={self._dst_graph_path}' \
+                               f' --enable_op_profiling=true' \
+                               f' --use_gpu={"true" if self.use_gpu else "false"}')
         except:
             raise
         finally:
             if clean:
-                subprocess.check_output(rm_cmd, shell=True)
-            
-        res = res.decode('utf-8')
+                device.shell('rm {self._dst_graph_path}')
 
-        return res
+        return res.decode('utf-8')
