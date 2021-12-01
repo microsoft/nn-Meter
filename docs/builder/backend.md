@@ -1,6 +1,11 @@
 # Setup Device and Backend
 
-To run a model and get the inference latency on the mobile device, we implement several backends. These backends will run the model and parse the command line outputs to get latency results. We provide a consistent API for such backends. Currently we provide three instance on two platforms, i.e., CPU backend, GPU backend with TFLite platform, and VPU backend with OpenVINO platform. Following we will explain how to setup the device and get connection to the backend.
+To run a model and get the inference latency on the mobile device, we implement several backends. These backends will run the model and parse the command line outputs to get latency results. We provide a consistent API for such backends. Currently we provide three instance on two platforms, i.e., CPU backend (named `"tflite_cpu"`), GPU backend (named `"tflite_gpu"`) with TFLite platform, and VPU backend (named `"openvino_vpu"`) with OpenVINO platform. Users could list all supporting backend by running
+```
+nn-meter --list-backends
+```
+
+Following we will explain how to setup the device and get connection to the backend.
 
 nn-Meter also provides the ability to build your own customized backends, and allows users to install the customized backend as a builtin algorithm, in order for users to use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md). 
 
@@ -87,16 +92,28 @@ To edit the configs, users could open `<workspace-path>/configs/backend_config.y
 ## Connect to Backend
 
 Users could test if the connection is healthy by running
+
 ``` Bash
-nn-meter connect ...
+nn-meter connect --backend <backend-name> --workspace <path/to/workspace>
 ```
 
-To apply the backend for model running, nn-Meter provides an interface `connect_backend` to initialize the backend connection. `connect_backend` has two parameters, namely `backend`, indicating name of the required backend, and `configs_path`, indicating the path to the workspace folder. 
+If the connection is successful, there will be a message saying:
+
+``` text
+(nn-Meter) hello backend !
+```
+
+To apply the backend for model running, nn-Meter provides an interface `connect_backend` to initialize the backend connection. When using `connect_backend`, name of the required backend needs to be declared. 
 
 ```python
-from nn_meter.builder.backend import connect_backend
+# initialize workspace in code
+workspace_path = "/path/to/workspace/" 
+from nn_meter.builder.utils import builder_config
+builder_config.init("tflite", workspace_path)
 
-workspace_path = "" # text the path to the workspace folder created in the previous step
-backend = connect_backend('tflite_cpu', workspace_path=workspace_path)
+# connect to backend
+from nn_meter.builder.backends import connect_backend
+backend = connect_backend(backend='tflite_cpu')
 ...
 ```
+Users could follow [this example](../../examples/nn-meter_builder_with_tflite.ipynb) to further know about our API.
