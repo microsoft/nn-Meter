@@ -1,11 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
-import tensorflow as tf
 
 from ..interface import BaseBackend
-from .utils import keras_model_to_frozenpb
-from .frozenpb_patcher import patch_frozenpb
 from nn_meter.utils.path import get_filename_without_ext
 
 
@@ -30,6 +27,8 @@ class OpenVINOBackend(BaseBackend):
     def convert_model(self, model, model_name, input_shape=None):
         """convert the Keras model instance to frozen pb file
         """
+        from .utils.converters import keras_model_to_frozenpb
+        from .frozenpb_patcher import patch_frozenpb
         model_tmp_dir = os.path.join(self.tmp_dir, model_name)
         pb_path, _ = keras_model_to_frozenpb(model, model_tmp_dir, model_name, input_shape)
         patched_pb_path = patch_frozenpb(pb_path, os.path.join(self.venv, 'bin/python'))

@@ -2,7 +2,6 @@
 # Licensed under the MIT license.
 import importlib
 from typing import List
-import tensorflow as tf
 from nn_meter.builder.utils import builder_config as config
 from nn_meter.utils.path import get_filename_without_ext
 
@@ -75,13 +74,13 @@ class BaseBackend:
     def profile_model_file(self, model_path, input_shape=None, metrics=['latency']):
         """load model by model file path and run ``self.profile()``
         """
+        import tensorflow as tf
         model_name = get_filename_without_ext(model_path)
         model = tf.keras.models.load_model(model_path)
         return self.profile(model, model_name, input_shape, metrics)
 
     def test_connection(self):
         """check the status of backend interface connection, ideally including open/close/check_healthy...
-        TODO: add command line interface: nn-meter device/backend connect
         """
         pass
 
@@ -123,6 +122,10 @@ def connect_backend(backend):
         backend_name = backend.name
     params = config.get_module('backend')
     return backend_cls(backend_name, params)
+
+
+def list_backends():      
+    return BACKENDS_PATH
 
 
 def register_backend(backend_name, engine_path, cls_name):

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
-import tensorflow as tf
 import logging
 from ..interface import BaseBackend
 from nn_meter.builder.utils import get_tensor_by_shapes
@@ -26,6 +25,7 @@ class TFLiteBackend(BaseBackend):
     def convert_model(self, model, model_name, input_shape=None):
         """convert the Keras model instance to ``.tflite``
         """
+        import tensorflow as tf
         model(get_tensor_by_shapes(input_shape))
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
         tflite_model = converter.convert()
