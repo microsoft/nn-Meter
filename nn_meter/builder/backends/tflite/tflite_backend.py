@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import os
 import tensorflow as tf
-
+import logging
 from ..interface import BaseBackend
 from nn_meter.builder.utils import get_tensor_by_shapes
 
@@ -40,3 +40,14 @@ class TFLiteBackend(BaseBackend):
         graph_path = self.convert_model(model, model_name, input_shape)
         self.runner.load_graph(graph_path, os.path.join(self.remote_model_dir, model_name + '.tflite'))
         return self.parser.parse(self.runner.run()).results.get(metrics)
+
+    def test_connection(self):
+        """check the status of backend interface connection, ideally including open/close/check_healthy...
+        """
+        from ppadb.client import Client as AdbClient
+        client = AdbClient(host="127.0.0.1", port=5037)
+        if self.params['DEVICE_SERIAL']:
+            device = client.device(self.params['DEVICE_SERIAL'])
+        else:
+            device = client.devices()[0]
+        logging.keyinfo(device.shell("echo hello backend !"))

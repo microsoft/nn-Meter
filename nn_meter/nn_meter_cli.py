@@ -114,11 +114,30 @@ def create_ruletest_workspace_cli(args):
     
     from nn_meter.builder.utils import copy_to_workspace
     copy_to_workspace(platform_type, workspace_path)
-    
+
+
+def list_backends_cli():
+    from nn_meter.builder import list_backends
+    backends = list_backends()
+    logging.keyinfo("Supported backends:")
+    for name, loc in backends.items():
+        logging.result(f"[Backend] {name}: located in {loc[0]}")
+    return
+
+
+def test_connection_cli(args):
+    from nn_meter.builder.utils import builder_config
+    from nn_meter.builder.backends import connect_backend
+    builder_config.init(args.backend, args.workspace)
+    backend = connect_backend(args.backend)
+    backend.test_connection()
+
 
 def nn_meter_info(args):
     if args.list_predictors:
         list_latency_predictors_cli()
+    if args.list_backends:
+        list_backends_cli()
     else:
         logging.keyinfo('please run "nn-meter {positional argument} --help" to see nn-meter guidance')
 
@@ -136,6 +155,12 @@ def nn_meter_cli():
     parser.add_argument(
         '--list-predictors',
         help='list all supported predictors',
+        action='store_true',
+        default=False
+    )
+    parser.add_argument(
+        '--list-backends',
+        help='list all supported backends',
         action='store_true',
         default=False
     )
@@ -205,14 +230,29 @@ def nn_meter_cli():
     )
     get_ir.set_defaults(func=get_nnmeter_ir_cli)
     
-    # Usage 3: nn-Meter builder: 
+    # Usage 3: nn-Meter backend:    
+    # test connection to backend 
+    # Usage: nn-meter connect --backend <backend-name> --workspace <path/to/workspace>
+    test_connection = subparsers.add_parser(
+        'connect', 
+        help='connect to backend'
+    )
+    test_connection.add_argument(
+        "--workspace",
+        type=str,
+        help="path to the workspace with configuration completed"
+    )
+    test_connection.add_argument(
+        "--backend",
+        type=str,
+        help="the name of the testing backend"
+    )
+    test_connection.set_defaults(func=test_connection_cli)
+    
     # register and unregister backend 
     # Usage: nn-meter build register  <path/to/workspace>
-    #TODO
+    # TODO
     
-    # test connection to backend 
-    # Usage: nn-meter build connect --backend <backend name>
-    #TODO
 
     # Usage 4: create workspace folder for nn-Meter builder 
     # Usage: nn-meter create <path/to/workspace>

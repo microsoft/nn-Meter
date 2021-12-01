@@ -14,5 +14,6 @@ from .openvino import (
 from .interface import (
     BaseBackend,
     register_backend,
-    connect_backend
+    connect_backend,
+    list_backends
 )
