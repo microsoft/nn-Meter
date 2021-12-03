@@ -9,6 +9,7 @@ import os
 import subprocess
 import time 
 
+
 def patch_frozen_graph(graph):
     for node in graph.node:
         if 'explicit_paddings' in node.attr.keys():
@@ -22,24 +23,23 @@ def patch_frozen_graph(graph):
             #print('Find FusedBatchNormV3 in node %s, patching to FusedBatchNorm.' % node.name)
             node.op = 'FusedBatchNorm'
             del node.attr['U']
-        
-      
-
     return graph
+
+
 def save_to_models(modelpath,inputs,outputs,blockname,label=""):
     
     savepath=os.path.join(modelpath,"saved_model")
-    create_dir(savepath)
+    os.makedirs(savepath, exist_ok=True)
     tfpath=os.path.join(modelpath,"tflite")
-    create_dir(tfpath)
+    os.makedirs(tfpath, exist_ok=True)
     pbpath=os.path.join(modelpath,"pb")
-    create_dir(pbpath)
+    os.makedirs(pbpath, exist_ok=True)
     if label=="":
         graphname=blockname+"_"+str(int(time.time()*1000))
     else:
         graphname=blockname+"_"+label
     savepath=os.path.join(savepath,graphname)
-    create_dir(savepath)
+    os.makedirs(savepath, exist_ok=True)
     outputs_ops_names = [o.op.name for o in outputs]
     #print('sess run')
     with tf.compat.v1.Session() as sess:
@@ -127,10 +127,3 @@ def to_saved_model(
 
     builder.save()
     return list(inputs_dic.keys()),list(outputs_dic.keys())
-
-def create_dir(path):
-    if os.path.isdir(path)==False:
-        os.mkdir(path)
-
-
-
