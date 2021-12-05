@@ -8,21 +8,28 @@ The first step to run rule_tester is to prepare backends and create workspace. U
 
 After creating the workspace, a yaml file named `ruletest_config.yaml` will be placed in `<workspace-path>/configs/`. The ruletest configs includes:
 
-TODO: @Jianyu
 - `default_input_shape`: [28, 28, 16],
+    - Default input shape of all testcases except those requiring 1d tensor input.
 - `d1_input_shape`: [428],
+    - Default input shape of all testcases that need 1d tensor input. E.g., fully connected layer.
 - `filters`: 256,
+    - Default filter size.
 - `kernel_size`: 3,
+    - Default kernel size.
 - `enabled`: ['BF', 'MON', 'RT'],
+    - The test cases that will be enabled. Currently we implement three kinds of rules, `BasicFusion`, `MultipleOutNodes`, `ReadyTensor`. Among them, B`asicFusion` is the most important one, which will profiles to detect whether a pair of op can be fused.
 - `params`: {
     `BF`: {
         `eps`: 0.5,
         }
     },
+    - The parameters for each test case. For example, here `eps` define the alpha in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion.
 - `model_dir`: '',
+    - The model directory where testcases models will be generated.
 - `detail`: False,
+    - Whether to attach detail latency results of each testcase to the json output.
 
-Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
+Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. The config will take effect after the config file is saved and closed.
 
 After creating the workspace and completing configuration, users could initialize workspace in `builder_config` module before building the rule_tester:
 
@@ -68,7 +75,7 @@ The profiled test cases dictionary will be saved in `<workspace-path>/results/pr
 
 ## Step 4. Detect Fusion Rule
 
-Finally, users could detect the fusion rule according to profiled test cases by running:
+Finally, users could detect the fusion rule according to profile test cases by running:
 
 ```python
 from nn_meter.builder import detect_fusionrule
@@ -82,7 +89,7 @@ $$
 T_{Op1} + T_{Op2} - T_{Op1,Op2} > \alpha * min(T_{Op1}, T_{Op2})
 $$
 
-After running `detect_fusionrule`, a json file named `<workspace-path>/results/detected_testcases.json` will be created as the detection result. The result shows each test case obeys the fusion rule or not. Two instances from the detection result are shown below:
+After running `detect_fusionrule`, a json file named `<workspace-path>/results/detected_testcases.json` will be created as the detection result. The result shows each test case obeys the fusion rule or not. A instance from the detection result is shown below:
 
 ```json
 "BF_se_relu": {
