@@ -23,9 +23,6 @@ After creating the workspace, a yaml file named `ruletest_config.yaml` will be p
         `eps`: 0.5,
         }
     },
-    - The parameters for each test case. For example, here `eps` define the alpha in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion.
-- `model_dir`: '',
-    - The model directory where testcases models will be generated.
 - `detail`: False,
     - Whether to attach detail latency results of each testcase to the json output.
 
@@ -57,7 +54,7 @@ The test case models will be saved in `<workspace-path>/testcases/`, and the tes
 
 ## Step 3. Run Test Cases on Given Backend
 
-Given required backend, users could run test cases model and get profiled latency value by running:
+Given required backend, users could run test cases model and get the profiled latency value by running:
 
 ```python
 from nn_meter.builder.backend import connect_backend
@@ -75,7 +72,9 @@ The profiled test cases dictionary will be saved in `<workspace-path>/results/pr
 
 ## Step 4. Detect Fusion Rule
 
-Finally, users could detect the fusion rule according to profile test cases by running:
+
+Finally, users could detect the fusion rule according to the profiled test cases by running:
+
 
 ```python
 from nn_meter.builder import detect_fusionrule
