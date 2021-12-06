@@ -6,5 +6,4 @@ enabled: ['BF', 'MON', 'RT']
 params:
     BF:
         eps: 0.5
-model_dir: 
 detail: True
