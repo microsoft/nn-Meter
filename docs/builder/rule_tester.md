@@ -81,7 +81,7 @@ $$
 T_{Op1} + T_{Op2} - T_{Op1,Op2} > \alpha * min(T_{Op1}, T_{Op2})
 $$
 
-After running `detect_fusionrule`, a json file named `<workspace-path>/results/detected_testcases.json` will be created as the detection result. The result shows each test case obeys the fusion rule or not. A instance from the detection result are shown below:
+After running `detect_fusionrule`, a json file named `<workspace-path>/results/detected_testcases.json` will be created as the detection result. The result shows each test case obeys the fusion rule or not. A instance from the detection result is shown below:
 
 ```json
 "BF_se_relu": {
