@@ -59,4 +59,4 @@ class TFLiteRunner:
             if clean:
                 device.shell('rm {self._dst_graph_path}')
 
-        return res.decode('utf-8')
+        return res
