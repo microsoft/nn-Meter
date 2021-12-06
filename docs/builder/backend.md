@@ -17,10 +17,10 @@ nn-Meter also provides the ability to build your own customized backends, and al
 Introduction of Android Device and TFLite platform
 
 #### 1. Install ADB and Android SDK
-TODO: @Jianyu
-Follow [ADB Guide](https://developer.android.com/studio/command-line/adb) to install adb on your host device.
+Follow [Android Guide](https://developer.android.com/studio) to install adb on your host device.
 
-Install android sdk/ndk
+The easiest way to do that is to directly download Android Studio from [this page](https://developer.android.com/studio). After installing it, you will find adb at path `$HOME/Android/Sdk/platform-tools/`.
+
 
 #### 2. Build TFLite Benchmark Tool
 > Follow the [tensorflow official guide](https://www.tensorflow.org/lite/performance/measurement) for a more detailed guide to build and deploy `benchmark_model` onto the device.
