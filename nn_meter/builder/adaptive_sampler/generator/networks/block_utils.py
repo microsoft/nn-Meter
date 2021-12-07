@@ -1,8 +1,8 @@
 from silence_tensorflow import silence_tensorflow
 silence_tensorflow()
-from tensorflow.python.framework import graph_io
+
 import tensorflow as tf 
-import numpy as np
+
 from typing import Tuple, List,Union
 import shutil
 import os
@@ -26,7 +26,7 @@ def patch_frozen_graph(graph):
     return graph
 
 
-def save_to_models(modelpath,inputs,outputs,blockname,label=""):
+def save_to_models(modelpath, inputs, outputs, blockname, label = ""):
     
     savepath=os.path.join(modelpath,"saved_model")
     os.makedirs(savepath, exist_ok=True)
