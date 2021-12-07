@@ -1,10 +1,12 @@
 # Testcase
 
+Testcases are a series of models. These models will be profiled to get latency. By analyzing the latency results, we are able to detect the fusion rules on the device. For example, `BasicFusion` will detect fusion possibility of each pair of two operators. Finally, the detected fusion rules will be used to direct the process of kernel detection.
+
 In this section, we will explain how our testcase classes are implemented and how you can provide your own testcases.
 
 ## Implementation
 
-`nn_meter.builder.rule_tester.rule_test.rule_tester.rules.RuleTestBase` is the base of all rules. We define default behaviours in this base class. There are following methods:
+`nn_meter.builder.rule_tester.rule_tester.rules.RuleTestBase` is the base of all rules. We define default behaviours in this base class. There are following methods:
 
 - `_gen_testcase`: Generate all testcase models for this rule. At the **most time you won't** need to modify this.
 
@@ -29,7 +31,7 @@ In this section, we will explain how our testcase classes are implemented and ho
 
     **For all the time you will** need to implement `_model_block`.
 
-- `_register`: Only rules subclassing `RuleTestBase` will be registered into `rules`. And only these rules will be generated and profiled. You can access that all rules by `nn_meter.builder.rule_tester.rule_test.rule_tester.rules.rules`.
+- `_register`: Only rules subclassing `RuleTestBase` will be registered into `rules`. And only these rules will be generated and profiled. You can access that all rules by `nn_meter.builder.rule_tester.rule_tester.rules.rules`.
 
 ### BasicFusion
 
@@ -37,9 +39,59 @@ BasicFusion is more complicated. From design, each rule will generate testcases 
 
 We implement this by subclassing. We automatically generate a lot of subclasses of `BasicFusion` on the fly by some python magic (metaclass). Each subclass refers to the fusion rule of one pair of operators.
 
-## Cusomized Rules
+## Customized Rules
 
-If you are satisfied with the default behaviour of each function described in [implementation](), then you only need to define following class members by following this example:
+### Add New Operators into BasicFusion
+
+Currently we only test fusion rules among these layers (or operators):
+
+```python
+layers = [
+    'reshape',
+    'dwconv',
+    'relu',
+    'add',
+    'conv',
+    'concat',
+    'convtrans',
+    'dense',
+    'pooling',
+]
+```
+
+If you want to add new operators, just subclass `BasicFusion` and add new op to `layers`:
+
+```python
+layers = [
+    'reshape',
+    'dwconv',
+    'relu',
+    'add',
+    'conv',
+    'concat',
+    'convtrans',
+    'dense',
+    'pooling',
+    'hswish', # add a new op
+]
+```
+
+If the input to this layer must be 1 dimension tensor, you need also add it into `d1_required_layers`.
+
+If you only need to add one combination, you can add that into `additional_combinations`:
+```python
+additional_combinations = [
+    ('conv', 'hswish'),
+    ('conv', 'se'),
+    ('se', 'relu'),
+]
+```
+
+### Other rules
+
+Customized rules are more complicated. What you need to do is subclassing `ReadyTensor`.
+
+If you are satisfied with the default behaviour of each function described in [implementation](#implementation), then you only need to define following class members by following this example:
 
 ```python
 class ReadyTensor(RuleTestBase):

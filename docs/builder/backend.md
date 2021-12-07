@@ -22,14 +22,10 @@ Follow [Android Guide](https://developer.android.com/studio) to install adb on y
 The easiest way to do that is to directly download Android Studio from [this page](https://developer.android.com/studio). After installing it, you will find adb at path `$HOME/Android/Sdk/platform-tools/`.
 
 
-#### 2. Build TFLite Benchmark Tool
-> Follow the [tensorflow official guide](https://www.tensorflow.org/lite/performance/measurement) for a more detailed guide to build and deploy `benchmark_model` onto the device.
+#### 2. Get TFLite Benchmark Model
+The `benchmark_model` is a tool provided by TFLite to run a model and output its latency. Because nn-Meter need to parse the text output of `benchmark_model`, a fixed version is required. Download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
 
-use bazel to build a benchmark_model file. Please refer to https://dev.azure.com/v-wjiany/Personal/_git/tensorflow_modified?path=/tensorflow/lite/tools/benchmark/android/README.md&_a=preview
-Follow the tensorflow official guide for a more detailed guide to build and deploy benchmark_model onto the device.
-``` Bash
-bazel build -c opt //tensorflow/lite/tools/benchmark:benchmark_model
-```
+> We are working to release the source code of this modified version.
 
 #### 3. Setup Benckmark Tool on Device
 2. Push the benchmark_model to edge device by specifying its serial.
