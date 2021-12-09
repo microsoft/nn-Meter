@@ -1,13 +1,11 @@
 import numpy as np
-import random
-import warnings
-import pandas as pd
 import scipy.stats as st
 import statsmodels as sm
 import math
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as interpolate
+
 
 def read_conv_zoo(filename = "data_sampler/prior_zoo/modelzoo_convs.csv"):
     f = open(filename,'r')
@@ -23,7 +21,7 @@ def read_conv_zoo(filename = "data_sampler/prior_zoo/modelzoo_convs.csv"):
             line = f.readline()
             if not line:
                 break 
-            if i>0:
+            if i > 0:
                 content = line.strip().split(',')
                 modelname = content[0]
                 hw = int(content[1])
@@ -53,7 +51,7 @@ def read_dwconv_zoo(filename="data_sampler/prior_zoo/modelzoo_dwconvs.csv"):
         line = f.readline()
         if not line:
             break 
-        if i>0:
+        if i > 0:
             content = line.strip().split(',')
             hw = int(content[1])
             cin = int(content[3])
@@ -65,6 +63,7 @@ def read_dwconv_zoo(filename="data_sampler/prior_zoo/modelzoo_dwconvs.csv"):
             strides.append(s)
         i += 1
     return hws,cs,ks,strides
+
 
 def read_fc_zoo(filename="data_sampler/prior_zoo/modelzoo_fcs.csv"):
     f = open(filename,'r')
@@ -84,6 +83,7 @@ def read_fc_zoo(filename="data_sampler/prior_zoo/modelzoo_fcs.csv"):
         i += 1
     return cins,couts
 
+
 def read_pool_zoo(filename="data_sampler/prior_zoo/modelzoo_poolings.csv"):
     cins = []
     couts = []
@@ -96,15 +96,15 @@ def read_pool_zoo(filename="data_sampler/prior_zoo/modelzoo_poolings.csv"):
         line = f.readline()
         if not line:
             break 
-        if i>0:
-            content = line.strip().split(',') #input_h,input_w,cin,cout,ks,stride
+        if i > 0:
+            content = line.strip().split(',') # input_h,input_w,cin,cout,ks,stride
             inputh = int(content[1])
             cin = int(content[3])
             cout = int(content[4])
             k = int(content[5])
             s = int(content[6])
             cins.append(cin)
-            #couts.append(cout)
+            # couts.append(cout)
             hws.append(inputh)
             ks.append(k)
             strides.append(s)
@@ -131,13 +131,11 @@ def sample_based_on_distribution(data,count):
     '''
     da = inverse_transform_sampling(data,n_samples = count)
     return da
-'''
-the followings are sampling functions for each kernels
-'''
 
 
-
-def data_clean(data,cdata):  ## convert sampled data to valid configuration, e.g.,: kernel size=1,3,5,7
+def data_clean(data,cdata):
+    ''' convert sampled data to valid configuration, e.g.,: kernel size=1, 3, 5, 7
+    '''
     newlist = []
     for da in cdata:
         value = [abs(da-x) for x in data]

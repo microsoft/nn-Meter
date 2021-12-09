@@ -7,8 +7,8 @@ import shutil, json
 
 def get_accuracy(y_pred, y_true, threshold=0.01):
     a = (y_true - y_pred) / y_true
-    c = abs(y_true - y_pred)
     b = np.where(abs(a) <= threshold)
+    c = abs(y_true - y_pred)
     return len(b[0]) / len(y_true)
 
 
@@ -179,8 +179,10 @@ def get_feature(op, inputh, cin, cout, ks, s):
 
     elif "pool" in op:
         features = [inputh, cin, cout, ks, s]
+
     elif "se" in op:
         features = [inputh, cin]
+
     elif op in ["hwish", "hswish"]:
         features = [inputh, cin]
 

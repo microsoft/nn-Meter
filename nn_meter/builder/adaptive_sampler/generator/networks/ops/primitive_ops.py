@@ -2,20 +2,20 @@ import tensorflow as tf
 from .operators import *
 
 
-def convbnrelu(input,  kernelsize, cin, cout, stride, name = '', istraining = False, pad = False):
+def convbnrelu(input,  kernelsize, cin, cout, stride, istraining = False, pad = False):
     x = conv2d(input, cout, kernelsize, stride=stride, opname='convbnrelu.1')
     x = batch_norm(x, opname='convbnrelu.1')
     x = activation(x, activation='relu',opname='convbnrelu.1')
     return x
 
 
-def conv(input, kernelsize, cin, cout, stride,name = '',  istraining = False, pad = False):
+def conv(input, kernelsize, cin, cout, stride, istraining = False, pad = False):
     x1 = input  
     x = conv2d(x1, cout, kernelsize, stride=stride, opname='convbnrelu.1')
     return x
 
 
-def convbnrelumaxpool(input, kernelsize, cin, cout, stride, mks, mstride, name = '', istraining = False, pad = False):
+def convbnrelumaxpool(input, kernelsize, cin, cout, stride, mks, mstride, istraining = False, pad = False):
     x1 = input
     x = conv2d(x1, cout, kernelsize, stride=stride, opname='convbnrelu.1')
     x = batch_norm(x, opname='convbnrelu.1')
@@ -24,7 +24,7 @@ def convbnrelumaxpool(input, kernelsize, cin, cout, stride, mks, mstride, name =
     return x
 
 
-def convbnhswish(input, kernelsize, cin, cout, stride, name = '', istraining = False, pad = False):
+def convbnhswish(input, kernelsize, cin, cout, stride, istraining = False, pad = False):
     x1 = input
     x = conv2d(x1, cout, kernelsize, stride=stride, opname='convbnrelu.1')
     x = batch_norm(x, opname='convbnrelu.1')
@@ -32,7 +32,7 @@ def convbnhswish(input, kernelsize, cin, cout, stride, name = '', istraining = F
     return x
 
 
-def convbnrelu6(input, kernelsize, cin, cout, stride, name = '', istraining = False):
+def convbnrelu6(input, kernelsize, cin, cout, stride, istraining = False):
     x = conv2d(input, cout, kernelsize, stride=stride, opname='convbnrelu6.1')
     x = batch_norm(x, opname='convbnrelu6.1')
     x = activation(x, activation='relu6', opname='convbnrelu6.1')
@@ -47,13 +47,13 @@ def dwconvbnrelu(input,kernelsize,cin,cout,stride,name='',istraining=False,pad=F
     return x
 
 
-def dwconv(input, kernelsize, cin, cout, stride, name = '', istraining = False, pad = False):
+def dwconv(input, kernelsize, cin, cout, stride, istraining = False, pad = False):
     x1 = input
     x = depthwise_conv2d(x1, kernelsize, stride=stride, opname='dwconvbnrelu.1')    
     return x
 
 
-def dwconvbnhswish(input, kernelsize, cin, cout, stride, name = '', istraining = False, pad = False):
+def dwconvbnhswish(input, kernelsize, cin, cout, stride, istraining = False, pad = False):
     x1 = input
     x = depthwise_conv2d(x1, kernelsize, stride=stride, opname='dwconvbnrelu.1')
     x = batch_norm(x, opname='dwconvbnrelu.1')
@@ -61,25 +61,25 @@ def dwconvbnhswish(input, kernelsize, cin, cout, stride, name = '', istraining =
     return x
 
 
-def hswish(input, name = '', istraining = False, pad = False):
+def hswish(input, istraining = False, pad = False):
     x = activation(input,activation='hswish',opname='hswish')
     return x
 
 
-def dwconvbnrelu6(input, kernelsize, cin, cout, stride, name = '', istraining = False):
+def dwconvbnrelu6(input, kernelsize, cin, cout, stride, istraining = False):
     x = depthwise_conv2d(input, kernelsize, stride=stride, opname='dwconvbnrelu6.1')
     x = batch_norm(x, opname='dwconvbnrelu6.1')
     x = activation(x, activation='relu6', opname='dwconvbnrelu6.1')
     return x
 
 
-def fc(input, cout, name = '', pad = False):
+def fc(input, cout, pad = False):
     x1 = input
     x = fc_layer(x1, cout, opname = 'fc')
     return x
 
 
-def max_pool(input, kernelsize, stride, name = '', pad = False):
+def max_pool(input, kernelsize, stride, pad = False):
     x1 = input
     return max_pooling(x1, kernelsize, stride, opname='max_pool')
 
@@ -109,13 +109,13 @@ def concats(inputs, name = ''):
     return x
 
 
-def addrelu(inputs, name = '', istraining = False, pad = False):
+def addrelu(inputs, istraining = False, pad = False):
     x = tf.add(inputs[0], inputs[1])
     x = activation(x, activation='relu', opname='addrelu.relu')   
     return x
 
 
-def add(inputs, name = '', istraining = False, pad = False):
+def add(inputs, istraining = False, pad = False):
     x = tf.add(inputs[0], inputs[1]) 
     return x
 
