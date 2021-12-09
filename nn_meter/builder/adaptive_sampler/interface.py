@@ -1,7 +1,5 @@
-
-from silence_tensorflow import silence_tensorflow
-silence_tensorflow()
-
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from argparse import ArgumentParser
 from generator.generator_block import*
 
@@ -13,7 +11,8 @@ from device_utils.run_on_device import*
 from device_utils.utils import*
 from generator.generator_block import*
 
-
+from silence_tensorflow import silence_tensorflow
+silence_tensorflow()
 
 
 # sampling from prior distribution

@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import os
 from .extract_feature import *
 from .kernel_predictor import *
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from math import sqrt
-import pickle, sys, os
+
 
 def get_config_by_features(kernelname, feature):
     cfg = {}

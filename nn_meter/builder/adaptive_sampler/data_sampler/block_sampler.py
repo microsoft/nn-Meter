@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from .prior_distribution_sampler import*
 from .finegrained_sampler import*
 

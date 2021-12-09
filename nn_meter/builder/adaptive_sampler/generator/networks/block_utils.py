@@ -1,13 +1,14 @@
-from silence_tensorflow import silence_tensorflow
-silence_tensorflow()
-
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+import os
+import time 
+import shutil
+import subprocess
+from typing import List, Union
 import tensorflow as tf 
 
-from typing import Tuple, List,Union
-import shutil
-import os
-import subprocess
-import time 
+from silence_tensorflow import silence_tensorflow
+silence_tensorflow()
 
 
 def patch_frozen_graph(graph):

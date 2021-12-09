@@ -1,4 +1,5 @@
-from .config_block import *
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from .net_from_cfg import block_from_cfg
 from .networks.block_utils import save_to_models
 import os

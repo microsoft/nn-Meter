@@ -1,8 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import numpy as np
-import scipy.stats as st
-import statsmodels as sm
-import math
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as interpolate
 

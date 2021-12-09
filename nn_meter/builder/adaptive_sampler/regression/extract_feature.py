@@ -2,7 +2,6 @@
 # Licensed under the MIT license.
 import numpy as np
 from sklearn.metrics import mean_squared_error
-import shutil, json
 
 
 def get_accuracy(y_pred, y_true, threshold=0.01):
