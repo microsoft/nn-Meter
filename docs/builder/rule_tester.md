@@ -19,10 +19,9 @@ TODO: @Jianyu
         `eps`: 0.5,
         }
     },
-- `model_dir`: '',
 - `detail`: False,
 
-Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. The config will take effect after the the config file is saved and closed.
+Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. The config will take effect after the config file is saved and closed.
 
 After creating the workspace and completing configuration, users could initialize workspace in `builder_config` module before building the rule_tester:
 
@@ -50,7 +49,7 @@ The test case models will be saved in `<workspace-path>/testcases/`, and the tes
 
 ## Step 3. Run Test Cases on Given Backend
 
-Given required backend, users could run test cases model and get profiled latency value by running:
+Given required backend, users could run test cases model and get the profiled latency value by running:
 
 ```python
 from nn_meter.builder.backend import connect_backend
@@ -68,7 +67,7 @@ The profiled test cases dictionary will be saved in `<workspace-path>/results/pr
 
 ## Step 4. Detect Fusion Rule
 
-Finally, users could detect the fusion rule according to profiled test cases by running:
+Finally, users could detect the fusion rule according to the profiled test cases by running:
 
 ```python
 from nn_meter.builder import detect_fusionrule
@@ -82,7 +81,7 @@ $$
 T_{Op1} + T_{Op2} - T_{Op1,Op2} > \alpha * min(T_{Op1}, T_{Op2})
 $$
 
-After running `detect_fusionrule`, a json file named `<workspace-path>/results/detected_testcases.json` will be created as the detection result. The result shows each test case obeys the fusion rule or not. Two instances from the detection result are shown below:
+After running `detect_fusionrule`, a json file named `<workspace-path>/results/detected_testcases.json` will be created as the detection result. The result shows each test case obeys the fusion rule or not. A instance from the detection result is shown below:
 
 ```json
 "BF_se_relu": {
