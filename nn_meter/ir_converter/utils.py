@@ -132,6 +132,3 @@ def torch_model_to_graph(model, input_shape=(1, 3, 224, 224), apply_nni=False):
         logging.info("Onnx-based Torch Converter is applied for model conversion")
         converter = OnnxBasedTorchConverter(model, args)
     return converter.convert()
-    
-
-
