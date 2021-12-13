@@ -3,7 +3,7 @@
 import random
 import numpy as np
 
-from utils import read_conv_zoo, read_dwconv_zoo, read_fc_zoo, read_pool_zoo, sample_based_on_distribution, data_clean
+from .utils import read_conv_zoo, read_dwconv_zoo, read_fc_zoo, read_pool_zoo, sample_based_on_distribution, data_clean
 
 
 def sampling_conv(count):

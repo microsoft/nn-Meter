@@ -52,19 +52,19 @@ def run_testcases(backend, testcases, metrics=["latency"]):
     return testcases
 
 
-def detect_fusionrule(testcases):
+def detect_fusionrule(profiled_testcases):
     """ detect fusion rule by testcases latency value
     @params:
 
     testcases: the Dict of testcases or the path of the testcase json file
     """
     from .rule_tester import RuleTester
-    if isinstance(testcases, str):
-        with open(testcases, 'r') as fp:
-            testcases = read_testcases_with_latency(json.load(fp))
+    if isinstance(profiled_testcases, str):
+        with open(profiled_testcases, 'r') as fp:
+            profiled_testcases = read_testcases_with_latency(json.load(fp))
 
     tester = RuleTester()
-    result = tester.analyze(testcases)
+    result = tester.analyze(profiled_testcases)
     
     workspace_path = config.workspace_path
     case_save_path = os.path.join(workspace_path, "results", "detected_testcases.json")
@@ -73,3 +73,11 @@ def detect_fusionrule(testcases):
         json.dump(result, fp, indent=4)
     logging.keyinfo(f"Save the testcases to {case_save_path}")
     return result
+
+
+def init_data_sampler():
+    pass
+
+
+def regress_with_adaptive_sampler():
+    pass

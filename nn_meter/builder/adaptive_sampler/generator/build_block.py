@@ -3,7 +3,7 @@
 from .networks.ops.primitive_ops import *
 from .networks.block_utils import *
 
-def block_from_cfg(block_type, cfg):
+def build_block(block_type, cfg):
       """ returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
       """
       if block_type == 'conv-bn-relu':

@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import numpy as np
+import os
 import numpy as np
 import scipy.interpolate as interpolate
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def read_conv_zoo(filename = "data_sampler/prior_zoo/modelzoo_convs.csv"):
+
+def read_conv_zoo(filename = "modelzoo_convs.csv"):
+    filename = os.path.join(BASE_DIR, "prior_zoo", filename)
     f = open(filename,'r')
     i = 0
     hws = []
@@ -36,9 +39,10 @@ def read_conv_zoo(filename = "data_sampler/prior_zoo/modelzoo_convs.csv"):
                 groups.append(group)
                 X.append((hw,cin,cout,k,s,group))
             i += 1
-    return hws,cins,couts,ks,groups,strides
+    return hws, cins, couts, ks, groups, strides
 
-def read_dwconv_zoo(filename="data_sampler/prior_zoo/modelzoo_dwconvs.csv"):
+def read_dwconv_zoo(filename = "modelzoo_dwconvs.csv"):
+    filename = os.path.join(BASE_DIR, "prior_zoo", filename)
     f = open(filename,'r')
     i = 0
     hws = []
@@ -60,10 +64,11 @@ def read_dwconv_zoo(filename="data_sampler/prior_zoo/modelzoo_dwconvs.csv"):
             ks.append(k)
             strides.append(s)
         i += 1
-    return hws,cs,ks,strides
+    return hws, cs, ks, strides
 
 
-def read_fc_zoo(filename="data_sampler/prior_zoo/modelzoo_fcs.csv"):
+def read_fc_zoo(filename = "modelzoo_fcs.csv"):
+    filename = os.path.join(BASE_DIR, "prior_zoo", filename)
     f = open(filename,'r')
     cins = []
     couts = []
@@ -79,12 +84,12 @@ def read_fc_zoo(filename="data_sampler/prior_zoo/modelzoo_fcs.csv"):
             cins.append(cin)
             couts.append(cout)
         i += 1
-    return cins,couts
+    return cins, couts
 
 
-def read_pool_zoo(filename="data_sampler/prior_zoo/modelzoo_poolings.csv"):
+def read_pool_zoo(filename = "modelzoo_poolings.csv"):
+    filename = os.path.join(BASE_DIR, "prior_zoo", filename)
     cins = []
-    couts = []
     hws = []
     ks = []
     strides = []
@@ -98,16 +103,14 @@ def read_pool_zoo(filename="data_sampler/prior_zoo/modelzoo_poolings.csv"):
             content = line.strip().split(',') # input_h,input_w,cin,cout,ks,stride
             inputh = int(content[1])
             cin = int(content[3])
-            cout = int(content[4])
             k = int(content[5])
             s = int(content[6])
             cins.append(cin)
-            # couts.append(cout)
             hws.append(inputh)
             ks.append(k)
             strides.append(s)
         i += 1 
-    return hws,cins,ks,strides
+    return hws, cins, ks, strides
 
 
 def inverse_transform_sampling(data, n_bins = 40, n_samples = 1000):
