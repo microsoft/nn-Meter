@@ -3,10 +3,10 @@
 import os
 from tensorflow import keras
 
-from ..model_builder.utils import get_model_by_ops
 from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.utils import builder_config as config
 from nn_meter.builder.utils.profiled_results import Latency
+from nn_meter.builder.model_generator.ruletest_model import get_ruletest_model
 
 rules = {}
 
@@ -28,7 +28,7 @@ class RuleTestBase:
 
         self.load_config()
 
-    def _gen_testcase(self):
+    def generate_testcase(self):
         testcase = {}
         model, shapes = self._model_block()
         testcase['block'] = {
@@ -47,7 +47,7 @@ class RuleTestBase:
         return testcase
 
     def save_testcase(self):
-        testcase = self._gen_testcase()
+        testcase = self.generate_testcase()
 
         for op, model in testcase.items():
             model_path = os.path.join(self.model_dir, self.name + '_' + op)
@@ -176,7 +176,7 @@ class BasicFusionImpl(RuleTestBase):
         self.latency[op2_alias] = Latency(testcase[op2_alias]['latency'])
         self.latency['ops'] = self.latency[op1_alias] + self.latency[op2_alias]
 
-    def _gen_testcase(self):
+    def generate_testcase(self):
         testcase = {}
 
         op1, op2 = self.cases['ops']
@@ -186,7 +186,7 @@ class BasicFusionImpl(RuleTestBase):
             op1_alias += '_1'
             op2_alias += '_2'
 
-        op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = get_model_by_ops(op1, op2, self.input_shape)
+        op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = get_ruletest_model(op1, op2, self.input_shape, config.get_module('ruletest'))
         testcase[op1_alias] = {
             'model': op1_model,
             'shapes': op1_shapes,

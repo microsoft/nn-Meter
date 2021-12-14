@@ -6,9 +6,9 @@ In this section, we will explain how our testcase classes are implemented and ho
 
 ## Implementation
 
-`nn_meter.builder.rule_tester.rule_tester.rules.RuleTestBase` is the base of all rules. We define default behaviours in this base class. There are following methods:
+`nn_meter.builder.rule_tester.rules.RuleTestBase` is the base of all rules. We define default behaviours in this base class. There are following methods:
 
-- `_gen_testcase`: Generate all testcase models for this rule. At the **most time you won't** need to modify this.
+- `generate_testcase`: Generate all testcase models for this rule. At the **most time you won't** need to modify this.
 
 - `save_testcase`: Save the testcases. The `_model_block` of rule `Rule1` will be saved as name `Rule1_block`. At the **most time you won't** need to modify this.
 
@@ -31,7 +31,7 @@ In this section, we will explain how our testcase classes are implemented and ho
 
     **For all the time you will** need to implement `_model_block`.
 
-- `_register`: Only rules subclassing `RuleTestBase` will be registered into `rules`. And only these rules will be generated and profiled. You can access that all rules by `nn_meter.builder.rule_tester.rule_tester.rules.rules`.
+- `_register`: Only rules subclassing `RuleTestBase` will be registered into `rules`. And only these rules will be generated and profiled. You can access that all rules by `nn_meter.builder.rule_tester.rules.rules`.
 
 ### BasicFusion
 

@@ -2,6 +2,7 @@ default_input_shape: [28, 28, 16]
 d1_input_shape: [428]
 filters: 256
 kernel_size: 3
+padding: 'same'
 enabled: ['BF', 'MON', 'RT']
 params:
     BF:
