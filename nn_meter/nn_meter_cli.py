@@ -114,6 +114,8 @@ def create_ruletest_workspace_cli(args):
     
     from nn_meter.builder.utils import copy_to_workspace
     copy_to_workspace(platform_type, workspace_path)
+    logging.keyinfo(f"Workspace {os.path.abspath(workspace_path)} for {platform_type} platform has been created. " \
+        f"Users could edit experiment config in {os.path.join(os.path.abspath(workspace_path), 'configs/')}.")
 
 
 def list_backends_cli():
