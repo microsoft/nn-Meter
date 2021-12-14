@@ -1,4 +1,4 @@
 REMOTE_MODEL_DIR: /mnt/sdcard/tflite_bench
 KERNEL_PATH: /mnt/sdcard/tflite_bench/kernel.cl
-BENCHMARK_MODEL_PATH: /data/local/tmp/benchmark_model_fixed_group_size
+BENCHMARK_MODEL_PATH: /data/local/tmp/benchmark_model
 DEVICE_SERIAL: 

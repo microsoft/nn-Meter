@@ -2,7 +2,6 @@
 # Licensed under the MIT license.
 import tensorflow as tf
 from tensorflow import keras
-from nn_meter.builder.utils import builder_config as config
 
 
 ''' 
@@ -59,7 +58,7 @@ def batch_norm():
 
 def pooling(input_shape, config = None):
     output_shape = [int(input_shape[0] / 2), int(input_shape[1] / 2), input_shape[2]]
-    return keras.layers.AveragePooling2D(padding='same'), output_shape, False
+    return keras.layers.AveragePooling2D(padding=config['padding']), output_shape, False
 
 def global_avgpooling(x, name=''):
     pass
