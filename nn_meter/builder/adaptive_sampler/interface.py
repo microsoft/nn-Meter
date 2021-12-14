@@ -1,18 +1,73 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from argparse import ArgumentParser
-from generator.generator_block import*
 
-from device_utils.utils import*
 from regression.build_regression_model import*
-from generator.generator_block import*
-from device_utils.ADBConnect import*
-from device_utils.run_on_device import*
-from device_utils.utils import*
-from generator.generator_block import*
+from ..model_generator.adasample_model import get_adasample_model
 
 from silence_tensorflow import silence_tensorflow
 silence_tensorflow()
+
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
+import tensorflow as tf
+
+from data_sampler.block_sampler import block_sampling_from_prior, block_sampling_with_finegrained
+import logging
+from nn_meter.builder.utils import builder_config
+
+class Generator:
+    def __init__(self, block_type, sample_num):
+        self.block_type = block_type
+        self.config = builder_config(block_type)
+        self.sample_num = sample_num
+        self.savepath = os.path.join(self.config.workspace_path, "adaptive")
+        self.testcase = {}
+
+    def generate_block_from_cfg(self, blockcfgs, block_type):
+        """
+        generate tensorflow models for sampled data
+
+        @params
+
+        blockcfgs: each item in the list represent a sampled data. each item is a dictionary, storing the configuration
+        block_type: identical kernel name 
+        """
+        id = 0
+        for blockcfg in blockcfgs:
+            logging.info(f"building block for {block_type} with config: {blockcfg}")
+            tf.reset_default_graph()
+            input_tensor, output_tensor, config, graphname = get_adasample_model(block_type, blockcfg)
+
+            output_tensors = output_tensor if isinstance(output_tensor, list) else [output_tensor]
+            input_tensors = input_tensor if isinstance(input_tensor, list) else [input_tensor]
+
+            try:
+                savemodelpath, tfpath, pbpath, inputnames, outputnames = save_to_models(self.args.savepath, input_tensors, output_tensors, graphname, config)
+                self.testcase[id] = {}
+            except:
+                pass
+            id += 1
+
+    def run(self, sample_stage = 'prior'):
+        """ sample N configurations for target kernel, generate tensorflow model files (pb).
+        
+        @params
+        
+        sample_stage: path of the directory containing all experiment runs.
+        """
+        # initialize sampling, based on prior distribution
+        if sample_stage == 'prior':
+            samples = block_sampling_from_prior(self.block_type, self.sample_num)
+        # fine-grained sampling for data with large error points
+        else:
+            samples = block_sampling_with_finegrained(self.block_type, self.sample_num, self.cfg['BLOCK']['DATA'])
+       
+        # for all sampled configurations, generate tensorflow model files 
+        self.generate_block_from_cfg(samples, self.block_type)
+
 
 
 # sampling from prior distribution
@@ -29,47 +84,6 @@ def init_sampler():
     generator=generation(args)
     generator.setconfig_by_file(args.config)
     generator.run('prior')
-
-   
-    
-
-# measure latency on device
-def measure_latency():
-    # def benchmark_model_folder(dir,filename):   ## benchmark model on various devices
-    #      tfs=glob(dir+"/tflite/**.tflite")
-    #      id=0
-    #      adb=ADBConnect("98281FFAZ009SV")
-    #      tested=[]
-        
-        
-    #      with open(filename,'w') as f:
-    #         for tf in tfs:
-    #             tfmodel=tf.replace("\\","/")
-    #             config=tfmodel.split("/")[-1].replace(".tflite","")
-    #             std_ms,avg_ms=run_on_android(tfmodel,adb)
-    #             print('here',dir+'/'+config)
-    #             print(std_ms/avg_ms,avg_ms,std_ms)                        
-    #             writeline=str(id)+','+str(config)+','+str(avg_ms)+','+str(std_ms)+','+str(std_ms/avg_ms*100)
-    #             f.write(writeline+'\n')
-    #             f.flush()                                             
-    #             id+=1
-            
-        
-
-
-    # if __name__ == "__main__":
-
-    #     # parsing arguments
-    #     parser = ArgumentParser()
-    #     parser.add_argument("--datadir", type=str,default="data/conv-bn-relu-run1")
-    #     parser.add_argument("--outputfile", type=str, default="test.csv")
-    #     args=parser.parse_args()
-    #     #args.savepath= get_output_folder('/data1/datasets/', args.savepath)
-    
-    #     benchmark_model_folder(args.datadir,'args.outputfile)
-    pass
-        
-
 
 
 # fine-grained sampling for data with large errors
@@ -89,6 +103,3 @@ def run_adaptive_sampler():
     generator=generation(args)
     generator.setconfig(args.kernel,args.sample_count,cfgs)
     generator.run('finegrained')
-
-
-    pass

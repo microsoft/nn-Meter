@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import numpy as np
+from .operators_shape import *
 import tensorflow as tf
 from tensorflow import keras
 
@@ -17,7 +18,7 @@ def conv(input_shape, config = None):
             kernel_size=config['kernel_size'],
             padding=config['padding'],
             strides=config['strides']
-        ), input_shape, False
+        )
 
 
 def dwconv(input_shape, config = None):
@@ -25,7 +26,7 @@ def dwconv(input_shape, config = None):
             kernel_size=config['kernel_size'],
             padding=config['padding'],
             strides=config['strides']
-        ), input_shape, False
+        )
 
 
 def convtrans(input_shape, config = None):
@@ -40,7 +41,7 @@ def convtrans(input_shape, config = None):
                 output_shape=[1] + input_shape,
                 strides=[1, 1]
             )
-    return Conv2dTranspose(), input_shape, False
+    return Conv2dTranspose()
 
 
 def grouped_conv(input_shape, config = None):
@@ -55,12 +56,11 @@ def mix_conv(input_shape, config = None):
 #------------------ normalization and pooling ------------------#
 
 def batch_norm(input_shape, config = None):
-    return keras.layers.BatchNormalization(epsilon=1e-3, decay=0.9), input_shape, False
+    return keras.layers.BatchNormalization(epsilon=1e-3, decay=0.9)
 
 
 def pooling(input_shape, config = None):
-    output_shape = [int(input_shape[0] / 2), int(input_shape[1] / 2), input_shape[2]]
-    return keras.layers.AveragePooling2D(padding=config['padding']), output_shape, False
+    return keras.layers.AveragePooling2D(padding=config['padding'])
 
 
 def global_avgpooling(input_shape, config = None):
@@ -109,12 +109,11 @@ def se(input_shape, config = None):
             x = tf.nn.relu(x)
             x = self.conv2(x)
             return x * inputs
-
-    return SE(), input_shape, False
+    return SE()
 
 
 def dense(input_shape, config = None):
-    return keras.layers.Dense(input_shape[0]), input_shape, False
+    return keras.layers.Dense(input_shape[0])
 
 
 def channel_shuffle():
@@ -123,25 +122,25 @@ def channel_shuffle():
 #-------------------- activation function --------------------#
 
 def relu(input_shape, config = None):
-    return keras.layers.ReLU(), input_shape, False
+    return keras.layers.ReLU()
 
 
 def relu6(input_shape, config = None):
     def func(inputs):
         return tf.nn.relu6(inputs)
-    return func, input_shape, False
+    return func
 
 
 def sigmoid(input_shape, config = None):
     def func(inputs):
         return tf.nn.sigmoid(inputs)
-    return func, input_shape, False
+    return func
 
 
 def hswish(input_shape, config = None):
     def func(inputs):
         return tf.nn.relu6(tf.math.add(inputs, 3)) * 0.16667
-    return func, input_shape, False
+    return func
 
 #---------------------- basic operation ----------------------#
 
@@ -154,21 +153,16 @@ def reshape(input_shape, config = None):
         output_shape = [1, 2, int(input_shape[0] / 2)]
         def func(inputs):
             return tf.reshape(inputs, [1] + output_shape)
-    return func, output_shape, False
+    return func
 
 
 def add(input_shape, config = None):
-    return keras.layers.Add(), input_shape, True
+    return keras.layers.Add()
 
 
 def concat(input_shape, config = None):
-    if len(input_shape) == 3:
-        output_shape = [input_shape[0], input_shape[1], input_shape[2] * 2]
-    else:
-        output_shape = [input_shape[0] * 2]
-    return keras.layers.Concatenate(), output_shape, True
+    return keras.layers.Concatenate()
 
 
 def flatten(input_shape, config = None):
-    output_shape = [input_shape[0], np.prod(input_shape[1:])]
-    return keras.layers.Flatten(), output_shape, True
+    return keras.layers.Flatten()

@@ -15,9 +15,9 @@ def get_inputs_by_shapes(shapes):
 def get_tensor_by_shapes(shapes):
     import tensorflow as tf
     if len(shapes) == 1:
-        return tf.random.normal(shape=[1] + shapes[0])
+        return tf.random.normal(shape = [1] + shapes[0])
     else:
-        return [tf.random.normal(shape=[1] + shape) for shape in shapes]
+        return [tf.random.normal(shape = [1] + shape) for shape in shapes]
 
 
 def dump_testcases_with_latency(testcases):
