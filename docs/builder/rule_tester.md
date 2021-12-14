@@ -13,6 +13,7 @@ After creating the workspace, a yaml file named `ruletest_config.yaml` will be p
 - `filters`: Default filter size. Default value is `256`.
 - `kernel_size`: Default kernel size. Default value is `3`.
 - `padding`: Default padding type. Default value is `"same"`.
+- `strides`: Default strides size. Default value is `1`.
 - `enabled`: The test cases that will be enabled. Currently we implement three kinds of rules, `BasicFusion` (code name `BF`), `MultipleOutNodes` (code name `MON`), `ReadyTensor` (code name `RT`). Among them, `BasicFusion` is the most important one, which will detect whether a pair of op can be fused. Default value is `['BF', 'MON', 'RT']`,
 - `params`: The parameters for each test case. For example, here `eps` define the alpha in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion. Default value is:
     ```yaml
@@ -45,7 +46,7 @@ from nn_meter.builder import create_testcases
 origin_testcases = create_testcases()
 ```
 
-The test case models will be saved in `<workspace-path>/testcases/`, and the test case dictionary will be saved in `<workspace-path>/results/origin_testcases.json`.
+The test case models will be saved in `<workspace-path>/testcases_ruletest/`, and the test case dictionary will be saved in `<workspace-path>/results/origin_testcases.json`.
 
 ## Step 3. Run Test Cases on Given Backend
 

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
@@ -8,9 +9,9 @@ from tensorflow import keras
 This file contains the keras implementation of operators, return (the function of the operator (tf.keras.Model), the output shape of the operator, if the operator has two inputs)
 '''
 
-# family of convolution layer
+#---------------------- convolution layer ----------------------#
 
-def conv2d(input_shape, config = None):
+def conv(input_shape, config = None):
     return keras.layers.Conv2D(
             input_shape[2],
             kernel_size=config['kernel_size'],
@@ -19,7 +20,7 @@ def conv2d(input_shape, config = None):
         ), input_shape, False
 
 
-def dwconv2d(input_shape, config = None):
+def dwconv(input_shape, config = None):
     return keras.layers.DepthwiseConv2D(
             kernel_size=config['kernel_size'],
             padding=config['padding'],
@@ -27,7 +28,7 @@ def dwconv2d(input_shape, config = None):
         ), input_shape, False
 
 
-def conv2dtrans(input_shape, config = None):
+def convtrans(input_shape, config = None):
     class Conv2dTranspose(keras.layers.Layer):
         def __init__(self):
             super().__init__()
@@ -42,35 +43,40 @@ def conv2dtrans(input_shape, config = None):
     return Conv2dTranspose(), input_shape, False
 
 
-def grouped_conv():
+def grouped_conv(input_shape, config = None):
     pass
 
 
-def mix_conv(features, num_groups: int, stride: int):
+def mix_conv(input_shape, config = None):
+    # features, num_groups: int, stride: int
     pass
 
 
-# normalization and pooling
+#------------------ normalization and pooling ------------------#
 
-def batch_norm():
-    # tf.keras.layers.BatchNormalization(
-    pass
+def batch_norm(input_shape, config = None):
+    return keras.layers.BatchNormalization(epsilon=1e-3, decay=0.9), input_shape, False
+
 
 def pooling(input_shape, config = None):
     output_shape = [int(input_shape[0] / 2), int(input_shape[1] / 2), input_shape[2]]
     return keras.layers.AveragePooling2D(padding=config['padding']), output_shape, False
 
-def global_avgpooling(x, name=''):
+
+def global_avgpooling(input_shape, config = None):
     pass
 
 
-def max_pooling(features, kernelsize, stride, padding = 'SAME', opname = ''):
+def max_pooling(input_shape, config = None):
+    # features, kernelsize, stride, padding = 'SAME', opname = ''
     pass
 
-def avg_pooling(features, kernelsize, stride, padding = 'SAME', opname = ''):
+
+def avg_pooling(input_shape, config = None):
+    # features, kernelsize, stride, padding = 'SAME', opname = ''
     pass
 
-# other modules
+#------------------------ other modules ------------------------#
 
 def fc(input_shape, config = None):
     pass
@@ -114,16 +120,16 @@ def dense(input_shape, config = None):
 def channel_shuffle():
     pass
 
-
-
-# activation function
+#-------------------- activation function --------------------#
 
 def relu(input_shape, config = None):
     return keras.layers.ReLU(), input_shape, False
 
 
 def relu6(input_shape, config = None):
-    pass
+    def func(inputs):
+        return tf.nn.relu6(inputs)
+    return func, input_shape, False
 
 
 def sigmoid(input_shape, config = None):
@@ -137,12 +143,7 @@ def hswish(input_shape, config = None):
         return tf.nn.relu6(tf.math.add(inputs, 3)) * 0.16667
     return func, input_shape, False
 
-
-
-
-
-
-# basic operation
+#---------------------- basic operation ----------------------#
 
 def reshape(input_shape, config = None):
     if len(input_shape) == 3:
@@ -165,9 +166,9 @@ def concat(input_shape, config = None):
         output_shape = [input_shape[0], input_shape[1], input_shape[2] * 2]
     else:
         output_shape = [input_shape[0] * 2]
-
     return keras.layers.Concatenate(), output_shape, True
 
-def flatten(_input):
-    pass
 
+def flatten(input_shape, config = None):
+    output_shape = [input_shape[0], np.prod(input_shape[1:])]
+    return keras.layers.Flatten(), output_shape, True
