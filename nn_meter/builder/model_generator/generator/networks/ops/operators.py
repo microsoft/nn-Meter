@@ -20,58 +20,58 @@ def fc_layer(_input, out_units, opname = '',use_bias = False, param_initializer 
     return output
 
 
-def activation(_input, activation = 'relu6', opname = ''):
-    with tf.compat.v1.variable_scope(opname + '.'+activation):
-        if activation == 'relu6':
-            #print(opname+'.'+activation)
-            return tf.nn.relu6(_input)
-        elif activation == 'relu':
-            return tf.nn.relu(_input)
-        elif activation == 'sigmoid':
-            return tf.nn.sigmoid(_input)
-        elif activation == 'hswish':
-            return _input * (tf.nn.relu6(_input + 3) * 0.16667)
+# def activation(_input, activation = 'relu6', opname = ''):
+#     with tf.compat.v1.variable_scope(opname + '.'+activation):
+#         if activation == 'relu6':
+#             #print(opname+'.'+activation)
+#             return tf.nn.relu6(_input)
+#         elif activation == 'relu':
+#             return tf.nn.relu(_input)
+#         elif activation == 'sigmoid':
+#             return tf.nn.sigmoid(_input)
+#         elif activation == 'hswish':
+#             return _input * (tf.nn.relu6(_input + 3) * 0.16667)
           
-        else:
-            raise ValueError('Do not support %s' % activation)
+#         else:
+#             raise ValueError('Do not support %s' % activation)
 
 
-def Hswish(input, opname = ''):
-    with tf.compat.v1.variable_scope(opname + '.hwise'):
-        return tf.math.multiply(input, tf.nn.relu6(input + 3.) / 6.)
+# def Hswish(input, opname = ''):
+#     with tf.compat.v1.variable_scope(opname + '.hwise'):
+#         return tf.math.multiply(input, tf.nn.relu6(input + 3.) / 6.)
 
 
-def Sigmoid(x, opname = '') :
-    with tf.compat.v1.variable_scope(opname + '.sigmoid'):
-        return tf.nn.sigmoid(x)
+# def Sigmoid(x, opname = '') :
+#     with tf.compat.v1.variable_scope(opname + '.sigmoid'):
+#         return tf.nn.sigmoid(x)
 
 
-def conv2d(_input, out_features, kernel_size, opname = '', stride = 1,padding = 'SAME', param_initializer = None):
-    in_features = int(_input.get_shape()[3])
+# def conv2d(_input, out_features, kernel_size, opname = '', stride = 1,padding = 'SAME', param_initializer = None):
+#     in_features = int(_input.get_shape()[3])
 
-    if not param_initializer:
-        param_initializer = {}
-    output = _input
-    with tf.compat.v1.variable_scope(opname + '.conv'):
-        init_key = '%s/weight' % tf.compat.v1.get_variable_scope().name
-        initializer = param_initializer.get(init_key, tf.contrib.layers.variance_scaling_initializer())
-        weight = tf.compat.v1.get_variable(name='weight', shape=[kernel_size,kernel_size,in_features,out_features], initializer=initializer)
-        output = tf.nn.conv2d(output, weight, [1, stride, stride, 1], padding=padding, data_format='NHWC')
-    return output
+#     if not param_initializer:
+#         param_initializer = {}
+#     output = _input
+#     with tf.compat.v1.variable_scope(opname + '.conv'):
+#         init_key = '%s/weight' % tf.compat.v1.get_variable_scope().name
+#         initializer = param_initializer.get(init_key, tf.contrib.layers.variance_scaling_initializer())
+#         weight = tf.compat.v1.get_variable(name='weight', shape=[kernel_size,kernel_size,in_features,out_features], initializer=initializer)
+#         output = tf.nn.conv2d(output, weight, [1, stride, stride, 1], padding=padding, data_format='NHWC')
+#     return output
 
 
-def depthwise_conv2d(_input, kernel_size, stride = 1, opname = '', padding = 'SAME', param_initializer = None):
-    in_features = int(_input.get_shape()[3])
-    if not param_initializer:
-        param_initializer = {}
-    output = _input
-    with tf.compat.v1.variable_scope(opname + '.depconv'):
-        #print(opname+'.depconv')
-        init_key = '%s/weight' % tf.get_variable_scope().name
-        initializer = param_initializer.get(init_key, tf.contrib.layers.variance_scaling_initializer())
-        weight = tf.get_variable(name='weight', shape=[kernel_size, kernel_size, in_features, 1], initializer=initializer)
-        output = tf.nn.depthwise_conv2d(output, weight, [1, stride, stride, 1], padding=padding, data_format='NHWC')
-    return output
+# def depthwise_conv2d(_input, kernel_size, stride = 1, opname = '', padding = 'SAME', param_initializer = None):
+#     in_features = int(_input.get_shape()[3])
+#     if not param_initializer:
+#         param_initializer = {}
+#     output = _input
+#     with tf.compat.v1.variable_scope(opname + '.depconv'):
+#         #print(opname+'.depconv')
+#         init_key = '%s/weight' % tf.get_variable_scope().name
+#         initializer = param_initializer.get(init_key, tf.contrib.layers.variance_scaling_initializer())
+#         weight = tf.get_variable(name='weight', shape=[kernel_size, kernel_size, in_features, 1], initializer=initializer)
+#         output = tf.nn.depthwise_conv2d(output, weight, [1, stride, stride, 1], padding=padding, data_format='NHWC')
+#     return output
 
 
 def batch_norm(_input, is_training = False, opname = '', epsilon = 1e-3, decay = 0.9):

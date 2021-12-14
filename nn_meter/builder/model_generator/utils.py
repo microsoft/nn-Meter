@@ -1,14 +1,15 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from . import layers
+import operators
 from .simple_model import SingleOpModel, TwoOpModel
 from nn_meter.builder.utils import get_inputs_by_shapes
 
 
 def get_layer_by_name(name, input_shape):
-    return getattr(layers, name)(input_shape)
+    return getattr(operators, name)(input_shape)
 
-def get_model_by_ops(op1, op2, input_shape):
+
+def get_rule_test_model(op1, op2, input_shape, config):
     layer1, op1_output_shape, op1_is_two_inputs = get_layer_by_name(op1, input_shape)
     layer2, _, op2_is_two_inputs = get_layer_by_name(op2, op1_output_shape)
 
@@ -25,3 +26,7 @@ def get_model_by_ops(op1, op2, input_shape):
     block_model(get_inputs_by_shapes(block_shapes))
 
     return op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes
+
+
+def save_model():
+    pass

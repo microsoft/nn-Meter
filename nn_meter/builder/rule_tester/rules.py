@@ -3,7 +3,7 @@
 import os
 from tensorflow import keras
 
-from ..model_builder.utils import get_model_by_ops
+from nn_meter.builder.model_generator.utils import get_rule_test_model
 from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.utils import builder_config as config
 from nn_meter.builder.utils.profiled_results import Latency
@@ -186,7 +186,7 @@ class BasicFusionImpl(RuleTestBase):
             op1_alias += '_1'
             op2_alias += '_2'
 
-        op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = get_model_by_ops(op1, op2, self.input_shape)
+        op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = get_rule_test_model(op1, op2, self.input_shape, config.get_module('ruletest'))
         testcase[op1_alias] = {
             'model': op1_model,
             'shapes': op1_shapes,
