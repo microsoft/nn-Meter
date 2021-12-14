@@ -23,14 +23,15 @@ The easiest way to do that is to directly download Android Studio from [this pag
 
 
 #### 2. Get TFLite Benchmark Model
-The `benchmark_model` is a tool provided by TFLite to run a model and output its latency. Because nn-Meter need to parse the text output of `benchmark_model`, a fixed version is required. Download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
+The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/) to run a model and output its latency. Because nn-Meter need to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released a modified version of `benchmark_model` based on `tensorflow==2.1`. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
 
-> We are working to release the source code of this modified version.
+NOTE: in the situation to deal with customized test case, our `benchmark_model` is probably not suitable. Users could follow [official guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
 
 #### 3. Setup Benckmark Tool on Device
-2. Push the benchmark_model to edge device by specifying its serial.
+Push the `benchmark_model` to edge device by specifying its serial (if any).
 ``` Bash
-adb -s <device-serial> push bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model /data/local/tmp
+adb [-s <device-serial>] push bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model /data/local/tmp
+# add executable permission to benchmark_model
 adb shell chmod +x /data/local/tmp/benchmark_model
 ```
 
