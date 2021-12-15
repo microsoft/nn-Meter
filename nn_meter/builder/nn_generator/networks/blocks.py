@@ -4,17 +4,39 @@ import tensorflow as tf
 from .operators import *
 
 
-def conv_bn_relu(input,  config):
-    input_shape = ...
-    conv_op = conv(input_shape, config)
-    bn_op = batch_norm(input_shape, config)
-    relu_op = relu(input_shape, config)
-    return x
+def conv_bn_relu(input_shape, config):
+    conv_op, out_shape = conv(input_shape, config)
+    bn_op, _ = batch_norm(out_shape, config)
+    relu_op, _ = relu(out_shape, config)
+    
+    class ConvBnRelu(tf.keras.Model):
+        def __init__(self, conv_op, bn_op, relu_op):
+            super().__init__()
+            self.conv = conv_op
+            self.bn = bn_op
+            self.relu = relu_op
+
+        def call(self, inputs):
+            x = self.conv(inputs)
+            x = self.bn(x)
+            x = self.relu(x)
+            return x
+
+    return ConvBnRelu(conv_op, bn_op, relu_op)
 
 
-def conv(input, config):
-    x = conv(input, cout, kernelsize, stride=stride)
-    return x
+def conv(input_shape, config):
+    conv_op, _ = conv(input_shape, config)
+
+    class Conv(tf.keras.Model):
+        def __init__(self, conv_op):
+            super().__init__()
+            self.conv = conv_op
+
+        def call(self, inputs):
+            return self.conv(inputs)
+
+    return Conv(conv_op)
 
 
 def conv_bn_relu_maxpool(input, kernelsize, cin, cout, stride, mks, mstride, istraining = False, pad = False):

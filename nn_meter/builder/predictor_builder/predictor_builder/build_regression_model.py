@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import os
 from .extract_feature import *
-from .kernel_predictor import *
+from .predictor_zoo import *
 from sklearn.model_selection import train_test_split
 from math import sqrt
 
@@ -99,7 +99,7 @@ def build_predictor(hardware, dir, kernel, large_error_threshold = 0.2):
                 y1 = testy[i]
                 y2 = predicts[i]
                 error = abs(y1-y2)/y1
-                if error>large_error_threshold:
+                if error > large_error_threshold:
                     print(testx[i])
                     cfg = get_config_by_features(kernelname, testx[i])
                     cfgs.append(cfg)

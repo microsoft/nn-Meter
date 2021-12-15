@@ -11,10 +11,9 @@ def get_adasample_model(block_type, cfg):
       """ returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
       """
       if block_type == 'conv-bn-relu':
-          graphname = convbnrelu.__name__
-          inputs = get_inputs_by_shapes([[1, hw_in, hw_in, cin]])
+          input_shape = [[1, hw_in, hw_in, cin]]
           input_tensor = inputs[0]
-          out = convbnrelu(input_tensor, kernel_size, cin, cout, stride)
+          out = convbnrelu(input_shape, )
           #outputs = [res_out]
           return input_tensor, out, '_'.join([str(x) for x in configs]), graphname
 

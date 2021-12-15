@@ -3,7 +3,7 @@
 import tensorflow as tf
 
 from . import operators
-from .utils import get_op_output_shape, get_op_is_two_inputs
+from .utils import get_op_is_two_inputs
 from nn_meter.builder.utils import get_inputs_by_shapes
 
 
@@ -42,8 +42,7 @@ class TwoOpModel(tf.keras.Model):
 
 
 def get_operator_by_name(name, input_shape, config = None):
-    operator = getattr(operators, name)(input_shape, config)
-    output_shape = get_op_output_shape(name, input_shape)
+    operator, output_shape = getattr(operators, name)(input_shape, config)
     op_is_two_inputs = get_op_is_two_inputs(name)
     return operator, output_shape, op_is_two_inputs
 

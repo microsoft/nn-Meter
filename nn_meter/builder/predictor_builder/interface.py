@@ -3,7 +3,7 @@
 from argparse import ArgumentParser
 
 from regression.build_regression_model import*
-from ..model_generator.adasample_model import get_adasample_model
+from ..nn_generator.predbuild_model import get_adasample_model
 
 from silence_tensorflow import silence_tensorflow
 silence_tensorflow()
@@ -100,6 +100,6 @@ def run_adaptive_sampler():
     acc10,cfgs=build_predictor('cpu','kernel_latency',args.kernel,large_error_threshold=0.2)## use current sampled data to build regression model, and locate data with large errors in testset
     print('cfgs',cfgs)
     ### for data with large-errors, we conduct fine-grained data sampling in the channel number dimensions
-    generator=generation(args)
+    generator=Generator(args)
     generator.setconfig(args.kernel,args.sample_count,cfgs)
     generator.run('finegrained')
