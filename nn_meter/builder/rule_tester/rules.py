@@ -6,7 +6,7 @@ from tensorflow import keras
 from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.utils import builder_config as config
 from nn_meter.builder.utils.profiled_results import Latency
-from nn_meter.builder.model_generator.ruletest_model import get_ruletest_model
+from nn_meter.builder.nn_generator.ruletest_model import get_ruletest_model
 
 rules = {}
 

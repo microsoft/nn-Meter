@@ -26,7 +26,12 @@ setup(
         ],
     packages=find_packages(),
     package_data={
-        'nn_meter': ['configs/*.yaml', 'configs/builder/*.yaml', 'kernel_detector/fusionlib/*.json'],
+        'nn_meter': [
+            'configs/*.yaml',
+            'configs/builder/backends/*.yaml',
+            'configs/builder/rule_tester/*.yaml',
+            'configs/builder/predictor_builder/*.yaml',
+            'kernel_detector/fusionlib/*.json'],
     },
     entry_points={
         'console_scripts': ['nn-meter=nn_meter.nn_meter_cli:nn_meter_cli'],

@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import os
 from tensorflow import keras
-
+from nn_meter.builder.utils import get_inputs_by_shapes
 from silence_tensorflow import silence_tensorflow
 silence_tensorflow()
 
@@ -56,8 +56,5 @@ def get_op_is_two_inputs(op_name):
         raise ValueError(f"Unsupported operator name: {op_name} in rule-tester.")
 
 
-def save_testcase(testcase):
-    model_path = os.path.join(self.model_dir, self.name + '_' + op)
-    model['model'](get_tensor_by_shapes(model['shapes']))
-    keras.models.save_model(model['model'], model_path)
-    testcase[op]['model'] = model_path
+def save_testcase(model, savepath):    
+    keras.models.save_model(model, savepath)

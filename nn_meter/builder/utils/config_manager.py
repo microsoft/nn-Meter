@@ -21,11 +21,11 @@ def copy_to_workspace(platform_type, workspace_path):
     elif platform_type == 'openvino':
         config_name = __backend_openvino_cfg_filename__
     copyfile(
-        pkg_resources.resource_filename(".".join(__name__.split('.')[:-3]), 'configs/builder/' + config_name), 
+        pkg_resources.resource_filename(".".join(__name__.split('.')[:-3]), 'configs/builder/backends/' + config_name), 
         os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
     # rule test config
     copyfile(
-        pkg_resources.resource_filename(".".join(__name__.split('.')[:-3]), f'configs/builder/' + __ruletest_cfg_filename__), 
+        pkg_resources.resource_filename(".".join(__name__.split('.')[:-3]), f'configs/builder/rule_tester/' + __ruletest_cfg_filename__), 
         os.path.join(os.path.join(workspace_path, 'configs'), 'ruletest_config.yaml'))
 
 

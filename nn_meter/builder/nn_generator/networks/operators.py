@@ -12,7 +12,7 @@ This file contains the keras implementation of operators, return (the function o
 #---------------------- convolution layer ----------------------#
 
 def conv(input_shape, config = None):
-    cout = input_shape[2] if "cout" not in config else config["cout"] 
+    cout = input_shape[2] if "cout" not in config else config["cout"]
     output_shape = [shape for shape in input_shape[:2]] + [cout]
     return keras.layers.Conv2D(
             cout,
@@ -31,10 +31,11 @@ def dwconv(input_shape, config = None):
 
 
 def convtrans(input_shape, config = None):
+    cout = input_shape[2] if "cout" not in config else config["cout"] 
     class Conv2dTranspose(keras.layers.Layer):
-        def __init__(self):
+        def __init__(self, cout):
             super().__init__()
-            self.filters = tf.Variable(tf.ones([config['kernel_size'], config['kernel_size'], input_shape[2], input_shape[2]])) 
+            self.filters = tf.Variable(tf.ones([config['kernel_size'], config['kernel_size'], cout, cout])) 
         def call(self, inputs):
             return tf.nn.conv2d_transpose(
                 inputs,
@@ -42,7 +43,7 @@ def convtrans(input_shape, config = None):
                 output_shape=[1] + input_shape,
                 strides=[1, 1]
             )
-    return Conv2dTranspose(), input_shape
+    return Conv2dTranspose(cout), input_shape
 
 
 def grouped_conv(input_shape, config = None):
@@ -57,7 +58,7 @@ def mix_conv(input_shape, config = None):
 #------------------ normalization and pooling ------------------#
 
 def batch_norm(input_shape, config = None):
-    return keras.layers.BatchNormalization(epsilon=1e-3, decay=0.9), input_shape
+    return keras.layers.BatchNormalization(), input_shape
 
 
 def pooling(input_shape, config = None):
