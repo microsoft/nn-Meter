@@ -215,11 +215,11 @@ class BasicFusion(RuleTestBase):
         'concat',
         'convtrans',
         'dense',
-        'pooling',
+        'avgpool',
     ]
 
     disabled_combinations = [
-        ('dense', 'pooling'),
+        ('dense', 'avgpool'),
         ('dense', 'dwconv'),
         ('dense', 'conv'),
         ('dense', 'convtrans'),

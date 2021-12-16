@@ -48,7 +48,7 @@ def get_output_folder(parent_dir, run_name):
 
 
 def get_op_is_two_inputs(op_name):
-    if op_name in ["conv", "dwconv", "convtrans", "pooling", "se", "dense", "relu", "hswish", "reshape"]:
+    if op_name in ["conv", "dwconv", "convtrans", "avgpool", "se", "dense", "relu", "hswish", "reshape"]:
         return False
     elif op_name in ["add", "concat"]:
         return True
