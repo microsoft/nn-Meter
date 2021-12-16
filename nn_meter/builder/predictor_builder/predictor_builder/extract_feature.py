@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.metrics import mean_squared_error
 
 
-def get_accuracy(y_pred, y_true, threshold=0.01):
+def get_accuracy(y_pred, y_true, threshold = 0.01):
     a = (y_true - y_pred) / y_true
     b = np.where(abs(a) <= threshold)
     c = abs(y_true - y_pred)

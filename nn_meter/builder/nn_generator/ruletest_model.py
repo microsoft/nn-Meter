@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import tensorflow as tf
 
-from . import operators
+from .networks import operators
 from .utils import get_op_is_two_inputs
 from nn_meter.builder.utils import get_inputs_by_shapes
 

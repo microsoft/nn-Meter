@@ -9,55 +9,6 @@ from math import sqrt
 
 def get_config_by_features(kernelname, feature):
     cfg = {}
-    if 'conv' in kernelname:
-        [hw, cin, cout, ks, stride, flops, params] = feature
-        cfg = {}
-    
-        cfg['HW'] = hw 
-        cfg['CIN'] = cin 
-        cfg['COUT'] = cout
-        cfg['KERNEL_SIZE'] = ks
-        cfg['STRIDE'] = stride 
-    
-    if kernelname in ['addrelu', 'add']:
-        [hw, cin1, cin2] = feature
-        cfg = {}
-        cfg['HW'] = hw 
-        cfg['CIN'] = cin1 
-        cfg['COUT'] = cin2 
-    
-    if kernelname in ['bnrelu', 'bn', 'split', 'relu', 'hswish', 'channelshuffle', 'globalavgpool', 'se']:
-        [hw, cin] = feature
-        cfg = {}
-        cfg['HW'] = hw 
-        cfg['CIN'] = cin
-
-    if kernelname in ['maxpool', 'avgpool']:
-        a = 0
-        [hw, cin, cout, ks, stride] = feature
-        cfg = {}
-        cfg['HW'] = hw 
-        cfg['CIN'] = cin 
-        cfg['KERNEL_SIZE'] = ks
-        cfg['STRIDE'] = stride 
-
-    if kernelname == 'concat':
-        print('here')
-        hw = feature[0]
-        ncs = feature[1]
-        cins = []
-        for i in range(2, len(feature)):
-            cins.append(feature[i])
-        cfg = {}
-        cfg['HW'] = hw 
-        cfg['CINS'] = cins
-
-    if kernelname  == 'fc':
-        #print(feature)
-        [cin, cout, flops, params] = feature 
-        cfg = {}
-        cfg['CIN'] = cin 
-        cfg['COUT'] = cout
     return cfg 
 
 
@@ -80,7 +31,7 @@ def build_predictor(hardware, dir, kernel, large_error_threshold = 0.2):
     cfgs: configuration list, where each item is a configuration for the large-error-data
     """
    
-    filename = dir+'/'+hardware+'/'+kernel+'.csv'
+    filename = os.path.join(dir, hardware, kernel + '.csv')
     cfgs = []
     if os.path.isfile(filename):
         print("reading from file:", filename, ", the targeting kernel is", kernel)
