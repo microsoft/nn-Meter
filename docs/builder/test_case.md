@@ -55,7 +55,7 @@ layers = [
     'concat',
     'convtrans',
     'dense',
-    'pooling',
+    'avgpool',
 ]
 ```
 
