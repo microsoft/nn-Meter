@@ -6,7 +6,7 @@ from .operators import *
 
 def conv_bn_relu(input_shape, config):
     conv_op, out_shape = conv(input_shape, config)
-    bn_op, _ = batch_norm(out_shape, config)
+    bn_op, out_shape = batch_norm(out_shape, config)
     relu_op, _ = relu(out_shape, config)
     
     class ConvBnRelu(tf.keras.Model):
@@ -39,126 +39,348 @@ def conv(input_shape, config):
     return Conv(conv_op)
 
 
-def conv_bn_relu_maxpool(input, kernelsize, cin, cout, stride, mks, mstride, istraining = False, pad = False):
-    x1 = input
-    x = conv(x1, cout, kernelsize, stride=stride)
-    x = batch_norm(x)
-    x = relu(x)
-    x = max_pooling(x, mks, mstride, opname='max_pool')
-    return x
+def conv_bn_relu_maxpool(input_shape, config):
+    
+    conv_op, out_shape = conv(input_shape, config)
+    bn_op, out_shape = batch_norm(out_shape, config)
+    relu_op, out_shape = relu(out_shape, config)
+    maxpool_op, _ = maxpool(out_shape, config)
+    
+    class ConvBnReluMaxpool(tf.keras.Model):
+        def __init__(self, conv_op, bn_op, relu_op, maxpool_op):
+            super().__init__()
+            self.conv = conv_op
+            self.bn = bn_op
+            self.relu = relu_op
+            self.maxpool = maxpool_op
+
+        def call(self, inputs):
+            x = self.conv(inputs)
+            x = self.bn(x)
+            x = self.relu(x)
+            return x
+
+    return ConvBnReluMaxpool(conv_op, bn_op, relu_op, maxpool_op)
 
 
-def conv_bn_hswish(input, kernelsize, cin, cout, stride, istraining = False, pad = False):
-    x1 = input
-    x = conv(x1, cout, kernelsize, stride=stride)
-    x = batch_norm(x)
-    x = hswish(x, config)
-    return x
+def conv_bn_hswish(input_shape, config):
+    conv_op, out_shape = conv(input_shape, config)
+    bn_op, out_shape = batch_norm(out_shape, config)
+    hswish_op, _ = hswish(out_shape, config)
+    
+    class ConvBnHswish(tf.keras.Model):
+        def __init__(self, conv_op, bn_op, hswish_op):
+            super().__init__()
+            self.conv = conv_op
+            self.bn = bn_op
+            self.hswish = hswish_op
+
+        def call(self, inputs):
+            x = self.conv(inputs)
+            x = self.bn(x)
+            x = self.hswish(x)
+            return x
+
+    return ConvBnHswish(conv_op, bn_op, hswish_op)
 
 
-def conv_bn_relu6(input, kernelsize, cin, cout, stride, istraining = False):
-    x = conv(input, cout, kernelsize, stride=stride)
-    x = batch_norm(x)
-    x = relu6(x, config)
-    return x
+def conv_bn_relu6(input_shape, config):
+    conv_op, out_shape = conv(input_shape, config)
+    bn_op, out_shape = batch_norm(out_shape, config)
+    relu6_op, _ = relu6(out_shape, config)
+    
+    class ConvBnRelu6(tf.keras.Model):
+        def __init__(self, conv_op, bn_op, relu6_op):
+            super().__init__()
+            self.conv = conv_op
+            self.bn = bn_op
+            self.relu6 = relu6_op
+
+        def call(self, inputs):
+            x = self.conv(inputs)
+            x = self.bn(x)
+            x = self.relu6(x)
+            return x
+
+    return ConvBnRelu6(conv_op, bn_op, relu6_op)
 
 
-def dwconv_bn_relu(input,kernelsize,cin,cout,stride,name='',istraining=False,pad=False):
-    x1 = input
-    x = dwconv(x1, kernelsize, stride=stride)
-    x = batch_norm(x)
-    x = relu(x, )    
-    return x
+def dwconv_bn_relu(input_shape, config):
+    dwconv_op, out_shape = dwconv(input_shape, config)
+    bn_op, out_shape = batch_norm(out_shape, config)
+    relu_op, _ = relu(out_shape, config)
+    
+    class DwConvBnRelu(tf.keras.Model):
+        def __init__(self, dwconv_op, bn_op, relu_op):
+            super().__init__()
+            self.dwconv = dwconv_op
+            self.bn = bn_op
+            self.relu = relu_op
+
+        def call(self, inputs):
+            x = self.dwconv(inputs)
+            x = self.bn(x)
+            x = self.relu(x)
+            return x
+
+    return DwConvBnRelu(dwconv_op, bn_op, relu_op)
 
 
-def dwconv(input, kernelsize, cin, cout, stride, istraining = False, pad = False):
-    x1 = input
-    x = dwconv(x1, kernelsize, stride=stride)    
-    return x
+def dwconv(input_shape, config):
+    dwconv_op, _ = dwconv(input_shape, config)
+
+    class DwConv(tf.keras.Model):
+        def __init__(self, dwconv_op):
+            super().__init__()
+            self.dwconv = dwconv_op
+
+        def call(self, inputs):
+            return self.dwconv(inputs)
+
+    return DwConv(dwconv_op)
 
 
-def dwconv_bn_hswish(input, kernelsize, cin, cout, stride, istraining = False, pad = False):
-    x1 = input
-    x = dwconv(x1, kernelsize, stride=stride)
-    x = batch_norm(x, opname='dwconvbnrelu.1')
-    x = hswish(x)
-    return x
+def dwconv_bn_hswish(input_shape, config):
+    dwconv_op, out_shape = dwconv(input_shape, config)
+    bn_op, out_shape = batch_norm(out_shape, config)
+    hswish_op, _ = hswish(out_shape, config)
+    
+    class DwConvBnHswish(tf.keras.Model):
+        def __init__(self, dwconv_op, bn_op, hswish_op):
+            super().__init__()
+            self.dwconv = dwconv_op
+            self.bn = bn_op
+            self.hswish = hswish_op
+
+        def call(self, inputs):
+            x = self.dwconv(inputs)
+            x = self.bn(x)
+            x = self.hswish(x)
+            return x
+
+    return DwConvBnHswish(dwconv_op, bn_op, hswish_op)
 
 
-def hswish(input, istraining = False, pad = False):
-    x = hswish(input)
-    return x
+def hswish(input_shape, config):
+    hswish_op, _ = hswish(input_shape, config)
+
+    class Hswish(tf.keras.Model):
+        def __init__(self, hswish_op):
+            super().__init__()
+            self.hswish = hswish_op
+
+        def call(self, inputs):
+            return self.hswish(inputs)
+
+    return Hswish(hswish_op)
 
 
-def dwconv_bn_relu6(input, kernelsize, cin, cout, stride, istraining = False):
-    x = dwconv(input, kernelsize, stride=stride, opname='dwconvbnrelu6.1')
-    x = batch_norm(x, opname='dwconvbnrelu6.1')
-    x = relu(x)
-    return x
+def dwconv_bn_relu6(input_shape, config):
+    dwconv_op, out_shape = dwconv(input_shape, config)
+    bn_op, out_shape = batch_norm(out_shape, config)
+    relu6_op, _ = relu6(out_shape, config)
+    
+    class DwConvBnRelu6(tf.keras.Model):
+        def __init__(self, dwconv_op, bn_op, relu6_op):
+            super().__init__()
+            self.dwconv = dwconv_op
+            self.bn = bn_op
+            self.relu6 = relu6_op
+
+        def call(self, inputs):
+            x = self.dwconv(inputs)
+            x = self.bn(x)
+            x = self.relu6(x)
+            return x
+
+    return DwConvBnRelu6(dwconv_op, bn_op, relu6_op)
 
 
-def fc(input, cout, pad = False):
-    x1 = input
-    x = fc(x1, cout, opname = 'fc')
-    return x
+def fc(input_shape, config):
+    fc_op, _ = fc(input_shape, config)
+
+    class FC(tf.keras.Model):
+        def __init__(self, fc_op):
+            super().__init__()
+            self.fc = fc_op
+
+        def call(self, inputs):
+            return self.fc(inputs)
+
+    return FC(fc_op)
 
 
-def maxpool(input, kernelsize, stride, pad = False):
-    x1 = input
-    return max_pooling(x1, kernelsize, stride, opname='max_pool')
+def maxpool(input_shape, config):
+    maxpool_op, _ = maxpool(input_shape, config)
+
+    class MaxPool(tf.keras.Model):
+        def __init__(self, maxpool_op):
+            super().__init__()
+            self.maxpool = maxpool_op
+
+        def call(self, inputs):
+            return self.maxpool(inputs)
+
+    return MaxPool(maxpool_op)
 
 
-def avgpool(input, kernelsize, stride, name = ''):
-    return avg_pooling(input, kernelsize, stride, opname='avg_pool')
+def avgpool(input_shape, config):
+    avgpool_op, _ = avgpool(input_shape, config)
+
+    class AvgPool(tf.keras.Model):
+        def __init__(self, avgpool_op):
+            super().__init__()
+            self.avgpool = avgpool_op
+
+        def call(self, inputs):
+            return self.avgpool(inputs)
+
+    return AvgPool(avgpool_op)
 
 
-def bn_relu(input, name = ''):
-    x = batch_norm(input, opname='bnrelu.1')
-    x = relu(x)
-    return  x
+def bn_relu(input_shape, config):
+    bn_op, out_shape = batch_norm(input_shape, config)
+    relu_op, _ = relu(out_shape, config)
+    
+    class BnRelu(tf.keras.Model):
+        def __init__(self, bn_op, relu_op):
+            super().__init__()
+            self.bn = bn_op
+            self.relu = relu_op
+
+        def call(self, inputs):
+            x = self.bn(inputs)
+            x = self.relu(x)
+            return x
+
+    return BnRelu(bn_op, relu_op)
 
 
-def bn(input, name = ''):
-    x = batch_norm(input, opname='bnrelu.1')
-    return x
+def bn(input_shape, config):
+    bn_op, _ = batch_norm(input_shape, config)
+
+    class BN(tf.keras.Model):
+        def __init__(self, bn_op):
+            super().__init__()
+            self.bn = bn_op
+
+        def call(self, inputs):
+            return self.bn(inputs)
+
+    return BN(bn_op)
 
 
-def relu(input,name = ""):
-    x = relu(input)
-    return x
+def relu(input_shape, config):
+    relu_op, _ = relu(input_shape, config)
+
+    class ReLu(tf.keras.Model):
+        def __init__(self, relu_op):
+            super().__init__()
+            self.relu = relu_op
+
+        def call(self, inputs):
+            return self.relu(inputs)
+
+    return ReLu(relu_op)
 
 
-def concats(inputs, name = ''):
-    x = concats(input)
-    return x
+def concats(input_shape, config):
+    concat_op, _ = concat(input_shape, config)
+
+    class Concat(tf.keras.Model):
+        def __init__(self, concat_op):
+            super().__init__()
+            self.concat = concat_op
+
+        def call(self, inputs):
+            return self.concat([inputs, inputs])
+
+    return Concat(concat_op)
 
 
-def add_relu(inputs, istraining = False, pad = False):
-    x = tf.add(inputs[0], inputs[1])
-    x = relu(x)   
-    return x
+def add(input_shape, config):
+    add_op, _ = add(input_shape, config)
+
+    class Add(tf.keras.Model):
+        def __init__(self, add_op):
+            super().__init__()
+            self.add = add_op
+
+        def call(self, inputs):
+            return self.add([inputs, inputs])
+
+    return Add(add_op)
 
 
-def add(inputs, istraining = False, pad = False):
-    x = tf.add(inputs[0], inputs[1]) 
-    return x
+def add_relu(input_shape, config):
+    add_op, out_shape = add(input_shape, config)
+    relu_op, _ = relu(out_shape, config)
+    
+    class AddRelu(tf.keras.Model):
+        def __init__(self, add_op, relu_op):
+            super().__init__()
+            self.add = add_op
+            self.relu = relu_op
+
+        def call(self, inputs):
+            x = self.add([inputs, inputs])
+            x = self.relu(x)
+            return x
+
+    return AddRelu(add_op, relu_op)
 
 
-def global_avgpool(input, name = ""):
-    x = global_avgpooling(input, name=name)
-    return x
+def global_avgpool(input_shape, config):
+    global_avgpool_op, _ = global_avgpool(input_shape, config)
+
+    class GlobalAvgPool(tf.keras.Model):
+        def __init__(self, global_avgpool_op):
+            super().__init__()
+            self.global_avgpool = global_avgpool_op
+
+        def call(self, inputs):
+            return self.global_avgpool(inputs)
+
+    return GlobalAvgPool(global_avgpool_op)
 
 
-def split(input, num_or_size_splits = 2,  name = ""):
-     out1, out2 = tf.split(input, num_or_size_splits=2, axis=3)
-     return out1, out2
+def split(input_shape, config):
+    split_op, _ = split(input_shape, config)
+
+    class Split(tf.keras.Model):
+        def __init__(self, split_op):
+            super().__init__()
+            self.split = split_op
+
+        def call(self, inputs):
+            return self.split(inputs)
+
+    return Split(split_op)
  
  
-def channel_shuffle(input, groups = 2, name = ""):
-    x = channel_shuffle(input, groups, name)
-    return x
+def channel_shuffle(input_shape, config):
+    channel_shuffle_op, _ = channel_shuffle(input_shape, config)
+
+    class ChannelShuffle(tf.keras.Model):
+        def __init__(self, channel_shuffle_op):
+            super().__init__()
+            self.channel_shuffle = channel_shuffle_op
+
+        def call(self, inputs):
+            return self.channel_shuffle(inputs)
+
+    return ChannelShuffle(channel_shuffle_op)
 
 
-def se(input, cin, name = ""):
-    x = se(input,cin//4)
-    return x
+def se_block(input_shape, config):
+    se_op, _ = se(input_shape, config)
+
+    class SE(tf.keras.Model):
+        def __init__(self, se_op):
+            super().__init__()
+            self.se = se_op
+
+        def call(self, inputs):
+            return self.se(inputs)
+
+    return SE(se_op)

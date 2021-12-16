@@ -61,23 +61,19 @@ def batch_norm(input_shape, config = None):
     return keras.layers.BatchNormalization(), input_shape
 
 
-def pooling(input_shape, config = None):
+def global_avgpool(input_shape, config = None):
+    pass
+
+
+def maxpool(input_shape, config = None):
+    # features, kernelsize, stride, padding = 'SAME', opname = ''
+    pass
+
+
+def avgpool(input_shape, config = None):
+    # features, kernelsize, stride, padding = 'SAME', opname = ''
     output_shape = [int(input_shape[0] / 2), int(input_shape[1] / 2), input_shape[2]]
     return keras.layers.AveragePooling2D(padding=config['padding']), output_shape
-
-
-def global_avgpooling(input_shape, config = None):
-    pass
-
-
-def max_pooling(input_shape, config = None):
-    # features, kernelsize, stride, padding = 'SAME', opname = ''
-    pass
-
-
-def avg_pooling(input_shape, config = None):
-    # features, kernelsize, stride, padding = 'SAME', opname = ''
-    pass
 
 #------------------------ other modules ------------------------#
 
@@ -173,3 +169,10 @@ def concat(input_shape, config = None):
 
 def flatten(input_shape, config = None):
     return keras.layers.Flatten(), input_shape
+
+
+def split(input_shape, config = None):
+    output_shape = [input_shape[0], input_shape[1], input_shape[2] // 2]
+    def func(inputs):
+        return tf.split(inputs, num_or_size_splits=2, axis=3)
+    return func, output_shape
