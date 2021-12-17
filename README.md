@@ -94,7 +94,7 @@ nn-meter --list-predictors
 
 ## Predict latency of saved CNN model
 
-After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands sample pb  model can be downloaded here [mobilenetv3small_0.pb](https://drive.google.com/file/d/1ncCFrw_vACYRmY9Xo7jhOCpip3GEfeHd/view?usp=sharing)
+After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands sample models can be downloaded here [mobilenetv3small_0.pb](https://drive.google.com/file/d/1ncCFrw_vACYRmY9Xo7jhOCpip3GEfeHd/view?usp=sharing) ,  [mobilenetv3small_0.onx](https://drive.google.com/file/d/1Z7l4UXlmOymyF1D1yg8jvDf5s7jeDG8s/view?usp=sharing) ,  [mobilenetv3small.json](https://drive.google.com/file/d/1gr7IXXKOnPjD1Kzf91xOFuVPE5hMqXui/view?usp=sharing)
 
 ```bash
 # for Tensorflow (*.pb) file
