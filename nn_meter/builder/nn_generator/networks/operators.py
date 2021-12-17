@@ -12,30 +12,30 @@ This file contains the keras implementation of operators, return (the function o
 #---------------------- convolution layer ----------------------#
 
 def conv(input_shape, config = None):
-    cout = input_shape[2] if "cout" not in config else config["cout"]
+    cout = input_shape[2] if "COUT" not in config else config["COUT"]
     output_shape = [shape for shape in input_shape[:2]] + [cout]
     return keras.layers.Conv2D(
             cout,
-            kernel_size=config['kernel_size'],
-            padding=config['padding'],
-            strides=config['strides']
+            kernel_size=config["KERNEL_SIZE"],
+            strides=config["STRIDES"],
+            padding="same"
         ), output_shape
 
 
 def dwconv(input_shape, config = None):
     return keras.layers.DepthwiseConv2D(
-            kernel_size=config['kernel_size'],
-            padding=config['padding'],
-            strides=config['strides']
+            kernel_size=config["KERNEL_SIZE"],
+            strides=config["STRIDES"],
+            padding="same"
         ), input_shape
 
 
 def convtrans(input_shape, config = None):
-    cout = input_shape[2] if "cout" not in config else config["cout"] 
+    cout = input_shape[2] if "COUT" not in config else config["COUT"] 
     class Conv2dTranspose(keras.layers.Layer):
         def __init__(self, cout):
             super().__init__()
-            self.filters = tf.Variable(tf.ones([config['kernel_size'], config['kernel_size'], cout, cout])) 
+            self.filters = tf.Variable(tf.ones([config["KERNEL_SIZE"], config["KERNEL_SIZE"], cout, cout])) 
         def call(self, inputs):
             return tf.nn.conv2d_transpose(
                 inputs,
@@ -45,16 +45,6 @@ def convtrans(input_shape, config = None):
             )
     return Conv2dTranspose(cout), input_shape
 
-
-def grouped_conv(input_shape, config = None):
-    pass
-
-
-def mix_conv(input_shape, config = None):
-    # features, num_groups: int, stride: int
-    pass
-
-
 #------------------ normalization and pooling ------------------#
 
 def batch_norm(input_shape, config = None):
@@ -62,23 +52,38 @@ def batch_norm(input_shape, config = None):
 
 
 def global_avgpool(input_shape, config = None):
-    pass
+    return keras.layers.GlobalAveragePooling2D(), input_shape[2]
 
 
 def maxpool(input_shape, config = None):
-    # features, kernelsize, stride, padding = 'SAME', opname = ''
-    pass
+    output_h = (input_shape[0] - 1) // config["POOL_STRIDES"] + 1
+    output_w = (input_shape[1] - 1) // config["POOL_STRIDES"] + 1
+
+    return keras.layers.MaxPool2D(
+        pool_size=config["KERNEL_SIZE"],
+        strides=config["POOL_STRIDES"],
+        padding="same"
+        ), [output_h, output_w, input_shape[2]]
 
 
 def avgpool(input_shape, config = None):
-    # features, kernelsize, stride, padding = 'SAME', opname = ''
-    output_shape = [int(input_shape[0] / 2), int(input_shape[1] / 2), input_shape[2]]
-    return keras.layers.AveragePooling2D(padding=config['padding']), output_shape
+    output_h = (input_shape[0] - 1) // config["POOL_STRIDES"] + 1
+    output_w = (input_shape[1] - 1) // config["POOL_STRIDES"] + 1
+
+    return keras.layers.AveragePooling2D(
+        pool_size=config["KERNEL_SIZE"],
+        strides=config["POOL_STRIDES"],
+        padding="same"
+        ), [output_h, output_w, input_shape[2]]
 
 #------------------------ other modules ------------------------#
 
 def fc(input_shape, config = None):
-    pass
+    # input shape: [1, cin], weight shape: [cin, cout], output shape: [1, cout]
+    out_units = input_shape[1] if "COUT" in config else config["COUT"]
+    def func(input, weight):
+        return tf.matmul(input, weight)
+    return func, [out_units]
 
 
 def se(input_shape, config = None):
@@ -102,7 +107,7 @@ def se(input_shape, config = None):
                 inputs,
                 ksize=[1] + input_shape[0:2] + [1],
                 strides=[1, 1, 1, 1],
-                padding='VALID',
+                padding="VALID",
             )
             x = self.conv1(x)
             x = tf.nn.relu(x)
@@ -112,11 +117,8 @@ def se(input_shape, config = None):
 
 
 def dense(input_shape, config = None):
-    return keras.layers.Dense(input_shape[0]), input_shape
-
-
-def channel_shuffle():
-    pass
+    units = input_shape[0] if "UNITS" not in config else config["UNITS"]
+    return keras.layers.Dense(units), input_shape
 
 #-------------------- activation function --------------------#
 
@@ -168,7 +170,8 @@ def concat(input_shape, config = None):
 
 
 def flatten(input_shape, config = None):
-    return keras.layers.Flatten(), input_shape
+    output_shape = np.prod(input_shape)
+    return keras.layers.Flatten(), output_shape
 
 
 def split(input_shape, config = None):

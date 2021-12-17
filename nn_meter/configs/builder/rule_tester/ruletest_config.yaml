@@ -1,9 +1,11 @@
+#TODO: refine all params name and management range
 default_input_shape: [28, 28, 16]
+CNI: 16
 d1_input_shape: [428]
 filters: 256
-kernel_size: 3
-padding: 'same'
-strides: 1
+KERNEL_SIZE: 3
+STRIDES: 1
+POOL_STRIDES: 2
 enabled: ['BF', 'MON', 'RT']
 params:
     BF:

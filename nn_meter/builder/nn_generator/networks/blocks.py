@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import tensorflow as tf 
+import tensorflow as tf
+
+from nn_meter.builder.utils.utils import get_tensor_by_shapes 
 from .operators import *
 
 
@@ -25,7 +27,7 @@ def conv_bn_relu(input_shape, config):
     return ConvBnRelu(conv_op, bn_op, relu_op)
 
 
-def conv(input_shape, config):
+def conv_block(input_shape, config):
     conv_op, _ = conv(input_shape, config)
 
     class Conv(tf.keras.Model):
@@ -126,7 +128,7 @@ def dwconv_bn_relu(input_shape, config):
     return DwConvBnRelu(dwconv_op, bn_op, relu_op)
 
 
-def dwconv(input_shape, config):
+def dwconv_block(input_shape, config):
     dwconv_op, _ = dwconv(input_shape, config)
 
     class DwConv(tf.keras.Model):
@@ -161,7 +163,7 @@ def dwconv_bn_hswish(input_shape, config):
     return DwConvBnHswish(dwconv_op, bn_op, hswish_op)
 
 
-def hswish(input_shape, config):
+def hswish_block(input_shape, config):
     hswish_op, _ = hswish(input_shape, config)
 
     class Hswish(tf.keras.Model):
@@ -196,21 +198,23 @@ def dwconv_bn_relu6(input_shape, config):
     return DwConvBnRelu6(dwconv_op, bn_op, relu6_op)
 
 
-def fc(input_shape, config):
+def fc_block(input_shape, config):
     fc_op, _ = fc(input_shape, config)
+    weight = tf.random.normal(shape=[config["CIN"], config["COUT"]])
 
     class FC(tf.keras.Model):
-        def __init__(self, fc_op):
+        def __init__(self, fc_op, weight):
             super().__init__()
             self.fc = fc_op
+            self.weight = weight
 
         def call(self, inputs):
-            return self.fc(inputs)
+            return self.fc(inputs, weight)
 
-    return FC(fc_op)
+    return FC(fc_op, weight)
 
 
-def maxpool(input_shape, config):
+def maxpool_block(input_shape, config):
     maxpool_op, _ = maxpool(input_shape, config)
 
     class MaxPool(tf.keras.Model):
@@ -224,7 +228,7 @@ def maxpool(input_shape, config):
     return MaxPool(maxpool_op)
 
 
-def avgpool(input_shape, config):
+def avgpool_block(input_shape, config):
     avgpool_op, _ = avgpool(input_shape, config)
 
     class AvgPool(tf.keras.Model):
@@ -256,7 +260,7 @@ def bn_relu(input_shape, config):
     return BnRelu(bn_op, relu_op)
 
 
-def bn(input_shape, config):
+def bn_block(input_shape, config):
     bn_op, _ = batch_norm(input_shape, config)
 
     class BN(tf.keras.Model):
@@ -270,7 +274,7 @@ def bn(input_shape, config):
     return BN(bn_op)
 
 
-def relu(input_shape, config):
+def relu_block(input_shape, config):
     relu_op, _ = relu(input_shape, config)
 
     class ReLu(tf.keras.Model):
@@ -284,7 +288,7 @@ def relu(input_shape, config):
     return ReLu(relu_op)
 
 
-def concats(input_shape, config):
+def concat_block(input_shape, config):
     concat_op, _ = concat(input_shape, config)
 
     class Concat(tf.keras.Model):
@@ -298,7 +302,7 @@ def concats(input_shape, config):
     return Concat(concat_op)
 
 
-def add(input_shape, config):
+def add_block(input_shape, config):
     add_op, _ = add(input_shape, config)
 
     class Add(tf.keras.Model):
@@ -330,7 +334,7 @@ def add_relu(input_shape, config):
     return AddRelu(add_op, relu_op)
 
 
-def global_avgpool(input_shape, config):
+def global_avgpool_block(input_shape, config):
     global_avgpool_op, _ = global_avgpool(input_shape, config)
 
     class GlobalAvgPool(tf.keras.Model):
@@ -344,7 +348,7 @@ def global_avgpool(input_shape, config):
     return GlobalAvgPool(global_avgpool_op)
 
 
-def split(input_shape, config):
+def split_block(input_shape, config):
     split_op, _ = split(input_shape, config)
 
     class Split(tf.keras.Model):
@@ -359,17 +363,19 @@ def split(input_shape, config):
  
  
 def channel_shuffle(input_shape, config):
-    channel_shuffle_op, _ = channel_shuffle(input_shape, config)
 
     class ChannelShuffle(tf.keras.Model):
-        def __init__(self, channel_shuffle_op):
+        def __init__(self):
             super().__init__()
-            self.channel_shuffle = channel_shuffle_op
 
         def call(self, inputs):
-            return self.channel_shuffle(inputs)
+            _, h, w, c = inputs.get_shape().as_list()
+            x = tf.reshape(inputs, [-1, h, w, 2, c // 2])
+            x = tf.transpose(x, (0, 1, 2, 4, 3))
+            x = tf.reshape(x, [-1, h, w, c])
+            return x
 
-    return ChannelShuffle(channel_shuffle_op)
+    return ChannelShuffle()
 
 
 def se_block(input_shape, config):
@@ -384,3 +390,44 @@ def se_block(input_shape, config):
             return self.se(inputs)
 
     return SE(se_op)
+
+
+def concat_pad(input_shape,  config):
+    pass
+
+
+def grouped_conv(input_shape, config = None):
+    # cin = features.get_shape().as_list()[-1]
+    # cout = num_outputs
+    # #assert cin % num_groups == 0 and cout % num_groups == 0
+
+    # with tf.compat.v1.variable_scope(opname+".grouped_conv"):
+    #     groups = [
+    #         tf.keras.layers.Conv2D(
+    #             filters=num_outputs // num_groups,
+    #             kernel_size=[kernel_size, kernel_size],
+    #             strides=[stride, stride],
+    #             padding="same",
+    #             name="{}/conv".format(i)
+    #         )(x) for i, x in zip(range(num_groups), tf.split(features, num_groups, axis=3))
+    #     ]
+    #     net = tf.concat(groups, axis=3, name="concat")
+
+    # return net
+    pass
+
+
+def mix_conv(input_shape, config = None):
+    # features, num_groups: int, stride: int
+    # cin = features.get_shape().as_list()[-1]
+    # assert cin % num_groups == 0
+
+    # with tf.compat.v1.variable_scope("mix_conv"):
+    #     groups = []
+    #     for x, i in zip(tf.split(features, num_groups, axis=3), range(num_groups)):
+    #         with tf.variable_scope("{}".format(i)):
+    #             kernel_size = i * 2 + 3
+    #             groups.append(depthwise_conv2d(x,kernel_size,stride))
+
+    #     return tf.concat(groups, axis=3)
+    pass

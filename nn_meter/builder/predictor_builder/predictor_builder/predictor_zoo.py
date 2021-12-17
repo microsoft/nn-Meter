@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 
 __MODEL_ZOO__ = {
-    "convbnrelu": {
+    "conv_bn_relu": {
         "cpu": {
             "max_depth": 70,
             "n_estimators": 320,
@@ -35,7 +35,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "dwconvbnrelu": {
+    "dwconv_bn_relu": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 240,
@@ -95,7 +95,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "channelshuffle": {
+    "channel_shuffle": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -115,7 +115,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "se": {
+    "se_block": {
         "cpu": {
             "max_depth": 20,
             "n_estimators": 290,
@@ -144,7 +144,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "maxpool": {
+    "maxpool_block": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 210,
@@ -173,7 +173,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "globalavgpool": {
+    "global_avgpool_block": {
         "cpu": {
             "max_depth": 70,
             "n_estimators": 370,
@@ -184,7 +184,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "hswish": {
+    "hswish_block": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 190,
@@ -213,7 +213,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "avgpool": {
+    "avgpool_block": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -242,7 +242,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "bnrelu": {
+    "bn_relu": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -271,7 +271,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "relu": {
+    "relu_block": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -300,7 +300,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "bn": {
+    "bn_block": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -329,7 +329,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "concat": {
+    "concat_block": {
         "cpu": {
             "max_depth": 100,
             "n_estimators": 690,
@@ -349,7 +349,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "addrelu": {
+    "add_relu": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 570,
@@ -378,7 +378,7 @@ __MODEL_ZOO__ = {
             "random_state": 10,
         }
     },
-    "split": {
+    "split_block": {
         "cpu": {
             "max_depth": 50,
             "n_estimators": 190,
