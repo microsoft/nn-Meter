@@ -110,6 +110,7 @@ nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --ten
 # for torch model from torchvision model zoo (str)
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
 #Example Usage
+pip install onnx-simplifier
 nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --torchvision mobilenet_v2 mobilenet_v2
 
 # for nn-Meter IR (*.json) file
