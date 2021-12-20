@@ -32,12 +32,12 @@ class TwoOpModel(tf.keras.Model):
                 x = self.op1(inputs[0])
             else:
                 x = self.op1(inputs)
-        
+
         if self.op2_is_two_inputs:
             x = self.op2([x, inputs[-1]])
         else:
             x = self.op2(x)
-        
+
         return x
 
 
