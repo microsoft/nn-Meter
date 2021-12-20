@@ -8,19 +8,20 @@ The first step to run rule_tester is to prepare backends and create workspace. U
 
 After creating the workspace, a yaml file named `ruletest_config.yaml` will be placed in `<workspace-path>/configs/`. The ruletest configs includes:
 
-- `default_input_shape`: Default input shape of all testcases except those requiring 1d tensor input. Default value is `[28, 28, 16]`.
-- `d1_input_shape`: Default input shape of all testcases that need 1d tensor input. E.g., fully connected layer. Default value is `[428]`.
-- `filters`: Default filter size. Default value is `256`.
-- `kernel_size`: Default kernel size. Default value is `3`.
-- `padding`: Default padding type. Default value is `"same"`.
-- `strides`: Default strides size. Default value is `1`.
-- `enabled`: The test cases that will be enabled. Currently we implement three kinds of rules, `BasicFusion` (code name `BF`), `MultipleOutNodes` (code name `MON`), `ReadyTensor` (code name `RT`). Among them, `BasicFusion` is the most important one, which will detect whether a pair of op can be fused. Default value is `['BF', 'MON', 'RT']`,
-- `params`: The parameters for each test case. For example, here `eps` define the alpha in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion. Default value is:
+- `HW`: Default input shape of all test cases except those requiring 1d tensor input. Default value is `28`.
+- `CIN`: Default input channel of all test cases. Default value is `16`.
+- `SHAPE_1D`: Default input shape of all testcases that need 1d tensor input. E.g., fully connected layer. Default value is `428`.
+- `COUT`: Default output channel (filter size). Default value is `256`.
+- `KERNEL_SIZE`: Default kernel size. Default value is `3`.
+- `PADDING`: Default padding type. Default value is `"same"`.
+- `STRIDES`: Default strides size. Default value is `1`.
+- `ENABLED`: The test cases that will be enabled. Currently we implement three kinds of rules, `BasicFusion` (code name `BF`), `MultipleOutNodes` (code name `MON`), `ReadyTensor` (code name `RT`). Among them, `BasicFusion` is the most important one, which will detect whether a pair of op can be fused. Default value is `['BF', 'MON', 'RT']`,
+- `PARAMS`: The parameters for each test case. For example, here `eps` define the alpha in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion. Default value is:
     ```yaml
     BF:
         eps: 0.5
     ```
-- `detail`: Whether to attach detail latency results of each testcase to the json output. Default value is `True`.
+- `DETAIL`: Whether to attach detail latency results of each testcase to the json output. Default value is `True`.
 
 Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. The config will take effect after the config file is saved and closed.
 
