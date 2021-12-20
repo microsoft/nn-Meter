@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import random
-import numpy as np
-
-from .utils import read_conv_zoo, read_dwconv_zoo, read_fc_zoo, read_pool_zoo, sample_based_on_distribution, data_clean
+from .utils import *
 
 
 def sampling_conv(count):
@@ -11,54 +9,47 @@ def sampling_conv(count):
     Sampling functions for conv kernels based on conv_zoo, which contains configuration values from existing model zoo for conv kernel. 
     The values are stored in prior_zoo/modelzoo_conv.csv.
     '''
-    hws, cins, couts, ks, groups, strides = read_conv_zoo()
-    newcins = sample_based_on_distribution(cins, count)     
-    newcouts = sample_based_on_distribution(couts, count)
+    hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
+    new_cins = sample_based_on_distribution(cins, count)     
+    new_couts = sample_based_on_distribution(couts, count)
 
-    # 70% of sampled data are totally from prior distribution
+    # 70% of sampled data are from prior distribution
     count1 = int(count * 0.7)
-    newhws = sample_based_on_distribution(hws, count1)
-    newks = sample_based_on_distribution(ks, count1)
-    newstrides = sample_based_on_distribution(strides, count1)
+    new_hws = sample_based_on_distribution(hws, count1)
+    new_kernel_size = sample_based_on_distribution(kernel_sizes, count1)
+    new_strides = sample_based_on_distribution(strides, count1)
     
-    newks = data_clean(newks, [1, 3, 5, 7])
-    newstrides = data_clean(newstrides, [1, 2, 4])
-    newhws = data_clean(newhws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
+    new_kernel_size = data_validation(new_kernel_size, [1, 3, 5, 7])
+    new_strides = data_validation(new_strides, [1, 2, 4])
+    new_hws = data_validation(new_hws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
     
     # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
-    newhws.extend([112] * int((count - count1) * 0.2) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.4)) # frequent settings
-    newks.extend([5] * int((count-count1) * 0.4) + [7] * int((count-count1) * 0.6)) # frequent settings
-    newstrides.extend([2] * int((count - count1) * 0.4) + [1] * int((count - count1) * 0.6)) # frequent settings
-    random.shuffle(newhws)
-    random.shuffle(newstrides)
-    random.shuffle(newks)
-    # print(len(newcins),len(newstrides),len(newks),len(newhws)) #TODO: change to log
-    return newcins, newcouts, newhws, newks, newstrides
+    new_hws.extend([112] * int((count - count1) * 0.2) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.4)) # frequent settings
+    new_kernel_size.extend([5] * int((count - count1) * 0.4) + [7] * int((count - count1) * 0.6)) # frequent settings
+    new_strides.extend([2] * int((count - count1) * 0.4) + [1] * int((count - count1) * 0.6)) # frequent settings
+    random.shuffle(new_hws)
+    random.shuffle(new_strides)
+    random.shuffle(new_kernel_size)
+    return new_cins, new_couts, new_hws, new_kernel_size, new_strides
 
 
 def sampling_conv_random(count):
     '''
     '''
-    hws = [224, 112, 56, 32, 28, 27, 14, 13, 8, 7, 1]
-    ks = [1, 3, 5, 7]
-    s = [1, 2, 4]
+    hws = [1, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224]
+    kernel_sizes = [1, 3, 5, 7]
+    strides = [1, 2, 4]
     
-    cins = list(range(3,2160))
-    couts = list(range(16,2048))
-    newhws = random.sample(hws * int(count / len(hws)) * 10, count)
-    newks = random.sample(ks * int(count / len(ks) * 10), count)
-    newstrides = random.sample(s * int(count / len(s) * 10), count)
-    newcins = random.sample(cins * 10, count)
-    newcouts = random.sample(couts * 18, count)
-    random.shuffle(newcins)
-    random.shuffle(newcouts)
-    keys = []
-    for index in range(len(newhws)):
-        key = '_'.join(str(x) for x in[newhws[index],newks[index],newstrides[index],newcins[index],newcouts[index]])
-        if key not in keys:
-            keys.append(key)
-    # print(len(keys)) #TODO: change to log
-    return newcins, newcouts, newhws, newks, newstrides
+    cins = list(range(3, 2160))
+    couts = list(range(16, 2048))
+    new_hws = random.sample(hws * int(count / len(hws)) * 10, count)
+    new_kernel_sizes = random.sample(kernel_sizes * int(count / len(kernel_sizes) * 10), count)
+    new_strides = random.sample(strides * int(count / len(strides) * 10), count)
+    new_cins = random.sample(cins * 10, count)
+    new_couts = random.sample(couts * 18, count)
+    random.shuffle(new_cins)
+    random.shuffle(new_couts)
+    return new_cins, new_couts, new_hws, new_kernel_sizes, new_strides
 
 
 def sampling_dwconv(count):
@@ -66,38 +57,36 @@ def sampling_dwconv(count):
     Sampling functions for dwconv kernels based on dwconv zoo, which contains configuration values from existing model zoo for dwconv kernel. 
     The values are stored in prior_zoo/modelzoo_dwconv.csv.
     '''
-    hws,cs,ks,strides = read_dwconv_zoo()
-    newcs = sample_based_on_distribution(cs,count)
+    hws, cins, ks, strides = read_dwconv_zoo()
+    new_cins = sample_based_on_distribution(cins, count)
    
-    count1 = int(count*0.8)
-    newhws = sample_based_on_distribution(hws,count1)
-    newks = sample_based_on_distribution(ks,count1)
-    newstrides = sample_based_on_distribution(strides,count1)
+    count1 = int(count * 0.8)
+    new_hws = sample_based_on_distribution(hws,count1)
+    new_kernel_sizes = sample_based_on_distribution(ks,count1)
+    new_strides = sample_based_on_distribution(strides,count1)
     
-    newhws = data_clean(newhws,[1,3,7,14,28,56,112,224])
-    newks = data_clean(newks,[1,3,5,7])
-    newstrides = data_clean(newstrides,[1,2])
+    new_hws = data_validation(new_hws, [1, 3, 7, 14, 28, 56, 112, 224])
+    new_kernel_sizes = data_validation(new_kernel_sizes, [1, 3, 5, 7])
+    new_strides = data_validation(new_strides, [1, 2])
     
-    newhws.extend([112]*int((count-count1)*0.4)+[56]*int((count-count1)*0.4)+[28]*int((count-count1)*0.2))  
-    newks.extend([5]*int((count-count1)*0.4)+[7]*int((count-count1)*0.6))
-    newstrides.extend([2]*int((count-count1)*0.5)+[1]*int((count-count1)*0.5))
-    random.shuffle(newhws)
-    random.shuffle(newks)
-    random.shuffle(newstrides)
-    # print(len(newcs),len(newhws),len(newks),len(newstrides)) #TODO: change to log
-   
-    return newcs,newhws,newks,newstrides
+    new_hws.extend([112] * int((count - count1) * 0.4) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.2))  
+    new_kernel_sizes.extend([5] * int((count - count1) * 0.4) + [7] * int((count - count1) * 0.6))
+    new_strides.extend([2] * int((count - count1) * 0.5) + [1] * int((count - count1) * 0.5))
+    random.shuffle(new_hws)
+    random.shuffle(new_kernel_sizes)
+    random.shuffle(new_strides)
+    return new_cins, new_hws, new_kernel_sizes, new_strides
+
 
 def sampling_addrelu(count, ratio = 1.8):
     ''' sampling functions for relu
     '''
-    hws, cins, couts, ks, groups, strides = read_conv_zoo()    
-    newcs = sample_based_on_distribution(cins, count)
-    newcs = [int(x * ratio) for x in newcs]
-    newhws = [14] * int(count * 0.4) + [7] * int(count * 0.4) + [28] * int(count * 0.2)
-    random.shuffle(newhws)
-    # print(newcs) #TODO: change to log
-    return newhws, newcs, newcs
+    _, cins, _, _, _, _, = read_conv_zoo()    
+    new_cins = sample_based_on_distribution(cins, count)
+    new_cins = [int(x * ratio) for x in new_cins]
+    new_hws = [14] * int(count * 0.4) + [7] * int(count * 0.4) + [28] * int(count * 0.2)
+    random.shuffle(new_hws)
+    return new_hws, new_cins
 
 
 def sampling_fc(count, fix_cout = 1000):
@@ -105,13 +94,13 @@ def sampling_fc(count, fix_cout = 1000):
     Sampling functions for fc kernels based on fc zoo, which contains configuration values from existing model zoo for fc kernel. 
     The values are stored in prior_zoo/modelzoo_fcs.csv.
     '''
-    cins,couts = read_fc_zoo()
-    newcins = sample_based_on_distribution(cins, count)
+    cins, couts = read_fc_zoo()
+    new_cins = sample_based_on_distribution(cins, count)
     if not fix_cout:
-        newcouts = sample_based_on_distribution(couts, count)
+        new_couts = sample_based_on_distribution(couts, count)
     else:
-        newcouts = [fix_cout] * count
-    return newcins, newcouts
+        new_couts = [fix_cout] * count
+    return new_cins, new_couts
 
 
 def sampling_pooling(count):
@@ -119,37 +108,26 @@ def sampling_pooling(count):
     Sampling functions for pooling kernels based on pooling zoo, which contains configuration values from existing model zoo for pooling kernel. 
     The values are stored in prior_zoo/modelzoo_pooling.csv.
     '''
-    hws, cins, ks, strides = read_pool_zoo()
-    newcins = sample_based_on_distribution(cins, count)
-    newhws = sample_based_on_distribution(hws, count)
-    newks = sample_based_on_distribution(ks, count)
-    newstrides = sample_based_on_distribution(strides, count)
-
-    newhws = data_clean(newhws, [14, 28, 56, 112, 224])
-    newks = data_clean(newks, [3])
-    newstrides = data_clean(newstrides, [2])
-    return newhws, newcins, newks, newstrides
+    hws, cins, _, _ = read_pool_zoo()
+    new_cins = sample_based_on_distribution(cins, count)
+    new_hws = sample_based_on_distribution(hws, count)
+    new_hws = data_validation(new_hws, [14, 28, 56, 112, 224])
+    new_kernel_sizes = [3] * count
+    new_strides = [2] * count
+    return new_hws, new_cins, new_kernel_sizes, new_strides
 
 
 def sampling_concats(count):
     ''' sampling functions for concat
     '''
-    hws, cins, couts, ks, groups, strides = read_conv_zoo()
-    newcins1 = sample_based_on_distribution(cins, count)
-    newcins2 = sample_based_on_distribution(cins, count)
-    newcins3 = sample_based_on_distribution(cins, count)
-    newcins4 = sample_based_on_distribution(cins, count)
+    hws, cins, _, _, _, _ = read_conv_zoo()
+    new_hws = sample_based_on_distribution(hws, count)
+    new_cins1 = sample_based_on_distribution(cins, count)
+    new_cins2 = sample_based_on_distribution(cins, count)
+    new_cins3 = sample_based_on_distribution(cins, count)
+    new_cins4 = sample_based_on_distribution(cins, count)
 
-    newhws = sample_based_on_distribution(hws, count)
-    newhws = data_clean(newhws, [7, 14, 28, 56])  # current normals
-    newns = [2] * int(count * 0.4) + [3] * int(count * 0.2) + [4] * int(count * 0.4)
-    if len(newns) < count:
-        da = [2] * (count - len(newns))
-        newns.extend(da)
-    random.shuffle(newns)
-    return newhws, newns, newcins1, newcins2, newcins3, newcins4
-    
-
-
-
-
+    new_hws = data_validation(new_hws, [7, 14, 28, 56])  # current normals
+    new_ns = [2] * (count - int(count * 0.4) - int(count * 0.2)) + [3] * int(count * 0.2) + [4] * int(count * 0.4)
+    random.shuffle(new_ns)
+    return new_hws, new_ns, new_cins1, new_cins2, new_cins3, new_cins4

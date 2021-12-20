@@ -11,6 +11,6 @@ def get_op_is_two_inputs(op_name):
         raise ValueError(f"Unsupported operator name: {op_name} in rule-tester.")
 
 
-def save_testcase(model, savepath):
+def save_model(model, savepath):
     from tensorflow import keras 
     keras.models.save_model(model, savepath)

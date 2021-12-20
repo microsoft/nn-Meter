@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import logging
 from .networks import blocks
+from .utils import save_model
 from nn_meter.builder.utils import get_inputs_by_shapes
+
 
 config_for_blocks = {
       "conv_bn_relu":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
@@ -34,7 +37,7 @@ def get_block_by_name(name, input_shape, config = None):
     return block
 
 
-def get_predbuild_model(block_type, config):
+def get_predbuild_model(block_type, config, savepath=None):
       """ get the nn model for predictor build. returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
       """
       try:
@@ -45,8 +48,15 @@ def get_predbuild_model(block_type, config):
             raise NotImplementedError("The block_type you called is not exist in our model zoo. Please implement the block and try again.")
       if block_type == "fc_block":
             input_shape = [1, config["CIN"]]
+      elif block_type == "concat_block":
+            pass # TODO:
       else:
             input_shape = [config["HW"], config["HW"], config["CIN"]]
       model = get_block_by_name(block_type, input_shape, needed_config)
       model(get_inputs_by_shapes([input_shape]))
+      if savepath:
+            save_model(model, savepath)
+            logging.info(f"{block_type} model is generated and saved to {savepath}.")
+      else:
+            logging.info(f"{block_type} model is generated.")
       return model, input_shape, needed_config

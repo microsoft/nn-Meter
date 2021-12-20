@@ -5,75 +5,82 @@ import random
 import copy
 
 
-def sample(mind, maxd, D):
-    '''sample D data from a range [mind, maxd] #TODO: make sure if there is sth wrong
+def sample_in_range(mind, maxd, sample_num):
+    '''sample D data from a range [mind, maxd)
     '''
-    if maxd - mind <= D:
-        cins = list(range(mind, maxd))
-        random.shuffle(cins)
-        return cins
+    # if the sample_num is bigger than sample population, we only keep the number of population to avoid repetition
+    if maxd - mind <= sample_num:
+        data = list(range(mind, maxd))
+        random.shuffle(data)
+        return data
     else:
-        return random.sample(range(mind, maxd), D)
+        return random.sample(range(mind, maxd), sample_num)
 
 
-def sample_finegrained(cin, cout, D): 
+def sample_cin_cout(cin, cout, sample_num): 
     '''fine-grained sample D data in the cin and cout dimensions, respectively
     '''
-    cins = sample(int(cin * 0.5), int(cin * 1.2), D)
-    couts = sample(int(cout * 0.5), int(cout * 1.2), D)
+    cins = sample_in_range(int(cin * 0.5), int(cin * 1.2), sample_num)
+    couts = sample_in_range(int(cout * 0.5), int(cout * 1.2), sample_num)
+    l = min(len(cins), len(couts)) # align the length of cins and couts
+    cins, couts = cins[:l], couts[:l]
     return cins, couts
 
 
 def finegrained_sampling_conv(cfgs, count):
     ncfgs = []
     for cfg in cfgs:
-        cins, couts = sample_finegrained(cfg['CIN'], cfg['COUT'], count)
-        for i in range(min(len(cins), len(couts))):
-                c = {}
-                c['CIN'] = cins[i]
-                c['COUT'] = couts[i] 
-                c['HW'] = cfg['HW']
-                c['STRIDE'] = cfg['STRIDE']
-                c['KERNEL_SIZE'] = cfg['KERNEL_SIZE']
-                ncfgs.append(c)
+        cins, couts = sample_cin_cout(cfg['CIN'], cfg['COUT'], count)
+        for cin, cout in zip(cins, couts):
+            c = {
+                'CIN': cin,
+                'COUT': cout,
+                'HW': cfg['HW'],
+                'STRIDE': cfg['STRIDE'],
+                'KERNEL_SIZE': cfg['KERNEL_SIZE']
+            }
+            ncfgs.append(c)
     return ncfgs
 
 
 def finegrained_sampling_dwconv(cfgs, count):
     ncfgs = []
     for cfg in cfgs:
-        cins, couts = sample_finegrained(cfg['CIN'], cfg['CIN'], count)
-        for i in range(len(cins)):
-                c = {}
-                c['CIN'] = cins[i]
-                c['COUT'] = couts[i] 
-                c['HW'] = cfg['HW']
-                c['STRIDE'] = cfg['STRIDE']
-                c['KERNEL_SIZE'] = cfg['KERNEL_SIZE']
-                ncfgs.append(c)
+        cins, couts = sample_cin_cout(cfg['CIN'], cfg['CIN'], count)
+        for cin, cout in zip(cins, couts):
+            c = {
+                'CIN': cin,
+                'COUT': cout,
+                'HW': cfg['HW'],
+                'STRIDE': cfg['STRIDE'],
+                'KERNEL_SIZE': cfg['KERNEL_SIZE']
+            }
+            ncfgs.append(c)
     return ncfgs
 
 
 def finegrained_sampling_fc(cfgs, count):
     ncfgs = []
     for cfg in cfgs:
-        cins, couts = sample_finegrained(cfg['CIN'], cfg['COUT'], count)
-        for i in range(min(len(cins), len(couts))):
-                c = {}
-                c['CIN'] = cins[i]
-                c['COUT'] = couts[i] 
-                ncfgs.append(c)
+        cins, couts = sample_cin_cout(cfg['CIN'], cfg['COUT'], count)
+        for cin, cout in zip(cins, couts):
+            c = {
+                'CIN': cin,
+                'COUT': cout
+            }
+            ncfgs.append(c)
     return ncfgs
 
 
 def finegrained_sampling_CIN(cfgs, count):
     ncfgs = []
     for cfg in cfgs:
-        cins, _ = sample_finegrained(cfg['CIN'], cfg['CIN'], count)
-        for i in range(len(cins)):
-            c = {}
-            c['CIN'] = cins[i]
-            c['HW'] = cfg['HW']
+        cins = sample_in_range(int(cfg['CIN'] * 0.5), int(cfg['CIN'] * 1.2), count)
+        for cin in cins:
+            c = {
+                'CIN': cin,
+                'HW': cfg['HW']
+            }
             ncfgs.append(c)
     return ncfgs
 
@@ -83,14 +90,13 @@ def finegrained_sampling_CIN_odd(cfgs, count):
     '''
     ncfgs = []
     for cfg in cfgs:
-        cins, _ = sample_finegrained(cfg['CIN'], cfg['CIN'], count)
-        for i in range(len(cins)):
-            nc = cins[i]
-            if cins[i] % 2 != 0:
-                nc = cins[i] + 1 
-            c = {}
-            c['CIN'] = nc
-            c['HW'] = cfg['HW']
+        cins = sample_in_range(int(cfg['CIN'] * 0.5), int(cfg['CIN'] * 1.2), count)
+        for cin in cins:
+            nc = cin if cin % 2 else cin + 1
+            c = {
+                'CIN': nc,
+                'HW': cfg['HW']
+            }
             ncfgs.append(c)
     return ncfgs
 
@@ -98,17 +104,15 @@ def finegrained_sampling_CIN_odd(cfgs, count):
 def finegrained_sampling_concat(cfgs, count):
     ncfgs = []
     for cfg in cfgs:
-        ncins = []
-        ns = []
+        ncins, total_cins = [], []
         for cin in cfg['CINS']:
-            cins, _ = sample_finegrained(cin, cin, count)
-            ns.append(len(cins))
-            ncins.append(cins)
-        for j in range(min(ns)):
-            c = {}
-            c['HW'] = cfg['HW']
-            c['CINS'] = []
-            for i in range(len(ncins)):
-                c['CINS'].append(ncins[i][j])
+            cins = sample_in_range(int(cin * 0.5), int(cin * 1.2), count)
+            ncins.append(len(cins))
+            total_cins.append(cins)
+        for j in range(min(ncins)):
+            c = {
+                'HW': cfg['HW'],
+                'CINS': [total_cins[i][j] for i in range(len(cfg['CINS']))]
+            }
             ncfgs.append(c)
     return ncfgs
