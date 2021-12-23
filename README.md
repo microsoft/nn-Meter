@@ -94,7 +94,7 @@ nn-meter --list-predictors
 
 ## Predict latency of saved CNN model
 
-After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands sample models can be downloaded here [mobilenetv3small_0.pb](https://drive.google.com/file/d/1ncCFrw_vACYRmY9Xo7jhOCpip3GEfeHd/view?usp=sharing) ,  [mobilenetv3small_0.onx](https://drive.google.com/file/d/1Z7l4UXlmOymyF1D1yg8jvDf5s7jeDG8s/view?usp=sharing) ,  [mobilenetv3small.json](https://drive.google.com/file/d/1gr7IXXKOnPjD1Kzf91xOFuVPE5hMqXui/view?usp=sharing)
+After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands sample models can be downloaded [here](https://github.com/microsoft/nn-Meter/blob/main/material/testmodels).
 
 ```bash
 # for Tensorflow (*.pb) file
@@ -110,7 +110,6 @@ nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --ten
 # for torch model from torchvision model zoo (str)
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
 #Example Usage
-pip install onnx-simplifier
 nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --torchvision mobilenet_v2 mobilenet_v2
 
 # for nn-Meter IR (*.json) file
