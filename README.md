@@ -94,7 +94,7 @@ nn-meter --list-predictors
 
 ## Predict latency of saved CNN model
 
-After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands sample models can be downloaded [here](https://github.com/microsoft/nn-Meter/blob/main/material/testmodels).
+After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands (sample models can be downloaded [here](./material/testmodels))
 
 ```bash
 # for Tensorflow (*.pb) file
