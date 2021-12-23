@@ -22,10 +22,10 @@ from .ir_converter import (
 )
 from .utils import (
     create_user_configs,
-    change_user_data_folder
+    change_user_data_folder,
+    download_from_url
 )
 from .dataset import bench_dataset
-from .utils import download_from_url
 
 
 logging.KEYINFO = 22

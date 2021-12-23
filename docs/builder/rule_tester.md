@@ -8,18 +8,20 @@ The first step to run rule_tester is to prepare backends and create workspace. U
 
 After creating the workspace, a yaml file named `ruletest_config.yaml` will be placed in `<workspace-path>/configs/`. The ruletest configs includes:
 
-- `default_input_shape`: Default input shape of all testcases except those requiring 1d tensor input. Default value is `[28, 28, 16]`.
-- `d1_input_shape`: Default input shape of all testcases that need 1d tensor input. E.g., fully connected layer. Default value is `[428]`.
-- `filters`: Default filter size. Default value is `256`.
-- `kernel_size`: Default kernel size. Default value is `3`.
-- `padding`: Default padding type. Default value is `"same"`.
-- `enabled`: The test cases that will be enabled. Currently we implement three kinds of rules, `BasicFusion` (code name `BF`), `MultipleOutNodes` (code name `MON`), `ReadyTensor` (code name `RT`). Among them, `BasicFusion` is the most important one, which will detect whether a pair of op can be fused. Default value is `['BF', 'MON', 'RT']`,
-- `params`: The parameters for each test case. For example, here `eps` define the alpha in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion. Default value is:
+- `HW`: Default input shape of all test cases except those requiring 1d tensor input. Default value is `28`.
+- `CIN`: Default input channel of all test cases. Default value is `16`.
+- `SHAPE_1D`: Default input shape of all testcases that need 1d tensor input. E.g., fully connected layer. Default value is `428`.
+- `COUT`: Default output channel (filter size). Default value is `256`.
+- `KERNEL_SIZE`: Default kernel size. Default value is `3`.
+- `PADDING`: Default padding type. Default value is `"same"`.
+- `STRIDES`: Default strides size. Default value is `1`.
+- `ENABLED`: The test cases that will be enabled. Currently we implement three kinds of rules, `BasicFusion` (code name `BF`), `MultipleOutNodes` (code name `MON`), `ReadyTensor` (code name `RT`). Among them, `BasicFusion` is the most important one, which will detect whether a pair of op can be fused. Default value is `['BF', 'MON', 'RT']`,
+- `PARAMS`: The parameters for each test case. For example, here `eps` define the alpha in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion. Default value is:
     ```yaml
     BF:
         eps: 0.5
     ```
-- `detail`: Whether to attach detail latency results of each testcase to the json output. Default value is `True`.
+- `DETAIL`: Whether to attach detail latency results of each testcase to the json output. Default value is `True`.
 
 Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. The config will take effect after the config file is saved and closed.
 
@@ -45,7 +47,7 @@ from nn_meter.builder import create_testcases
 origin_testcases = create_testcases()
 ```
 
-The test case models will be saved in `<workspace-path>/testcases/`, and the test case dictionary will be saved in `<workspace-path>/results/origin_testcases.json`.
+The test case models will be saved in `<workspace-path>/testcases_ruletest/`, and the test case dictionary will be saved in `<workspace-path>/results/origin_testcases.json`.
 
 ## Step 3. Run Test Cases on Given Backend
 
@@ -99,7 +101,7 @@ After running `detect_fusionrule`, a json file named `<workspace-path>/results/d
 ```
 In the results, four `"latency"` value represents the running time of ops `"block"` (which indicates $T_{Op1,Op2}$), two single ops `"se"` ($T_{Op1})$) and `"relu"` ($T_{Op2}$),  and the sum of two ops `"ops"` ($T_{Op1} + T_{Op2}$), respectively. `"obey"` shows whether the test case obeys the fusion rule, with `true` indicates the two testing ops is fused on the backend, while `false` indicates not.
 
-Note that the latency value will be save only when `"detail"` set as `True` in `<workspace-path>/configs/ruletest_config.yaml`.
+Note that the latency value will be save only when `"DETAIL"` set as `True` in `<workspace-path>/configs/ruletest_config.yaml`.
 
 ## Data Structure of TestCases
 Each test case consists of several test models to profile, indicating two ops and a block combining the two ops, respectively. In each part, `"model"` points to its directory to the path of this ops' Keras model, `"shapes"` indicates the input shape of the tensor to test, and `"latency"` reports the profiled results after running `run_testcases`. This is a json dump of generated testcases. Note that the `"latency"` attribute appears after running and profiling the test cases.
