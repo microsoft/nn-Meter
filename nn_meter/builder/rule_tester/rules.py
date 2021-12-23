@@ -6,7 +6,7 @@ from tensorflow import keras
 from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.utils import builder_config as config
 from nn_meter.builder.utils.profiled_results import Latency
-from nn_meter.builder.model_generator.ruletest_model import get_ruletest_model
+from nn_meter.builder.nn_generator.ruletest_model import get_ruletest_model
 
 rules = {}
 
@@ -78,13 +78,15 @@ class RuleTestBase:
         return self.true_case
 
     def load_config(self):
-        self.input_shape = self.input_shape or config.get('default_input_shape', 'ruletest')
-        self.kernel_size = config.get('kernel_size', 'ruletest')
-        self.filters = config.get('filters', 'ruletest')
-        self.enabled = self.name in config.get('enabled', 'ruletest')
-        self.model_dir = config.get('model_dir', 'ruletest')
+        if not self.input_shape:
+            self.input_shape = [config.get('HW', 'ruletest'), config.get('HW', 'ruletest'), config.get('CIN', 'ruletest')]
+        self.kernel_size = config.get('KERNEL_SIZE', 'ruletest')
+        self.cout = config.get('COUT', 'ruletest')
+        self.enabled = self.name in config.get('ENABLED', 'ruletest')
+        self.model_dir = config.get('MODEL_DIR', 'ruletest')
+        self.padding = config.get('PADDING', 'ruletest')
 
-        for key, value in config.get('params', 'ruletest').get(self.name, {}).items():
+        for key, value in config.get('PARAMS', 'ruletest').get(self.name, {}).items():
             setattr(self, key, value)
 
     @classmethod
@@ -102,7 +104,7 @@ class RuleTestBase:
     def _model_dwconv_relu(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
         x = keras.layers.ReLU()(x)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
@@ -118,14 +120,14 @@ class RuleTestBase:
     def _model_dwconv(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_conv(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.Conv2D(self.filters, self.kernel_size, padding='same')(input_layer)
+        x = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
 
@@ -155,8 +157,8 @@ class BasicFusionImpl(RuleTestBase):
 
     def load_config(self):
         super().load_config()
-        self.enabled = 'BF' in config.get('enabled', 'ruletest')
-        self.eps = config.get('params', 'ruletest')['BF']['eps']
+        self.enabled = 'BF' in config.get('ENABLED', 'ruletest')
+        self.eps = config.get('PARAMS', 'ruletest')['BF']['eps']
 
     def test(self):
         secondary_op_lat = min(lat for op, lat in self.latency.items() if op != 'block' or op != self.false_case)
@@ -186,7 +188,8 @@ class BasicFusionImpl(RuleTestBase):
             op1_alias += '_1'
             op2_alias += '_2'
 
-        op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = get_ruletest_model(op1, op2, self.input_shape, config.get_module('ruletest'))
+        op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = \
+            get_ruletest_model(op1, op2, self.input_shape, config.get_module('ruletest'))
         testcase[op1_alias] = {
             'model': op1_model,
             'shapes': op1_shapes,
@@ -215,11 +218,11 @@ class BasicFusion(RuleTestBase):
         'concat',
         'convtrans',
         'dense',
-        'pooling',
+        'avgpool',
     ]
 
     disabled_combinations = [
-        ('dense', 'pooling'),
+        ('dense', 'avgpool'),
         ('dense', 'dwconv'),
         ('dense', 'conv'),
         ('dense', 'convtrans'),
@@ -256,9 +259,9 @@ class BasicFusion(RuleTestBase):
                 'ops': [op1, op2],
             }
             if op1 in cls.d1_required_layers or op2 in cls.d1_required_layers:
-                input_shape = config.get('d1_input_shape', 'ruletest')
+                input_shape = [config.get('SHAPE_1D', 'ruletest')]
             else:
-                input_shape = config.get('default_input_shape', 'ruletest')
+                input_shape = [config.get('HW', 'ruletest'), config.get('HW', 'ruletest'), config.get('CIN', 'ruletest')]
             bf_cls = type(classname, (BasicFusionImpl,), {
                 'name': name,
                 'cases': cases,
@@ -282,11 +285,11 @@ class MultipleOutNodes(RuleTestBase):
     def _model_block(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
         branch_1 = keras.layers.ReLU(negative_slope=0)(x)
         branch_1 = keras.layers.ReLU(negative_slope=0)(branch_1)
         branch_2 = keras.layers.ReLU(negative_slope=2)(x)
-        branch_2 = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(branch_2)
+        branch_2 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(branch_2)
 
         return keras.models.Model(input_layer, [branch_1, branch_2]), [self.input_shape]
 
@@ -301,7 +304,7 @@ class MultipleOutNodes(RuleTestBase):
     def _model_dwconv_relu_relu(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
         x = keras.layers.ReLU()(x)
         x = keras.layers.ReLU()(x)
 
@@ -311,7 +314,7 @@ class MultipleOutNodes(RuleTestBase):
         input_layer = keras.Input(shape=self.input_shape)
 
         x = keras.layers.ReLU()(input_layer)
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(x)
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(x)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
 
@@ -326,9 +329,9 @@ class ConvBranchContext(SingleCaseBase):
     def _model_block(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        branch_1 = keras.layers.Conv2D(self.filters, self.kernel_size, padding='same')(input_layer)
-        branch_2 = keras.layers.Conv2D(self.filters, self.kernel_size, padding='same')(input_layer)
-        branch_3 = keras.layers.Conv2D(self.filters, self.kernel_size, padding='same')(input_layer)
+        branch_1 = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
+        branch_2 = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
+        branch_3 = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
 
         output_layer = keras.layers.Concatenate()([branch_1, branch_2, branch_3])
 
@@ -354,7 +357,7 @@ class ReLUBranchContext(SingleCaseBase):
     def _model_block(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.Conv2D(self.filters, self.kernel_size, padding='same')(input_layer)
+        x = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
 
         branch_1 = keras.layers.ReLU(negative_slope=0)(x)
         branch_2 = keras.layers.ReLU(negative_slope=0.5)(x)
@@ -387,10 +390,10 @@ class ReadyTensor(RuleTestBase):
     def _model_block(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        branch_1 = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
-        branch_2 = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
+        branch_1 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
+        branch_2 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
         output_1 = keras.layers.Add()([branch_1, branch_2])
-        branch_3 = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
+        branch_3 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
         output_1 = keras.layers.Add()([branch_3, output_1])
 
         output_2 = keras.layers.ReLU()(branch_3)
@@ -400,7 +403,7 @@ class ReadyTensor(RuleTestBase):
     def _model_dwconv_add(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
         x = keras.layers.Add()([x, input_layer])
 
         return keras.models.Model(input_layer, x), [self.input_shape]
@@ -409,7 +412,7 @@ class ReadyTensor(RuleTestBase):
         input_1 = keras.Input(shape=self.input_shape)
         input_2 = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding='same')(input_1)
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_1)
         x = keras.layers.Add()([x, input_1])
         x = keras.layers.Add()([x, input_2])
 

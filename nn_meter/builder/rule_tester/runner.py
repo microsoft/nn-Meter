@@ -49,7 +49,7 @@ class RuleTester:
                 rule = rule_cls()
                 rule.load_latency(profile_results[name])
                 obey = rule.test()
-                if config.get('detail', 'ruletest'):
+                if config.get('DETAIL', 'ruletest'):
                     latency = {key: str(value) for key, value in rule.latency.items()}
                     result[name]['latency'] = latency
 
