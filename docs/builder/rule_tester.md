@@ -1,6 +1,6 @@
 # Build the Rule Tester
 
-A rule tester creates a series of models (what we call "test cases" in nn-Meter), runs the models on a given device, profiles the model to get its latency, and finally, detects the fusion rules for every pair of ops. To build a rule tester, there are four steps to implement the rule detection.
+A rule tester creates a series of models (what we call "test cases" in nn-Meter). It runs the models on a given device, profiles the model to get its latency, and finally, detects the fusion rules for every pair of ops. To build a rule tester, there are four steps to implement the rule detection.
 
 ## Step 1. Prepare Backends and Create Workspace
 
@@ -101,7 +101,7 @@ After running `detect_fusionrule`, a json file named `<workspace-path>/results/d
 ```
 In the results, four `"latency"` value represents the running time of ops `"block"` (which indicates $T_{Op1,Op2}$), two single ops `"se"` ($T_{Op1})$) and `"relu"` ($T_{Op2}$),  and the sum of two ops `"ops"` ($T_{Op1} + T_{Op2}$), respectively. `"obey"` shows whether the test case obeys the fusion rule, with `true` indicates the two testing ops is fused on the backend, while `false` indicates not.
 
-Note that the latency value will be save only when `"DETAIL"` set as `True` in `<workspace-path>/configs/ruletest_config.yaml`.
+Note that the latency value will be recorded only when `"DETAIL"` set as `True` in `<workspace-path>/configs/ruletest_config.yaml`.
 
 ## Data Structure of TestCases
 Each test case consists of several test models to profile, indicating two ops and a block combining the two ops, respectively. In each part, `"model"` points to its directory to the path of this ops' Keras model, `"shapes"` indicates the input shape of the tensor to test, and `"latency"` reports the profiled results after running `run_testcases`. This is a json dump of generated testcases. Note that the `"latency"` attribute appears after running and profiling the test cases.
@@ -146,7 +146,7 @@ Each test case consists of several test models to profile, indicating two ops an
     ...
 }
 ```
-In this instance, `BF_dwconv_relu` is the name of a rule. Here, there are three models called `dwconv`, `relu` and `block`. For each model, the `model` field is the path to where the model is saved. `shapes` is its inputs. For example, here `[[28, 28, 16]]` means this model has only one input, and the shape is `(28, 28, 16)`.
+In this instance, `BF_dwconv_relu` is the name of a rule. Here, there are three models called `dwconv`, `relu` and `block`. For each model, the `model` field is the path to where the model is saved. `shapes` indicates its input tensors ([H,W,C]). For example, here `[[28, 28, 16]]` means this model has only one input, and the shape is `(28, 28, 16)`.
 
 ## End-to-end Demo
 Here is an end-to-end demo for the progress of the rule tester:
