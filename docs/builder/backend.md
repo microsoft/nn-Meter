@@ -1,13 +1,15 @@
 # Setup Device and Backend
 
-To run a model and get the inference latency on the mobile device, we implement several backends. These backends will run the model and parse the command line outputs to get latency results. We provide a consistent API for such backends. Currently we provide three instance on two platforms, i.e., CPU backend (named `"tflite_cpu"`), GPU backend (named `"tflite_gpu"`) with TFLite platform, and VPU backend (named `"openvino_vpu"`) with OpenVINO platform. Users could list all supporting backend by running
+To get the inference latency of a model on mobile devices, we implement several backends. These backends will run the model and parse the command line outputs to get latency results. We provide a consistent API for such backends. Currently we provide three instances on two inference frameworks, i.e., CPU backend (named `"tflite_cpu"`), GPU backend (named `"tflite_gpu"`) with TFLite platform, and VPU backend (named `"openvino_vpu"`) with OpenVINO platform. Users could list all the supported backends by running
 ```
 nn-meter --list-backends
 ```
 
-Following we will explain how to setup the device and get connection to the backend.
+Besides of the current backends, users can implement a customized backend via nn-Meter to build latency predictors for your own devices. nn-Meter  allows users to install the customized backend as a builtin algorithm, in order for users to use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md). 
 
-nn-Meter also provides the ability to build your own customized backends, and allows users to install the customized backend as a builtin algorithm, in order for users to use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md). 
+Next, we will introduce how to setup the device and get connection to the backend.
+
+
 
 
 ## Setup Device
@@ -19,11 +21,11 @@ Introduction of Android Device and TFLite platform
 #### 1. Install ADB and Android SDK
 Follow [Android Guide](https://developer.android.com/studio) to install adb on your host device.
 
-The easiest way to do that is to directly download Android Studio from [this page](https://developer.android.com/studio). After installing it, you will find adb at path `$HOME/Android/Sdk/platform-tools/`.
+The easiest way is to directly download Android Studio from [this page](https://developer.android.com/studio). After installing it, you will find adb at path `$HOME/Android/Sdk/platform-tools/`.
 
 
 #### 2. Get TFLite Benchmark Model
-The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/) to run a model and output its latency. Because nn-Meter need to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released a modified version of `benchmark_model` based on `tensorflow==2.1`. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
+The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released a modified version of `benchmark_model` based on `tensorflow==2.1`. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
 
 NOTE: in the situation to deal with customized test case, our `benchmark_model` is probably not suitable. Users could follow [official guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
 
@@ -39,7 +41,7 @@ adb shell chmod +x /data/local/tmp/benchmark_model
 
 Follow [OpenVINO Installation Guide](https://docs.openvinotoolkit.org/latest/installation_guides.html) to install openvino on your host.
 
-Because some tools for VPU use a different tensorflow and python version from nn_meter, so you need to provide seperate environments for the main tool and VPU. We recommend to use [virtualenv](https://virtualenv.pypa.io/en/latest/). We use python3.6 as our test environment.
+Since some tools for VPU use a different tensorflow and python version from nn_meter, you need to provide seperate environments for the main tool and VPU. We recommend to use [virtualenv](https://virtualenv.pypa.io/en/latest/). We use python3.6 as our test environment.
 
 ``` Bash
 virtualenv openvino_env
