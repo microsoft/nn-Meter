@@ -6,8 +6,9 @@ from .utils import *
 
 def sampling_conv(count):
     ''' 
-    Sampling functions for conv kernels based on conv_zoo, which contains configuration values from existing model zoo for conv kernel. 
+    Sampling configs for conv kernels based on conv_zoo, which contains configuration values from existing model zoo for conv kernel. 
     The values are stored in prior_zoo/modelzoo_conv.csv.
+    Returned params include: (hw, cin, cout, kernel_size, strides)
     '''
     hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
     new_cins = sample_based_on_distribution(cins, count)     
@@ -16,25 +17,37 @@ def sampling_conv(count):
     # 70% of sampled data are from prior distribution
     count1 = int(count * 0.7)
     new_hws = sample_based_on_distribution(hws, count1)
-    new_kernel_size = sample_based_on_distribution(kernel_sizes, count1)
+    new_kernel_sizes = sample_based_on_distribution(kernel_sizes, count1)
     new_strides = sample_based_on_distribution(strides, count1)
     
-    new_kernel_size = data_validation(new_kernel_size, [1, 3, 5, 7])
+    new_kernel_sizes = data_validation(new_kernel_sizes, [1, 3, 5, 7])
     new_strides = data_validation(new_strides, [1, 2, 4])
     new_hws = data_validation(new_hws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
     
     # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
     new_hws.extend([112] * int((count - count1) * 0.2) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.4)) # frequent settings
-    new_kernel_size.extend([5] * int((count - count1) * 0.4) + [7] * int((count - count1) * 0.6)) # frequent settings
+    new_kernel_sizes.extend([5] * int((count - count1) * 0.4) + [7] * int((count - count1) * 0.6)) # frequent settings
     new_strides.extend([2] * int((count - count1) * 0.4) + [1] * int((count - count1) * 0.6)) # frequent settings
     random.shuffle(new_hws)
     random.shuffle(new_strides)
-    random.shuffle(new_kernel_size)
-    return new_cins, new_couts, new_hws, new_kernel_size, new_strides
+    random.shuffle(new_kernel_sizes)
+
+    ncfgs = []
+    for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
+        c = {
+            'HW': hw,
+            'CIN': cin,
+            'COUT': cout,
+            'KERNEL_SIZE': kernel_size,
+            'STRIDES': stride,
+        }
+        ncfgs.append(c)
+    return ncfgs
 
 
 def sampling_conv_random(count):
-    '''
+    ''' sampling configs for conv kernels based on random
+    Returned params include: (hw, cin, cout, kernel_size, strides)
     '''
     hws = [1, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224]
     kernel_sizes = [1, 3, 5, 7]
@@ -49,21 +62,33 @@ def sampling_conv_random(count):
     new_couts = random.sample(couts * 18, count)
     random.shuffle(new_cins)
     random.shuffle(new_couts)
-    return new_cins, new_couts, new_hws, new_kernel_sizes, new_strides
+
+    ncfgs = []
+    for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
+        c = {
+            'HW': hw,
+            'CIN': cin,
+            'COUT': cout,
+            'KERNEL_SIZE': kernel_size,
+            'STRIDES': stride,
+        }
+        ncfgs.append(c)
+    return ncfgs
 
 
 def sampling_dwconv(count):
     ''' 
-    Sampling functions for dwconv kernels based on dwconv zoo, which contains configuration values from existing model zoo for dwconv kernel. 
+    Sampling configs for dwconv kernels based on dwconv zoo, which contains configuration values from existing model zoo for dwconv kernel. 
     The values are stored in prior_zoo/modelzoo_dwconv.csv.
+    Returned params include: (hw, cin, kernel_size, strides)
     '''
     hws, cins, ks, strides = read_dwconv_zoo()
     new_cins = sample_based_on_distribution(cins, count)
    
     count1 = int(count * 0.8)
     new_hws = sample_based_on_distribution(hws,count1)
-    new_kernel_sizes = sample_based_on_distribution(ks,count1)
-    new_strides = sample_based_on_distribution(strides,count1)
+    new_kernel_sizes = sample_based_on_distribution(ks, count1)
+    new_strides = sample_based_on_distribution(strides, count1)
     
     new_hws = data_validation(new_hws, [1, 3, 7, 14, 28, 56, 112, 224])
     new_kernel_sizes = data_validation(new_kernel_sizes, [1, 3, 5, 7])
@@ -75,24 +100,24 @@ def sampling_dwconv(count):
     random.shuffle(new_hws)
     random.shuffle(new_kernel_sizes)
     random.shuffle(new_strides)
-    return new_cins, new_hws, new_kernel_sizes, new_strides
 
-
-def sampling_addrelu(count, ratio = 1.8):
-    ''' sampling functions for relu
-    '''
-    _, cins, _, _, _, _, = read_conv_zoo()    
-    new_cins = sample_based_on_distribution(cins, count)
-    new_cins = [int(x * ratio) for x in new_cins]
-    new_hws = [14] * int(count * 0.4) + [7] * int(count * 0.4) + [28] * int(count * 0.2)
-    random.shuffle(new_hws)
-    return new_hws, new_cins
+    ncfgs = []
+    for hw, cin, kernel_size, stride in zip(new_hws, new_cins, new_kernel_sizes, new_strides):
+        c = {
+            'HW': hw,
+            'CIN': cin,
+            'KERNEL_SIZE': kernel_size,
+            'STRIDES': stride,
+        }
+        ncfgs.append(c)
+    return ncfgs
 
 
 def sampling_fc(count, fix_cout = 1000):
     '''
-    Sampling functions for fc kernels based on fc zoo, which contains configuration values from existing model zoo for fc kernel. 
+    Sampling configs for fc kernels based on fc zoo, which contains configuration values from existing model zoo for fc kernel. 
     The values are stored in prior_zoo/modelzoo_fcs.csv.
+    Returned params include: (cin, cout)
     '''
     cins, couts = read_fc_zoo()
     new_cins = sample_based_on_distribution(cins, count)
@@ -100,25 +125,90 @@ def sampling_fc(count, fix_cout = 1000):
         new_couts = sample_based_on_distribution(couts, count)
     else:
         new_couts = [fix_cout] * count
-    return new_cins, new_couts
+    ncfgs = []
+    for cin, cout in zip(new_cins, new_couts):
+        c = {
+            'CIN': cin,
+            'COUT': cout,
+        }
+        ncfgs.append(c)
+    return ncfgs
 
 
-def sampling_pooling(count):
+def sampling_pooling(count, fix_ks = 3, fix_stride = 2):
     '''
-    Sampling functions for pooling kernels based on pooling zoo, which contains configuration values from existing model zoo for pooling kernel. 
+    Sampling configs for pooling kernels based on pooling zoo, which contains configuration values from existing model zoo for pooling kernel. 
     The values are stored in prior_zoo/modelzoo_pooling.csv.
+    Returned params include: (hw, cin, kernel_size, pool_strides)
     '''
     hws, cins, _, _ = read_pool_zoo()
     new_cins = sample_based_on_distribution(cins, count)
     new_hws = sample_based_on_distribution(hws, count)
     new_hws = data_validation(new_hws, [14, 28, 56, 112, 224])
-    new_kernel_sizes = [3] * count
-    new_strides = [2] * count
-    return new_hws, new_cins, new_kernel_sizes, new_strides
+    new_kernel_sizes = [fix_ks] * count
+    new_strides = [fix_stride] * count
+    
+    ncfgs = []
+    for hw, cin, kernel_size, stride in zip(new_hws, new_cins, new_kernel_sizes, new_strides):
+        c = {
+            'HW': hw,
+            'CIN': cin,
+            'KERNEL_SIZE': kernel_size,
+            'STRIDES': stride,
+        }
+        ncfgs.append(c)
+    return ncfgs
+
+
+def sampling_hw_cin(count):
+    ''' sampling configs for kernels with hw and cin parameter
+    Returned params include: (hw, cin)
+    '''
+    hws, cins, _, _ = read_conv_zoo()
+    new_cins = sample_based_on_distribution(cins, count)
+   
+    count1 = int(count * 0.8)
+    new_hws = sample_based_on_distribution(hws,count1)
+    new_hws = data_validation(new_hws, [1, 3, 7, 14, 28, 56, 112, 224])
+    new_hws.extend([112] * int((count - count1) * 0.4) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.2))
+    random.shuffle(new_hws)
+
+    ncfgs = []
+    for hw, cin in zip(new_hws, new_cins):
+        c = {
+            'HW': hw,
+            'CIN': cin,
+        }
+        ncfgs.append(c)
+    return ncfgs
+
+
+def sampling_hw_cin_odd(count):
+    ''' sampling configs for kernels with hw and cin (only odd values) parameter, in case for split / se / channelshuffle
+    Returned params include: (hw, cin)
+    '''
+    hws, cins, _, _ = read_conv_zoo()
+    new_cins = sample_based_on_distribution(cins, count)
+   
+    count1 = int(count * 0.8)
+    new_hws = sample_based_on_distribution(hws,count1)
+    new_hws = data_validation(new_hws, [1, 3, 7, 14, 28, 56, 112, 224])
+    new_hws.extend([112] * int((count - count1) * 0.4) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.2))
+    random.shuffle(new_hws)
+
+    ncfgs = []
+    for hw, cin in zip(new_hws, new_cins):
+        c = {
+            'HW': hw,
+            'CIN': cin + 1 if cin % 2 else cin,
+        }
+        ncfgs.append(c)
+    return ncfgs
 
 
 def sampling_concats(count):
-    ''' sampling functions for concat
+    ''' sampling functions for concat kernel
+    Returned params include: (hw, ns, cin1, cin2, cin3, cin4), ns are in [2, 4]
     '''
     hws, cins, _, _, _, _ = read_conv_zoo()
     new_hws = sample_based_on_distribution(hws, count)
@@ -130,4 +220,13 @@ def sampling_concats(count):
     new_hws = data_validation(new_hws, [7, 14, 28, 56])  # current normals
     new_ns = [2] * (count - int(count * 0.4) - int(count * 0.2)) + [3] * int(count * 0.2) + [4] * int(count * 0.4)
     random.shuffle(new_ns)
-    return new_hws, new_ns, new_cins1, new_cins2, new_cins3, new_cins4
+
+    ncfgs = []
+    for hw, n, cin1, cin2, cin3, cin4 in zip(new_hws, new_ns, new_cins1, new_cins2, new_cins3, new_cins4):
+        c = {
+            'HW': hw,
+            'NS': n,
+            'CINS': [cin1, cin2, cin3, cin4]
+        }
+        ncfgs.append(c)
+    return ncfgs
