@@ -48,10 +48,6 @@ def load_config_file(platform_type, workspace_path):
         return load_config_file(platform_type, workspace_path)
 
 
-def init_predictor_builder(block_type):
-    pass
-
-
 class ConfigData:
     def __init__(self):
         self.workspace_path = {}
@@ -82,13 +78,8 @@ class ConfigManager(ConfigData):
         backend, ruletest = load_config_file(platform_type, workspace_path)
         self.set_module(backend, 'backend')
         self.set_module(ruletest, 'ruletest')
-        self.set('MODEL_DIR', os.path.join(self.workspace_path, "testcases_ruletest"), 'ruletest')
-        self.set('MODEL_DIR', os.path.join(self.workspace_path, "testcases_ruletest"), 'backend')
-    
-    def _load_sampler_config(self, block_type):
-        sampler = load_config_file()
-        self.set_module(sampler, 'predictor')
-        self.set('MODEL_DIR', os.path.join(self.workspace_path, "testcases_predictor"), 'predictor')
+        self.set('MODEL_DIR', os.path.join(self.workspace_path, "ruletest_testcases"), 'ruletest')
+        self.set('MODEL_DIR', os.path.join(self.workspace_path, "ruletest_testcases"), 'backend')
 
 
 builder_config = ConfigManager()

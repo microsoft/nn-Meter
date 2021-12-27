@@ -1,7 +1,0 @@
-BLOCK:   ###configuration for blocks, see generator.config_block.py
-      BLOCK_TYPE: add
-      SAMPLE_NUM: 2000
-  
-    
- 
-

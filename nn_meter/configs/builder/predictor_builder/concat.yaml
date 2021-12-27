@@ -1,5 +1,0 @@
-BLOCK:   ###configuration for blocks, see generator.config_block.py
-      BLOCK_TYPE: concat
-      SAMPLE_NUM: 6000
-
-

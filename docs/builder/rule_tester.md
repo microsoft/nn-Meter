@@ -47,7 +47,7 @@ from nn_meter.builder import create_testcases
 origin_testcases = create_testcases()
 ```
 
-The test case models will be saved in `<workspace-path>/testcases_ruletest/`, and the test case dictionary will be saved in `<workspace-path>/results/origin_testcases.json`.
+The test case models will be saved in `<workspace-path>/ruletest_testcases/`, and the test case dictionary will be saved in `<workspace-path>/results/origin_testcases.json`.
 
 ## Step 3. Run Test Cases on Given Backend
 
