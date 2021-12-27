@@ -13,24 +13,19 @@ def read_conv_zoo(filename = "modelzoo_convs.csv"):
     i = 0
     hws, cins, couts, ks, groups, strides = [], [], [], [], [], []   
     while True:
-            line = f.readline()
-            if not line:
-                break 
-            if i > 0:
-                content = line.strip().split(',')
-                hw = int(content[1])
-                cin = int(content[3])
-                cout = int(content[4])
-                k = int(content[5])
-                s = int(content[6])
-                group = int(content[7])
-                strides.append(s)
-                hws.append(hw)
-                cins.append(cin)
-                couts.append(cout)
-                ks.append(k)
-                groups.append(group)
-            i += 1
+        line = f.readline()
+        if not line:
+            break 
+        if i > 0:
+            # model, input_h, input_w, cin, cout, ks, stride, groups
+            content = line.strip().split(',')
+            hws.append(int(content[1]))
+            cins.append(int(content[3]))
+            couts.append(int(content[4]))
+            ks.append(int(content[5]))
+            strides.append(int(content[6]))
+            groups.append(int(content[7]))
+        i += 1
     return hws, cins, couts, ks, groups, strides
 
 
@@ -44,15 +39,12 @@ def read_dwconv_zoo(filename = "modelzoo_dwconvs.csv"):
         if not line:
             break 
         if i > 0:
+            # model, input_h, input_w, cin, cout, ks, stride, groups
             content = line.strip().split(',')
-            hw = int(content[1])
-            cin = int(content[3])
-            k = int(content[5])
-            s = int(content[6])
-            hws.append(hw)
-            cins.append(cin)
-            ks.append(k)
-            strides.append(s)
+            hws.append(int(content[1]))
+            cins.append(int(content[3]))
+            ks.append(int(content[5]))
+            strides.append(int(content[6]))
         i += 1
     return hws, cins, ks, strides
 
@@ -66,12 +58,11 @@ def read_fc_zoo(filename = "modelzoo_fcs.csv"):
         line = f.readline()
         if not line:
             break
-        content  =  line.strip().split(',')
         if i > 0:
-            cin = int(content[1])
-            cout = int(content[2])
-            cins.append(cin)
-            couts.append(cout)
+            # model, cin, cout
+            content = line.strip().split(',')
+            cins.append(int(content[1]))
+            couts.append(int(content[2]))
         i += 1
     return cins, couts
 
@@ -86,15 +77,12 @@ def read_pool_zoo(filename = "modelzoo_poolings.csv"):
         if not line:
             break 
         if i > 0:
-            content = line.strip().split(',') # input_h,input_w,cin,cout,ks,stride
-            inputh = int(content[1])
-            cin = int(content[3])
-            k = int(content[5])
-            s = int(content[6])
-            cins.append(cin)
-            hws.append(inputh)
-            ks.append(k)
-            strides.append(s)
+            # model, input_h, input_w, cin, cout, ks, stride
+            content = line.strip().split(',')
+            hws.append(int(content[1]))
+            cins.append(int(content[3]))
+            ks.append(int(content[5]))
+            strides.append(int(content[6]))
         i += 1 
     return hws, cins, ks, strides
 

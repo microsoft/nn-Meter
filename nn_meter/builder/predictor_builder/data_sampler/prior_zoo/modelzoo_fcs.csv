@@ -1,3 +1,4 @@
+model,cin,cout
 alexnet,9216,4096
 alexnet,4096,4096
 alexnet,4096,1000
