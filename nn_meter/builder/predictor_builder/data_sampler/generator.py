@@ -31,7 +31,7 @@ config_for_blocks = {
     "fc_block":             ["CIN", "COUT"],
     "concat_block":         ["HW", "NS", "CINS"],
     "split_block":          ["HW", "CIN"],
-    "channel_shuffle_block":["HW", "CIN"],
+    "channel_shuffle":      ["HW", "CIN"],
     "se_block":             ["HW", "CIN"],
     "global_avgpool_block": ["HW", "CIN"],
     "bn_relu":              ["HW", "CIN"],
@@ -117,43 +117,44 @@ class Generator:
     def __init__(self, block_type, sample_num):
         self.block_type = block_type
         self.sample_num = sample_num
-        self.savepath = os.path.join(config.workspace_path, "predictor_testcases")
+        self.savepath = os.path.join(config.get('MODEL_DIR', 'predbuild'), 'testcases')
         self.testcase = {}
 
-    def generate_block_from_cfg(self, block_cfgs, block_type):
-        """
-        generate tensorflow models for sampled data
-
-        @params
-        blockcfgs: each item in the list represent a sampled data. each item is a dictionary, storing the configuration
-        block_type: identical kernel name 
-        """
-        id = 0
-        logging.info(f"building block for {block_type}...")
-        for block_cfg in block_cfgs:
-            tf.reset_default_graph()
-            model_path = os.path.join(self.savepath, "_".join([block_type, id]))
-            _, input_shape, config = get_predbuild_model(block_type, block_cfg, savepath=model_path)
-            self.testcase[id] = {
-                'model': model_path,
-                'shape': input_shape,
-                'config': config
-            }
-            id += 1
-
-    def run(self, sample_stage = 'prior', configs = None):
-        """ sample N configurations for target kernel, generate tensorflow keras model files.
-
-        @params
-        sample_stage: path of the directory containing all experiment runs. choose from ['prior', 'finegrained']
-        configs: init configs for finegrained sampling
-        """
+    def generate_config(self, sample_stage = 'prior', configs = None):
         # initialize sampling, based on prior distribution
         if sample_stage == 'prior':
             sampled_cfgs = block_sampling_from_prior(self.block_type, self.sample_num)
         # fine-grained sampling for data with large error points
         elif sample_stage == 'finegrained':
             sampled_cfgs = block_sampling_with_finegrained(self.block_type, configs, self.sample_num)
+        for i in range(len(sampled_cfgs)):
+            self.testcase["id_" + str(i)] = {}
+            self.testcase["id_" + str(i)]['config'] = sampled_cfgs[i]
 
+    def generate_block_from_cfg(self):
+        """ generate tensorflow models for sampled data
+        """
+        block_type = self.block_type
+        logging.info(f"building block for {block_type}...")
+        for id, value in self.testcase.items():
+            model_path = os.path.join(self.savepath, "_".join([block_type, id]))
+            block_cfg = value['config']
+            _, input_shape, config = get_predbuild_model(block_type, block_cfg, savepath=model_path)
+            self.testcase[id] = {
+                'model': model_path,
+                'shapes': [input_shape] if block_type != 'concat_block' else input_shape,
+                'config': config
+            }
+        
+    def run(self):
+        """ sample N configurations for target kernel, generate tensorflow keras model files.
+
+        @params
+        sample_stage: path of the directory containing all experiment runs. choose from ['prior', 'finegrained']
+        configs: init configs for finegrained sampling
+        """
+        # sample configs
+        self.generate_config()
+        
         # for all sampled configurations, save testcases info and generate tensorflow model files 
-        self.generate_block_from_cfg(sampled_cfgs, self.block_type)
+        self.generate_block_from_cfg()

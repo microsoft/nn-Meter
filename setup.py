@@ -29,7 +29,9 @@ setup(
         'nn_meter': [
             'configs/*.yaml',
             'configs/builder/backends/*.yaml',
-            'configs/builder/rule_tester/*.yaml'
+            'configs/builder/rule_tester/*.yaml',
+            'configs/builder/predictor_builder/*.yaml',
+            'builder/predictor_builder/data_sampler/prior_zoo/*.csv',
             'kernel_detector/fusionlib/*.json'],
     },
     entry_points={
