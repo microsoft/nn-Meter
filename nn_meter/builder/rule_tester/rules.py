@@ -83,7 +83,8 @@ class RuleTestBase:
         self.kernel_size = config.get('KERNEL_SIZE', 'ruletest')
         self.cout = config.get('COUT', 'ruletest')
         self.enabled = self.name in config.get('ENABLED', 'ruletest')
-        self.model_dir = config.get('MODEL_DIR', 'ruletest')
+        self.model_dir = os.path.join(config.get('MODEL_DIR', 'ruletest'), 'testcases')
+        os.makedirs(self.model_dir, exist_ok=True)
         self.padding = config.get('PADDING', 'ruletest')
 
         for key, value in config.get('PARAMS', 'ruletest').get(self.name, {}).items():

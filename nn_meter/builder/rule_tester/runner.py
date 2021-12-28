@@ -56,5 +56,3 @@ class RuleTester:
             result[name]['obey'] = obey
 
         return result
-
-

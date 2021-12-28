@@ -31,27 +31,27 @@ class BaseBackend:
     runner_class = None
     parser_class = None
 
-    def __init__(self, name, params):
-        """class initialization with required params
+    def __init__(self, name, configs):
+        """class initialization with required configs
         """
         self.name = name
-        self.params = params
-        self.update_params()
+        self.configs = configs
+        self.update_configs()
         self.parser = self.parser_class(**self.parser_kwargs)
         self.runner = self.runner_class(**self.runner_kwargs)
 
-    def update_params(self):
+    def update_configs(self):
         """update the config parameters for the backend
         """
         self.parser_kwargs = {}
         self.runner_kwargs = {}
     
-    def convert_model(self, model, model_name, input_shape=None):
+    def convert_model(self, model, model_name, savedpath, input_shape=None):
         """convert the Keras model instance to the type required by the backend inference
         """
         return model
 
-    def profile(self, model, model_name, input_shape=None, metrics=['latency']):
+    def profile(self, model, model_name, savedpath, input_shape=None, metrics=['latency']):
         """
         convert the model to the backend platform and run the model on the backend, return required metrics 
         of the running results. We only support latency for metric by now.
@@ -62,22 +62,24 @@ class BaseBackend:
         
         model_name: the name of the model
         
+        savedpath: path to save the converted model
+        
         input_shape: the shape of input tensor for inference, a random tensor according to the shape will be 
             generated and used
         
         metrics: a list of required metrics name. Defaults to ['latency']
         
         """
-        converted_model = self.convert_model(model, model_name, input_shape)
+        converted_model = self.convert_model(model, model_name, savedpath, input_shape)
         return self.parser.parse(self.runner.run(converted_model)).results.get(metrics)
 
-    def profile_model_file(self, model_path, input_shape=None, metrics=['latency']):
+    def profile_model_file(self, model_path, savedpath, input_shape = None, metrics = ['latency']):
         """load model by model file path and run ``self.profile()``
         """
         import tensorflow as tf
         model_name = get_filename_without_ext(model_path)
         model = tf.keras.models.load_model(model_path)
-        return self.profile(model, model_name, input_shape, metrics)
+        return self.profile(model, model_name, savedpath, input_shape, metrics)
 
     def test_connection(self):
         """check the status of backend interface connection, ideally including open/close/check_healthy...
@@ -101,7 +103,6 @@ def connect_backend(backend):
     - For backend based on OpenVINO platform: {
         'OPENVINO_ENV': path to openvino virtualenv (./docs/requirements/openvino_requirements.txt is provided)
         'OPTIMIZER_PATH': path to openvino optimizer
-        'TMP_DIR': tmp directory where temp model and profiling results will be generated
         'OPENVINO_RUNTIME_DIR': directory to openvino runtime
         'DEVICE_SERIAL': serial id of the device
         'DATA_TYPE': data type of the model (e.g., fp16, fp32)

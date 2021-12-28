@@ -86,6 +86,38 @@ def fc(input_shape, config = None):
     return func, [out_units]
 
 
+def se(input_shape, config = None):
+    class SE(keras.layers.Layer):
+        def __init__(self):
+            super().__init__()
+            self.conv1 = keras.layers.Conv2D(
+                filters=input_shape[-1] // 4,
+                kernel_size=[1, 1],
+                strides=[1, 1],
+                padding="same",
+            )
+            self.conv2 = keras.layers.Conv2D(
+                filters=input_shape[-1],
+                kernel_size=[1, 1],
+                strides=[1, 1],
+                padding="same",
+            )
+
+        def call(self, inputs):
+            x = tf.nn.avg_pool(
+                inputs,
+                ksize=[1] + input_shape[0:2] + [1],
+                strides=[1, 1, 1, 1],
+                padding="VALID",
+            )
+            x = self.conv1(x)
+            x = tf.nn.relu(x)
+            x = self.conv2(x)
+            x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
+            return x * inputs
+    return SE(), input_shape
+
+
 def dense(input_shape, config = None):
     units = input_shape[0] if "UNITS" not in config else config["UNITS"]
     return keras.layers.Dense(units), input_shape
@@ -132,11 +164,12 @@ def add(input_shape, config = None):
 
 
 def concat(input_shape, config = None):
-    if len(input_shape) == 3:
-        output_shape = [input_shape[0], input_shape[1], input_shape[2] * 2]
-    else:
+    if len(input_shape) > 1 and type(input_shape[0]) == list: # e.g. [[28, 28, 3], [28, 28, 5]] -> [28, 28, 8]
         output_shape = [input_shape[0][0], input_shape[0][1], sum([i[2] for i in input_shape])]
-        
+    elif len(input_shape) == 3: # e.g. [28, 28, 4] -> [28, 28, 8]
+        output_shape = [input_shape[0], input_shape[1], input_shape[2] * 2]
+    else: # e.g. [1024] -> [2048]
+        output_shape = [input_shape[0] * 2]
     return keras.layers.Concatenate(), output_shape
 
 

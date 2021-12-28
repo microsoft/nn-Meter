@@ -399,39 +399,17 @@ def channel_shuffle(input_shape, config):
 
 
 def se_block(input_shape, config):
-    mid_channels = input_shape[-1] // 4
-    hswish_op, _ = hswish(input_shape, config)
+    se_op, _ = se(input_shape, config)
 
-    class SE(keras.Model):
-        def __init__(self, mid_channels, hswish_op):
+    class SE(tf.keras.Model):
+        def __init__(self, se_op):
             super().__init__()
-            self.conv1 = keras.layers.Conv2D(
-                filters=mid_channels,
-                kernel_size=[1, 1],
-                strides=[1, 1],
-                padding="same",
-            )
-            self.conv2 = keras.layers.Conv2D(
-                filters=input_shape[-1],
-                kernel_size=[1, 1],
-                strides=[1, 1],
-                padding="same",
-            )
-            self.hswish = hswish_op
+            self.se = se_op
 
         def call(self, inputs):
-            x = tf.nn.avg_pool(
-                inputs,
-                ksize=[1] + input_shape[0:2] + [1],
-                strides=[1, 1, 1, 1],
-                padding="VALID",
-            )
-            x = self.conv1(x)
-            x = tf.nn.relu(x)
-            x = self.conv2(x)
-            x = self.hswish(x)
-            return x * inputs
-    return SE(mid_channels, hswish_op)
+            return self.se(inputs)
+
+    return SE(se_op)
 
 
 def global_avgpool_block(input_shape, config):

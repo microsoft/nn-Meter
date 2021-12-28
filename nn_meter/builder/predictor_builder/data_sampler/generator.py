@@ -146,7 +146,7 @@ class Generator:
                 'config': config
             }
         
-    def run(self):
+    def run(self, sample_stage = 'prior', configs = None):
         """ sample N configurations for target kernel, generate tensorflow keras model files.
 
         @params
@@ -154,7 +154,7 @@ class Generator:
         configs: init configs for finegrained sampling
         """
         # sample configs
-        self.generate_config()
+        self.generate_config(sample_stage, configs)
         
         # for all sampled configurations, save testcases info and generate tensorflow model files 
         self.generate_block_from_cfg()
