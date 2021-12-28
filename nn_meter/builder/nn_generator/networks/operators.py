@@ -135,7 +135,8 @@ def concat(input_shape, config = None):
     if len(input_shape) == 3:
         output_shape = [input_shape[0], input_shape[1], input_shape[2] * 2]
     else:
-        output_shape = [input_shape[0] * 2]
+        output_shape = [input_shape[0][0], input_shape[0][1], sum([i[2] for i in input_shape])]
+        
     return keras.layers.Concatenate(), output_shape
 
 
