@@ -135,18 +135,18 @@ def sampling_fc(count, fix_cout = 1000):
     return ncfgs
 
 
-def sampling_pooling(count, fix_ks = 3, fix_stride = 2):
+def sampling_pooling(count):
     '''
     Sampling configs for pooling kernels based on pooling zoo, which contains configuration values from existing model zoo for pooling kernel. 
     The values are stored in prior_zoo/modelzoo_pooling.csv.
     Returned params include: (hw, cin, kernel_size, pool_strides)
     '''
-    hws, cins, _, _ = read_pool_zoo()
+    hws, cins, kernel_size, strides = read_pool_zoo()
     new_cins = sample_based_on_distribution(cins, count)
     new_hws = sample_based_on_distribution(hws, count)
     new_hws = data_validation(new_hws, [14, 28, 56, 112, 224])
-    new_kernel_sizes = [fix_ks] * count
-    new_strides = [fix_stride] * count
+    new_kernel_sizes = data_validation(kernel_size, [2, 3])
+    new_strides = data_validation(strides, [1, 2])
     
     ncfgs = []
     for hw, cin, kernel_size, stride in zip(new_hws, new_cins, new_kernel_sizes, new_strides):

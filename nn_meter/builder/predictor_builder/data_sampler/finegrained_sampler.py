@@ -134,7 +134,7 @@ def finegrained_sampling_hw_cin_odd(cfgs, count):
     return ncfgs
 
 
-def finegrained_sampling_concat(cfgs, count):
+def finegrained_sampling_concats(cfgs, count):
     ''' sampling functions for concat kernel
     Returned params include: (hw, ns, cin1, cin2, cin3, cin4), ns are in [2, 4]
     '''

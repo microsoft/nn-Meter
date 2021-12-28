@@ -31,7 +31,7 @@ def dwconv(input_shape, config = None):
 
 
 def convtrans(input_shape, config = None):
-    cout = input_shape[2] if "COUT" not in config else config["COUT"] 
+    cout = input_shape[2] if "COUT" not in config else config["COUT"]
     class Conv2dTranspose(keras.layers.Layer):
         def __init__(self, cout):
             super().__init__()
@@ -84,36 +84,6 @@ def fc(input_shape, config = None):
     def func(input, weight):
         return tf.matmul(input, weight)
     return func, [out_units]
-
-
-def se(input_shape, config = None):
-    class SE(keras.layers.Layer):
-        def __init__(self):
-            super().__init__()
-            self.conv1 = tf.keras.layers.Conv2D(
-                filters=input_shape[-1],
-                kernel_size=[1, 1],
-                strides=[1, 1],
-                padding="same",
-            )
-            self.conv2 = tf.keras.layers.Conv2D(
-                filters=input_shape[-1],
-                kernel_size=[1, 1],
-                strides=[1, 1],
-                padding="same",
-            )
-        def call(self, inputs):
-            x = tf.nn.avg_pool(
-                inputs,
-                ksize=[1] + input_shape[0:2] + [1],
-                strides=[1, 1, 1, 1],
-                padding="VALID",
-            )
-            x = self.conv1(x)
-            x = tf.nn.relu(x)
-            x = self.conv2(x)
-            return x * inputs
-    return SE(), input_shape
 
 
 def dense(input_shape, config = None):
