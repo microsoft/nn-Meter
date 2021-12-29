@@ -114,11 +114,14 @@ def block_sampling_with_finegrained(block_type, configs, count):
 
 
 class Generator:
-    def __init__(self, block_type, sample_num):
+    def __init__(self, block_type, sample_num, mark = ""):
         self.block_type = block_type
         self.sample_num = sample_num
-        self.savepath = os.path.join(config.get('MODEL_DIR', 'predbuild'), 'testcases')
+        self.ws_path = config.get('MODEL_DIR', 'predbuild')
+        self.case_save_path = os.path.join(self.ws_path, 'testcases')
+        self.info_save_path = os.path.join(self.ws_path, 'results')
         self.testcase = {}
+        self.mark = mark
 
     def generate_config(self, sample_stage = 'prior', configs = None):
         # initialize sampling, based on prior distribution
@@ -137,7 +140,7 @@ class Generator:
         block_type = self.block_type
         logging.info(f"building block for {block_type}...")
         for id, value in self.testcase.items():
-            model_path = os.path.join(self.savepath, "_".join([block_type, id]))
+            model_path = os.path.join(self.case_save_path, "_".join([block_type, self.mark, id]))
             block_cfg = value['config']
             _, input_shape, config = get_predbuild_model(block_type, block_cfg, savepath=model_path)
             self.testcase[id] = {
@@ -145,6 +148,16 @@ class Generator:
                 'shapes': [input_shape] if block_type != 'concat_block' else input_shape,
                 'config': config
             }
+        self.save_testcase_info()
+
+    def save_testcase_info(self):
+        """ save generated testcases to `self.info_save_path`
+        """
+        import json
+        info_save_path = os.path.join(self.info_save_path, "origin_testcases.json")
+        os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
+        with open(info_save_path, 'w') as fp:
+            json.dump(self.testcases, fp, indent=4)
         
     def run(self, sample_stage = 'prior', configs = None):
         """ sample N configurations for target kernel, generate tensorflow keras model files.
@@ -158,3 +171,11 @@ class Generator:
         
         # for all sampled configurations, save testcases info and generate tensorflow model files 
         self.generate_block_from_cfg()
+
+
+def generate_config_sample(block_type, sample_num, mark = '', sample_stage = 'prior', configs = None):
+    g = Generator(block_type, sample_num)
+    g.run(sample_stage=sample_stage, configs=configs)
+    logging.info(f'Generate {len(g.testcase)} testcases with testcases model \
+                 saved in {g.case_save_path} and information saved in {g.info_save_path}.')
+    return g.testcase

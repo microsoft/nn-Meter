@@ -15,11 +15,11 @@ def create_testcases():
     testcases = tester.generate()
     
     ws_path = config.get('MODEL_DIR', 'ruletest')
-    case_save_path = os.path.join(ws_path, "results", "origin_testcases.json")
-    os.makedirs(os.path.dirname(case_save_path), exist_ok=True)
-    with open(case_save_path, 'w') as fp:
+    info_save_path = os.path.join(ws_path, "results", "origin_testcases.json")
+    os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
+    with open(info_save_path, 'w') as fp:
         json.dump(testcases, fp, indent=4)
-    logging.keyinfo(f"Save the original testcases to {case_save_path}")
+    logging.keyinfo(f"Save the original testcases information to {info_save_path}")
     return testcases
 
 
@@ -38,9 +38,9 @@ def detect_fusionrule(profiled_testcases):
     result = tester.analyze(profiled_testcases)
     
     ws_path = config.get('MODEL_DIR', 'ruletest')
-    case_save_path = os.path.join(ws_path, "results", "detected_testcases.json")
-    os.makedirs(os.path.dirname(case_save_path), exist_ok=True)
-    with open(case_save_path, 'w') as fp:
+    info_save_path = os.path.join(ws_path, "results", "detected_testcases.json")
+    os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
+    with open(info_save_path, 'w') as fp:
         json.dump(result, fp, indent=4)
-    logging.keyinfo(f"Save the testcases to {case_save_path}")
+    logging.keyinfo(f"Save the detected fusion rule information to {info_save_path}")
     return result

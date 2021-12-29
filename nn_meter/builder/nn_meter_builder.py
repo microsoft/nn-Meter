@@ -4,7 +4,8 @@ import os
 import json
 import logging
 from .utils import builder_config as config
-from .utils.utils import dump_testcases_with_latency
+from nn_meter.builder.backends import connect_backend
+from nn_meter.builder.predictor_builder import generate_config_sample, build_predictor
 
 
 def run_testcases(backend, testcases, mode = 'ruletest', metrics = ["latency"]):
@@ -31,17 +32,46 @@ def run_testcases(backend, testcases, mode = 'ruletest', metrics = ["latency"]):
             for metric in metrics:
                 model[metric] = profiled_res[metric]
 
-    case_save_path = os.path.join(ws_mode_path, "results", "profiled_testcases.json")
-    os.makedirs(os.path.dirname(case_save_path), exist_ok=True)
-    with open(case_save_path, 'w') as fp:
+    info_save_path = os.path.join(ws_mode_path, "results", "profiled_testcases.json")
+    os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
+    from .utils.utils import dump_testcases_with_latency
+    with open(info_save_path, 'w') as fp:
         json.dump(dump_testcases_with_latency(testcases), fp, indent=4)
-    logging.keyinfo(f"Save the profiled testcases to {case_save_path}")
+    logging.keyinfo(f"Save the profiled testcases information to {info_save_path}")
     return testcases
 
 
-def init_data_sampler():
-    pass
+def get_sampled_data(block_type, sample_num, backend, sample_stage='prior', configs=None, mark = ''):
+    ''' init sample of testcases
+    '''
+    # generate test cases
+    testcase = generate_config_sample(block_type, sample_num, mark=mark, 
+                                      sample_stage=sample_stage, configs=configs)
+    
+    # connect to backend, run test cases and get latency
+    backend = connect_backend(backend=backend)
+    profiled_testcases = run_testcases(backend, testcase, mode='predbuild')
+    return profiled_testcases
 
 
-def regress_with_adaptive_sampler():
-    pass
+def build_adaptived_predictor(block_type, init_sample_num = 1000, finegrained_sample_num = 10, iteration = 5, error_threshold = 0.2):
+    """[summary]
+
+    Args:
+        block_type ([type]): [description]
+        init_sample_num (int, optional): [description]. Defaults to 1000.
+        finegrained_sample_num (int, optional): [description]. Defaults to 10.
+        iteration (int, optional): [description]. Defaults to 5.
+        error_threshold (float, optional): [description]. Defaults to 0.2.
+    """
+    # init predictor builder with prior data sampler
+    data = get_sampled_data(init_sample_num)
+    # use current sampled data to build regression model, and locate data with large errors in testset
+    acc10, cfgs = build_predictor(block_type=block_type, hardware='cpu', data=data, error_threshold=0.2)
+    
+    for i in range(1, iteration):
+        new_data = get_sampled_data(finegrained_sample_num, configs=cfgs)
+        data.extend(new_data)
+        acc10, cfgs = build_predictor(block_type=block_type, hardware='cpu', data=data, error_threshold=error_threshold)
+        print('cfgs', cfgs)
+        logging.info(f'iteration {i}: acc10 {acc10}')
