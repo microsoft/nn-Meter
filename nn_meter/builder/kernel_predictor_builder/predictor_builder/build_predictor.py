@@ -1,20 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import os
-from .extract_feature import get_feature
-from .utils import lat_metrics
+from .extract_features import get_features_by_config
+from .utils import lat_metrics, get_config_by_features
 from .predictor_zoo import get_model
 from sklearn.model_selection import train_test_split
-from math import sqrt
 
 
-def get_config_by_features(kernelname, feature):
-    cfg = {}
-    pass
-    return cfg 
-
-
-def build_predictor(block_type, hardware, dir, error_threshold = 0.2):
+def build_predictor_by_data(kernel_type, data, hardware='cpu', error_threshold=0.2):
     """
     build regression model by sampled data and latency, locate data with large-errors
     Parameters
@@ -32,10 +24,10 @@ def build_predictor(block_type, hardware, dir, error_threshold = 0.2):
     """
     cfgs = []
     # get data for regression
-    X, Y = ...
+    X, Y = get_features_by_config(kernel_type, config=data)
     
     # initialize the regression model based on `RandomForestRegressor`
-    model = get_model(block_type, hardware)
+    model = get_model(kernel_type, hardware)
     
     # start training
     trainx, testx, trainy, testy = train_test_split(
@@ -50,7 +42,7 @@ def build_predictor(block_type, hardware, dir, error_threshold = 0.2):
         error = abs(y1-y2)/y1
         if error > error_threshold:
             print(testx[i])
-            cfg = get_config_by_features(block_type, testx[i])
+            cfg = get_config_by_features(kernel_type, testx[i])
             cfgs.append(cfg)
     rmse, rmspe, error, acc5, acc10, acc15 = lat_metrics(predicts, testy)
     print(f"rmse: {rmse}; rmspe: {rmspe}; error: {error}; 5% accuracy: {acc5}; 10% accuracy: {acc10}; 15% accuracy: {acc15}.")

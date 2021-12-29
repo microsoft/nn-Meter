@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.metrics import mean_squared_error
+
 
 def get_accuracy(y_pred, y_true, threshold = 0.01):
     a = (y_true - y_pred) / y_true
@@ -14,3 +16,8 @@ def lat_metrics(y_pred, y_true):
     acc10 = get_accuracy(y_pred, y_true, threshold=0.10)
     acc15 = get_accuracy(y_pred, y_true, threshold=0.15)
     return rmse, rmspe, rmse / np.mean(y_true), acc5, acc10, acc15
+
+def get_config_by_features(kernel_type, feature):
+    cfg = {}
+    pass
+    return cfg 

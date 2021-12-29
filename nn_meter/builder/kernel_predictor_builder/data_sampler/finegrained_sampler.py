@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import numpy as np 
 import random
-import copy
 
 
 def sample_in_range(mind, maxd, sample_num):
@@ -153,3 +151,35 @@ def finegrained_sampling_concats(cfgs, count):
             }
             ncfgs.append(c)
     return ncfgs
+
+
+def finegrained_kernel_sampling(kernel_type, configs, count):
+    """
+    return the list of sampled data configurations in finegrained sampling phase
+
+    @params
+
+    kernel_type: identical kernel name 
+    count: int 
+    for each large-error-data-point, we sample `count` more data around it.
+    cfgs: list
+    each item in the list represent a large-error-data-point. each item is a dictionary, storing the configuration
+
+    """
+    from .utils import config_for_kernel
+    assert kernel_type in config_for_kernel.keys(), f"Not supported kernel type: {kernel_type}. Supported type includes {config_for_kernel.keys()}."
+
+    if "conv" in kernel_type:
+        return finegrained_sampling_conv(configs, count)
+    elif "dwconv" in kernel_type:
+        return finegrained_sampling_dwconv(configs, count)
+    elif kernel_type in ['maxpool_block', 'avgpool_block']:
+        return finegrained_sampling_pooling(count, fix_ks=3, fix_stride=1)
+    if kernel_type == 'fc_block':
+        return finegrained_sampling_fc(configs, count)
+    if kernel_type in ['concat_block']:
+        return finegrained_sampling_concats(configs, count)
+    if kernel_type in ['split_block', 'se_block', 'channel_shuffle_block']:
+        return finegrained_sampling_hw_cin_odd(configs, count)
+    else: # 'hswish_block', 'bn_relu', 'bn_block', 'relu_block', 'add_relu', 'add_blocks'
+        return finegrained_sampling_hw_cin(configs, count)

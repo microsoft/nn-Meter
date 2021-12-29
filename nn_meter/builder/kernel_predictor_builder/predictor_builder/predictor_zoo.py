@@ -392,9 +392,9 @@ __MODEL_ZOO__ = {
 }
 
 
-def get_model(block_type, hardware):
+def get_model(kernel_type, hardware):
     try:
-        model_param = __MODEL_ZOO__[block_type][hardware]
+        model_param = __MODEL_ZOO__[kernel_type][hardware]
         model = RandomForestRegressor(**model_param)
     except:
         model = RandomForestRegressor(

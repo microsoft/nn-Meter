@@ -5,10 +5,10 @@ import json
 import logging
 from .utils import builder_config as config
 from nn_meter.builder.backends import connect_backend
-from nn_meter.builder.predictor_builder import generate_config_sample, build_predictor
+from nn_meter.builder.kernel_predictor_builder import generate_config_sample, build_predictor_by_data
 
 
-def run_testcases(backend, testcases, mode = 'ruletest', metrics = ["latency"]):
+def profile_models(backend, testcases, mode = 'ruletest', metrics = ["latency"]):
     """ run testcases with given backend and return latency of testcase models
     @params:
 
@@ -41,37 +41,39 @@ def run_testcases(backend, testcases, mode = 'ruletest', metrics = ["latency"]):
     return testcases
 
 
-def get_sampled_data(block_type, sample_num, backend, sample_stage='prior', configs=None, mark = ''):
-    ''' init sample of testcases
+def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sample_stage = 'prior', configs = None, mark = ''):
+    ''' sample of testcases
     '''
     # generate test cases
-    testcase = generate_config_sample(block_type, sample_num, mark=mark, 
+    testcase = generate_config_sample(kernel_type, sample_num, mark=mark, 
                                       sample_stage=sample_stage, configs=configs)
     
     # connect to backend, run test cases and get latency
     backend = connect_backend(backend=backend)
-    profiled_testcases = run_testcases(backend, testcase, mode='predbuild')
+    profiled_testcases = profile_models(backend, testcase, mode='predbuild')
     return profiled_testcases
 
 
-def build_adaptived_predictor(block_type, init_sample_num = 1000, finegrained_sample_num = 10, iteration = 5, error_threshold = 0.2):
-    """[summary]
+def build_predictor_for_kernel(kernel_type, init_sample_num = 1000, finegrained_sample_num = 10, iteration = 5, error_threshold = 0.2):
+    """ iteratively sample and profile data, build predictor for kernel
+    sample, profile, build, 
 
     Args:
-        block_type ([type]): [description]
+        kernel_type ([type]): [description]
         init_sample_num (int, optional): [description]. Defaults to 1000.
         finegrained_sample_num (int, optional): [description]. Defaults to 10.
         iteration (int, optional): [description]. Defaults to 5.
         error_threshold (float, optional): [description]. Defaults to 0.2.
     """
     # init predictor builder with prior data sampler
-    data = get_sampled_data(init_sample_num)
+    data = sample_and_profile_kernel_data(init_sample_num)
     # use current sampled data to build regression model, and locate data with large errors in testset
-    acc10, cfgs = build_predictor(block_type=block_type, hardware='cpu', data=data, error_threshold=0.2)
+    acc10, cfgs = build_predictor_by_data(kernel_type=kernel_type, hardware='cpu', data=data, error_threshold=0.2)
     
     for i in range(1, iteration):
-        new_data = get_sampled_data(finegrained_sample_num, configs=cfgs)
+        new_data = sample_and_profile_kernel_data(finegrained_sample_num, configs=cfgs)
         data.extend(new_data)
-        acc10, cfgs = build_predictor(block_type=block_type, hardware='cpu', data=data, error_threshold=error_threshold)
+        acc10, cfgs = build_predictor_by_data(kernel_type=kernel_type, hardware='cpu', data=data, error_threshold=error_threshold)
         print('cfgs', cfgs)
         logging.info(f'iteration {i}: acc10 {acc10}')
+    return predictor, data

@@ -1,3 +1,3 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from build_predictor import build_predictor
+from build_predictor import build_predictor_by_data

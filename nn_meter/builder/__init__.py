@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from .nn_meter_builder import run_testcases
+from .nn_meter_builder import profile_models
 from .backends import (
     connect_backend,
     list_backends
