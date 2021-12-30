@@ -1,8 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import copy
-import imp
-from .profiled_results import Latency
 
 
 def get_inputs_by_shapes(shapes):
@@ -20,20 +17,3 @@ def get_tensor_by_shapes(shapes):
     else:
         return [tf.random.normal(shape = [1] + shape) for shape in shapes]
 
-
-def dump_testcases_with_latency(testcases):
-    testcases_copy = copy.deepcopy(testcases)
-    for item in testcases_copy.values():
-        for model in item.values():
-            if 'latency' in model:
-                model['latency'] = str(model['latency'])
-    return testcases_copy
-
-
-def read_testcases_with_latency(testcases):
-    testcases_copy = copy.deepcopy(testcases)
-    for item in testcases_copy.values():
-        for model in item.values():
-            if 'latency' in model:
-                model['latency'] = Latency(model['latency'])
-    return testcases_copy

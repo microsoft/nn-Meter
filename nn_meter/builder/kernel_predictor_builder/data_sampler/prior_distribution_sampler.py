@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 import random
 from .utils import *
+from ..utils import config_for_kernel
 
 
 def sampling_conv(count):

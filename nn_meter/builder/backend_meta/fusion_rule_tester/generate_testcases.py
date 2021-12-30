@@ -2,16 +2,15 @@
 # Licensed under the MIT license.
 import os
 from tensorflow import keras
-
+from .utils import generate_model_for_testcase
 from nn_meter.builder.utils import get_tensor_by_shapes
-from nn_meter.builder.utils import builder_config as config
-from nn_meter.builder.utils.profiled_results import Latency
-from nn_meter.builder.nn_generator.ruletest_model import get_ruletest_model
+from nn_meter.builder.backend_meta.utils import Latency
+from nn_meter.builder.utils import builder_config
 
+config =  builder_config.get_module('ruletest')
 rules = {}
 
-
-class RuleTestBase:
+class TestCasesGenerator:
     name = ''
     cases = None
     true_case = ''
@@ -25,7 +24,6 @@ class RuleTestBase:
     def __init__(self, **kwargs):
         self._kwargs = kwargs
         self.latency = {}
-
         self.load_config()
 
     def generate_testcase(self):
@@ -79,15 +77,15 @@ class RuleTestBase:
 
     def load_config(self):
         if not self.input_shape:
-            self.input_shape = [config.get('HW', 'ruletest'), config.get('HW', 'ruletest'), config.get('CIN', 'ruletest')]
-        self.kernel_size = config.get('KERNEL_SIZE', 'ruletest')
-        self.cout = config.get('COUT', 'ruletest')
-        self.enabled = self.name in config.get('ENABLED', 'ruletest')
-        self.model_dir = os.path.join(config.get('MODEL_DIR', 'ruletest'), 'testcases')
+            self.input_shape = [config['HW'], config['HW'], config['CIN']]
+        self.kernel_size = config['KERNEL_SIZE']
+        # self.cout = config['COUT']
+        self.enabled = self.name in config['ENABLED']
+        self.model_dir = os.path.join(config['MODEL_DIR'], 'testcases')
         os.makedirs(self.model_dir, exist_ok=True)
-        self.padding = config.get('PADDING', 'ruletest')
+        self.padding = config['PADDING']
 
-        for key, value in config.get('PARAMS', 'ruletest').get(self.name, {}).items():
+        for key, value in config['PARAMS'].get(self.name, {}).items():
             setattr(self, key, value)
 
     @classmethod
@@ -136,7 +134,7 @@ class RuleTestBase:
         pass
 
 
-class SingleCaseBase(RuleTestBase):
+class SingleCaseBase(TestCasesGenerator):
     false_case = ''
 
     def test(self):
@@ -149,7 +147,7 @@ class SingleCaseBase(RuleTestBase):
             return True
 
 
-class BasicFusionImpl(RuleTestBase):
+class BasicFusionImpl(TestCasesGenerator):
     name = ''
     cases = {
         'ops': ['dwconv', 'relu'],
@@ -158,8 +156,8 @@ class BasicFusionImpl(RuleTestBase):
 
     def load_config(self):
         super().load_config()
-        self.enabled = 'BF' in config.get('ENABLED', 'ruletest')
-        self.eps = config.get('PARAMS', 'ruletest')['BF']['eps']
+        self.enabled = 'BF' in config['ENABLED']
+        self.eps = config['PARAMS']['BF']['eps']
 
     def test(self):
         secondary_op_lat = min(lat for op, lat in self.latency.items() if op != 'block' or op != self.false_case)
@@ -190,7 +188,7 @@ class BasicFusionImpl(RuleTestBase):
             op2_alias += '_2'
 
         op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = \
-            get_ruletest_model(op1, op2, self.input_shape, config.get_module('ruletest'))
+            generate_model_for_testcase(op1, op2, self.input_shape, config)
         testcase[op1_alias] = {
             'model': op1_model,
             'shapes': op1_shapes,
@@ -207,62 +205,23 @@ class BasicFusionImpl(RuleTestBase):
         return testcase
 
 
-class BasicFusion(RuleTestBase):
+class BasicFusion(TestCasesGenerator):
     name = 'BF'
-
-    layers = [
-        'reshape',
-        'dwconv',
-        'relu',
-        'add',
-        'conv',
-        'concat',
-        'convtrans',
-        'dense',
-        'avgpool',
-    ]
-
-    disabled_combinations = [
-        ('dense', 'avgpool'),
-        ('dense', 'dwconv'),
-        ('dense', 'conv'),
-        ('dense', 'convtrans'),
-        ('dense', 'reshape'),
-    ]
-
-    d1_required_layers = [
-        'dense',
-    ]
-
-    additional_combinations = [
-        ('conv', 'hswish'),
-        ('conv', 'se'),
-        ('se', 'relu'),
-    ]
-
-    @classmethod
-    def get_combinations(cls):
-        combinations = []
-        for op1 in cls.layers:
-            for op2 in cls.layers:
-                if (op1, op2) not in cls.disabled_combinations and (op2, op1) not in cls.disabled_combinations:
-                    combinations.append((op1, op2))
-        for combi in cls.additional_combinations:
-            combinations.append(combi)
-        return combinations
+    d1_required_layers = ['dense']
 
     @classmethod
     def _register(cls):
-        for op1, op2 in cls.get_combinations():
+        testcases = [case.split('_') for case in config['TEST_CASES']]
+        for op1, op2 in testcases:
             classname = f'BasicFusion_{op1}_{op2}'
             name = f'BF_{op1}_{op2}'
             cases = {
                 'ops': [op1, op2],
             }
             if op1 in cls.d1_required_layers or op2 in cls.d1_required_layers:
-                input_shape = [config.get('SHAPE_1D', 'ruletest')]
+                input_shape = [config['SHAPE_1D']]
             else:
-                input_shape = [config.get('HW', 'ruletest'), config.get('HW', 'ruletest'), config.get('CIN', 'ruletest')]
+                input_shape = [config['HW'], config['HW'], config['CIN']]
             bf_cls = type(classname, (BasicFusionImpl,), {
                 'name': name,
                 'cases': cases,
@@ -271,7 +230,7 @@ class BasicFusion(RuleTestBase):
             rules[bf_cls.name] = bf_cls
 
 
-class MultipleOutNodes(RuleTestBase):
+class MultipleOutNodes(TestCasesGenerator):
     name = 'MON'
     cases = {
         'case1': ['relu_relu', 'relu_dwconv', 'dwconv'],
@@ -376,7 +335,7 @@ class ReLUBranchContext(SingleCaseBase):
         return keras.models.Model(input_layer, [branch_1, branch_2, branch_3]), [self.input_shape]
 
 
-class ReadyTensor(RuleTestBase):
+class ReadyTensor(TestCasesGenerator):
     name = 'RT'
     cases = {
         'case1': ['dwconv_add', 'dwconv', 'dwconv', 'add', 'relu'],

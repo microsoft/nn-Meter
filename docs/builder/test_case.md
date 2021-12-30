@@ -43,7 +43,7 @@ We implement this by subclassing. We automatically generate a lot of subclasses 
 
 ### Add New Operators into BasicFusion
 
-Currently we only test fusion rules among these layers (or operators):
+Currently we test fusion rules among these layers (or operators):
 
 ```python
 layers = [
@@ -72,7 +72,7 @@ layers = [
     'convtrans',
     'dense',
     'pooling',
-    'hswish', # add a new op
+    'hswish',
 ]
 ```
 

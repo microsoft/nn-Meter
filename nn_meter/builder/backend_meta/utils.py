@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import math
+import copy
 from typing import List
 
 
@@ -83,3 +84,20 @@ class Latency:
     def __sub__(self, rhs):
         return self + rhs.__neg__()
 
+
+def dump_testcases_with_latency(testcases):
+    testcases_copy = copy.deepcopy(testcases)
+    for item in testcases_copy.values():
+        for model in item.values():
+            if 'latency' in model:
+                model['latency'] = str(model['latency'])
+    return testcases_copy
+
+
+def read_testcases_with_latency(testcases):
+    testcases_copy = copy.deepcopy(testcases)
+    for item in testcases_copy.values():
+        for model in item.values():
+            if 'latency' in model:
+                model['latency'] = Latency(model['latency'])
+    return testcases_copy

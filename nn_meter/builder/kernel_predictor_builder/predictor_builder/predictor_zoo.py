@@ -3,7 +3,7 @@
 from sklearn.ensemble import RandomForestRegressor
 
 
-__MODEL_ZOO__ = {
+__PREDICTOR_ZOO__ = {
     "conv_bn_relu": {
         "cpu": {
             "max_depth": 70,
@@ -392,9 +392,9 @@ __MODEL_ZOO__ = {
 }
 
 
-def get_model(kernel_type, hardware):
+def init_predictor(kernel_type, hardware):
     try:
-        model_param = __MODEL_ZOO__[kernel_type][hardware]
+        model_param = __PREDICTOR_ZOO__[kernel_type][hardware]
         model = RandomForestRegressor(**model_param)
     except:
         model = RandomForestRegressor(

@@ -3,7 +3,7 @@
 import re
 from .tflite_runner import TFLiteRunner
 from .tflite_backend import TFLiteBackend
-from nn_meter.builder.utils.profiled_results import Latency, ProfiledResults
+from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
 
 
 class TFLiteGPULatencyParser:

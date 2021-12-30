@@ -166,7 +166,7 @@ def finegrained_kernel_sampling(kernel_type, configs, count):
     each item in the list represent a large-error-data-point. each item is a dictionary, storing the configuration
 
     """
-    from .utils import config_for_kernel
+    from ..utils import config_for_kernel
     assert kernel_type in config_for_kernel.keys(), f"Not supported kernel type: {kernel_type}. Supported type includes {config_for_kernel.keys()}."
 
     if "conv" in kernel_type:

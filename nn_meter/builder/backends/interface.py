@@ -21,9 +21,8 @@ class BaseBackend:
     @params:
 
     runner_class: the class to specify the running command of the backend. A runner contains commands to push
-        the model of testcases to mobile device, run the model on the mobile device, get stdout from the mobile
-        device, and related operations. In the implementation of a runner, an interface of ``Runner.run()`` is
-        required.
+        the model to mobile device, run the model on the mobile device, get stdout from the mobile device, and
+        related operations. In the implementation of a runner, an interface of ``Runner.run()`` is required.
     
     parser_class: the class of the profiled results parser. A parser parses the stdout from runner and get 
         required metrics. In the implementation of a parser, an interface of ``Parser.parse()`` is required.
@@ -121,8 +120,8 @@ def connect_backend(backend):
     else:
         backend_cls = backend
         backend_name = backend.name
-    params = config.get_module('backend')
-    return backend_cls(backend_name, params)
+    configs = config.get_module('backend')
+    return backend_cls(backend_name, configs)
 
 
 def list_backends():      

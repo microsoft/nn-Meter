@@ -3,13 +3,13 @@
 import os
 import logging
 
-from .generator import config_for_kernel
-from nn_meter.builder.utils import get_inputs_by_shapes
-from nn_meter.builder.utils import builder_config as config
-from nn_meter.builder.nn_generator import blocks
-from nn_meter.builder.nn_generator.utils import save_model
+from ..utils import config_for_kernel
 from .finegrained_sampler import finegrained_kernel_sampling
 from .prior_distribution_sampler import prior_kernel_sampling
+from nn_meter.builder.utils import get_inputs_by_shapes
+from nn_meter.builder.utils import builder_config as config
+from nn_meter.builder.nn_generator.tf_networks import blocks
+from nn_meter.builder.nn_generator.utils import save_model
 
 
 def generate_model_for_kernel(kernel_type, config, savepath=None):
@@ -40,69 +40,85 @@ def generate_model_for_kernel(kernel_type, config, savepath=None):
     return model, input_shape, needed_config
 
 
-class Generator:
+class KernelGenerator:
     def __init__(self, kernel_type, sample_num, mark = ""):
         self.kernel_type = kernel_type
         self.sample_num = sample_num
         self.ws_path = config.get('MODEL_DIR', 'predbuild')
-        self.case_save_path = os.path.join(self.ws_path, 'testcases')
+        self.case_save_path = os.path.join(self.ws_path, 'kernels')
         self.info_save_path = os.path.join(self.ws_path, 'results')
-        self.testcase = {}
+        self.kernels = {}
         self.mark = mark
 
-    def generate_config(self, sample_stage = 'prior', configs = None):
+    def generate_config(self, sampling_mode = 'prior', configs = None):
         # initialize sampling, based on prior distribution
-        if sample_stage == 'prior':
+        if sampling_mode == 'prior':
             sampled_cfgs = prior_kernel_sampling(self.kernel_type, self.sample_num)
         # fine-grained sampling for data with large error points
-        elif sample_stage == 'finegrained':
+        elif sampling_mode == 'finegrained':
             sampled_cfgs = finegrained_kernel_sampling(self.kernel_type, configs, self.sample_num)
         for i in range(len(sampled_cfgs)):
-            self.testcase["id_" + str(i)] = {}
-            self.testcase["id_" + str(i)]['config'] = sampled_cfgs[i]
+            self.kernels["id_" + str(i)] = {}
+            self.kernels["id_" + str(i)]['config'] = sampled_cfgs[i]
 
     def generate_kernel_by_cfg(self):
         """ generate tensorflow models for sampled data
         """
         kernel_type = self.kernel_type
         logging.info(f"building kernel for {kernel_type}...")
-        for id, value in self.testcase.items():
+        for id, value in self.kernels.items():
             model_path = os.path.join(self.case_save_path, "_".join([kernel_type, self.mark, id]))
             kernel_cfg = value['config']
             _, input_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, savepath=model_path)
-            self.testcase[id] = {
+            self.kernels[id] = {
                 'model': model_path,
                 'shapes': [input_shape] if kernel_type != 'concat_block' else input_shape,
                 'config': config
             }
-        self.save_testcase_info()
+        self.save_kernels_info()
 
-    def save_testcase_info(self):
-        """ save generated testcases to `self.info_save_path`
+    def save_kernels_info(self):
+        """ save generated kernels to `self.info_save_path`
         """
         import json
-        info_save_path = os.path.join(self.info_save_path, "origin_testcases.json")
+        info_save_path = os.path.join(self.info_save_path, "origin_kernels.json")
         os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
         with open(info_save_path, 'w') as fp:
-            json.dump(self.testcases, fp, indent=4)
+            json.dump(self.kernels, fp, indent=4)
         
-    def run(self, sample_stage = 'prior', configs = None):
+    def run(self, sampling_mode = 'prior', configs = None):
         """ sample N configurations for target kernel, generate tensorflow keras model files.
 
         @params
-        sample_stage: path of the directory containing all experiment runs. choose from ['prior', 'finegrained']
+        sampling_mode: path of the directory containing all experiment runs. choose from ['prior', 'finegrained']
         configs: init configs for finegrained sampling
         """
         # sample configs
-        self.generate_config(sample_stage, configs)
+        self.generate_config(sampling_mode, configs)
         
-        # for all sampled configurations, save testcases info and generate tensorflow model files 
+        # for all sampled configurations, save kernels info and generate tensorflow model files 
         self.generate_kernel_by_cfg()
 
 
-def generate_config_sample(kernel_type, sample_num, mark = '', sample_stage = 'prior', configs = None):
-    g = Generator(kernel_type, sample_num)
-    g.run(sample_stage=sample_stage, configs=configs)
-    logging.info(f'Generate {len(g.testcase)} testcases with testcases model \
+def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = 'prior', configs = None):
+    """ Generate config sample and return sampled configs.
+
+    @params
+    kernel_type (str): type of kernel
+
+    sample_num (int): the sampling number of configs
+
+    mark (str, optional): the mark to run . Defaults to ''.
+
+    sampling_mode (str, optional): the sampling mode for config generation, supporting mode includes 'prior' and 'finegrained'.
+        Defaults to be 'prior'.
+
+    configs (list, optional): is required when the sampling_mode=='finegrained'. The fingrained samples will based on the config 
+        in `configs`. Defaults to None.
+
+    """
+    g = KernelGenerator(kernel_type, sample_num, mark=mark)
+    g.run(sampling_mode=sampling_mode, configs=configs)
+    logging.info(f'Generate {len(g.kernels)} kernels with kernels model \
                  saved in {g.case_save_path} and information saved in {g.info_save_path}.')
-    return g.testcase
+    return g.kernels

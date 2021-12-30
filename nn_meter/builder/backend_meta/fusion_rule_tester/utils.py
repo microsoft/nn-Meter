@@ -2,9 +2,9 @@
 # Licensed under the MIT license.
 import tensorflow as tf
 
-from .networks import operators
-from .utils import get_op_is_two_inputs
 from nn_meter.builder.utils import get_inputs_by_shapes
+from nn_meter.builder.nn_generator.tf_networks import operators
+from nn_meter.builder.nn_generator.utils import get_op_is_two_inputs
 
 
 class SingleOpModel(tf.keras.Model):
@@ -32,12 +32,10 @@ class TwoOpModel(tf.keras.Model):
                 x = self.op1(inputs[0])
             else:
                 x = self.op1(inputs)
-
         if self.op2_is_two_inputs:
             x = self.op2([x, inputs[-1]])
         else:
             x = self.op2(x)
-
         return x
 
 
@@ -47,7 +45,7 @@ def get_operator_by_name(name, input_shape, config = None):
     return operator, output_shape, op_is_two_inputs
 
 
-def get_ruletest_model(op1, op2, input_shape, config):
+def generate_model_for_testcase(op1, op2, input_shape, config):
     layer1, op1_output_shape, op1_is_two_inputs = get_operator_by_name(op1, input_shape, config)
     layer2, _, op2_is_two_inputs = get_operator_by_name(op2, op1_output_shape, config)
 
