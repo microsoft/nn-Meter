@@ -81,7 +81,7 @@ class TestCasesGenerator:
         self.kernel_size = config['KERNEL_SIZE']
         # self.cout = config['COUT']
         self.enabled = self.name in config['ENABLED']
-        self.model_dir = os.path.join(config['MODEL_DIR'], 'testcases')
+        self.model_dir = os.path.join(config['MODEL_DIR'], 'models')
         os.makedirs(self.model_dir, exist_ok=True)
         self.padding = config['PADDING']
 
@@ -211,6 +211,7 @@ class BasicFusion(TestCasesGenerator):
 
     @classmethod
     def _register(cls):
+        if config['TEST_CASES'] == None: return
         testcases = [case.split('_') for case in config['TEST_CASES']]
         for op1, op2 in testcases:
             classname = f'BasicFusion_{op1}_{op2}'

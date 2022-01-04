@@ -4,16 +4,17 @@ import os
 import json
 import logging
 from .detect_fusion_rule import FusionRuleTester
-from ..utils import read_testcases_with_latency
+from ..utils import read_profiled_results
 from nn_meter.builder.utils import builder_config as config
 
 
-def create_testcases():
-    """create testcases and save the testcase models and testcase json file in the workspace
+def generate_testcases():
+    """generate testcases and save the testcase models and testcase json file in the workspace
     """
     tester = FusionRuleTester()
     testcases = tester.generate()
-    
+
+    # save information to json file
     ws_path = config.get('MODEL_DIR', 'ruletest')
     info_save_path = os.path.join(ws_path, "results", "origin_testcases.json")
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
@@ -31,11 +32,12 @@ def detect_fusionrule(profiled_testcases):
     """
     if isinstance(profiled_testcases, str):
         with open(profiled_testcases, 'r') as fp:
-            profiled_testcases = read_testcases_with_latency(json.load(fp))
+            profiled_testcases = read_profiled_results(json.load(fp))
 
     tester = FusionRuleTester()
     result = tester.analyze(profiled_testcases)
-    
+
+    # save information to json file
     ws_path = config.get('MODEL_DIR', 'ruletest')
     info_save_path = os.path.join(ws_path, "results", "detected_testcases.json")
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
