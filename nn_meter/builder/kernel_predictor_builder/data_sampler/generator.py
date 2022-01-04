@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
+import json
+import random
+import string
 import logging
 
 from ..utils import config_for_kernel
@@ -25,7 +28,9 @@ def generate_model_for_kernel(kernel_type, config, savepath=None):
         input_shape = [1, config["CIN"]]
         input_tensor_shape = [input_shape]
     elif kernel_type == "concat_block":
-        input_shape = [[config["HW"], config["HW"], config["CINS"][i]] for i in range(config["NS"])]
+        input_shape = [[config["HW"], config["HW"], cin] 
+                       for cin in [config['CIN1'], config['CIN2'], config['CIN3'], config['CIN4']]
+                       if cin != 0]
         input_tensor_shape = input_shape
     else:
         input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -45,9 +50,9 @@ class KernelGenerator:
         self.kernel_type = kernel_type
         self.sample_num = sample_num
         self.ws_path = config.get('MODEL_DIR', 'predbuild')
-        self.case_save_path = os.path.join(self.ws_path, 'kernels')
-        self.info_save_path = os.path.join(self.ws_path, 'results')
-        self.kernels = {}
+        self.case_save_path = os.path.join(self.ws_path, 'models')
+        self.kernel_info = {kernel_type: {}}
+        self.kernels = self.kernel_info[self.kernel_type]
         self.mark = mark
 
     def generate_config(self, sampling_mode = 'prior', configs = None):
@@ -58,8 +63,9 @@ class KernelGenerator:
         elif sampling_mode == 'finegrained':
             sampled_cfgs = finegrained_kernel_sampling(self.kernel_type, configs, self.sample_num)
         for i in range(len(sampled_cfgs)):
-            self.kernels["id_" + str(i)] = {}
-            self.kernels["id_" + str(i)]['config'] = sampled_cfgs[i]
+            random_id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+            self.kernels[random_id] = {}
+            self.kernels[random_id]['config'] = sampled_cfgs[i]
 
     def generate_kernel_by_cfg(self):
         """ generate tensorflow models for sampled data
@@ -75,16 +81,6 @@ class KernelGenerator:
                 'shapes': [input_shape] if kernel_type != 'concat_block' else input_shape,
                 'config': config
             }
-        self.save_kernels_info()
-
-    def save_kernels_info(self):
-        """ save generated kernels to `self.info_save_path`
-        """
-        import json
-        info_save_path = os.path.join(self.info_save_path, "origin_kernels.json")
-        os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
-        with open(info_save_path, 'w') as fp:
-            json.dump(self.kernels, fp, indent=4)
         
     def run(self, sampling_mode = 'prior', configs = None):
         """ sample N configurations for target kernel, generate tensorflow keras model files.
@@ -98,6 +94,8 @@ class KernelGenerator:
         
         # for all sampled configurations, save kernels info and generate tensorflow model files 
         self.generate_kernel_by_cfg()
+        logging.info(f'Generate {len(self.kernels)} kernels with kernels model saved in {self.case_save_path}.')
+        return self.kernel_info
 
 
 def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = 'prior', configs = None):
@@ -117,8 +115,14 @@ def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = '
         in `configs`. Defaults to None.
 
     """
-    g = KernelGenerator(kernel_type, sample_num, mark=mark)
-    g.run(sampling_mode=sampling_mode, configs=configs)
-    logging.info(f'Generate {len(g.kernels)} kernels with kernels model \
-                 saved in {g.case_save_path} and information saved in {g.info_save_path}.')
-    return g.kernels
+    generator = KernelGenerator(kernel_type, sample_num, mark=mark)
+    kernels = generator.run(sampling_mode=sampling_mode, configs=configs)
+
+    # save information to json file
+    ws_mode_path = config.get('MODEL_DIR', "predbuild")
+    info_save_path = os.path.join(ws_mode_path, "results", f"{kernel_type}.json")
+    os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
+    with open(info_save_path, 'w+') as fp:
+        json.dump(kernels, fp, indent=4)
+    logging.keyinfo(f"Save the kernel model information to {info_save_path}")
+    return kernels
