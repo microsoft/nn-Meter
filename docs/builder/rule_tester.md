@@ -1,3 +1,4 @@
+TODO: refine config here
 # Build the Rule Tester
 
 A rule tester creates a series of models (what we call "test cases" in nn-Meter), runs the models on a given device, profiles the model to get its latency, and finally, detects the fusion rules for every pair of ops. To build a rule tester, there are four steps to implement the rule detection.
@@ -55,13 +56,13 @@ Given required backend, users could run test cases model and get the profiled la
 
 ```python
 from nn_meter.builder.backend import connect_backend
-from nn_meter.builder import run_testcases
+from nn_meter.builder import profile_models
 
 # initialize backend
 backend = connect_backend(backend='tflite_cpu', workspace_path=workspace_path)
 
 # run testcases and collect profiling results
-profiled_testcases = run_testcases(backend, origin_testcases)
+profiled_testcases = profile_models(backend, origin_testcases)
 ```
 `backend` refers to the framework of the platform and device to execute the model. Currently we provide three instance on two platforms, i.e., CPU backend, GPU backend with TFLite platform, and VPU backend with OpenVINO platform. Refer to [backend guidance](./backend.md) for how to setup the device and get connection to the backend. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md).
 
@@ -153,7 +154,7 @@ Here is an end-to-end demo for the progress of the rule tester:
 ```python
 from nn_meter.builder.utils import builder_config
 from nn_meter.builder.backends import connect_backend
-from nn_meter.builder import create_testcases, run_testcases, detect_fusionrule
+from nn_meter.builder import create_testcases, profile_models, detect_fusionrule
 
 # create workspace folder
 builder_config.init(
@@ -168,7 +169,7 @@ backend = connect_backend(backend='tflite_cpu', workspace_path=workspace_path)
 origin_testcases = create_testcases()
 
 # run testcases and collect profiling results
-profiled_testcases = run_testcases(backend, origin_testcases)
+profiled_testcases = profile_models(backend, origin_testcases)
 
 # determine fusion rules from profiling results
 detected_testcases = detect_fusionrule(profiled_testcases)
@@ -176,4 +177,4 @@ detected_testcases = detect_fusionrule(profiled_testcases)
 
 After each step, the output will be dumped to `<workspace-path>/results/`. Both the testcases instance and path string to the dumped testcases file are acceptable for the next step.
 
-Also note that it's optional to use a backend. What `run_testcases` do is just collecting latency results of each testcases, so you can use your own tools to measure the latency. Refer to implementation of `run_testcases` for how to fill back the latency.
+Also note that it's optional to use a backend. What `profile_models` do is just collecting latency results of each testcases, so you can use your own tools to measure the latency. Refer to implementation of `profile_models` for how to fill back the latency.
