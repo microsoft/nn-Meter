@@ -23,7 +23,7 @@ config_for_kernel = {
     "maxpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
     "avgpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
     "fc_block":             ["CIN", "COUT"],
-    "concat_block":         ["HW", "NS", "CINS"],
+    "concat_block":         ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
     "split_block":          ["HW", "CIN"],
     "channel_shuffle":      ["HW", "CIN"],
     "se_block":             ["HW", "CIN"],

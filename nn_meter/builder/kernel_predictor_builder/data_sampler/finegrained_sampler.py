@@ -134,20 +134,27 @@ def finegrained_sampling_hw_cin_odd(cfgs, count):
 
 def finegrained_sampling_concats(cfgs, count):
     ''' sampling functions for concat kernel
-    Returned params include: (hw, ns, cin1, cin2, cin3, cin4), ns are in [2, 4]
+    Returned params include: (hw, cin1, cin2, cin3, cin4). Note that we only sample (num of cin) = 2, 3, 4, 
+    (cin1, cin2, cin3, cin4) is one-hot vector with unused input channel set as 0.
     '''
     ncfgs = []
     for cfg in cfgs:
         ncins, total_cins = [], []
-        for cin in cfg['CINS']:
+        for cin in [cfg['CIN1'], cfg['CIN2'], cfg['CIN3'], cfg['CIN4']]:
+            if cin == 0:
+                total_cins.append([0] * count)
+                continue
             cins = sample_in_range(int(cin * 0.5), int(cin * 1.2), count)
             ncins.append(len(cins))
             total_cins.append(cins)
         for j in range(min(ncins)):
+            cins = [total_cins[i][j] for i in range(4)]
             c = {
                 'HW': cfg['HW'],
-                'NS': cfg['NS'],
-                'CINS': [total_cins[i][j] for i in range(len(cfg['CINS']))]
+                'CIN1': cins[0],
+                'CIN2': cins[1],
+                'CIN3': cins[2],
+                'CIN4': cins[3]
             }
             ncfgs.append(c)
     return ncfgs

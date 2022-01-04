@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 __PREDICTOR_ZOO__ = {
     "conv_bn_relu": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 70,
             "n_estimators": 320,
             "min_samples_leaf": 1,
@@ -14,7 +14,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 80,
             "n_estimators": 550,
             "min_samples_leaf": 1,
@@ -24,7 +24,7 @@ __PREDICTOR_ZOO__ = {
             "n_jobs": 32,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 100,
             "n_estimators": 500,
             "min_samples_leaf": 1,
@@ -36,7 +36,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "dwconv_bn_relu": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 240,
             "min_samples_leaf": 1,
@@ -45,7 +45,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 40,
             "n_estimators": 240,
             "min_samples_leaf": 1,
@@ -54,7 +54,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 100,
             "n_estimators": 650,
             "min_samples_leaf": 1,
@@ -66,7 +66,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "fc": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -75,7 +75,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 70,
             "n_estimators": 330,
             "min_samples_leaf": 1,
@@ -84,7 +84,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 70,
             "n_estimators": 330,
             "min_samples_leaf": 1,
@@ -96,7 +96,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "channel_shuffle": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -105,7 +105,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -116,7 +116,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "se_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 20,
             "n_estimators": 290,
             "min_samples_leaf": 1,
@@ -125,7 +125,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -134,7 +134,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 110,
             "min_samples_leaf": 1,
@@ -145,7 +145,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "maxpool_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 210,
             "min_samples_leaf": 1,
@@ -154,7 +154,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -163,7 +163,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -174,7 +174,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "global_avgpool_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 70,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -185,7 +185,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "hswish_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -194,7 +194,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -203,7 +203,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 110,
             "min_samples_leaf": 1,
@@ -214,7 +214,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "avgpool_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -223,7 +223,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -232,7 +232,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 390,
             "min_samples_leaf": 1,
@@ -243,7 +243,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "bn_relu": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -252,7 +252,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -261,7 +261,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 570,
             "min_samples_leaf": 1,
@@ -272,7 +272,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "relu_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -281,7 +281,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -290,7 +290,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -301,7 +301,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "bn_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
             "min_samples_leaf": 1,
@@ -310,7 +310,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -319,7 +319,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 390,
             "min_samples_leaf": 1,
@@ -330,7 +330,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "concat_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 100,
             "n_estimators": 690,
             "min_samples_leaf": 1,
@@ -339,7 +339,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 100,
             "n_estimators": 690,
             "min_samples_leaf": 1,
@@ -350,7 +350,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "add_relu": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 570,
             "min_samples_leaf": 1,
@@ -359,7 +359,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "gpu": {
+        "tflite_gpu": {
             "max_depth": 50,
             "n_estimators": 570,
             "min_samples_leaf": 1,
@@ -368,7 +368,7 @@ __PREDICTOR_ZOO__ = {
             "oob_score": True,
             "random_state": 10,
         },
-        "vpu": {
+        "openvino_vpu": {
             "max_depth": 50,
             "n_estimators": 570,
             "min_samples_leaf": 1,
@@ -379,7 +379,7 @@ __PREDICTOR_ZOO__ = {
         }
     },
     "split_block": {
-        "cpu": {
+        "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 190,
             "min_samples_leaf": 1,
@@ -392,9 +392,9 @@ __PREDICTOR_ZOO__ = {
 }
 
 
-def init_predictor(kernel_type, hardware):
+def init_predictor(kernel_type, backend):
     try:
-        model_param = __PREDICTOR_ZOO__[kernel_type][hardware]
+        model_param = __PREDICTOR_ZOO__[kernel_type][backend]
         model = RandomForestRegressor(**model_param)
     except:
         model = RandomForestRegressor(

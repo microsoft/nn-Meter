@@ -2,13 +2,14 @@
 # Licensed under the MIT license.
 import random
 from .utils import *
+from .prior_config_lib.utils import *
 from ..utils import config_for_kernel
 
 
 def sampling_conv(count):
     ''' 
     Sampling configs for conv kernels based on conv_zoo, which contains configuration values from existing model zoo for conv kernel. 
-    The values are stored in prior_zoo/modelzoo_conv.csv.
+    The values are stored in prior_config_lib/conv.csv.
     Returned params include: (hw, cin, cout, kernel_size, strides)
     '''
     hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
@@ -80,7 +81,7 @@ def sampling_conv_random(count):
 def sampling_dwconv(count):
     ''' 
     Sampling configs for dwconv kernels based on dwconv zoo, which contains configuration values from existing model zoo for dwconv kernel. 
-    The values are stored in prior_zoo/modelzoo_dwconv.csv.
+    The values are stored in prior_config_lib/dwconv.csv.
     Returned params include: (hw, cin, kernel_size, strides)
     '''
     hws, cins, ks, strides = read_dwconv_zoo()
@@ -117,7 +118,7 @@ def sampling_dwconv(count):
 def sampling_fc(count, fix_cout = 1000):
     '''
     Sampling configs for fc kernels based on fc zoo, which contains configuration values from existing model zoo for fc kernel. 
-    The values are stored in prior_zoo/modelzoo_fcs.csv.
+    The values are stored in prior_config_lib/fcs.csv.
     Returned params include: (cin, cout)
     '''
     cins, couts = read_fc_zoo()
@@ -139,7 +140,7 @@ def sampling_fc(count, fix_cout = 1000):
 def sampling_pooling(count):
     '''
     Sampling configs for pooling kernels based on pooling zoo, which contains configuration values from existing model zoo for pooling kernel. 
-    The values are stored in prior_zoo/modelzoo_pooling.csv.
+    The values are stored in prior_config_lib/pooling.csv.
     Returned params include: (hw, cin, kernel_size, pool_strides)
     '''
     hws, cins, kernel_size, strides = read_pool_zoo()
@@ -224,10 +225,15 @@ def sampling_concats(count):
 
     ncfgs = []
     for hw, n, cin1, cin2, cin3, cin4 in zip(new_hws, new_ns, new_cins1, new_cins2, new_cins3, new_cins4):
+        cins = [cin1, cin2, cin3, cin4]
+        onehot = [1] * n + [0] * (4 - n)
+        onehot_cins = [x * y for x, y in zip(onehot, cins)]
         c = {
             'HW': hw,
-            'NS': n,
-            'CINS': [cin1, cin2, cin3, cin4]
+            'CIN1': onehot_cins[0],
+            'CIN2': onehot_cins[1],
+            'CIN3': onehot_cins[2],
+            'CIN4': onehot_cins[3]
         }
         ncfgs.append(c)
     return ncfgs
