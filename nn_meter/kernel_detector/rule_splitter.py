@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from .rule_reader import RuleReader
-from ..utils.match_helper import MatchHelper
-from ..utils.fusion_aware_graph import FusionAwareGraph
+from .utils.match_helper import MatchHelper
+from .utils.fusion_aware_graph import FusionAwareGraph
 from nn_meter.utils.graph_tool import ModelGraph
 
 

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import math
+import copy
 from typing import List
 
 
@@ -83,3 +84,29 @@ class Latency:
     def __sub__(self, rhs):
         return self + rhs.__neg__()
 
+
+def dump_profiled_results(results, details = False):
+    dumped_results = {}
+    for module_key, module in results.items():
+        dumped_results[module_key] = {}
+        for model_key, model in module.items():
+            dumped_results[module_key][model_key] = {}
+            if details:
+                for info_key, info in model.items():
+                    if info_key == 'latency':
+                        dumped_results[module_key][model_key]['latency'] = str(model['latency'])
+                    else:
+                        dumped_results[module_key][model_key][info_key] = info
+            else:
+                if 'latency' in model:
+                    dumped_results[module_key][model_key]['latency'] = str(model['latency'])
+    return dumped_results
+
+
+def read_profiled_results(results):
+    results_copy = copy.deepcopy(results)
+    for item in results_copy.values():
+        for model in item.values():
+            if 'latency' in model:
+                model['latency'] = Latency(model['latency'])
+    return results_copy

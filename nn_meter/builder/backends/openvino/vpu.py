@@ -3,7 +3,7 @@
 import re
 from .openvino_runner import OpenVINORunner
 from .openvino_backend import OpenVINOBackend
-from nn_meter.builder.utils.profiled_results import Latency, ProfiledResults
+from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
 
 
 class OpenVINOVPULatencyParser:

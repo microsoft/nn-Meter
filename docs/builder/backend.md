@@ -80,8 +80,7 @@ When connecting to backend, a series of configs should be declared and appointed
 For VPU backends with OpenVINO, the required parameters include:
 
 - `OPENVINO_ENV`: path to openvino virtual environment (./docs/requirements/openvino_requirements.txt is provided)
-- OPTIMIZER_PATH`: path to openvino optimizer
-- `TMP_DIR`: tmp directory where temp model and profiling results will be generated
+- `OPTIMIZER_PATH`: path to openvino optimizer
 - `OPENVINO_RUNTIME_DIR`: directory to openvino runtime
 - `DEVICE_SERIAL`: serial id of the device
 - `DATA_TYPE`: data type of the model (e.g., fp16, fp32)
