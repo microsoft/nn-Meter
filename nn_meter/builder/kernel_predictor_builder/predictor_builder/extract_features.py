@@ -73,7 +73,7 @@ def get_data_by_profiled_results(kernel_type, cfgs_path, lats_path = None):
         cfgs_dict = cfgs_path[kernel_type] if kernel_type in cfgs_path else cfgs_path
     if isinstance(lats_path, str):
         with open(lats_path, 'r') as fp:
-            lats_path = read_profiled_results(json.load(fp))[kernel_type]
+            lats_dict = read_profiled_results(json.load(fp))[kernel_type]
     else:
         lats_dict = lats_path[kernel_type] if kernel_type in lats_path else lats_path
 
@@ -83,7 +83,7 @@ def get_data_by_profiled_results(kernel_type, cfgs_path, lats_path = None):
         feature = get_features_by_config(kernel_type, configs)
         features.append(feature)
 
-        latency = lats_dict[id]["latency"]
+        latency = lats_dict[id]["latency"].avg
         lats.append(latency)
     return (features, lats)
 

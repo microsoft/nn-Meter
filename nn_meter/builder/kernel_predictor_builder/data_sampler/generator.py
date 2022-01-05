@@ -9,7 +9,7 @@ import logging
 from ..utils import config_for_kernel
 from .finegrained_sampler import finegrained_kernel_sampling
 from .prior_distribution_sampler import prior_kernel_sampling
-from nn_meter.builder.utils import get_inputs_by_shapes
+from nn_meter.builder.utils import get_inputs_by_shapes, merge_prev_info
 from nn_meter.builder.utils import builder_config as config
 from nn_meter.builder.nn_generator.tf_networks import blocks
 from nn_meter.builder.nn_generator.utils import save_model
@@ -116,13 +116,15 @@ def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = '
 
     """
     generator = KernelGenerator(kernel_type, sample_num, mark=mark)
-    kernels = generator.run(sampling_mode=sampling_mode, configs=configs)
+    kernels_info = generator.run(sampling_mode=sampling_mode, configs=configs)
 
-    # save information to json file
+    # save information to json file in incrementally mode
     ws_mode_path = config.get('MODEL_DIR', "predbuild")
     info_save_path = os.path.join(ws_mode_path, "results", f"{kernel_type}.json")
+    new_kernels_info = merge_prev_info(new_info=kernels_info, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
-    with open(info_save_path, 'w+') as fp:
-        json.dump(kernels, fp, indent=4)
+    with open(info_save_path, 'w') as fp:
+        json.dump(new_kernels_info, fp, indent=4)
     logging.keyinfo(f"Save the kernel model information to {info_save_path}")
-    return kernels
+
+    return kernels_info

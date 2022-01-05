@@ -18,6 +18,13 @@ def latency_metrics(y_pred, y_true):
 
 
 def get_config_by_features(kernel_type, feature):
-    cfg = {}
-    pass
-    return cfg 
+    from ..utils import config_for_kernel
+    config_name = config_for_kernel[kernel_type]
+
+    # remove flops and params num feature from feature vector
+    if "conv" in kernel_type or "dwconv" in kernel_type or "fc" in kernel_type:
+        feature = feature[:-2]
+
+    assert len(config_name) == len(feature)
+    config = {k: v for k, v in zip(config_name, feature)}
+    return config 

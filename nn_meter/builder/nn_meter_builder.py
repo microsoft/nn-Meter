@@ -3,11 +3,13 @@
 import os
 import json
 import logging
+
+from nn_meter.builder.utils import merge_prev_info
 from .utils import builder_config as config
 from nn_meter.builder.backends import connect_backend
 
 
-def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], details = False):
+def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], details = False, save_name = None):
     """ run models with given backend and return latency of testcase models
     @params:
 
@@ -38,12 +40,15 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], de
                 model[metric] = profiled_res[metric]
 
     # save information to json file
-    info_save_path = os.path.join(ws_mode_path, "results", "profiled_results.json")
+    save_name = save_name or "profiled_results.json"
+    info_save_path = os.path.join(ws_mode_path, "results", save_name)
+    new_models = merge_prev_info(new_info=models, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     from .backend_meta.utils import dump_profiled_results
     with open(info_save_path, 'w') as fp:
-        json.dump(dump_profiled_results(models, details=details), fp, indent=4)
+        json.dump(dump_profiled_results(new_models, details=details), fp, indent=4)
     logging.keyinfo(f"Save the profiled models information to {info_save_path}")
+
     return models
 
 def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mode = 'prior', configs = None, mark = ''):
@@ -57,7 +62,7 @@ def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mo
     
     # connect to backend, run test cases and get latency
     backend = connect_backend(backend=backend)
-    profiled_results = profile_models(backend, kernels, mode='predbuild')
+    profiled_results = profile_models(backend, kernels, mode='predbuild', save_name=f"profiled_{kernel_type}.json")
     return profiled_results
 
 
@@ -87,17 +92,22 @@ def build_predictor_for_kernel(kernel_type, backend = None, init_sample_num = 10
     
     # init predictor builder with prior data sampler
     kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num, backend, sampling_mode='prior', mark='prior')
-    data = get_data_by_profiled_results(kernel_data)
 
     # use current sampled data to build regression model, and locate data with large errors in testset
+    data = get_data_by_profiled_results(kernel_type, kernel_data)
     predictor, acc10, error_configs = build_predictor_by_data(kernel_type, data, backend, error_threshold=error_threshold)
-    logging.info(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')
+    logging.info(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')    
+    
     
     for i in range(1, iteration):
-        new_data = sample_and_profile_kernel_data(kernel_type, finegrained_sample_num, backend, 
-                                                  sampling_mode = 'finegrained', configs=error_configs, mark='finegrained_iter{i}')
-        # TODO: data.extend(new_data)
-        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, new_data, backend, error_threshold=error_threshold)
-        logging.info(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
+        # finegrained sampling and profiling for large error data
+        new_kernel_data = sample_and_profile_kernel_data(kernel_type, finegrained_sample_num, backend,
+                                                  sampling_mode = 'finegrained', configs=error_configs, mark=f'finegrained{i}')
+
+        # merge finegrained data with previous data and build new regression model
+        kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
+        data = get_data_by_profiled_results(kernel_type, kernel_data)
+        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, data, backend, error_threshold=error_threshold)
+        logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     return predictor, data

@@ -9,8 +9,8 @@ from .utils import latency_metrics, get_config_by_features
 
 def build_predictor_by_data(kernel_type, data, backend = None, error_threshold = 0.1):
     """
-    build regression model by sampled data and latency, locate data with large-errors. Returns (current predictor, 10% Accuracy, cfgs), 
-    where cfgs represent configuration list, where each item is a configuration for one large-error-data.
+    build regression model by sampled data and latency, locate data with large-errors. Returns (current predictor, 10% Accuracy, error_cfgs), 
+    where error_cfgs represent configuration list, where each item is a configuration for one large-error-data.
 
     @params
     kernel_type (str): type of target kernel
@@ -26,6 +26,7 @@ def build_predictor_by_data(kernel_type, data, backend = None, error_threshold =
     # get data for regression
     X, Y = data
     trainx, testx, trainy, testy = train_test_split(X, Y, test_size = 0.2, random_state = 10)
+    logging.info(f"training data size: {len(trainx)}, test data size: {len(testx)}")
     
     # initialize the regression model based on `RandomForestRegressor`
     predictor = init_predictor(kernel_type, backend)
