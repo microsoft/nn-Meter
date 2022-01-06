@@ -85,13 +85,20 @@ class Latency:
         return self + rhs.__neg__()
 
 
-def dump_profiled_results(results, details = False):
+def dump_profiled_results(results, detail = False):
+    ''' convert Latency instance to string and return profiled results
+
+    @params
+
+    detail: if False, only metrics result will be dumped to the profiled results. Otherwise models information
+        will be dumpled, too.
+    '''
     dumped_results = {}
     for module_key, module in results.items():
         dumped_results[module_key] = {}
         for model_key, model in module.items():
             dumped_results[module_key][model_key] = {}
-            if details:
+            if detail:
                 for info_key, info in model.items():
                     if info_key == 'latency':
                         dumped_results[module_key][model_key]['latency'] = str(model['latency'])

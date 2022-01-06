@@ -1,4 +1,4 @@
-# usage
+# Usage
 
 #### step1: sampling from prior distribution
 

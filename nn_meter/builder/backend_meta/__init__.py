@@ -1,1 +1,1 @@
-# from .fusion_rule_tester import create_testcases, detect_fusionrule
+# from .fusion_rule_tester import create_testcases, detect_fusion_rule

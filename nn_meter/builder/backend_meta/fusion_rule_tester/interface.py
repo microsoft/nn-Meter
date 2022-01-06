@@ -24,7 +24,7 @@ def generate_testcases():
     return testcases
 
 
-def detect_fusionrule(profiled_testcases):
+def detect_fusion_rule(profiled_testcases):
     """ detect fusion rule by testcases latency value
     @params:
 
@@ -39,7 +39,7 @@ def detect_fusionrule(profiled_testcases):
 
     # save information to json file
     ws_path = config.get('MODEL_DIR', 'ruletest')
-    info_save_path = os.path.join(ws_path, "results", "detected_testcases.json")
+    info_save_path = os.path.join(ws_path, "results", "detected_results.json")
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     with open(info_save_path, 'w') as fp:
         json.dump(result, fp, indent=4)

@@ -1,16 +1,13 @@
 HW: 28
 CIN: 16
 SHAPE_1D: 428
-FILTERS: 256
+COUT: 256
 KERNEL_SIZE: 3
 PADDING: 'same'
 STRIDES: 1
 POOL_STRIDES: 2
-ENABLED: ['BF', 'MON', 'RT']
-PARAMS:
-    BF:
-        eps: 0.5
-DETAIL: True
+EMP_ALPHA: 0.5
+DETAIL: FALSE
 TEST_CASES:
   - add_add
   - add_avgpool
@@ -86,3 +83,7 @@ TEST_CASES:
   - reshape_relu
   - reshape_reshape
   - se_relu
+  - Multiple_Outbounds
+  - Multiple_Inbounds
+LAYERS_1D:
+  - dense

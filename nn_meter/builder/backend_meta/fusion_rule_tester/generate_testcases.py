@@ -10,6 +10,7 @@ from nn_meter.builder.utils import builder_config
 config =  builder_config.get_module('ruletest')
 rules = {}
 
+
 class TestCasesGenerator:
     name = ''
     cases = None
@@ -79,85 +80,30 @@ class TestCasesGenerator:
         if not self.input_shape:
             self.input_shape = [config['HW'], config['HW'], config['CIN']]
         self.kernel_size = config['KERNEL_SIZE']
-        # self.cout = config['COUT']
-        self.enabled = self.name in config['ENABLED']
+        self.cout = config['COUT']
+        self.padding = config['PADDING']
         self.model_dir = os.path.join(config['MODEL_DIR'], 'models')
         os.makedirs(self.model_dir, exist_ok=True)
-        self.padding = config['PADDING']
-
-        for key, value in config['PARAMS'].get(self.name, {}).items():
-            setattr(self, key, value)
 
     @classmethod
     def _register(cls):
         if cls.name != '':
             rules[cls.name] = cls
 
-    def _model_relu(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.ReLU()(input_layer)
-
-        return keras.models.Model(input_layer, x), [self.input_shape]
-
-    def _model_dwconv_relu(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
-        x = keras.layers.ReLU()(x)
-
-        return keras.models.Model(input_layer, x), [self.input_shape]
-
-    def _model_add(self):
-        input_1 = keras.Input(shape=self.input_shape)
-        input_2 = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.Add()([input_1, input_2])
-
-        return keras.models.Model([input_1, input_2], x), [self.input_shape, self.input_shape]
-
-    def _model_dwconv(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
-
-        return keras.models.Model(input_layer, x), [self.input_shape]
-
-    def _model_conv(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
-
-        return keras.models.Model(input_layer, x), [self.input_shape]
-
     def _model_block(self):
         pass
-
-
-class SingleCaseBase(TestCasesGenerator):
-    false_case = ''
-
-    def test(self):
-        latency_block = self.latency['block']
-        latency_case = self.latency[self.false_case]
-
-        if abs(latency_block.avg - latency_case.avg) < (latency_block.std + latency_case.std):
-            return False
-        else:
-            return True
 
 
 class BasicFusionImpl(TestCasesGenerator):
     name = ''
     cases = {
-        'ops': ['dwconv', 'relu'],
+        'ops': ['', ''],
     }
     false_case = 'ops'
 
     def load_config(self):
         super().load_config()
-        self.enabled = 'BF' in config['ENABLED']
-        self.eps = config['PARAMS']['BF']['eps']
+        self.eps = config['EMP_ALPHA']
 
     def test(self):
         secondary_op_lat = min(lat for op, lat in self.latency.items() if op != 'block' or op != self.false_case)
@@ -206,8 +152,8 @@ class BasicFusionImpl(TestCasesGenerator):
 
 
 class BasicFusion(TestCasesGenerator):
-    name = 'BF'
-    d1_required_layers = ['dense']
+    name = ''
+    d1_required_layers = config['LAYERS_1D']
 
     @classmethod
     def _register(cls):
@@ -232,7 +178,7 @@ class BasicFusion(TestCasesGenerator):
 
 
 class MultipleOutNodes(TestCasesGenerator):
-    name = 'MON'
+    name = 'Multiple_Outbounds'
     cases = {
         'case1': ['relu_relu', 'relu_dwconv', 'dwconv'],
         'case2': ['dwconv_relu_relu', 'relu_dwconv'],
@@ -240,7 +186,7 @@ class MultipleOutNodes(TestCasesGenerator):
     }
     true_case = 'case1'
     deps = {
-        'BF_dwconv_relu': True,
+        'dwconv_relu': True,
     }
 
     def _model_block(self):
@@ -278,103 +224,3 @@ class MultipleOutNodes(TestCasesGenerator):
         x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(x)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
-
-
-class ConvBranchContext(SingleCaseBase):
-    name = 'CBC'
-    cases = {
-        'ops': ['conv', 'conv', 'conv', 'concat3'],
-    }
-    false_case = 'ops'
-
-    def _model_block(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        branch_1 = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
-        branch_2 = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
-        branch_3 = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
-
-        output_layer = keras.layers.Concatenate()([branch_1, branch_2, branch_3])
-
-        return keras.models.Model(input_layer, output_layer), [self.input_shape]
-
-    def _model_concat3(self):
-        input_1 = keras.Input(shape=self.input_shape)
-        input_2 = keras.Input(shape=self.input_shape)
-        input_3 = keras.Input(shape=self.input_shape)
-
-        output_layer = keras.layers.Concatenate()([input_1, input_2, input_3])
-
-        return keras.models.Model([input_1, input_2, input_3], output_layer), [self.input_shape, self.input_shape, self.input_shape]
-
-
-class ReLUBranchContext(SingleCaseBase):
-    name = 'RBC'
-    cases = {
-        'ops': ['3xrelu', 'conv'],
-    }
-    false_case = 'ops'
-
-    def _model_block(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.Conv2D(self.cout, self.kernel_size, padding=self.padding)(input_layer)
-
-        branch_1 = keras.layers.ReLU(negative_slope=0)(x)
-        branch_2 = keras.layers.ReLU(negative_slope=0.5)(x)
-        branch_3 = keras.layers.ReLU(negative_slope=2)(x)
-
-        return keras.models.Model(input_layer, [branch_1, branch_2, branch_3]), [self.input_shape]
-
-    def _model_3xrelu(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        branch_1 = keras.layers.ReLU(negative_slope=0)(input_layer)
-        branch_2 = keras.layers.ReLU(negative_slope=0.5)(input_layer)
-        branch_3 = keras.layers.ReLU(negative_slope=2)(input_layer)
-
-        return keras.models.Model(input_layer, [branch_1, branch_2, branch_3]), [self.input_shape]
-
-
-class ReadyTensor(TestCasesGenerator):
-    name = 'RT'
-    cases = {
-        'case1': ['dwconv_add', 'dwconv', 'dwconv', 'add', 'relu'],
-        'case2': ['dwconv_add_add', 'dwconv', 'dwconv', 'relu'],
-    }
-    true_case = 'case1'
-    deps = {
-        'MON': True,
-        'BF_dwconv_relu': True,
-    }
-
-    def _model_block(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        branch_1 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
-        branch_2 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
-        output_1 = keras.layers.Add()([branch_1, branch_2])
-        branch_3 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
-        output_1 = keras.layers.Add()([branch_3, output_1])
-
-        output_2 = keras.layers.ReLU()(branch_3)
-
-        return keras.Model(input_layer, [output_1, output_2]), [self.input_shape]
-
-    def _model_dwconv_add(self):
-        input_layer = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
-        x = keras.layers.Add()([x, input_layer])
-
-        return keras.models.Model(input_layer, x), [self.input_shape]
-
-    def _model_dwconv_add_add(self):
-        input_1 = keras.Input(shape=self.input_shape)
-        input_2 = keras.Input(shape=self.input_shape)
-
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_1)
-        x = keras.layers.Add()([x, input_1])
-        x = keras.layers.Add()([x, input_2])
-
-        return keras.models.Model([input_1, input_2], x), [self.input_shape, self.input_shape]

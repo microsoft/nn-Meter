@@ -100,10 +100,10 @@ def create_ruletest_workspace_cli(args):
         pass
     
     if args.tflite_workspace:
-        platform_type = "tflite"
+        backend_type = "tflite"
         workspace_path = args.tflite_workspace
     elif args.openvino_workspace:
-        platform_type = "openvino"
+        backend_type = "openvino"
         workspace_path = args.openvino_workspace
         # create openvino_env
         openvino_env = os.path.join(workspace_path, 'openvino_env')
@@ -113,8 +113,8 @@ def create_ruletest_workspace_cli(args):
         os.system("deactivate")
     
     from nn_meter.builder.utils import copy_to_workspace
-    copy_to_workspace(platform_type, workspace_path)
-    logging.keyinfo(f"Workspace {os.path.abspath(workspace_path)} for {platform_type} platform has been created. " \
+    copy_to_workspace(backend_type, workspace_path)
+    logging.keyinfo(f"Workspace {os.path.abspath(workspace_path)} for {backend_type} platform has been created. " \
         f"Users could edit experiment config in {os.path.join(os.path.abspath(workspace_path), 'configs/')}.")
 
 

@@ -9,20 +9,18 @@ from .utils import builder_config as config
 from nn_meter.builder.backends import connect_backend
 
 
-def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], details = False, save_name = None):
+def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None):
     """ run models with given backend and return latency of testcase models
+
     @params:
 
-    backend: applied backend with its config, should be a subclass of BaseBackend
+    backend (BaseBackend): applied backend with its config, should be a subclass of BaseBackend
 
-    models: the Dict of models or the path of the json file about models information 
+    models (str or dict): the Dict of models or the path of the json file about models information 
 
-    mode: the mode for running models, including ['ruletest', 'predbuild']
+    mode (str): the mode for running models, including ['ruletest', 'predbuild']
 
-    metrics: required metrics to report. We only support latency for metric by now.
-
-    details: if False, only metrics result will be dumped to the profiled results. Otherwise 
-        models information will be dumpled, too.
+    metrics (list): required metrics to report. We only support latency for metric by now.
 
     """
     if isinstance(models, str):
@@ -40,18 +38,19 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], de
                 model[metric] = profiled_res[metric]
 
     # save information to json file
+    detail = config.get('DETAIL', mode)
     save_name = save_name or "profiled_results.json"
     info_save_path = os.path.join(ws_mode_path, "results", save_name)
     new_models = merge_prev_info(new_info=models, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     from .backend_meta.utils import dump_profiled_results
     with open(info_save_path, 'w') as fp:
-        json.dump(dump_profiled_results(new_models, details=details), fp, indent=4)
+        json.dump(dump_profiled_results(new_models, detail=detail), fp, indent=4)
     logging.keyinfo(f"Save the profiled models information to {info_save_path}")
 
     return models
 
-def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mode = 'prior', configs = None, mark = ''):
+def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mode = 'prior', configs = None, mark = '', detail = True):
     ''' sample kernel configs and profile kernel model based on configs
     '''
     from nn_meter.builder.kernel_predictor_builder import generate_config_sample
@@ -62,7 +61,7 @@ def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mo
     
     # connect to backend, run test cases and get latency
     backend = connect_backend(backend=backend)
-    profiled_results = profile_models(backend, kernels, mode='predbuild', save_name=f"profiled_{kernel_type}.json")
+    profiled_results = profile_models(backend, kernels, mode='predbuild', save_name=f"profiled_{kernel_type}.json", detail=detail)
     return profiled_results
 
 
