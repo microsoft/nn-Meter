@@ -16,11 +16,13 @@ After creating the workspace, a yaml file named `ruletest_config.yaml` will be p
 - `PADDING`: Default padding type. Default value is `"same"`.
 - `STRIDES`: Default strides size. Default value is `1`.
 - `POOL_STRIDES`: Default strides size for pooling operator. Default value is `2`.
-- `ENABLED`: The test cases that will be enabled. Currently we implement three kinds of rules, `BasicFusion` (code name `BF`), `MultipleOutNodes` (code name `MON`), `ReadyTensor` (code name `RT`). 
 - `EPS_ALPHA`: The empirical coefficient as a threshold in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion. Default value is `0.5`.
 - `DETAIL`: Whether to attach detail information to the json output, such as the shape information in profiled results, and the latency results of each test case in detected fusion rules. Default value is `FALSE`.
-- `TEST_CASES`: the test cases list to test. Generally, there are three types of test cases. Basic test cases detect the fusion rule of single inbound and outbound operators pairs. Besides, `'Multiple_Outbounds'` detects multiple outbounds connection, and `'Multiple_Inbounds'` detects multiple inbounds connection. For more details refer to the introduction of [test cases](#test-cases).
+- `BASIC_TESTCASES`: the test cases list to test. Generally, there are three types of test cases. Basic test cases detect the fusion rule of single inbound and outbound operators pairs. 
+- `OTHER_TESTCASES`: in this list, `'MON'` detects the fusion rules about multiple outbounds connection. Besides, users can add name of customized test cases after test cases registration. For more details refer to the introduction of [Test Cases](#test-cases) and [Build Customized Test Cases](#build-customized-test-cases).
 - `LAYERS_1D`: the list of layer name for 1d tensor input. If the input to this layer must be 1 dimension tensor, users need add it here.
+
+Note: nn-Meter doesn't support different `"COUT"` parameters for conv layer. If there are two successive convolutional layers in the test case, the output channel of the two layer will be the same as `"COUT"` parameter.
 
 Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. After completing configuration, users could initialize workspace in `builder_config` module before building the fusion rule tester:
 
@@ -108,11 +110,9 @@ Here is an end-to-end demo for the progress for the fusion rule testing:
 ```python
 from nn_meter.builder import profile_models
 from nn_meter.builder.utils import builder_config
+builder_config.init("tflite", "path/to/workspace/folder") # initialize builder config with workspace
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder.backend_meta.fusion_rule_tester import generate_testcases, detect_fusion_rule
-
-# initialize builder config with workspace
-builder_config.init("tflite", "path/to/workspace/folder")
 
 # generate testcases
 origin_testcases = generate_testcases()
@@ -145,34 +145,36 @@ Our test case design is driven by two features of a CNN model which impact the f
 
 Currently, we provide these operators with corresponding name:
 
-- `conv`: layer implemented by `tf.keras.layers.Conv2D`.
-- `dwconv`: layer implemented by `tf.keras.layers.DepthwiseConv2D`.
-- `convtrans`: layer implemented by `tf.nn.conv2d_transpose`.
-- `batch_norm`: layer implemented by `tf.keras.layers.GlobalAveragePooling2D`.
-- `maxpool`: layer implemented by `tf.keras.layers.MaxPool2D`.
-- `avgpool`: layer implemented by `tf.keras.layers.AveragePooling2D`.
-- `fc`: layer implemented by `tf.matmul`.
-- `se`: layer implemented refering to [official version](https://github.com/tensorflow/models/blob/89dd9a4e2548e8a5214bd4e564428d01c206a7db/research/slim/nets/mobilenet/conv_blocks.py#L408).
-- `dense`: layer implemented by `tf.keras.layers.Dense`.
-- `relu`: layer implemented by `tf.keras.layers.ReLU`.
-- `relu6`: layer implemented by `tf.nn.relu6`.
-- `sigmoid`: layer implemented by `tf.nn.sigmoid`.
-- `hswish`: layer implemented by `tf.nn.relu6`.
-- `reshape`: layer implemented by `tf.reshape`.
-- `add`: layer implemented by `tf.keras.layers.Add`.
-- `concat`: layer implemented by `tf.keras.layers.Concatenate`.
-- `flatten`: layer implemented by `tf.keras.layers.Flatten`.
-- `split`: layer implemented by `tf.split`. TODO: input shape and output shape intro to avoid bugs)
+- `conv`: layer implemented by `tf.keras.layers.Conv2D`. Input tensor: 3d; Output tensor: 3d.
+- `dwconv`: layer implemented by `tf.keras.layers.DepthwiseConv2D`. Input tensor: 3d; Output tensor: 3d.
+- `convtrans`: layer implemented by `tf.nn.conv2d_transpose`. Input tensor: 3d; Output tensor: 3d.
+- `bn`: layer implemented by `tf.keras.layers.GlobalAveragePooling2D`. Input tensor: 3d; Output tensor: 3d.
+- `maxpool`: layer implemented by `tf.keras.layers.MaxPool2D`. Input tensor: 3d; Output tensor: 3d.
+- `avgpool`: layer implemented by `tf.keras.layers.AveragePooling2D`. Input tensor: 3d; Output tensor: 3d.
+- `global_avgpool`: layer implemented by `tf.keras.layers.GlobalAveragePooling2D`. Input tensor: 3d; Output tensor: 1d.
+- `se`: layer implemented refering to [official version](https://github.com/tensorflow/models/blob/89dd9a4e2548e8a5214bd4e564428d01c206a7db/research/slim/nets/mobilenet/conv_blocks.py#L408). Input tensor: 3d; Output tensor: 3d.
+- `fc`: layer implemented by `tf.keras.layers.Dense`. Input tensor: 1d; Output tensor: 1d.
+- `relu`: layer implemented by `tf.keras.layers.ReLU`. Input tensor: 3d or 1d; Output tensor: 3d or 1d.
+- `relu6`: layer implemented by `tf.nn.relu6`. Input tensor: 3d or 1d; Output tensor: 3d or 1d.
+- `sigmoid`: layer implemented by `tf.nn.sigmoid`. Input tensor: 3d or 1d; Output tensor: 3d or 1d.
+- `hswish`: layer implemented by `tf.nn.relu6`. Input tensor: 3d or 1d; Output tensor: 3d or 1d.
+- `reshape`: layer implemented by `tf.reshape`. Input tensor: 3d tensor with shape [H, W, C], or 1d tensor with shape [CIN]; Output tensor: 3d tensor with shape [C, H, W], or 3d tensor with shape [1, 2, CIN / 2]. `CIN` is required to be odd.
+- `add`: layer implemented by `tf.keras.layers.Add`. Input tensor: list of two 3d tensor with shape [[H, W, C], [H, W, C]], or 1d tensor with shape [CIN]; Output tensor: one 3d tensor with shape [H, W, C], or one 1d tensor with shape [CIN]. The input tensor will be duplicated as input tensor list.
+- `concat`: layer implemented by `tf.keras.layers.Concatenate`. Input tensor: list of two 3d tensor with shape [[H, W, C], [H, W, C]], or 1d tensor with shape [CIN]; Output tensor: one 3d tensor with shape [H, W,  2 * C], or 1d tensor with shape [CIN * 2]. The input tensor will be duplicated as input as input tensor list.
+- `flatten`: layer implemented by `tf.keras.layers.Flatten`. Input tensor: 3d; Output tensor: 1d.
+- `split`: layer implemented by `tf.split`. Input tensor: 3d; Output tensor: list of two 3d tensor with shape [[H, W, C / 2], [H, W, C / 2]]. `CIN` is required to be odd. 
 
-Above ops can be used for fusion rule testing of single inbound and outbound operator connections. Users could edit `'TEST_CASES'` in `<workspace-path>/configs/ruletest_config.yaml` to determine the interested combination. A demo of `'TEST_CASES'` is:
+TODO: In each test cases, we have two ... three models with ... 
+
+Above ops can be used for fusion rule testing of single inbound and outbound operator connections. Users could edit `'BASIC_TESTCASES'` in `<workspace-path>/configs/ruletest_config.yaml` to determine the interested combination. A demo of `'BASIC_TESTCASES'` is:
 
 ```json
-TEST_CASES:
+BASIC_TESTCASES:
   - conv_avgpool
   - conv_relu
 ```
 
-which indicates that in the progress of fusion rule detection, two test cases will be generated, including the connection of `conv` op and `avgpool` op, as well as the connection of `conv` op and `avgpool` op. To add new test case, users could use the layer name, connect the op names by `"_"` and add the string to `'TEST_CASES'`.
+which indicates that in the progress of fusion rule detection, two test cases will be generated, including the connection of `conv` op and `avgpool` op, as well as the connection of `conv` op and `avgpool` op. To add new test case, users could use the layer name, connect the op names by `"_"` and add the string to `'BASIC_TESTCASES'`.
 
 Note: if the input to this layer is 1 dimension tensor, users should add it into `'LAYERS_1D'` in `<workspace-path>/configs/ruletest_config.yaml`.
 
@@ -180,7 +182,7 @@ Note: if the input to this layer is 1 dimension tensor, users should add it into
 
 Besides of operator type, operator connection also impacts fusion rules. nn-Meter composed three basic connection types, including 1. single inbound and out bound, 2. multiple outbounds, and 3. multiple inbounds.
 
-To test multiple outbounds, nn-Meter formed a test case with two branches, the implementation of the test case is shown below:
+To test multiple outbounds, nn-Meter formed a test case with two branches, named `'MON'`(multiple out nodes). The implementation of the test case block is shown below:
 ```python
 input_layer = keras.Input(shape=input_shape)
 x = keras.layers.DepthwiseConv2D(kernel_size, padding=padding)(input_layer)
@@ -266,7 +268,8 @@ In this instance, `dwconv_relu` is the name of a test case. There are three mode
 
 TODO
 
-# Build Customized Test Cases
+
+# <span id="build-customized-test-cases"> Build Customized Test Cases </span>
 
 ## Build Basic Test cases
 

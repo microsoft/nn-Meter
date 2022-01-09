@@ -13,7 +13,10 @@ This file contains the keras implementation of operators, return (the function o
 
 def conv(input_shape, config = None):
     cout = input_shape[2] if "COUT" not in config else config["COUT"]
-    output_shape = [shape for shape in input_shape[:2]] + [cout]
+    output_h = (input_shape[0] - 1) // config["STRIDES"] + 1
+    output_w = (input_shape[1] - 1) // config["STRIDES"] + 1
+    output_shape = [output_h, output_w, cout]
+
     return keras.layers.Conv2D(
             cout,
             kernel_size=config["KERNEL_SIZE"],
@@ -23,31 +26,29 @@ def conv(input_shape, config = None):
 
 
 def dwconv(input_shape, config = None):
+    output_h = (input_shape[0] - 1) // config["STRIDES"] + 1
+    output_w = (input_shape[1] - 1) // config["STRIDES"] + 1
+    output_shape = [output_h, output_w, input_shape[2]]
     return keras.layers.DepthwiseConv2D(
             kernel_size=config["KERNEL_SIZE"],
             strides=config["STRIDES"],
             padding="same"
-        ), input_shape
+        ), output_shape
 
 
 def convtrans(input_shape, config = None):
     cout = input_shape[2] if "COUT" not in config else config["COUT"]
-    class Conv2dTranspose(keras.layers.Layer):
-        def __init__(self, cout):
-            super().__init__()
-            self.filters = tf.Variable(tf.ones([config["KERNEL_SIZE"], config["KERNEL_SIZE"], cout, cout])) 
-        def call(self, inputs):
-            return tf.nn.conv2d_transpose(
-                inputs,
-                filters=self.filters,
-                output_shape=[1] + input_shape,
-                strides=[1, 1]
-            )
-    return Conv2dTranspose(cout), input_shape
+    output_shape = [input_shape[0] * config["STRIDES"], input_shape[1] * config["STRIDES"], cout]
+    return keras.layers.Conv2DTranspose(
+            cout,
+            kernel_size=config["KERNEL_SIZE"],
+            strides=config["STRIDES"],
+            padding="same"
+        ), output_shape
 
 #------------------ normalization and pooling ------------------#
 
-def batch_norm(input_shape, config = None):
+def bn(input_shape, config = None):
     return keras.layers.BatchNormalization(), input_shape
 
 
@@ -77,14 +78,6 @@ def avgpool(input_shape, config = None):
         ), [output_h, output_w, input_shape[2]]
 
 #------------------------ other modules ------------------------#
-
-def fc(input_shape, config = None):
-    # input shape: [1, cin], weight shape: [cin, cout], output shape: [1, cout]
-    out_units = input_shape[1] if "COUT" in config else config["COUT"]
-    def func(input, weight):
-        return tf.matmul(input, weight)
-    return func, [out_units]
-
 
 def se(input_shape, config = None):
     class SE(keras.layers.Layer):
@@ -118,9 +111,10 @@ def se(input_shape, config = None):
     return SE(), input_shape
 
 
-def dense(input_shape, config = None):
-    units = input_shape[0] if "UNITS" not in config else config["UNITS"]
-    return keras.layers.Dense(units), input_shape
+def fc(input_shape, config = None):
+    cout = input_shape[-1] if "COUT" not in config else config["COUT"]
+    output_shape = input_shape[:-1] + [cout]
+    return keras.layers.Dense(cout), output_shape
 
 #-------------------- activation function --------------------#
 
@@ -160,14 +154,15 @@ def reshape(input_shape, config = None):
 
 
 def add(input_shape, config = None):
-    return keras.layers.Add(), input_shape
+    output_shape = input_shape[0]
+    return keras.layers.Add(), output_shape
 
 
 def concat(input_shape, config = None):
     if len(input_shape) > 1 and type(input_shape[0]) == list: # e.g. [[28, 28, 3], [28, 28, 5]] -> [28, 28, 8]
-        output_shape = [input_shape[0][0], input_shape[0][1], sum([i[2] for i in input_shape])]
+        output_shape = input_shape[0][:-1] + [sum([i[-1] for i in input_shape])]
     elif len(input_shape) == 3: # e.g. [28, 28, 4] -> [28, 28, 8]
-        output_shape = [input_shape[0], input_shape[1], input_shape[2] * 2]
+        output_shape = input_shape[0:-1] + [input_shape[-1] * 2]
     else: # e.g. [1024] -> [2048]
         output_shape = [input_shape[0] * 2]
     return keras.layers.Concatenate(), output_shape
@@ -175,6 +170,7 @@ def concat(input_shape, config = None):
 
 def flatten(input_shape, config = None):
     output_shape = np.prod(input_shape)
+    print("##########", output_shape)
     return keras.layers.Flatten(), output_shape
 
 

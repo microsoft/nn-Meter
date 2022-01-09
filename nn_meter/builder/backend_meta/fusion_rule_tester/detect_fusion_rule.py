@@ -23,9 +23,7 @@ class FusionRuleTester:
         testcases = {}
 
         for name, cls in self._rules.items():
-            rule = cls()
-            if rule.enabled:
-                testcases[name] = cls().save_testcase()
+            testcases[name] = cls().save_testcase()
 
         return testcases
 

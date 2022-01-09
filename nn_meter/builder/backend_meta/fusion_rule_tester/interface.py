@@ -6,6 +6,7 @@ import logging
 from .detect_fusion_rule import FusionRuleTester
 from ..utils import read_profiled_results
 from nn_meter.builder.utils import builder_config as config
+from nn_meter.builder.utils import merge_prev_info
 
 
 def generate_testcases():
@@ -17,9 +18,10 @@ def generate_testcases():
     # save information to json file
     ws_path = config.get('MODEL_DIR', 'ruletest')
     info_save_path = os.path.join(ws_path, "results", "origin_testcases.json")
+    new_testcases = merge_prev_info(new_info=testcases, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     with open(info_save_path, 'w') as fp:
-        json.dump(testcases, fp, indent=4)
+        json.dump(new_testcases, fp, indent=4)
     logging.keyinfo(f"Save the original testcases information to {info_save_path}")
     return testcases
 
@@ -40,8 +42,9 @@ def detect_fusion_rule(profiled_testcases):
     # save information to json file
     ws_path = config.get('MODEL_DIR', 'ruletest')
     info_save_path = os.path.join(ws_path, "results", "detected_results.json")
+    new_result = merge_prev_info(new_info=result, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     with open(info_save_path, 'w') as fp:
-        json.dump(result, fp, indent=4)
+        json.dump(new_result, fp, indent=4)
     logging.keyinfo(f"Save the detected fusion rule information to {info_save_path}")
     return result

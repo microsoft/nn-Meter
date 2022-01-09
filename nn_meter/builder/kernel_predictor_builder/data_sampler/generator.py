@@ -25,8 +25,11 @@ def generate_model_for_kernel(kernel_type, config, savepath=None):
     except:
         raise NotImplementedError(f"The kernel_type={kernel_type} you called is not exist in our model zoo. Please implement the block and try again.")
     if kernel_type == "fc_block":
-        input_shape = [1, config["CIN"]]
+        input_shape = [config["CIN"]]
         input_tensor_shape = [input_shape]
+    elif kernel_type == "add_block":
+        input_shape = [[config["HW"], config["HW"], config["CIN"]],
+                       [config["HW"], config["HW"], config["CIN"]]]
     elif kernel_type == "concat_block":
         input_shape = [[config["HW"], config["HW"], cin] 
                        for cin in [config['CIN1'], config['CIN2'], config['CIN3'], config['CIN4']]

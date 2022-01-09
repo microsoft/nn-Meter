@@ -8,7 +8,7 @@ from nn_meter.builder.utils.utils import get_tensor_by_shapes
 
 def conv_bn_relu(input_shape, config):
     conv_op, out_shape = conv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     relu_op, _ = relu(out_shape, config)
     
     class ConvBnRelu(keras.Model):
@@ -29,7 +29,7 @@ def conv_bn_relu(input_shape, config):
 
 def conv_bn_relu6(input_shape, config):
     conv_op, out_shape = conv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     relu6_op, _ = relu6(out_shape, config)
     
     class ConvBnRelu6(keras.Model):
@@ -50,7 +50,7 @@ def conv_bn_relu6(input_shape, config):
 
 def conv_bn(input_shape, config):
     conv_op, out_shape = conv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     
     class ConvBn(keras.Model):
         def __init__(self, conv_op, bn_op):
@@ -136,7 +136,7 @@ def conv_block(input_shape, config):
 
 def conv_bn_hswish(input_shape, config):
     conv_op, out_shape = conv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     hswish_op, _ = hswish(out_shape, config)
     
     class ConvBnHswish(keras.Model):
@@ -158,7 +158,7 @@ def conv_bn_hswish(input_shape, config):
 def conv_bn_relu_maxpool(input_shape, config):
     
     conv_op, out_shape = conv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     relu_op, out_shape = relu(out_shape, config)
     maxpool_op, _ = maxpool(out_shape, config)
     
@@ -181,7 +181,7 @@ def conv_bn_relu_maxpool(input_shape, config):
 
 def dwconv_bn(input_shape, config):
     dwconv_op, out_shape = dwconv(input_shape, config)
-    bn_op, _ = batch_norm(out_shape, config)
+    bn_op, _ = bn(out_shape, config)
     
     class DwConvBn(keras.Model):
         def __init__(self, dwconv_op, bn_op):
@@ -235,7 +235,7 @@ def dwconv_relu6(input_shape, config):
 
 def dwconv_bn_relu(input_shape, config):
     dwconv_op, out_shape = dwconv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     relu_op, _ = relu(out_shape, config)
     
     class DwConvBnRelu(keras.Model):
@@ -256,7 +256,7 @@ def dwconv_bn_relu(input_shape, config):
 
 def dwconv_bn_relu6(input_shape, config):
     dwconv_op, out_shape = dwconv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     relu6_op, _ = relu6(out_shape, config)
     
     class DwConvBnRelu6(keras.Model):
@@ -291,7 +291,7 @@ def dwconv_block(input_shape, config):
 
 def dwconv_bn_hswish(input_shape, config):
     dwconv_op, out_shape = dwconv(input_shape, config)
-    bn_op, out_shape = batch_norm(out_shape, config)
+    bn_op, out_shape = bn(out_shape, config)
     hswish_op, _ = hswish(out_shape, config)
     
     class DwConvBnHswish(keras.Model):
@@ -340,18 +340,16 @@ def avgpool_block(input_shape, config):
 
 def fc_block(input_shape, config):
     fc_op, _ = fc(input_shape, config)
-    weight = tf.random.normal(shape=[config["CIN"], config["COUT"]])
 
     class FC(keras.Model):
-        def __init__(self, fc_op, weight):
+        def __init__(self, fc_op):
             super().__init__()
             self.fc = fc_op
-            self.weight = weight
 
         def call(self, inputs):
-            return self.fc(inputs, weight)
+            return self.fc(inputs)
 
-    return FC(fc_op, weight)
+    return FC(fc_op)
 
 
 def concat_block(input_shape, config):
@@ -427,7 +425,7 @@ def global_avgpool_block(input_shape, config):
 
 
 def bn_relu(input_shape, config):
-    bn_op, out_shape = batch_norm(input_shape, config)
+    bn_op, out_shape = bn(input_shape, config)
     relu_op, _ = relu(out_shape, config)
     
     class BnRelu(keras.Model):
@@ -445,7 +443,7 @@ def bn_relu(input_shape, config):
 
 
 def bn_block(input_shape, config):
-    bn_op, _ = batch_norm(input_shape, config)
+    bn_op, _ = bn(input_shape, config)
 
     class BN(keras.Model):
         def __init__(self, bn_op):

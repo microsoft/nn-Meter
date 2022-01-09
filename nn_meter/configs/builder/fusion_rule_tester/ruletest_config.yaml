@@ -8,7 +8,7 @@ STRIDES: 1
 POOL_STRIDES: 2
 EMP_ALPHA: 0.5
 DETAIL: FALSE
-TEST_CASES:
+BASIC_TESTCASES:
   - add_add
   - add_avgpool
   - add_concat
@@ -83,7 +83,7 @@ TEST_CASES:
   - reshape_relu
   - reshape_reshape
   - se_relu
-  - Multiple_Outbounds
-  - Multiple_Inbounds
+OTHER_TESTCASES:
+  - MON
 LAYERS_1D:
   - dense

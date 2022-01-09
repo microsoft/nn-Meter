@@ -3,12 +3,10 @@
 
 
 def get_op_is_two_inputs(op_name):
-    if op_name in ["conv", "dwconv", "convtrans", "avgpool", "se", "dense", "relu", "hswish", "reshape"]:
-        return False
-    elif op_name in ["add", "concat"]:
+    if op_name in ["add", "concat"]:
         return True
     else:
-        raise ValueError(f"Unsupported operator name: {op_name} in rule-tester.")
+        return False
 
 
 def save_model(model, savepath):

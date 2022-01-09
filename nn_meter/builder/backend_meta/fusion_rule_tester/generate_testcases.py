@@ -3,9 +3,8 @@
 import os
 from tensorflow import keras
 from .utils import generate_model_for_testcase
-from nn_meter.builder.utils import get_tensor_by_shapes
+from nn_meter.builder.utils import get_tensor_by_shapes, builder_config
 from nn_meter.builder.backend_meta.utils import Latency
-from nn_meter.builder.utils import builder_config
 
 config =  builder_config.get_module('ruletest')
 rules = {}
@@ -87,8 +86,9 @@ class TestCasesGenerator:
 
     @classmethod
     def _register(cls):
-        if cls.name != '':
-            rules[cls.name] = cls
+        if (cls.name != '' and cls.name.startswith("BF")) or \
+            (config['OTHER_TESTCASES'] != None and cls.name in config['OTHER_TESTCASES']):
+                rules[cls.name] = cls
 
     def _model_block(self):
         pass
@@ -153,19 +153,20 @@ class BasicFusionImpl(TestCasesGenerator):
 
 class BasicFusion(TestCasesGenerator):
     name = ''
-    d1_required_layers = config['LAYERS_1D']
+    d1_required_layers = []
 
     @classmethod
     def _register(cls):
-        if config['TEST_CASES'] == None: return
-        testcases = [case.split('_') for case in config['TEST_CASES']]
+        if config['BASIC_TESTCASES'] == None: return
+        testcases = [case.split('_') for case in config['BASIC_TESTCASES']]
+        d1_required_layers = config['LAYERS_1D']
         for op1, op2 in testcases:
             classname = f'BasicFusion_{op1}_{op2}'
             name = f'BF_{op1}_{op2}'
             cases = {
                 'ops': [op1, op2],
             }
-            if op1 in cls.d1_required_layers or op2 in cls.d1_required_layers:
+            if op1 in d1_required_layers or op2 in d1_required_layers:
                 input_shape = [config['SHAPE_1D']]
             else:
                 input_shape = [config['HW'], config['HW'], config['CIN']]
@@ -178,7 +179,7 @@ class BasicFusion(TestCasesGenerator):
 
 
 class MultipleOutNodes(TestCasesGenerator):
-    name = 'Multiple_Outbounds'
+    name = 'MON'
     cases = {
         'case1': ['relu_relu', 'relu_dwconv', 'dwconv'],
         'case2': ['dwconv_relu_relu', 'relu_dwconv'],
@@ -186,7 +187,7 @@ class MultipleOutNodes(TestCasesGenerator):
     }
     true_case = 'case1'
     deps = {
-        'dwconv_relu': True,
+        'BF_dwconv_relu': True,
     }
 
     def _model_block(self):
@@ -222,5 +223,20 @@ class MultipleOutNodes(TestCasesGenerator):
 
         x = keras.layers.ReLU()(input_layer)
         x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(x)
+
+        return keras.models.Model(input_layer, x), [self.input_shape]
+
+    def _model_dwconv_relu(self):
+        input_layer = keras.Input(shape=self.input_shape)
+
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
+        x = keras.layers.ReLU()(x)
+
+        return keras.models.Model(input_layer, x), [self.input_shape]
+
+    def _model_dwconv(self):
+        input_layer = keras.Input(shape=self.input_shape)
+
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
 
         return keras.models.Model(input_layer, x), [self.input_shape]

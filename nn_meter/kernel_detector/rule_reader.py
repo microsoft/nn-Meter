@@ -8,7 +8,6 @@ from nn_meter.utils.graph_tool import ModelGraph
 class RuleReader:
     rules_default = {
         "MON": 0,
-        "RT": True,
         "FN": True,
     }
 
