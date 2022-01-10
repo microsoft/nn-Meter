@@ -4,7 +4,7 @@ A fusion rule tester creates a series of models (what we call "test case" in nn-
 
 ## Step 1. Prepare Backends and Create Workspace
 
-The first step to run fusion rule tester is to prepare backends and create workspace. Users could follow guidance [here](./prepare_backend.md) for this step.
+The first step to run fusion rule tester is to prepare backends and create workspace. Users could follow guidance [Prepare Backends](./prepare_backend.md) and [Create Workspace](./overview.md#create-workspace) for this step.
 
 After creating the workspace, a yaml file named `ruletest_config.yaml` will be placed in `<workspace-path>/configs/`. The fusion rule test configs includes:
 

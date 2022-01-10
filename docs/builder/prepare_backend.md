@@ -10,13 +10,11 @@ Besides of the current backends, users can implement a customized backend via nn
 Next, we will introduce how to setup the device and get connection to the backend.
 
 
-
-
 ## Setup Device
 
 ### TFLite Android Guide
 
-Introduction of Android Device and TFLite platform
+TODO: Introduction of Android Device and TFLite platform
 
 #### 1. Install ADB and Android SDK
 Follow [Android Guide](https://developer.android.com/studio) to install adb on your host device.
@@ -27,12 +25,15 @@ The easiest way is to directly download Android Studio from [this page](https://
 #### 2. Get TFLite Benchmark Model
 The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released a modified version of `benchmark_model` based on `tensorflow==2.1`. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
 
-NOTE: in the situation to deal with customized test case, our `benchmark_model` is probably not suitable. Users could follow [official guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
+NOTE: in the situation to deal with customized test case, our `benchmark_model` is probably not suitable. Users could follow [Official Guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
 
 #### 3. Setup Benckmark Tool on Device
+
 Push the `benchmark_model` to edge device by specifying its serial (if any).
+
 ``` Bash
 adb [-s <device-serial>] push bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model /data/local/tmp
+
 # add executable permission to benchmark_model
 adb shell chmod +x /data/local/tmp/benchmark_model
 ```
@@ -50,27 +51,11 @@ pip install -r docs/requirements/openvino_requirements.txt
 deactivate
 ```
 
-## Create Workspace and Prepare Config File
+## Prepare Configuration File
 
-### Create Workspace
-A workspace in nn-Meter is a direction to save experiment configs, test case models, and test cases json files for a group of experiments. Before connecting to the backend, a workspace folder should be created. Users could create a workspace folder by running the following command:
+When connecting to backend, a series of configs should be declared and appointed by users. After creating workspace folder ([Workspace Guidance](overview.md#create-workspace)), a yaml file named `backend_config.yaml` will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content to change configuration.
 
-``` Bash
-# for TFLite platform
-nn-meter create --tflite-workspace <path/to/place/workspace/>
-
-# for OpenVINO platform
-nn-meter create --openvino-workspace <path/to/place/workspace/>
-
-# for customized platform
-nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
-```
-
-After running the command, a workspace folder will be created and a yaml file named `backend_config.yaml` will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content to change configuration. The config will take effect after the the config file is saved and closed.
-
-### Prepare Configs
-
-When connecting to backend, a series of configs should be declared and appointed by users. Specifically, for Android CPU or GPU backends, the required parameters include:
+Specifically, for Android CPU or GPU backends, the required parameters include:
 
 - `REMOTE_MODEL_DIR`: path to the folder (on mobile device) where temporary models will be copied to.
 - `KERNEL_PATH`: path (on mobile device) where the kernel implementations will be dumped.
@@ -85,7 +70,20 @@ For VPU backends with OpenVINO, the required parameters include:
 - `DEVICE_SERIAL`: serial id of the device
 - `DATA_TYPE`: data type of the model (e.g., fp16, fp32)
 
-To edit the configs, users could open `<workspace-path>/configs/backend_config.yaml` and edit the content after creating workspace. The config will take effect after the the config file is saved and closed.
+Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content. After completing configuration, users could initialize workspace in `builder_config` module before connecting backend:
+
+```python
+from nn_meter.builder.utils import builder_config
+
+# initialize builder config with workspace
+builder_config.init(
+    backend_type="tflite", 
+    workspace_path="path/to/workspace/folder"
+) # change the text to required platform type and workspace path
+```
+`backend_type` refers to the framework type of the platform. 
+
+Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
 
 ## Connect to Backend
 
@@ -118,4 +116,5 @@ Users could follow [this example](../../examples/nn-meter_builder_with_tflite.ip
 
 
 # <span id="build-customized-backend"> Build Customized Backend </span>
-TODO
+
+TODO register customized backend
