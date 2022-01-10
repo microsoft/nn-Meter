@@ -32,7 +32,7 @@ setup(
             'configs/builder/fusion_rule_tester/*.yaml',
             'configs/builder/predictor_builder/*.yaml',
             'builder/kernel_predictor_builder/data_sampler/prior_config_lib/*.csv',
-            'kernel_detector/fusionlib/*.json'],
+            'kernel_detector/fusion_lib/*.json'],
     },
     entry_points={
         'console_scripts': ['nn-meter=nn_meter.nn_meter_cli:nn_meter_cli'],
