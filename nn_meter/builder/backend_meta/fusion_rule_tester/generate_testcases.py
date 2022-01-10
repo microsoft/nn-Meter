@@ -7,7 +7,7 @@ from nn_meter.builder.utils import get_tensor_by_shapes, builder_config
 from nn_meter.builder.backend_meta.utils import Latency
 
 config =  builder_config.get_module('ruletest')
-rules = {}
+testcases_list = {}
 
 
 class TestCasesGenerator:
@@ -41,7 +41,6 @@ class TestCasesGenerator:
                     'model': model,
                     'shapes': shapes
                 }
-
         return testcase
 
     def save_testcase(self):
@@ -88,7 +87,7 @@ class TestCasesGenerator:
     def _register(cls):
         if (cls.name != '' and cls.name.startswith("BF")) or \
             (config['OTHER_TESTCASES'] != None and cls.name in config['OTHER_TESTCASES']):
-                rules[cls.name] = cls
+                testcases_list[cls.name] = cls
 
     def _model_block(self):
         pass
@@ -175,7 +174,7 @@ class BasicFusion(TestCasesGenerator):
                 'cases': cases,
                 'input_shape': input_shape,
             })
-            rules[bf_cls.name] = bf_cls
+            testcases_list[bf_cls.name] = bf_cls
 
 
 class MultipleOutNodes(TestCasesGenerator):

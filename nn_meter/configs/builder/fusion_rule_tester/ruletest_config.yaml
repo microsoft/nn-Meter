@@ -14,7 +14,7 @@ BASIC_TESTCASES:
   - add_concat
   - add_conv
   - add_convtrans
-  - add_dense
+  - add_fc
   - add_dwconv
   - add_relu
   - add_reshape
@@ -31,7 +31,7 @@ BASIC_TESTCASES:
   - concat_concat
   - concat_conv
   - concat_convtrans
-  - concat_dense
+  - concat_fc
   - concat_dwconv
   - concat_relu
   - concat_reshape
@@ -53,10 +53,10 @@ BASIC_TESTCASES:
   - convtrans_dwconv
   - convtrans_relu
   - convtrans_reshape
-  - dense_add
-  - dense_concat
-  - dense_dense
-  - dense_relu
+  - fc_add
+  - fc_concat
+  - fc_fc
+  - fc_relu
   - dwconv_add
   - dwconv_avgpool
   - dwconv_concat
@@ -70,7 +70,7 @@ BASIC_TESTCASES:
   - relu_concat
   - relu_conv
   - relu_convtrans
-  - relu_dense
+  - relu_fc
   - relu_dwconv
   - relu_relu
   - relu_reshape
@@ -86,4 +86,4 @@ BASIC_TESTCASES:
 OTHER_TESTCASES:
   - MON
 LAYERS_1D:
-  - dense
+  - fc

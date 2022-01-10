@@ -1,18 +1,18 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import networkx as nx
-from .generate_testcases import rules
+from .generate_testcases import testcases_list
 from nn_meter.builder.utils import builder_config as config
 
 
 class FusionRuleTester:
     def __init__(self):
-        self._rules = rules
+        self._testcases = testcases_list
 
     def _build_dep_dag(self):
         dag = nx.DiGraph()
 
-        for name, cls in self._rules.items():
+        for name, cls in self._testcases.items():
             dag.add_node(name)
             for dep in cls.deps:
                 dag.add_edge(dep, name)
@@ -22,7 +22,7 @@ class FusionRuleTester:
     def generate(self):
         testcases = {}
 
-        for name, cls in self._rules.items():
+        for name, cls in self._testcases.items():
             testcases[name] = cls().save_testcase()
 
         return testcases
@@ -36,7 +36,7 @@ class FusionRuleTester:
                 continue
 
             result[name] = {}
-            rule_cls = self._rules[name]
+            rule_cls = self._testcases[name]
 
             obey = True
             for dep, expect in rule_cls.deps.items():

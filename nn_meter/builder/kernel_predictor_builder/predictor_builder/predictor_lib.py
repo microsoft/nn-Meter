@@ -173,7 +173,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "global_avgpool_block": {
+    "globalavgpool_block": {
         "tflite_cpu": {
             "max_depth": 70,
             "n_estimators": 370,

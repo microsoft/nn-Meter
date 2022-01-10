@@ -52,7 +52,7 @@ def bn(input_shape, config = None):
     return keras.layers.BatchNormalization(), input_shape
 
 
-def global_avgpool(input_shape, config = None):
+def globalavgpool(input_shape, config = None):
     return keras.layers.GlobalAveragePooling2D(), input_shape[2]
 
 
@@ -154,7 +154,10 @@ def reshape(input_shape, config = None):
 
 
 def add(input_shape, config = None):
-    output_shape = input_shape[0]
+    if len(input_shape) == 2 and type(input_shape[0]) == list:
+        output_shape = input_shape[0]
+    else:
+        output_shape = input_shape
     return keras.layers.Add(), output_shape
 
 
@@ -169,8 +172,7 @@ def concat(input_shape, config = None):
 
 
 def flatten(input_shape, config = None):
-    output_shape = np.prod(input_shape)
-    print("##########", output_shape)
+    output_shape = [int(np.prod(input_shape))]
     return keras.layers.Flatten(), output_shape
 
 

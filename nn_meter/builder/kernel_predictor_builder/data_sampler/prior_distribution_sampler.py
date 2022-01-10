@@ -263,7 +263,7 @@ def prior_kernel_sampling(kernel_type, count):
         return sampling_concats(count)
     elif kernel_type in ['split_block', 'channel_shuffle', 'se_block']:
         return sampling_hw_cin_odd(count)
-    elif kernel_type == 'global_avgpool_block': 
+    elif kernel_type == 'globalavgpool_block': 
         cfgs = sampling_hw_cin(count)
         new_hws = [3] * (count // 2 + 1) + [7] * (count // 2 + 1)
         new_hws = new_hws[:len(cfgs)]

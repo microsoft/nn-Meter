@@ -410,18 +410,18 @@ def se_block(input_shape, config):
     return SE(se_op)
 
 
-def global_avgpool_block(input_shape, config):
-    global_avgpool_op, _ = global_avgpool(input_shape, config)
+def globalavgpool_block(input_shape, config):
+    globalavgpool_op, _ = globalavgpool(input_shape, config)
 
     class GlobalAvgPool(keras.Model):
-        def __init__(self, global_avgpool_op):
+        def __init__(self, globalavgpool_op):
             super().__init__()
-            self.global_avgpool = global_avgpool_op
+            self.globalavgpool = globalavgpool_op
 
         def call(self, inputs):
-            return self.global_avgpool(inputs)
+            return self.globalavgpool(inputs)
 
-    return GlobalAvgPool(global_avgpool_op)
+    return GlobalAvgPool(globalavgpool_op)
 
 
 def bn_relu(input_shape, config):

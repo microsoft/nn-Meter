@@ -41,7 +41,7 @@ def detect_fusion_rule(profiled_testcases):
 
     # save information to json file
     ws_path = config.get('MODEL_DIR', 'ruletest')
-    info_save_path = os.path.join(ws_path, "results", "detected_results.json")
+    info_save_path = os.path.join(ws_path, "results", "detected_fusion_rule.json")
     new_result = merge_prev_info(new_info=result, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     with open(info_save_path, 'w') as fp:
