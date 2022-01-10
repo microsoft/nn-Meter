@@ -61,11 +61,11 @@ def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mo
     
     # connect to backend, run test cases and get latency
     backend = connect_backend(backend=backend)
-    profiled_results = profile_models(backend, kernels, mode='predbuild', save_name=f"profiled_{kernel_type}.json", detail=detail)
+    profiled_results = profile_models(backend, kernels, mode='predbuild', save_name=f"profiled_{kernel_type}.json")
     return profiled_results
 
 
-def build_predictor_for_kernel(kernel_type, backend = None, init_sample_num = 1000, finegrained_sample_num = 10, iteration = 5, error_threshold = 0.1):
+def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, finegrained_sample_num = 10, iteration = 5, error_threshold = 0.1):
     """ 
     Build latency predictor for given kernel. This method contains three main steps:
     1. sample kernel configs and profile kernel model based on configs;
@@ -76,7 +76,7 @@ def build_predictor_for_kernel(kernel_type, backend = None, init_sample_num = 10
     
     kernel_type (str): the type of kernel
     
-    backend (str): the backend to profile models
+    backend (str): the name of backend instance to profile models
     
     init_sample_num (int, optional): the data size for predictor initialization. Defaults to 1000.
     

@@ -91,6 +91,8 @@ def get_data_by_profiled_results(kernel_type, cfgs_path, lats_path = None):
 def get_features_by_config(kernel_type, config):
     feature = [config[data] for data in config_for_kernel[kernel_type]]
     if "conv" in kernel_type or "dwconv" in kernel_type or "fc" in kernel_type:
-        flop, param = get_flops_params(kernel_type, config) 
+        flop, param = get_flops_params(kernel_type, config)
+        flop /= 2e6
+        param /= 1e6
         feature.extend([flop, param])
     return feature
