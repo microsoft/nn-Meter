@@ -130,7 +130,7 @@ nn-Meter have wrapped the four main steps into one method `nn_meter.builder.buil
 ```python
 # initialize builder config with workspace
 from nn_meter.builder.utils import builder_config
-builder_config.init("tflite", "path/to/workspace/folder") 
+builder_config.init("path/to/workspace/folder") 
 
 # build latency predictor for kernel
 from nn_meter.builder import build_predictor_for_kernel
@@ -146,4 +146,5 @@ In the experiment of nn-Meter, we set `init_sample_num` as 1000, `finegrained_sa
 
 
 # Build predictor for customized kernel
-TODO if user has a new kernel, he/she needs to add: 1) tf kernel code generation in `generator/networks`. 2) collect the prior data and implement sampling code.
+TODO registration: kernels in blocks.py
+if user has a new kernel, he/she needs to add: 1) tf kernel code generation in `generator/networks`. 2) collect the prior data and implement sampling code.

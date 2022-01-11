@@ -77,11 +77,9 @@ from nn_meter.builder.utils import builder_config
 
 # initialize builder config with workspace
 builder_config.init(
-    backend_type="tflite", 
     workspace_path="path/to/workspace/folder"
 ) # change the text to required platform type and workspace path
 ```
-`backend_type` refers to the framework type of the platform. 
 
 Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
 
@@ -105,7 +103,7 @@ To apply the backend for model running, nn-Meter provides an interface `connect_
 # initialize workspace in code
 workspace_path = "/path/to/workspace/" 
 from nn_meter.builder.utils import builder_config
-builder_config.init("tflite", workspace_path)
+builder_config.init(workspace_path)
 
 # connect to backend
 from nn_meter.builder.backends import connect_backend
@@ -117,4 +115,5 @@ Users could follow [this example](../../examples/nn-meter_builder_with_tflite.ip
 
 # <span id="build-customized-backend"> Build Customized Backend </span>
 
-TODO register customized backend
+TODO registration: backend done, waiting for docs
+register customized backend

@@ -112,25 +112,25 @@ def create_ruletest_workspace_cli(args):
         os.system("pip install -r docs/requirements/openvino_requirements.txt")
         os.system("deactivate")
     
-    from nn_meter.builder.utils import copy_to_workspace
+    from nn_meter.builder.config_manager import copy_to_workspace
     copy_to_workspace(backend_type, workspace_path)
     logging.keyinfo(f"Workspace {os.path.abspath(workspace_path)} for {backend_type} platform has been created. " \
         f"Users could edit experiment config in {os.path.join(os.path.abspath(workspace_path), 'configs/')}.")
 
 
 def list_backends_cli():
-    from nn_meter.builder import list_backends
+    from nn_meter.builder.backends import list_backends
     backends = list_backends()
     logging.keyinfo("Supported backends:")
-    for name, loc in backends.items():
-        logging.result(f"[Backend] {name}: located in {loc[0]}")
+    for name in backends.keys():
+        logging.result(f"[Backend] {name}")
     return
 
 
 def test_connection_cli(args):
-    from nn_meter.builder.utils import builder_config
+    from nn_meter.builder import builder_config
     from nn_meter.builder.backends import connect_backend
-    builder_config.init(args.backend, args.workspace)
+    builder_config.init(args.workspace)
     backend = connect_backend(args.backend)
     backend.test_connection()
 

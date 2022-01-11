@@ -34,7 +34,7 @@ def copy_to_workspace(backend_type, workspace_path):
         os.path.join(os.path.join(workspace_path, 'configs'), 'predictorbuild_config.yaml'))
 
 
-def load_config_file(backend_type, workspace_path):
+def load_config_file(workspace_path):
     """load config file from workspace_path;
     if the file not located in workspace_path, copy it from distribution
     """
@@ -49,16 +49,13 @@ def load_config_file(backend_type, workspace_path):
         with open(predictorbuild_filepath) as fp:
             predictorbuild = yaml.load(fp, yaml.FullLoader)
         return backend, ruletest, predictorbuild
-            
-    except FileNotFoundError:
-        logging.info(f"config file in {workspace_path} not found, created")
-        copy_to_workspace(backend_type, workspace_path)
-        return load_config_file(backend_type, workspace_path)
+    except:
+        raise FileNotFoundError(f"config file in {workspace_path} not found, created")
 
 
 class ConfigData:
     def __init__(self):
-        self.workspace_path = {}
+        self.workspace_path = ''
         self._global_settings = {}
 
     def set(self, name, value, module=''):
@@ -68,27 +65,34 @@ class ConfigData:
         self._global_settings[module] = value
         
     def get(self, name, module=''):
-        return self._global_settings[module].get(name)
+        try:
+            return self._global_settings[module].get(name)
+        except:
+            raise ValueError(f"Could not find {module} or {module}.{name} in builder config. \
+                Please run `builder_config.init('path/to/workspace')` first.")
 
     def get_module(self, module=''):
-        return self._global_settings[module]
+        try:
+            return self._global_settings[module]
+        except:
+            raise ValueError(f"Could not find {module} in builder config. \
+                Please run `builder_config.init('path/to/workspace')` first.")
 
     def get_settings(self):
         return self._global_settings
 
 
 class ConfigManager(ConfigData):
-    def init(self, backend_type, workspace_path):
+    def init(self, workspace_path):
         self.workspace_path = workspace_path
-        self._load_from_config_file(backend_type, workspace_path)
+        self._load_from_config_file(workspace_path)
     
-    def _load_from_config_file(self, backend_type, workspace_path):
-        backend, ruletest, predbuild = load_config_file(backend_type, workspace_path)
+    def _load_from_config_file(self, workspace_path):
+        backend, ruletest, predbuild = load_config_file(workspace_path)
         self.set_module(backend, 'backend')
         self.set_module(ruletest, 'ruletest')
         self.set_module(predbuild, 'predbuild')
         self.set('MODEL_DIR', os.path.join(self.workspace_path, "fusion_rule_test"), 'ruletest')
         self.set('MODEL_DIR', os.path.join(self.workspace_path, "predictor_build"), 'predbuild')
-
 
 builder_config = ConfigManager()

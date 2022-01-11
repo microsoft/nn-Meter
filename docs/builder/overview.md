@@ -32,12 +32,9 @@ from nn_meter.builder.utils import builder_config
 
 # initialize builder config with workspace
 builder_config.init(
-    backend_type="tflite", 
     workspace_path="path/to/workspace/folder"
 ) # change the text to required platform type and workspace path
 ```
-
-where `backend_type` refers to the framework type of the platform.
 
 Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
 

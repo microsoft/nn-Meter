@@ -2,17 +2,15 @@
 # Licensed under the MIT license.
 from .tflite import (
     TFLiteBackend,
-    TFLiteRunner,
-    TFLiteCPUBackend,
-    TFLiteGPUBackend
+    TFLiteRunner
 )
 from .openvino import (
     OpenVINOBackend,
-    OpenVINORunner,
-    OpenVINOVPUBackend
+    OpenVINORunner
 )
 from .interface import (
     BaseBackend,
+    BACKENDS,
     connect_backend,
     list_backends
 )

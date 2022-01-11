@@ -31,11 +31,9 @@ from nn_meter.builder.utils import builder_config
 
 # initialize builder config with workspace
 builder_config.init(
-    backend_type="tflite", 
     workspace_path="path/to/workspace/folder"
 ) # change the text to required platform type and workspace path
 ```
-`backend_type` refers to the framework type of the platform. Currently we provide two types of backend, i.e., TFLite platform, and OpenVINO platform. Refer to [backend guidance](./prepare_backend.md) for how to setup the device and get connection to the backend. To use the customized backend, users can follow the [customize backend guidance](./prepare_backend.md#build_customized_backend).
 
 Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
 
@@ -110,7 +108,7 @@ Here is an end-to-end demo for the progress for the fusion rule testing:
 ```python
 from nn_meter.builder import profile_models
 from nn_meter.builder.utils import builder_config
-builder_config.init("tflite", "path/to/workspace/folder") # initialize builder config with workspace
+builder_config.init("path/to/workspace/folder") # initialize builder config with workspace
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder.backend_meta.fusion_rule_tester import generate_testcases, detect_fusion_rule
 
@@ -286,7 +284,7 @@ operators = [
 Refer to [basic test cases](#basic-test-cases) for more details of supporting ops. To apply existing ops, users could directly declare the op name and ops connection in `'BASIC_TESTCASES'` from `<workspace-path>/configs/ruletest_config.yaml` to generate their own test cases.
 
 If users want to add new operators into basic test cases, should register ops by ...
-TODO ops register
+TODO registration: ops in operators.py, require op_has_two_inputs
 ```python
 
 ```
@@ -375,7 +373,7 @@ class MyTestCase(TestCasesGenerator):
 
 - `_model_block`: The structure of the tested block.
 
-TODO: test and register
+TODO: registration: test cases
 
 ## Use Customized Rules when Splitting
 
