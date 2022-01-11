@@ -3,6 +3,7 @@
 import re
 from .tflite_runner import TFLiteRunner
 from .tflite_backend import TFLiteBackend
+from ..interface import BACKENDS
 from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
 
 
@@ -63,6 +64,7 @@ class TFLiteCPURunner(TFLiteRunner):
     use_gpu = False
 
 
+@BACKENDS.register_module(name="tflite_cpu")
 class TFLiteCPUBackend(TFLiteBackend):
     parser_class = TFLiteCPULatencyParser
     runner_class = TFLiteCPURunner

@@ -59,7 +59,7 @@ def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mo
                                      sampling_mode=sampling_mode, configs=configs)
     
     # connect to backend, run test cases and get latency
-    backend = connect_backend(backend=backend)
+    backend = connect_backend(backend_name=backend)
     profiled_results = profile_models(backend, kernels, mode='predbuild', save_name=f"profiled_{kernel_type}.json")
     return profiled_results
 

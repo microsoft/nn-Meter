@@ -3,6 +3,7 @@
 import re
 from .openvino_runner import OpenVINORunner
 from .openvino_backend import OpenVINOBackend
+from ..interface import BACKENDS
 from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
 
 
@@ -50,6 +51,7 @@ class OpenVINOVPURunner(OpenVINORunner):
     device = "MYRIAD"
 
 
+@BACKENDS.register_module(name="openvino_vpu")
 class OpenVINOVPUBackend(OpenVINOBackend):
     parser_class = OpenVINOVPULatencyParser
     runner_class = OpenVINOVPURunner

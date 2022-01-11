@@ -109,7 +109,7 @@ builder_config.init("tflite", workspace_path)
 
 # connect to backend
 from nn_meter.builder.backends import connect_backend
-backend = connect_backend(backend='tflite_cpu')
+backend = connect_backend(backend_name='tflite_cpu')
 ...
 ```
 Users could follow [this example](../../examples/nn-meter_builder_with_tflite.ipynb) to further know about our API.

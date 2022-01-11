@@ -1,17 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import importlib
-from typing import List
-from nn_meter.builder.utils import builder_config as config
+from nn_meter.utils.registry import Registry
 from nn_meter.utils.path import get_filename_without_ext
 
-
-BACKENDS_PATH = {
-    'tflite_gpu': ['nn_meter.builder.backends', 'TFLiteGPUBackend'],
-    'tflite_cpu': ['nn_meter.builder.backends', 'TFLiteCPUBackend'],
-    'openvino_vpu': ['nn_meter.builder.backends', 'OpenVINOVPUBackend'],
-}
-
+BACKENDS = Registry('backends')
 
 class BaseBackend:
     """
@@ -30,10 +22,9 @@ class BaseBackend:
     runner_class = None
     parser_class = None
 
-    def __init__(self, name, configs):
+    def __init__(self, configs):
         """class initialization with required configs
         """
-        self.name = name
         self.configs = configs
         self.update_configs()
         self.parser = self.parser_class(**self.parser_kwargs)
@@ -86,7 +77,7 @@ class BaseBackend:
         pass
 
 
-def connect_backend(backend):
+def connect_backend(backend_name):
     """ 
     Return the required backend class, and feed params to the backend. Supporting backend: tflite_cpu, tflite_gpu, openvino_vpu.
     
@@ -112,33 +103,15 @@ def connect_backend(backend):
     @params:
     backend: name of backend or backend class (subclass instance of `BaseBackend`). 
     """
-    if isinstance(backend, str):
-        module, attr = BACKENDS_PATH[backend]
-        backend_module = importlib.import_module(module)
-        backend_cls = getattr(backend_module, attr)
-        backend_name = backend
+    if isinstance(backend_name, str):
+        backend_cls = BACKENDS.get(backend_name)
     else:
-        backend_cls = backend
-        backend_name = backend.name
-    configs = config.get_module('backend')
-    return backend_cls(backend_name, configs)
+        backend_cls = backend_name
 
+    # load configs from workspace
+    from nn_meter.builder import builder_config
+    configs = builder_config.get_module('backend')
+    return backend_cls(configs)
 
 def list_backends():      
-    return BACKENDS_PATH
-
-
-def register_backend(backend_name, engine_path, cls_name):
-    """
-    Register a customized backend. The engine_path, cls_name will be used as:
-        'from <engine_path> import <cls_name>'
-
-    @params:
-
-    backend_name: alias name of the new backend
-
-    engine_path: the path to define the customized backend
-
-    cls_name: class name of the customized backend class, should be a subclass of BaseBackend
-    """
-    BACKENDS_PATH[backend_name] = [engine_path, cls_name]
+    return BACKENDS.items()

@@ -59,7 +59,7 @@ Given required backend, users could run test cases model and get the profiled la
 ```python
 # connect to backend
 from nn_meter.builder.backends import connect_backend
-backend = connect_backend(backend='tflite_cpu')
+backend = connect_backend(backend_name='tflite_cpu')
 
 # run testcases and collect profiling results
 from nn_meter.builder import profile_models
@@ -118,7 +118,7 @@ from nn_meter.builder.backend_meta.fusion_rule_tester import generate_testcases,
 origin_testcases = generate_testcases()
 
 # connect to backend
-backend = connect_backend(backend='tflite_cpu')
+backend = connect_backend(backend_name='tflite_cpu')
 
 # run testcases and collect profiling results
 profiled_results = profile_models(backend, origin_testcases, mode='ruletest')
