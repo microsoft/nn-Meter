@@ -3,9 +3,8 @@
 import os
 import json
 import logging
-
+from . import builder_config
 from nn_meter.builder.utils import merge_prev_info
-from .utils import builder_config as config
 from nn_meter.builder.backends import connect_backend
 
 
@@ -27,7 +26,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
         with open(models, 'r') as fp:
             models = json.load(fp)
 
-    ws_mode_path = config.get('MODEL_DIR', mode)
+    ws_mode_path = builder_config.get('MODEL_DIR', mode)
     model_save_path = os.path.join(ws_mode_path, 'models')
     os.makedirs(model_save_path, exist_ok=True)
     for _, modules in models.items():
@@ -38,7 +37,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                 model[metric] = profiled_res[metric]
 
     # save information to json file
-    detail = config.get('DETAIL', mode)
+    detail = builder_config.get('DETAIL', mode)
     save_name = save_name or "profiled_results.json"
     info_save_path = os.path.join(ws_mode_path, "results", save_name)
     new_models = merge_prev_info(new_info=models, info_save_path=info_save_path)

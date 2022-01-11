@@ -2,8 +2,9 @@
 # Licensed under the MIT license.
 import networkx as nx
 from .generate_testcases import testcases_list
-from nn_meter.builder.utils import builder_config as config
+from nn_meter.builder import builder_config
 
+config = builder_config.get_module('ruletest')
 
 class FusionRuleTester:
     def __init__(self):
@@ -47,7 +48,7 @@ class FusionRuleTester:
                 rule = rule_cls()
                 rule.load_latency(profile_results[name])
                 obey = rule.test()
-                if config.get('DETAIL', 'ruletest'):
+                if config['DETAIL']:
                     latency = {key: str(value) for key, value in rule.latency.items()}
                     result[name]['latency'] = latency
 

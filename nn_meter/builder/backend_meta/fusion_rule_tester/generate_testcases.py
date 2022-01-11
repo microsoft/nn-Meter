@@ -3,7 +3,8 @@
 import os
 from tensorflow import keras
 from .utils import generate_model_for_testcase
-from nn_meter.builder.utils import get_tensor_by_shapes, builder_config
+from nn_meter.builder import builder_config
+from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.backend_meta.utils import Latency
 
 config =  builder_config.get_module('ruletest')

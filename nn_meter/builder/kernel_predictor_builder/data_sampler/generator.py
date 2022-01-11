@@ -5,12 +5,11 @@ import json
 import random
 import string
 import logging
-
 from ..utils import config_for_kernel
 from .finegrained_sampler import finegrained_kernel_sampling
 from .prior_distribution_sampler import prior_kernel_sampling
+from nn_meter.builder import builder_config
 from nn_meter.builder.utils import get_inputs_by_shapes, merge_prev_info
-from nn_meter.builder.utils import builder_config as config
 from nn_meter.builder.nn_generator.tf_networks import blocks
 from nn_meter.builder.nn_generator.utils import save_model
 
@@ -52,7 +51,7 @@ class KernelGenerator:
     def __init__(self, kernel_type, sample_num, mark = ""):
         self.kernel_type = kernel_type
         self.sample_num = sample_num
-        self.ws_path = config.get('MODEL_DIR', 'predbuild')
+        self.ws_path = builder_config.get('MODEL_DIR', 'predbuild')
         self.case_save_path = os.path.join(self.ws_path, 'models')
         self.kernel_info = {kernel_type: {}}
         self.kernels = self.kernel_info[self.kernel_type]
@@ -122,7 +121,7 @@ def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = '
     kernels_info = generator.run(sampling_mode=sampling_mode, configs=configs)
 
     # save information to json file in incrementally mode
-    ws_mode_path = config.get('MODEL_DIR', "predbuild")
+    ws_mode_path = builder_config.get('MODEL_DIR', "predbuild")
     info_save_path = os.path.join(ws_mode_path, "results", f"{kernel_type}.json")
     new_kernels_info = merge_prev_info(new_info=kernels_info, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
