@@ -18,7 +18,7 @@ class Registry:
         if key in self._module_dict:
             return self._module_dict[key]
 
-    def _register_module(self, module_class, module_name=None):
+    def _register(self, module_class, module_name=None):
         if not inspect.isclass(module_class):
             raise TypeError(f'module must be a class, but got {type(module_class)}')
 
@@ -30,14 +30,14 @@ class Registry:
         self._module_dict[module_name] = module_class
 
     def register(self, name, module = None):
-        # use it as a normal method: x.register_module(name="my_class", module=MyClass)
+        # use it as a normal method: x.register(name="my_class", module=MyClass)
         if module is not None:
-            self._register_module(module_class=module, module_name=name)
+            self._register(module_class=module, module_name=name)
             return module
 
-        # use it as a decorator: @x.register_module(name="my_class")
+        # use it as a decorator: @x.register(name="my_class")
         def _register(reg_self):
-            self._register_module(
+            self._register(
                 module_class=reg_self, module_name=name)
             return reg_self
 
