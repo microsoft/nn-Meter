@@ -12,18 +12,20 @@ class BaseBackend:
 
     @params:
 
-    runner_class: the class to specify the running command of the backend. A runner contains commands to push
-        the model to mobile device, run the model on the mobile device, get stdout from the mobile device, and
-        related operations. In the implementation of a runner, an interface of ``Runner.run()`` is required.
+    runner_class: a subclass inherit form `nn_meter.builder.backend.BaseRunner` to specify the running command of
+        the backend. A runner contains commands to push the model to mobile device, run the model on the mobile device,
+        get stdout from the mobile device, and related operations. In the implementation of a runner, an interface of
+        ``Runner.run()`` is required.
     
-    parser_class: the class of the profiled results parser. A parser parses the stdout from runner and get 
-        required metrics. In the implementation of a parser, an interface of ``Parser.parse()`` is required.
+    parser_class: a subclass inherit form `nn_meter.builder.backend.BaseParser` to parse the profiled results.
+        A parser parses the stdout from runner and get required metrics. In the implementation of a parser, interface
+        of `Parser.parse()` and property of `Parser.results()` are required.
     """
     runner_class = None
     parser_class = None
 
     def __init__(self, configs):
-        """class initialization with required configs
+        """ class initialization with required configs
         """
         self.configs = configs
         self.update_configs()
@@ -31,20 +33,21 @@ class BaseBackend:
         self.runner = self.runner_class(**self.runner_kwargs)
 
     def update_configs(self):
-        """update the config parameters for the backend
+        """ update the config parameters for the backend
         """
         self.parser_kwargs = {}
         self.runner_kwargs = {}
     
     def convert_model(self, model, model_name, savedpath, input_shape=None):
-        """convert the Keras model instance to the type required by the backend inference
+        """ convert the Keras model instance to the type required by the backend inference
         """
         return model
 
     def profile(self, model, model_name, savedpath, input_shape=None, metrics=['latency']):
         """
         convert the model to the backend platform and run the model on the backend, return required metrics 
-        of the running results. We only support latency for metric by now.
+        of the running results. nn-Meter only support latency for metric by now. Users may provide other
+        metrics in their customized backend.
 
         @params:
         
@@ -64,7 +67,7 @@ class BaseBackend:
         return self.parser.parse(self.runner.run(converted_model)).results.get(metrics)
 
     def profile_model_file(self, model_path, savedpath, input_shape = None, metrics = ['latency']):
-        """load model by model file path and run ``self.profile()``
+        """ load model by model file path and run ``self.profile()``
         """
         import tensorflow as tf
         model_name = get_filename_without_ext(model_path)
@@ -72,7 +75,41 @@ class BaseBackend:
         return self.profile(model, model_name, savedpath, input_shape, metrics)
 
     def test_connection(self):
-        """check the status of backend interface connection, ideally including open/close/check_healthy...
+        """ check the status of backend interface connection.
+        """
+        pass
+
+
+class BaseRunner:
+    """
+    Specify the running command of the backend. A runner contains commands to push the model to mobile device, run the model 
+    on the mobile device, get stdout from the mobile device, and related operations. 
+    """
+    def run(self):
+        """ Main steps of ``Runner.run()`` includes 1) push the model file to edge devices, 2) run models in required times
+        and get back running results. Return the running results on edge device.
+        """
+        output = ''
+        return output
+
+
+class BaseParser:
+    """
+    Parse the profiled results. A parser parses the stdout from runner and get required metrics.
+    """
+    def parse(self, content):
+        """ A string parser to parse profiled results value from the standard output of devices runner. This method should return the instance
+        class itself.
+
+        @params
+        
+        content: the standard output from device runner       
+        """
+        return self
+
+    @property
+    def results(self):
+        """ warp the parsed results by ``ProfiledResults`` class from ``nn_meter.builder.backend_meta.utils`` and return the parsed results value.
         """
         pass
 

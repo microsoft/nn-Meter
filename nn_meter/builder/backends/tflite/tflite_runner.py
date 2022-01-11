@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import subprocess
+from ..interface import BaseRunner
 
 
-class TFLiteRunner:
+class TFLiteRunner(BaseRunner):
     use_gpu = None
 
     def __init__(self, dst_kernel_path, benchmark_model_path, graph_path='', dst_graph_path='', serial='', num_threads=1, num_runs=50, warm_ups=10):

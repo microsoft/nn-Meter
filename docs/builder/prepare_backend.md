@@ -115,5 +115,76 @@ Users could follow [this example](../../examples/nn-meter_builder_with_tflite.ip
 
 # <span id="build-customized-backend"> Build Customized Backend </span>
 
-TODO registration: backend done, waiting for docs
-register customized backend
+nn-Meter provide API for users to customize their own backend. Here we describe the implementation of `BaseBackend` first. We define the base of all backend in `nn_meter.builder.backend.BaseBackend`. There are following methods in this base class:
+
+- `runner_class`: should be a subclass inherit form `nn_meter.builder.backend.BaseRunner` to specify the running command of the backend. A runner contains commands to push the model to mobile device, run the model on the mobile device, get stdout from the mobile device, and related operations. In the implementation of a runner, an interface of ``Runner.run()`` is required. Users need to modify this **at the most time**.
+
+    - `run`: Main steps of ``Runner.run()`` includes 1) push the model file to edge devices, 2) run models in required times and get back running results. Return the running results on edge device.
+
+- `parser_class`: should be a subclass inherit form `nn_meter.builder.backend.BaseParser` to parse the profiled results. A parser parses the stdout from runner and get required metrics. In the implementation of a parser, interface of `Parser.parse()` and property of `Parser.results()` are required. Considering there will always be different for new backend, users need to modify this **all the time**.
+    
+    - `parse`: a string parser to parse profiled results value from the standard output of devices runner. This method should return the instance class itself.
+
+    - `results`: warp the parsed results by ``ProfiledResults`` class from ``nn_meter.builder.backend_meta.utils`` and return the parsed results value.
+
+- `update_configs`: update the config parameters for the backend. Users need to modify this **all the time**.
+
+- `convert_model`: convert the Keras model instance to the type required by the backend inference. For **some time you will** need to modify this.
+
+- `profile`: load model by model file path and run ``self.profile()``. nn-Meter only support latency for metric by now. Users may provide other
+        metrics in their customized backend. At the **most time you won't** need to modify this.
+
+- `profile_model_file`: load model by model file path and run ``self.profile()``. At the **most time you won't** need to modify this.
+
+- `test_connection`: check the status of backend interface connection. For **some time you won't** need to implement this as it is for testing only.
+
+Here is an example to create a new backend class:
+
+```python
+from nn_meter.builder.backend import BaseBackend, BaseParser, BaseRunner
+
+class MyParser(BaseParser): ...
+class MyRunner(BaseRunner): ...
+
+class MyBackend(BaseBackend):
+    parser_class = MyParser
+    runner_class = MyRunner
+```
+
+nn-Meter provide a decorator `@BACKENDS.register()` for backend registration. Here is a demo:
+
+```diff
+from nn_meter.builder.backend import BaseBackend, BaseParser, BaseRunner
++ from nn_meter.builder.backend import BACKENDS
+
+class MyParser(BaseParser): ...
+class MyRunner(TFLiteRunner): ...
+
++ @BACKENDS.register(name="my_backend")
+class MyBackend(BaseBackend):
+    parser_class = MyParser
+    runner_class = MyRunner
+```
+
+After creating and registering the customized backend, users could get access to the customized backend by calling its name:
+
+```python
+from nn_meter.builder.backends import connect_backend
+my_backend = connect_backend("my_backend")
+```
+
+Besides, nn-Meter also provide TFLite backend (`nn_meter.builder.backend.TFLiteBackend`), and OpenVINO backend (`nn_meter.builder.backend.OpenVINOBackend`), in case if users want to create new device instance based on TFLite or OpenVINO. By inheriting these two class, users could reuse some methods, such as `convert_model`, `profile`, and `test_connection`.
+
+Here is an example to inherit `TFLiteBackend` and create backend named `my_tflite`:
+
+```python
+from nn_meter.builder.backend import TFLiteBackend, TFLiteRunner, BaseParser
+
+class MyParser(BaseParser): ...
+class MyRunner(TFLiteRunner): ...
+
+@BACKENDS.register(name="my_tflite")
+class MyTFLiteBackend(TFLiteBackend):
+    parser_class = MyParser
+    runner_class = MyRunner
+```

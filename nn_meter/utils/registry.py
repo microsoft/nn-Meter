@@ -29,7 +29,7 @@ class Registry:
             self._module_dict.update({module_name: module_class})
         self._module_dict[module_name] = module_class
 
-    def register_module(self, name, module = None):
+    def register(self, name, module = None):
         # use it as a normal method: x.register_module(name="my_class", module=MyClass)
         if module is not None:
             self._register_module(module_class=module, module_name=name)

@@ -10,6 +10,8 @@ from .openvino import (
 )
 from .interface import (
     BaseBackend,
+    BaseRunner,
+    BaseParser,
     BACKENDS,
     connect_backend,
     list_backends

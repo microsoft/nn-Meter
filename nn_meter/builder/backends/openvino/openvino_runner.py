@@ -7,10 +7,11 @@ import shutil
 import serial
 
 from .utils import restart
+from ..interface import BaseRunner
 from nn_meter.utils.pyutils import get_pyver
 
 
-class OpenVINORunner:
+class OpenVINORunner(BaseRunner):
 
     device = None
 

@@ -3,28 +3,28 @@
 import re
 from .tflite_runner import TFLiteRunner
 from .tflite_backend import TFLiteBackend
-from ..interface import BACKENDS
+from ..interface import BACKENDS, BaseParser
 from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
 
 
-class TFLiteCPULatencyParser:
+class TFLiteCPULatencyParser(BaseParser):
     def __init__(self):
         self.nodes = []
         self.total_latency = Latency()
 
-    def parse(self, output):
-        self.nodes = self._parse_nodes(output)
-        self.total_latency = self._parse_total_latency(output)
+    def parse(self, content):
+        self.nodes = self._parse_nodes(content)
+        self.total_latency = self._parse_total_latency(content)
         return self
 
-    def _parse_nodes(self, output):
+    def _parse_nodes(self, content):
         start_regex = r'[= ]*Run Order[= ]*'
         end_regex = r'[= ]*Top by Computation Time[= ]*'
         node_regex = r'\s*(\w+)\s*[\d.e-]+\s*[\d.e-]+\s*([\d.e-]+)\s*[\d.e-]+%\s*[\d.e-]+%\s*[\d.e-]+\s*1\s*(\S*)'
         flag = False
 
         nodes = []
-        for line in output.splitlines():
+        for line in content.splitlines():
             if flag:
                 match = re.search(node_regex, line)
                 if match:
@@ -40,11 +40,11 @@ class TFLiteCPULatencyParser:
         
         return nodes
 
-    def _parse_total_latency(self, output):
+    def _parse_total_latency(self, content):
         total_latency_regex = r'Timings \(microseconds\): count=[\d.e-]+ first=[\d.e-]+ curr=[\d.e-]+ min=[\d.e-]+ max=[\d.e-]+ avg=([\d.e-]+) std=([\d.e-]+)'
 
         total_latency = Latency()
-        match = re.search(total_latency_regex, output, re.MULTILINE)
+        match = re.search(total_latency_regex, content, re.MULTILINE)
         if match:
             total_latency = Latency(float(match[1]), float(match[2]))
 
@@ -64,7 +64,7 @@ class TFLiteCPURunner(TFLiteRunner):
     use_gpu = False
 
 
-@BACKENDS.register_module(name="tflite_cpu")
+@BACKENDS.register(name="tflite_cpu")
 class TFLiteCPUBackend(TFLiteBackend):
     parser_class = TFLiteCPULatencyParser
     runner_class = TFLiteCPURunner

@@ -3,16 +3,14 @@
 import re
 from .openvino_runner import OpenVINORunner
 from .openvino_backend import OpenVINOBackend
-from ..interface import BACKENDS
+from ..interface import BACKENDS, BaseParser
 from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
 
 
-class OpenVINOVPULatencyParser:
-    def __init__(self):
-        pass
+class OpenVINOVPULatencyParser(BaseParser):
 
-    def parse(self, output):
-        self.layers = self._parse_layers(output)
+    def parse(self, content):
+        self.layers = self._parse_layers(content)
         self.comp_layer_latency = sum(
             Latency(layer['realtime'])
             for layer in self.layers
@@ -20,10 +18,10 @@ class OpenVINOVPULatencyParser:
         )
         return self
 
-    def _parse_layers(self, output):
+    def _parse_layers(self, content):
         layer_regex = r'^([^;]+);([^;]+);([^;]+);([^;]+);([^;]+);([^;]+);$'
         layers = []
-        for match in re.findall(layer_regex, output, re.MULTILINE):
+        for match in re.findall(layer_regex, content, re.MULTILINE):
             try:
                 layers.append({
                     'layer_name': match[0],
@@ -51,7 +49,7 @@ class OpenVINOVPURunner(OpenVINORunner):
     device = "MYRIAD"
 
 
-@BACKENDS.register_module(name="openvino_vpu")
+@BACKENDS.register(name="openvino_vpu")
 class OpenVINOVPUBackend(OpenVINOBackend):
     parser_class = OpenVINOVPULatencyParser
     runner_class = OpenVINOVPURunner
