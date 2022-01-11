@@ -18,7 +18,7 @@ def latency_metrics(y_pred, y_true):
 
 
 def get_config_by_features(kernel_type, feature):
-    from ..utils import config_for_kernel
+    from ..config_lib import config_for_kernel
     config_name = config_for_kernel[kernel_type]
 
     # remove flops and params num feature from feature vector

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import json
-from ..utils import config_for_kernel
+from ..config_lib import config_for_kernel
 from nn_meter.builder.backend_meta.utils import read_profiled_results
 
 def get_conv_flop_params(hw, cin, cout, kernel_size, stride):

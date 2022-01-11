@@ -5,13 +5,12 @@ import json
 import random
 import string
 import logging
-from ..utils import config_for_kernel
+from ..config_lib import config_for_kernel
 from .finegrained_sampler import finegrained_kernel_sampling
 from .prior_distribution_sampler import prior_kernel_sampling
 from nn_meter.builder import builder_config
 from nn_meter.builder.utils import get_inputs_by_shapes, merge_prev_info
 from nn_meter.builder.nn_generator.tf_networks import blocks
-from nn_meter.builder.nn_generator.utils import save_model
 
 
 def generate_model_for_kernel(kernel_type, config, savepath=None):
@@ -40,7 +39,8 @@ def generate_model_for_kernel(kernel_type, config, savepath=None):
     model = getattr(blocks, kernel_type)(input_shape, needed_config)
     model(get_inputs_by_shapes(input_tensor_shape))
     if savepath:
-        save_model(model, savepath)
+        from tensorflow import keras
+        keras.models.save_model(model, savepath)
         logging.info(f"{kernel_type} model is generated and saved to {savepath}.")
     else:
         logging.info(f"{kernel_type} model is generated.")

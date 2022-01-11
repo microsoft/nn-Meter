@@ -3,7 +3,7 @@
 import random
 from .utils import *
 from .prior_config_lib.utils import *
-from ..utils import config_for_kernel
+from ..config_lib import config_for_kernel
 
 
 def sampling_conv(count):
