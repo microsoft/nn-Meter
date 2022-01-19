@@ -154,7 +154,7 @@ def nn_meter_cli():
     
 
     # Usage 4: create workspace folder for nn-Meter builder 
-    # Usage: nn-meter create <path/to/workspace>
+    # Usage: nn-meter create --tflite-workspace <path/to/workspace>
     create_workspace = subparsers.add_parser(
         'create', 
         help='create a workspace folder for nn-Meter builder'
