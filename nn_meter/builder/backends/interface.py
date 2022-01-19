@@ -1,9 +1,36 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from nn_meter.utils.registry import Registry
+import os
+import sys
+import yaml
+import importlib
 from nn_meter.utils.path import get_filename_without_ext
 
-BACKENDS = Registry('backends')
+__BUILTIN_BACKENDS__ = {
+    "tflite_cpu": {
+        "classModule": "nn_meter.builder.backends.tflite",
+        "className": "TFLiteCPUBackend"
+    },
+    "tflite_gpu": {
+        "classModule": "nn_meter.builder.backends.tflite",
+        "className": "TFLiteGPUBackend"
+    },
+    "openvino_vpu": {
+        "classModule": "nn_meter.builder.backends.openvino",
+        "className": "OpenVINOVPUBackend"
+    }
+}
+
+__user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
+__registry_cfg_filename__ = 'registry.yaml'
+if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__)):
+    with open(os.path.join(__user_config_folder__, __registry_cfg_filename__), 'r') as fp:
+        registry_modules = yaml.load(fp, yaml.FullLoader)
+    if "backends" in registry_modules:
+        __REG_BACKENDS__ = registry_modules["backends"]
+else:
+    __REG_BACKENDS__ = {}
+
 
 class BaseBackend:
     """
@@ -140,15 +167,24 @@ def connect_backend(backend_name):
     @params:
     backend: name of backend or backend class (subclass instance of `BaseBackend`). 
     """
-    if isinstance(backend_name, str):
-        backend_cls = BACKENDS.get(backend_name)
+    if backend_name in __REG_BACKENDS__:
+        backend_info = __REG_BACKENDS__[backend_name]
+        sys.path.append(backend_info["packageLocation"])
+        backend_info = __REG_BACKENDS__[backend_name]
+    elif backend_name in __BUILTIN_BACKENDS__:
+        backend_info = __BUILTIN_BACKENDS__[backend_name]
     else:
-        backend_cls = backend_name
+        raise ValueError(f"Unsupported backend name: {backend_name}. Please register the backend first.")
+
+    module = backend_info["classModule"]
+    name = backend_info["className"]
+    backend_module = importlib.import_module(module)   
+    backend_cls = getattr(backend_module, name)
 
     # load configs from workspace
     from nn_meter.builder import builder_config
     configs = builder_config.get_module('backend')
     return backend_cls(configs)
 
-def list_backends():      
-    return BACKENDS.items()
+def list_backends():
+    return __BUILTIN_BACKENDS__.keys() + __REG_BACKENDS__.keys()

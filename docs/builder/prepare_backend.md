@@ -151,22 +151,9 @@ class MyBackend(BaseBackend):
     runner_class = MyRunner
 ```
 
-nn-Meter provide a decorator `@BACKENDS.register()` for backend registration. Here is a demo:
+After creating the customized backend, users could prepare meta file and register the backend to nn-Meter following the [Registration Guidance](register_customized_modules.md).
 
-```diff
-from nn_meter.builder.backend import BaseBackend, BaseParser, BaseRunner
-+ from nn_meter.builder.backend import BACKENDS
-
-class MyParser(BaseParser): ...
-class MyRunner(TFLiteRunner): ...
-
-+ @BACKENDS.register(name="my_backend")
-class MyBackend(BaseBackend):
-    parser_class = MyParser
-    runner_class = MyRunner
-```
-
-After creating and registering the customized backend, users could get access to the customized backend by calling its name:
+After registering the customized backend, users could get access to the customized backend by calling its name:
 
 ```python
 from nn_meter.builder.backends import connect_backend
@@ -183,7 +170,6 @@ from nn_meter.builder.backend import TFLiteBackend, TFLiteRunner, BaseParser
 class MyParser(BaseParser): ...
 class MyRunner(TFLiteRunner): ...
 
-@BACKENDS.register(name="my_tflite")
 class MyTFLiteBackend(TFLiteBackend):
     parser_class = MyParser
     runner_class = MyRunner

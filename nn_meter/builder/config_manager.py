@@ -3,7 +3,6 @@
 import os
 import yaml
 import pkg_resources
-import logging
 from shutil import copyfile
 
 __backend_tflite_cfg_filename__ = 'backend_tflite_config.yaml'
