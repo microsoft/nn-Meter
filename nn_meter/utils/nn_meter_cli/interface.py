@@ -1,145 +1,24 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from glob import glob
-import os
 import sys
-import argparse
 import logging
-from nn_meter import *
-
-
-def list_latency_predictors_cli():
-    preds = list_latency_predictors()
-    logging.keyinfo("Supported latency predictors:")
-    for p in preds:
-        logging.result(f"[Predictor] {p['name']}: version={p['version']}")
-    return
-
-
-def apply_latency_predictor_cli(args):
-    """apply latency predictor to predict model latency according to the command line interface arguments
-    """
-    if not args.predictor:
-        logging.keyinfo('You must specify a predictor. Use "nn-meter --list-predictors" to see all supporting predictors.')
-        return
-
-    # specify model type
-    if args.tensorflow:
-        input_model, model_type, model_suffix = args.tensorflow, "pb", ".pb"
-    elif args.onnx:
-        input_model, model_type, model_suffix = args.onnx, "onnx", ".onnx"
-    elif args.nn_meter_ir:
-        input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter-ir", ".json"
-    elif args.torchvision: # torch model name from torchvision model zoo
-        input_model_list, model_type = args.torchvision, "torch" 
-
-    # load predictor
-    predictor = load_latency_predictor(args.predictor, args.predictor_version)
-
-    # specify model for prediction
-    if not args.torchvision: # input of tensorflow, onnx, nnmeter-ir and nni-ir is file name, while input of torchvision is string list
-        input_model_list = []
-        if os.path.isfile(input_model):
-            input_model_list = [input_model]
-        elif os.path.isdir(input_model):
-            input_model_list = glob(os.path.join(input_model, "**" + model_suffix))
-            input_model_list.sort()
-            logging.info(f'Found {len(input_model_list)} model in {input_model}. Start prediction ...')
-        else:
-            logging.error(f'Cannot find any model satisfying the arguments.')
-
-    # predict latency
-    result = {}
-    for model in input_model_list:
-        latency = predictor.predict(model, model_type) # in unit of ms
-        result[os.path.basename(model)] = latency
-        logging.result(f'[RESULT] predict latency for {os.path.basename(model)}: {latency} ms')
-    
-    return result
-
-
-def get_nnmeter_ir_cli(args):
-    """convert pb file or onnx file to nn-Meter IR graph according to the command line interface arguments
-    """
-    import json
-    from nn_meter.utils.utils import NumpyEncoder
-    if args.tensorflow:
-        graph = model_file_to_graph(args.tensorflow, 'pb')
-        filename = args.output if args.output else args.tensorflow.replace(".pb", "_pb_ir.json") 
-    elif args.onnx:
-        graph = model_file_to_graph(args.onnx, 'onnx')
-        filename = args.output if args.output else args.onnx.replace(".onnx", "_onnx_ir.json") 
-    else:
-        raise ValueError(f"Unsupported model.")
-    
-    if not str.endswith(filename, '.json'): filename += '.json'
-    with open(filename, "w+") as fp:
-        json.dump(graph,
-            fp,
-            indent=4,
-            skipkeys=True,
-            sort_keys=True,
-            cls=NumpyEncoder,
-        )
-    
-    logging.result(f'The nn-meter ir graph has been saved. Saved path: {os.path.abspath(filename)}')
-
-
-def create_ruletest_workspace_cli(args):
-    """create a workspace folder and copy the corresponding config file to the workspace
-    """
-    if args.customized_workspace:
-        # backend_name, workspace_path, config_path = args.customized_workspace
-        # os.makedirs(workspace_path, exist_ok=True)
-        
-        # from nn_meter.builder import copy_cusconfig_to_workspace
-        # copy_cusconfig_to_workspace(workspace_path, config_path)
-        
-        # logging.keyinfo(f'Create workspace at {workspace_path}.')
-        # return
-        pass
-    
-    if args.tflite_workspace:
-        backend_type = "tflite"
-        workspace_path = args.tflite_workspace
-    elif args.openvino_workspace:
-        backend_type = "openvino"
-        workspace_path = args.openvino_workspace
-        # create openvino_env
-        openvino_env = os.path.join(workspace_path, 'openvino_env')
-        os.system(f"virtualenv {openvino_env}")
-        os.system("source {openvino_env}/bin/activate")
-        os.system("pip install -r docs/requirements/openvino_requirements.txt")
-        os.system("deactivate")
-    
-    from nn_meter.builder.config_manager import copy_to_workspace
-    copy_to_workspace(backend_type, workspace_path)
-    logging.keyinfo(f"Workspace {os.path.abspath(workspace_path)} for {backend_type} platform has been created. " \
-        f"Users could edit experiment config in {os.path.join(os.path.abspath(workspace_path), 'configs/')}.")
-
-
-def list_backends_cli():
-    from nn_meter.builder.backends import list_backends
-    backends = list_backends()
-    logging.keyinfo("Supported backends:")
-    for name in backends.keys():
-        logging.result(f"[Backend] {name}")
-    return
-
-
-def test_connection_cli(args):
-    from nn_meter.builder import builder_config
-    from nn_meter.builder.backends import connect_backend
-    builder_config.init(args.workspace)
-    backend = connect_backend(args.backend)
-    backend.test_connection()
-
+import argparse
+from .registry import register_module_cli, unregister_module_cli
+from .predictor import list_latency_predictors_cli, apply_latency_predictor_cli, get_nnmeter_ir_cli
+from .builder import list_backends_cli, list_kernels_cli, list_operators_cli, list_special_testcases_cli, \
+    test_backend_connection_cli, create_workspace_cli
 
 def nn_meter_info(args):
     if args.list_predictors:
         list_latency_predictors_cli()
     if args.list_backends:
         list_backends_cli()
+    if args.list_kernels:
+        list_kernels_cli()
+    if args.list_operators:
+        list_operators_cli()
+    if args.list_testcases:
+        list_special_testcases_cli()
     else:
         logging.keyinfo('please run "nn-meter {positional argument} --help" to see nn-meter guidance')
 
@@ -249,7 +128,7 @@ def nn_meter_cli():
         type=str,
         help="the name of the testing backend"
     )
-    test_connection.set_defaults(func=test_connection_cli)
+    test_connection.set_defaults(func=test_backend_connection_cli)
     
     # register and unregister backend 
     # Usage: nn-meter build register  <path/to/workspace>
@@ -282,7 +161,7 @@ def nn_meter_cli():
             'and the third word indicates the path to the customized config .yaml file. The customized backend ' \
             'should be register first (refer to `nn-meter backend reg --h` for more help)."
     )
-    create_workspace.set_defaults(func=create_ruletest_workspace_cli)
+    create_workspace.set_defaults(func=create_workspace_cli)
 
     
     # Usage 5: change data floder

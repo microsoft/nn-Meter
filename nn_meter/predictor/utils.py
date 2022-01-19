@@ -14,7 +14,7 @@ def loading_to_local(pred_info, dir):
     """
     @params:
 
-    configs: the default predictor.yaml that describes the supported hardware+backend
+    configs: the default predictors.yaml that describes the supported hardware+backend
     hardware: the targeting hardware_inferenceframework name
     dir: the local directory to store the kernel predictors and fusion rules
 

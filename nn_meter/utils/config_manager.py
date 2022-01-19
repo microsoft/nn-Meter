@@ -15,7 +15,7 @@ def create_user_configs():
     """create user configs from distributed configs
     """
     os.makedirs(__user_config_folder__, exist_ok=True)
-    # TODO/backlog: to handle config merging when upgrading    
+    # TODO/backlog: to handle config merging when upgrading
     for f in pkg_resources.resource_listdir(".".join(__name__.split('.')[:-2]), 'configs'):
         if f.endswith(".yaml"):
             copyfile(
