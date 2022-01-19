@@ -45,6 +45,24 @@ def nn_meter_cli():
         action='store_true',
         default=False
     )
+    parser.add_argument(
+        '--list-kernels',
+        help='list all supported kernels when building kernel predictors',
+        action='store_true',
+        default=False
+    )
+    parser.add_argument(
+        '--list-operators',
+        help='list all supported operators when building fusion rule test cases',
+        action='store_true',
+        default=False
+    )
+    parser.add_argument(
+        '--list-testcases',
+        help='list all supported special test cases when building fusion rule test cases',
+        action='store_true',
+        default=False
+    )
 
     # create subparsers for args with sub values
     subparsers = parser.add_subparsers()

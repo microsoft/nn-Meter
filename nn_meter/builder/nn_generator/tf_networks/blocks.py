@@ -3,7 +3,7 @@
 import tensorflow as tf
 import tensorflow.keras as keras
 from .operators import *
-from nn_meter.builder.utils.utils import get_tensor_by_shapes 
+from nn_meter.builder.utils import get_tensor_by_shapes 
 
 
 def conv_bn_relu(input_shape, config):
