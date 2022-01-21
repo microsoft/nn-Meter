@@ -3,16 +3,17 @@
 import os
 import json
 import logging
-from .detect_fusion_rule import FusionRuleTester
 from ..utils import read_profiled_results
-from nn_meter.builder import builder_config
 from nn_meter.builder.utils import merge_prev_info
 
-config = builder_config.get_module('ruletest')
 
 def generate_testcases():
     """generate testcases and save the testcase models and testcase json file in the workspace
     """
+    from nn_meter.builder import builder_config
+    config = builder_config.get_module('ruletest')
+
+    from .detect_fusion_rule import FusionRuleTester
     tester = FusionRuleTester()
     testcases = tester.generate()
 
@@ -37,10 +38,13 @@ def detect_fusion_rule(profiled_testcases):
         with open(profiled_testcases, 'r') as fp:
             profiled_testcases = read_profiled_results(json.load(fp))
 
+    from .detect_fusion_rule import FusionRuleTester
     tester = FusionRuleTester()
     result = tester.analyze(profiled_testcases)
 
     # save information to json file
+    from nn_meter.builder import builder_config
+    config = builder_config.get_module('ruletest')
     ws_path = config['MODEL_DIR']
     info_save_path = os.path.join(ws_path, "results", "detected_fusion_rule.json")
     new_result = merge_prev_info(new_info=result, info_save_path=info_save_path)

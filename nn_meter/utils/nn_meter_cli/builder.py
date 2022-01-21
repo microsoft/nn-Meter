@@ -13,11 +13,14 @@ def list_backends_cli():
     logging.keyinfo("Supported backends: ('*' indicates customized backends)")
     for name in backends:
         logging.result(f"[Backend] {name}")
-    return
 
 
 def list_operators_cli():
-    pass
+    from nn_meter.builder.backend_meta.fusion_rule_tester.utils import list_operators
+    operators = list_operators()
+    logging.keyinfo("Supported operators: ('*' indicates customized operators)")
+    for name in operators:
+        logging.result(f"[Operator] {name}")
 
 
 def list_kernels_cli():

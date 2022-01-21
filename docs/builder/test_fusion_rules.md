@@ -283,10 +283,195 @@ operators = [
 
 Refer to [basic test cases](#basic-test-cases) for more details of supporting ops. To apply existing ops, users could directly declare the op name and ops connection in `'BASIC_TESTCASES'` from `<workspace-path>/configs/ruletest_config.yaml` to generate their own test cases.
 
-If users want to add new operators into basic test cases, should register ops by ...
-TODO registration: ops in operators.py, require op_has_two_inputs
-```python
+If users want to add new operators into basic test cases, here is several steps to prepare and register new operators:
 
+### Step 1: Prepare Customized Operator Function
+
+nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by a function with tensorflow. The function has two input parameters, including `input_shape` and `config`
+
+ Users could refer to the next three examples to learn how to write an operator function.
+
+The first example is simply applying APIs from `tensorflow.keras.layer`:
+
+
+
+
+Here is an example to create a new backend class:
+
+```python
+from nn_meter.builder.backend import BaseBackend, BaseParser, BaseRunner
+
+class MyParser(BaseParser): ...
+class MyRunner(BaseRunner): ...
+
+class MyBackend(BaseBackend):
+    parser_class = MyParser
+    runner_class = MyRunner
+```
+
+Besides, nn-Meter also provide TFLite backend (`nn_meter.builder.backend.TFLiteBackend`), and OpenVINO backend (`nn_meter.builder.backend.OpenVINOBackend`), in case if users want to create new device instance based on TFLite or OpenVINO. By inheriting these two class, users could reuse some methods, such as `convert_model`, `profile`, and `test_connection`.
+
+Here is an example to inherit `TFLiteBackend` and create backend named `my_tflite`:
+
+```python
+from nn_meter.builder.backend import TFLiteBackend, TFLiteRunner, BaseParser
+
+class MyParser(BaseParser): ...
+class MyRunner(TFLiteRunner): ...
+
+class MyTFLiteBackend(TFLiteBackend):
+    parser_class = MyParser
+    runner_class = MyRunner
+```
+
+### Register Operator to nn-Meter
+
+#### Step 1: Create a Customized Operator
+
+After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. Users could refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config file in a package with a fixed location. The folder should contain all dependent classes, such as `Parser` and `Runner`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
+
+``` text
+./customized_operator/
+├── __init__.py
+├── backend.py
+├── utils.py
+└── default_config.yaml
+```
+
+The interface of customized backend class are stored in `./customized_backend/backend.py`. In this demo, the content in `backend.py` includes:
+
+examples:
+1. keras class
+2. tf function
+3. two ops
+
+``` python
+from nn_meter.builder.backends import BaseBackend
+from .utils import MyParser, MyRunner
+
+class MyBackend(BaseBackend):
+
+    parser_class = MyParser
+    runner_class = MyRunner
+
+    def __init__(self, config):
+        ...
+
+    def test_connection(self):
+        """check the status of backend interface connection
+        """
+        ...
+        logging.keyinfo("hello backend !")
+```
+
+#### Step 2: Prepare Meta File
+
+Create a yaml file with following keys as meta file:
+
+- `builtinName`: builtin name used in nn-Meter configuration file to call the customized backend, such as `"my_backend"`.
+
+- `packageLocation`: the absolute path of the package.
+
+- `classModule`: the module of the backend class, in this example is `backend`, representing `backend.py`.
+
+- `className`: the backend class name, in this example is `MyBackend`.
+
+- `isTwoInputs`: the absolute path of the default configuration file. 
+
+actually the `classModule` is a function but to sync with all registered module
+
+Following is an example of the yaml file:
+
+```yaml
+builtinName: my_backend
+packageLocation: /home/USERNAME/working/customized_backend
+classModule: backend
+className: MyBackend
+defaultConfigFile: /home/USERNAME/working/customized_backend/default_config.yaml
+```
+
+#### Step 3: Register Customized Backend into nn-Meter
+
+Run the following command to register customized backend into nn-Meter:
+
+``` bash
+nn-meter register --operator /home/USERNAME/working/customized_backend/default_config.yaml
+```
+If the registration success, nn-Meter will show:
+``` text
+(nn-Meter) Successfully register operator: myop
+```
+
+When registering, nn-Meter will test whether the module can be imported first. If the registration success is not successful, please check the package according to the error information.
+
+After backend registration, users can view all backends by running:
+``` bash
+nn-meter --list-backends
+```
+```text
+(nn-Meter) Supported backends: ('*' indicates customized backends)
+(nn-Meter) [Backend] tflite_cpu
+(nn-Meter) [Backend] tflite_gpu
+(nn-Meter) [Backend] openvino_vpu
+(nn-Meter) [Backend] * my_backend
+```
+
+Note: the package of customized backend must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
+
+#### Step 4: Test the Registered Backend
+
+After registration, users could create customized workspace according to the customized backend:
+
+``` bash
+nn-meter create --backend my_backend --customized-workspace <workspace-path>
+```
+``` text
+(nn-Meter) Workspace <workspace-path> for customized platform has been created. Users could edit experiment config in <workspace-path>/configs/.
+```
+
+Users could edit experiment configuration file in `<workspace-path>/configs/backend_config.yaml`, and test the connection to the registered backend by running:
+
+``` bash
+nn-meter connect --backend my_backend --workspace <workspace-path>
+```
+```
+(nn-Meter) hello backend !
+```
+
+#### Step 5: Manage the Registered Backend
+
+Users could unregister the backend by calling its name in command:
+
+``` bash
+nn-meter unregister --backend my_backend
+```
+``` text
+(nn-Meter) Successfully unregister my_backend.
+```
+
+After unregister the backend, "my_backend" will be removed from the backend list:
+
+``` bash
+nn-meter --list-backends
+```
+``` text
+(nn-Meter) Supported backends: ('*' indicates customized backends)
+(nn-Meter) [Backend] tflite_cpu
+(nn-Meter) [Backend] tflite_gpu
+(nn-Meter) [Backend] openvino_vpu
+```
+
+### Use the Customized Backend in experiment
+
+After registration, users could get access to the customized backend by calling its builtin name:
+``` python
+# initialize builder config with workspace
+from nn_meter.builder import builder_config
+builder_config.init("<workspace-path>")
+
+# connect to backend
+from nn_meter.builder.backends import connect_backend
+backend = connect_backend(backend_name='my_backend')
 ```
 
 ## Build Other Test Case

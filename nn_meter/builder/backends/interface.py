@@ -23,13 +23,12 @@ __BUILTIN_BACKENDS__ = {
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 __registry_cfg_filename__ = 'registry.yaml'
+__REG_BACKENDS__ = {}
 if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__)):
     with open(os.path.join(__user_config_folder__, __registry_cfg_filename__), 'r') as fp:
         registry_modules = yaml.load(fp, yaml.FullLoader)
     if "backends" in registry_modules:
         __REG_BACKENDS__ = registry_modules["backends"]
-else:
-    __REG_BACKENDS__ = {}
 
 
 class BaseBackend:
