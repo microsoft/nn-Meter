@@ -170,7 +170,6 @@ def connect_backend(backend_name):
     if backend_name in __REG_BACKENDS__:
         backend_info = __REG_BACKENDS__[backend_name]
         sys.path.append(backend_info["packageLocation"])
-        backend_info = __REG_BACKENDS__[backend_name]
     elif backend_name in __BUILTIN_BACKENDS__:
         backend_info = __BUILTIN_BACKENDS__[backend_name]
     else:
@@ -186,5 +185,6 @@ def connect_backend(backend_name):
     configs = builder_config.get_module('backend')
     return backend_cls(configs)
 
+
 def list_backends():
-    return __BUILTIN_BACKENDS__.keys() + __REG_BACKENDS__.keys()
+    return list(__BUILTIN_BACKENDS__.keys()) + ["* " + item for item in list(__REG_BACKENDS__.keys())]

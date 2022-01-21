@@ -11,18 +11,22 @@ __ruletest_cfg_filename__ = 'ruletest_config.yaml'
 __predbuild_cfg_filename__ = 'predictorbuild_config.yaml'
 
 
-def copy_to_workspace(backend_type, workspace_path):
+def copy_to_workspace(backend_type, workspace_path, backendConfigFile = None):
     """copy the default config file to user's workspace
     """
     os.makedirs(os.path.join(workspace_path, 'configs'), exist_ok=True)
+
     # backend config
-    if backend_type == 'tflite':
-        config_name = __backend_tflite_cfg_filename__
-    elif backend_type == 'openvino':
-        config_name = __backend_openvino_cfg_filename__
-    copyfile(
-        pkg_resources.resource_filename(".".join(__name__.split('.')[:-2]), 'configs/builder/backends/' + config_name), 
-        os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
+    if backend_type == 'customized':
+        copyfile(backendConfigFile, os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
+    else:
+        if backend_type == 'tflite':
+            config_name = __backend_tflite_cfg_filename__
+        elif backend_type == 'openvino':
+            config_name = __backend_openvino_cfg_filename__
+        copyfile(
+            pkg_resources.resource_filename(".".join(__name__.split('.')[:-2]), 'configs/builder/backends/' + config_name), 
+            os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
     # rule test config
     copyfile(
         pkg_resources.resource_filename(".".join(__name__.split('.')[:-2]), f'configs/builder/fusion_rule_tester/' + __ruletest_cfg_filename__), 

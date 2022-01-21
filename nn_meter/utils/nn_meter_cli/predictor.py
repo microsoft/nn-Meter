@@ -17,9 +17,6 @@ def list_latency_predictors_cli():
 def apply_latency_predictor_cli(args):
     """apply latency predictor to predict model latency according to the command line interface arguments
     """
-    if not args.predictor:
-        logging.keyinfo('You must specify a predictor. Use "nn-meter --list-predictors" to see all supporting predictors.')
-        return
 
     # specify model type
     if args.tensorflow:
@@ -30,6 +27,13 @@ def apply_latency_predictor_cli(args):
         input_model, model_type, model_suffix = args.nn_meter_ir, "nnmeter-ir", ".json"
     elif args.torchvision: # torch model name from torchvision model zoo
         input_model_list, model_type = args.torchvision, "torch" 
+    else:
+        logging.keyinfo('please run "nn-meter predict --help" to see guidance.')
+        return
+    
+    if not args.predictor:
+        logging.keyinfo('You must specify a predictor. Use "nn-meter --list-predictors" to see all supporting predictors.')
+        return
 
     # load predictor
     predictor = load_latency_predictor(args.predictor, args.predictor_version)
@@ -68,7 +72,8 @@ def get_nnmeter_ir_cli(args):
         graph = model_file_to_graph(args.onnx, 'onnx')
         filename = args.output if args.output else args.onnx.replace(".onnx", "_onnx_ir.json") 
     else:
-        raise ValueError(f"Unsupported model.")
+        logging.keyinfo('please run "nn-meter get_ir --help" to see guidance.')
+        return
     
     if not str.endswith(filename, '.json'): filename += '.json'
     with open(filename, "w+") as fp:
