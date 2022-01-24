@@ -250,7 +250,7 @@ In this instance, `dwconv_relu` is the name of a test case. There are three mode
 
 The output json file `<workspace-path>/fusion_rule_test/results/detected_fusion_rule.json` shows all fusion rule detected from test cases. Users could directly apply the json file for kernel detection.
 
-TODO: add an example for kernel detection
+The fusion rules json file will be a part of the customized predictor. Users could refer to [Customize Predictor](../predictor/customize_predictor.md) to prepare other parts of predictor and register predictor.
 
 # <span id="build-customized-test-cases"> Build Customized Test Cases </span>
 
@@ -285,194 +285,167 @@ Refer to [basic test cases](#basic-test-cases) for more details of supporting op
 
 If users want to add new operators into basic test cases, here is several steps to prepare and register new operators:
 
-### Step 1: Prepare Customized Operator Function
+### Step 1: Prepare the Customized Operator Function
 
-nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by a function with tensorflow. The function has two input parameters, including `input_shape` and `config`
+nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by a function with tensorflow. The function has two input parameters, including `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. The function also has two output parameters, including a `keras.layers.Layer` class and a list showing the output shape of the operator. Users could refer to the next three examples to learn how to write an operator function.
 
- Users could refer to the next three examples to learn how to write an operator function.
+The first example is simply applying APIs from `tensorflow.keras.layers`. Also, users could build a class inheriting `keras.layers.Layer` for customized usage:
 
-The first example is simply applying APIs from `tensorflow.keras.layer`:
+``` python
+def conv(input_shape, config = None):
+    cout = input_shape[2] if "COUT" not in config else config["COUT"]
+    output_h = (input_shape[0] - 1) // config["STRIDES"] + 1
+    output_w = (input_shape[1] - 1) // config["STRIDES"] + 1
+    output_shape = [output_h, output_w, cout]
 
-
-
-
-Here is an example to create a new backend class:
-
-```python
-from nn_meter.builder.backend import BaseBackend, BaseParser, BaseRunner
-
-class MyParser(BaseParser): ...
-class MyRunner(BaseRunner): ...
-
-class MyBackend(BaseBackend):
-    parser_class = MyParser
-    runner_class = MyRunner
+    return keras.layers.Conv2D(
+            cout,
+            kernel_size=config["KERNEL_SIZE"],
+            strides=config["STRIDES"],
+            padding="same"
+        ), output_shape
 ```
 
-Besides, nn-Meter also provide TFLite backend (`nn_meter.builder.backend.TFLiteBackend`), and OpenVINO backend (`nn_meter.builder.backend.OpenVINOBackend`), in case if users want to create new device instance based on TFLite or OpenVINO. By inheriting these two class, users could reuse some methods, such as `convert_model`, `profile`, and `test_connection`.
+The second example is build a function by applying `tensorflow.nn`:
 
-Here is an example to inherit `TFLiteBackend` and create backend named `my_tflite`:
-
-```python
-from nn_meter.builder.backend import TFLiteBackend, TFLiteRunner, BaseParser
-
-class MyParser(BaseParser): ...
-class MyRunner(TFLiteRunner): ...
-
-class MyTFLiteBackend(TFLiteBackend):
-    parser_class = MyParser
-    runner_class = MyRunner
+``` python
+def sigmoid(input_shape, config = None):
+    def func(inputs):
+        return tf.nn.sigmoid(inputs)
+    return func, input_shape
 ```
 
-### Register Operator to nn-Meter
+The third example is an operator function with two input tensor. In this case, users should notice that the `output_shape` must cover all probably cases for `input_shape`:
 
-#### Step 1: Create a Customized Operator
+``` python
+def add(input_shape, config = None):
+    if len(input_shape) == 2 and type(input_shape[0]) == list:
+        output_shape = input_shape[0]
+    else:
+        output_shape = input_shape
+    return keras.layers.Add(), output_shape
+```
 
-After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. Users could refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config file in a package with a fixed location. The folder should contain all dependent classes, such as `Parser` and `Runner`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
+Note: all configuration value are feed into the operators by the param `config`, which gets data from `<workspace-path>/configs/ruletest_config.yaml`. Users should follow the same way to transfer parameters. If there is any new parameters needed in `config`, users should also add the parameter and set its value in `<workspace-path>/configs/ruletest_config.yaml`.
+
+### Step 2: Create a Package for the Customized Operator
+
+nn-Meter reuqires users to gather all code of operator in a package with a fixed location. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
 
 ``` text
 ./customized_operator/
 ├── __init__.py
-├── backend.py
-├── utils.py
-└── default_config.yaml
+└── operator_script.py
 ```
 
-The interface of customized backend class are stored in `./customized_backend/backend.py`. In this demo, the content in `backend.py` includes:
-
-examples:
-1. keras class
-2. tf function
-3. two ops
+The interface of customized operator function are stored in `./customized_operator/operator_script.py`. In this demo, the content of `operator_script.py` includes:
 
 ``` python
-from nn_meter.builder.backends import BaseBackend
-from .utils import MyParser, MyRunner
+from tensorflow import keras
 
-class MyBackend(BaseBackend):
-
-    parser_class = MyParser
-    runner_class = MyRunner
-
-    def __init__(self, config):
-        ...
-
-    def test_connection(self):
-        """check the status of backend interface connection
-        """
-        ...
-        logging.keyinfo("hello backend !")
+def op1(input_shape, config = None):
+    func = ...
+    output_shape = input_shape
+    return func, output_shape
 ```
 
-#### Step 2: Prepare Meta File
+Note: The folder could contain more than one operators, but the registration should be done one by one.
+
+### Step 3: Prepare Meta File
 
 Create a yaml file with following keys as meta file:
 
-- `builtinName`: builtin name used in nn-Meter configuration file to call the customized backend, such as `"my_backend"`.
+- `builtinName`: builtin name used in nn-Meter configuration file to call the customized operator, such as `"op1"`. Note that there should not have any "\_" in the `buildinName`, as any "\_" will be regarded as the connection of different operators in test cases generation.
 
 - `packageLocation`: the absolute path of the package.
 
-- `classModule`: the module of the backend class, in this example is `backend`, representing `backend.py`.
+- `classModule`: the module of the operator function, in this example is `operator_script`, representing `operator_script.py`. Actually, the registering operator is a function instead of a class. However, nn-Meter uses `classModule` here to synchronize with other registered modules.
 
-- `className`: the backend class name, in this example is `MyBackend`.
+- `className`: the operator function name, in this example is `op1`. Actually, the registering operator is a function instead of a class. However, nn-Meter uses `classModule` here to synchronize with other registered modules.
 
-- `isTwoInputs`: the absolute path of the default configuration file. 
-
-actually the `classModule` is a function but to sync with all registered module
+- `isTwoInputs`: whether the operator has two input tensor. If the operator has only one input tensor, the value of  `isTwoInputs` should be set as `False`.
 
 Following is an example of the yaml file:
 
 ```yaml
-builtinName: my_backend
-packageLocation: /home/USERNAME/working/customized_backend
-classModule: backend
-className: MyBackend
-defaultConfigFile: /home/USERNAME/working/customized_backend/default_config.yaml
+builtinName: op1
+packageLocation: /home/USERNAME/working/customized_operator
+classModule: operator_script
+className: op1
+isTwoInputs: False
 ```
 
-#### Step 3: Register Customized Backend into nn-Meter
+### Step 4: Register Customized Operator into nn-Meter
 
 Run the following command to register customized backend into nn-Meter:
 
 ``` bash
-nn-meter register --operator /home/USERNAME/working/customized_backend/default_config.yaml
+nn-meter register --operator path/to/meta/file
 ```
 If the registration success, nn-Meter will show:
 ``` text
-(nn-Meter) Successfully register operator: myop
+(nn-Meter) Successfully register operator: op1
 ```
 
 When registering, nn-Meter will test whether the module can be imported first. If the registration success is not successful, please check the package according to the error information.
 
-After backend registration, users can view all backends by running:
+After backend registration, users can view all operators by running:
 ``` bash
-nn-meter --list-backends
+nn-meter --list-operators
 ```
 ```text
-(nn-Meter) Supported backends: ('*' indicates customized backends)
-(nn-Meter) [Backend] tflite_cpu
-(nn-Meter) [Backend] tflite_gpu
-(nn-Meter) [Backend] openvino_vpu
-(nn-Meter) [Backend] * my_backend
+(nn-Meter) Supported operators: ('*' indicates customized operators)
+(nn-Meter) [Operator] conv
+(nn-Meter) [Operator] dwconv
+(nn-Meter) [Operator] convtrans
+(nn-Meter) [Operator] bn
+(nn-Meter) [Operator] globalavgpool
+(nn-Meter) [Operator] maxpool
+(nn-Meter) [Operator] avgpool
+(nn-Meter) [Operator] se
+(nn-Meter) [Operator] fc
+(nn-Meter) [Operator] relu
+(nn-Meter) [Operator] relu6
+(nn-Meter) [Operator] sigmoid
+(nn-Meter) [Operator] hswish
+(nn-Meter) [Operator] reshape
+(nn-Meter) [Operator] add
+(nn-Meter) [Operator] concat
+(nn-Meter) [Operator] flatten
+(nn-Meter) [Operator] split
+(nn-Meter) [Operator] * op1
 ```
 
-Note: the package of customized backend must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
+Note: the package of customized operator must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
 
-#### Step 4: Test the Registered Backend
+### Use the Customized Operator in Experiment
 
-After registration, users could create customized workspace according to the customized backend:
+After registration, users could apply the customized operator to generate test case:
+
+``` yaml
+# .yaml file in `<workspace-path>/configs/ruletest_config.yaml`
+...
+BASIC_TESTCASES:
+  - op1_relu
+OTHER_TESTCASES:
+LAYERS_1D:
+  - fc
+```
+
+Note: if the input to customized operator should be 1 dimension tensor, users need add the builtin name `LAYERS_1D`.
+
+### Manage the Registered Operator
+
+Users could unregister the operator by calling its name in command:
 
 ``` bash
-nn-meter create --backend my_backend --customized-workspace <workspace-path>
+nn-meter unregister --operator op1
 ```
 ``` text
-(nn-Meter) Workspace <workspace-path> for customized platform has been created. Users could edit experiment config in <workspace-path>/configs/.
+(nn-Meter) Successfully unregister op1.
 ```
 
-Users could edit experiment configuration file in `<workspace-path>/configs/backend_config.yaml`, and test the connection to the registered backend by running:
-
-``` bash
-nn-meter connect --backend my_backend --workspace <workspace-path>
-```
-```
-(nn-Meter) hello backend !
-```
-
-#### Step 5: Manage the Registered Backend
-
-Users could unregister the backend by calling its name in command:
-
-``` bash
-nn-meter unregister --backend my_backend
-```
-``` text
-(nn-Meter) Successfully unregister my_backend.
-```
-
-After unregister the backend, "my_backend" will be removed from the backend list:
-
-``` bash
-nn-meter --list-backends
-```
-``` text
-(nn-Meter) Supported backends: ('*' indicates customized backends)
-(nn-Meter) [Backend] tflite_cpu
-(nn-Meter) [Backend] tflite_gpu
-(nn-Meter) [Backend] openvino_vpu
-```
-
-### Use the Customized Backend in experiment
-
-After registration, users could get access to the customized backend by calling its builtin name:
-``` python
-# initialize builder config with workspace
-from nn_meter.builder import builder_config
-builder_config.init("<workspace-path>")
-
-# connect to backend
-from nn_meter.builder.backends import connect_backend
-backend = connect_backend(backend_name='my_backend')
-```
+After unregister the operator, "op1" will be removed from the backend list.
 
 ## Build Other Test Case
 
