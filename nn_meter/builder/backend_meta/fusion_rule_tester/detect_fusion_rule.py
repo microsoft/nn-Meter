@@ -6,6 +6,7 @@ from nn_meter.builder import builder_config
 
 config = builder_config.get_module('ruletest')
 
+
 class FusionRuleTester:
     def __init__(self):
         self._testcases = testcases_list

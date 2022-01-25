@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 import tensorflow as tf
 
+
 class SingleOpModel(tf.keras.Model):
     def __init__(self, op):
         super().__init__()

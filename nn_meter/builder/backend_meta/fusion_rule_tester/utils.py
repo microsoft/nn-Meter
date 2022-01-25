@@ -25,13 +25,14 @@ def get_operator_by_name(operator_name, input_shape, config = None):
     if operator_name in __REG_OPERATORS__:
         operator_info = __REG_OPERATORS__[operator_name]
         sys.path.append(operator_info["packageLocation"])
-        module = operator_info["classModule"]
         operator_name = operator_info["className"]
-        operator_module = importlib.import_module(module)
+        operator_module = importlib.import_module(operator_info["classModule"])
         op_is_two_inputs = operator_info["isTwoInputs"]
+
     elif operator_name in __BUILTIN_OPERATORS__:
         operator_module = operators
         op_is_two_inputs = get_op_is_two_inputs(operator_name)
+
     else:
         raise ValueError(f"Unsupported operator name: {operator_name}. Please register the operator first.")
 
