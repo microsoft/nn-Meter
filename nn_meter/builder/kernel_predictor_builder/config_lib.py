@@ -27,7 +27,7 @@ config_for_kernel = {
     "split_block":          ["HW", "CIN"],
     "channel_shuffle":      ["HW", "CIN"],
     "se_block":             ["HW", "CIN"],
-    "globalavgpool_block": ["HW", "CIN"],
+    "globalavgpool_block":  ["HW", "CIN"],
     "bn_relu":              ["HW", "CIN"],
     "bn_block":             ["HW", "CIN"],
     "hswish_block":         ["HW", "CIN"],

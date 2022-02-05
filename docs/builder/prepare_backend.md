@@ -185,16 +185,19 @@ After preparing the backend class, users should also prepare a default config fi
 The interface of customized backend class are stored in `./customized_backend/backend.py`. In this demo, the content in `backend.py` includes:
 
 ``` python
-from nn_meter.builder.backends import BaseBackend
-from .utils import MyParser, MyRunner
+import logging
+from nn_meter.builder.backends import BaseBackend, BaseParser, BaseRunner
+
+class MyParser(BaseParser): ...
+
+class MyRunner(BaseRunner): ...
 
 class MyBackend(BaseBackend):
-
     parser_class = MyParser
     runner_class = MyRunner
 
     def __init__(self, config):
-        ...
+        pass
 
     def test_connection(self):
         """check the status of backend interface connection
@@ -236,7 +239,7 @@ nn-meter register --backend path/to/meta/file
 ```
 If the registration success, nn-Meter will show:
 ``` text
-(nn-Meter) Successfully register backend my_backend
+(nn-Meter) Successfully register backend my_backend.
 ```
 
 When registering, nn-Meter will test whether the module can be imported first. If the registration success is not successful, please check the package according to the error information.
@@ -260,7 +263,7 @@ Note: the package of customized backend must be retained in a fixed path as regi
 After registration, users could create customized workspace according to the customized backend:
 
 ``` bash
-nn-meter create --backend my_backend --customized-workspace <workspace-path>
+nn-meter create --customized-workspace <workspace-path> --backend my_backend 
 ```
 ``` text
 (nn-Meter) Workspace <workspace-path> for customized platform has been created. Users could edit experiment config in <workspace-path>/configs/.
@@ -282,7 +285,7 @@ After registration, users could get access to the customized backend by calling 
 ``` python
 # initialize builder config with workspace
 from nn_meter.builder import builder_config
-builder_config.init("<workspace-path>")
+builder_config.init(workspace_path="...") # the path of workspace
 
 # connect to backend
 from nn_meter.builder.backends import connect_backend
@@ -292,6 +295,7 @@ backend = connect_backend(backend_name='my_backend')
 ## Manage the Registered Backend
 
 Users can view all builtin and registered backends by running:
+
 ``` bash
 nn-meter --list-backends
 ```
