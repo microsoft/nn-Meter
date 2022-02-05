@@ -285,45 +285,66 @@ Refer to [basic test cases](#basic-test-cases) for more details of supporting op
 
 If users want to add new operators into basic test cases, here is several steps to prepare and register new operators:
 
-### Step 1: Prepare the Customized Operator Function
+### Step 1: Prepare the Customized Operator Class
 
-nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by a function with tensorflow. The function has two input parameters, including `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. The function also has two output parameters, including a `keras.layers.Layer` class and a list showing the output shape of the operator. Users could refer to the next three examples to learn how to write an operator function.
+nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by inheriting a base class named `nn_meter.builder.nn_generator.tf_networks.BaseOperator`. The class has two input parameters, including `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. There are following methods in this base class:
 
-The first example is simply applying APIs from `tensorflow.keras.layers`. Also, users could build a class inheriting `keras.layers.Layer` for customized usage:
+- `get_model`: Return the model function of the operator. Users need to modify this **all the time**.
+
+- `get_output_shape`: Return a list representing the output shape of the operator. Users need to modify this **at the most time**. If the output has same shape with input, users don't need to override the method.
+
+- `get_is_two_inputs`: Whether the operator has two input tensor. If the operator has only one input tensor, the returned value should be set as `False`. For **some time you will** need to modify this. If the value is `False`, users don't need to override the method.
+
+- `test_operator`: A test script to verify the operator. At the **most time you won't** need to modify this.
+
+We provide the implementation of three builtin operators for example:
+
+The first example is Conv2d operator. The operator simply applying APIs from `tensorflow.keras.layers` to build the model function. Also, users could build a class inheriting `tensorflow.keras.layers.Layer` for customized usage:
 
 ``` python
-def conv(input_shape, config = None):
-    cout = input_shape[2] if "COUT" not in config else config["COUT"]
-    output_h = (input_shape[0] - 1) // config["STRIDES"] + 1
-    output_w = (input_shape[1] - 1) // config["STRIDES"] + 1
-    output_shape = [output_h, output_w, cout]
-
-    return keras.layers.Conv2D(
+class Conv(BaseOperator):
+    def get_model(self):
+        cout = self.input_shape[2] if "COUT" not in self.config else self.config["COUT"]
+        return keras.layers.Conv2D(
             cout,
-            kernel_size=config["KERNEL_SIZE"],
-            strides=config["STRIDES"],
+            kernel_size=self.config["KERNEL_SIZE"],
+            strides=self.config["STRIDES"],
             padding="same"
-        ), output_shape
+        )
+
+    def get_output_shape(self):
+        cout = self.input_shape[2] if "COUT" not in self.config else self.config["COUT"]
+        output_h = (self.input_shape[0] - 1) // self.config["STRIDES"] + 1
+        output_w = (self.input_shape[1] - 1) // self.config["STRIDES"] + 1
+        return [output_h, output_w, cout]
 ```
 
-The second example is build a function by applying `tensorflow.nn`:
+The second example is Sigmoid operator. The opertor build a model function by applying `tensorflow.nn`:
 
 ``` python
-def sigmoid(input_shape, config = None):
-    def func(inputs):
-        return tf.nn.sigmoid(inputs)
-    return func, input_shape
+class Sigmoid(BaseOperator):
+    def get_model(self):
+        def func(inputs):
+            return tf.nn.sigmoid(inputs)
+        return func
 ```
 
 The third example is an operator function with two input tensor. In this case, users should notice that the `output_shape` must cover all probably cases for `input_shape`:
 
 ``` python
-def add(input_shape, config = None):
-    if len(input_shape) == 2 and type(input_shape[0]) == list:
-        output_shape = input_shape[0]
-    else:
-        output_shape = input_shape
-    return keras.layers.Add(), output_shape
+class Add(BaseOperator):
+    def get_model(self):
+        return keras.layers.Add()
+
+    def get_output_shape(self):
+        if len(self.input_shape) == 2 and type(self.input_shape[0]) == list:
+            output_shape = self.input_shape[0]
+        else:
+            output_shape = self.input_shape
+        return output_shape
+
+    def get_is_two_inputs(self):
+        return True
 ```
 
 Note: all configuration value are feed into the operators by the param `config`, which gets data from `<workspace-path>/configs/ruletest_config.yaml`. Users should follow the same way to transfer parameters. If there is any new parameters needed in `config`, users should also add the parameter and set its value in `<workspace-path>/configs/ruletest_config.yaml`.
@@ -363,16 +384,13 @@ Create a yaml file with following keys as meta file:
 
 - `className`: the operator function name, in this example is `op1`. Actually, the registering operator is a function instead of a class. However, nn-Meter uses `classModule` here to synchronize with other registered modules.
 
-- `isTwoInputs`: whether the operator has two input tensor. If the operator has only one input tensor, the value of  `isTwoInputs` should be set as `False`.
-
 Following is an example of the yaml file:
 
 ```yaml
 builtinName: op1
 packageLocation: /home/USERNAME/working/customized_operator
 classModule: operator_script
-className: op1
-isTwoInputs: False
+className: Op1
 ```
 
 ### Step 4: Register Customized Operator into nn-Meter

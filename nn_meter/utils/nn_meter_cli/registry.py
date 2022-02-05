@@ -24,8 +24,8 @@ def register_module(module_type, meta_file):
         meta_data = yaml.load(fp, yaml.FullLoader)
     builtin_name = meta_data.pop("builtinName")
     import_module(meta_data)
+
     # TODO: check necessary feature
-    
     if module_type == "predictors":
         pass
     # for backend, check if there exits the default config file:

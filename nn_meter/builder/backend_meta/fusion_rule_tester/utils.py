@@ -5,8 +5,27 @@ import sys
 import yaml
 import importlib
 
-__BUILTIN_OPERATORS__ = ["conv", "dwconv", "convtrans", "bn", "globalavgpool", "maxpool", "avgpool", "se", "fc",
-                         "relu", "relu6", "sigmoid", "hswish", "reshape", "add", "concat", "flatten", "split"]
+__BUILTIN_OPERATORS__ = {
+    # builtin_name: module_name
+    "conv": "Conv",
+    "dwconv": "DwConv",
+    "convtrans": "ConvTrans",
+    "bn": "BN",
+    "globalavgpool": "GlobalAvgpool",
+    "maxpool": "Maxpool",
+    "avgpool": "Avgpool",
+    "se": "SE",
+    "fc": "FC",
+    "relu": "Relu",
+    "relu6": "Relu6",
+    "sigmoid": "Sigmoid",
+    "hswish": "Hswish",
+    "reshape": "Reshape",
+    "add": "Add",
+    "concat": "Concat",
+    "flatten": "Flatten",
+    "split": "Split"
+}
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 __registry_cfg_filename__ = 'registry.yaml'
@@ -19,25 +38,26 @@ if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__
 
 
 def get_operator_by_name(operator_name, input_shape, config = None):
-    from nn_meter.builder.nn_generator.tf_networks import operators
-    from nn_meter.builder.nn_generator.utils import get_op_is_two_inputs
-
+    """ get operator information by builtin name
+    """
     if operator_name in __REG_OPERATORS__:
         operator_info = __REG_OPERATORS__[operator_name]
         sys.path.append(operator_info["packageLocation"])
-        operator_name = operator_info["className"]
+        operator_module_name = operator_info["className"]
         operator_module = importlib.import_module(operator_info["classModule"])
-        op_is_two_inputs = operator_info["isTwoInputs"]
 
     elif operator_name in __BUILTIN_OPERATORS__:
+        operator_module_name = __BUILTIN_OPERATORS__[operator_name]
+        from nn_meter.builder.nn_generator.tf_networks import operators
         operator_module = operators
-        op_is_two_inputs = get_op_is_two_inputs(operator_name)
 
     else:
         raise ValueError(f"Unsupported operator name: {operator_name}. Please register the operator first.")
 
-    operator_func = getattr(operator_module, operator_name)
-    operator, output_shape = operator_func(input_shape, config)
+    operator_cls = getattr(operator_module, operator_module_name)(input_shape, config)
+    operator = operator_cls.get_model()
+    output_shape = operator_cls.get_output_shape()
+    op_is_two_inputs = operator_cls.get_is_two_inputs()
     
     return operator, output_shape, op_is_two_inputs
 
