@@ -283,7 +283,7 @@ operators = [
 
 Refer to [basic test cases](#basic-test-cases) for more details of supporting ops. To apply existing ops, users could directly declare the op name and ops connection in `'BASIC_TESTCASES'` from `<workspace-path>/configs/ruletest_config.yaml` to generate their own test cases.
 
-If users want to add new operators into basic test cases, here is several steps to prepare and register new operators:
+If users want to add new operators into basic test cases, here are several steps to prepare and register new operators:
 
 ### Step 1: Prepare the Customized Operator Class
 
@@ -351,7 +351,7 @@ Note: all configuration value are feed into the operators by the param `config`,
 
 ### Step 2: Create a Package for the Customized Operator
 
-nn-Meter reuqires users to gather all code of operator in a package with a fixed location. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
+nn-Meter requires users to gather all code of operator in a package with a fixed location. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
 
 ``` text
 ./customized_operator/
@@ -362,12 +362,12 @@ nn-Meter reuqires users to gather all code of operator in a package with a fixed
 The interface of customized operator function are stored in `./customized_operator/operator_script.py`. In this demo, the content of `operator_script.py` includes:
 
 ``` python
+from nn_meter.builder.nn_generator.tf_networks import BaseOperator
 from tensorflow import keras
 
-def op1(input_shape, config = None):
-    func = ...
-    output_shape = input_shape
-    return func, output_shape
+def Op1(BaseOperator):
+    def get_model(self):
+        return ...
 ```
 
 Note: The folder could contain more than one operators, but the registration should be done one by one.
@@ -376,21 +376,21 @@ Note: The folder could contain more than one operators, but the registration sho
 
 Create a yaml file with following keys as meta file:
 
-- `builtinName`: builtin name used in nn-Meter configuration file to call the customized operator, such as `"op1"`. Note that there should not have any "\_" in the `buildinName`, as any "\_" will be regarded as the connection of different operators in test cases generation.
+- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized operator, such as `"op1"`. Note that there should not have any "\_" in the `buildinName`, as any "\_" will be regarded as the connection of different operators in test cases generation.
 
-- `packageLocation`: the absolute path of the package.
+- `package_location`: the absolute path of the package.
 
-- `classModule`: the module of the operator function, in this example is `operator_script`, representing `operator_script.py`. Actually, the registering operator is a function instead of a class. However, nn-Meter uses `classModule` here to synchronize with other registered modules.
+- `class_module`: the module of the operator function, in this example is `operator_script`, representing `operator_script.py`. Actually, the registering operator is a function instead of a class. However, nn-Meter uses `class_module` here to synchronize with other registered modules.
 
-- `className`: the operator function name, in this example is `op1`. Actually, the registering operator is a function instead of a class. However, nn-Meter uses `classModule` here to synchronize with other registered modules.
+- `class_name`: the operator class name, in this example is `Op1`.
 
 Following is an example of the yaml file:
 
 ```yaml
-builtinName: op1
-packageLocation: /home/USERNAME/working/customized_operator
-classModule: operator_script
-className: Op1
+builtin_name: op1
+package_location: /home/USERNAME/working/customized_operator
+class_module: operator_script
+class_name: Op1
 ```
 
 ### Step 4: Register Customized Operator into nn-Meter

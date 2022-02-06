@@ -42,9 +42,9 @@ def get_operator_by_name(operator_name, input_shape, config = None):
     """
     if operator_name in __REG_OPERATORS__:
         operator_info = __REG_OPERATORS__[operator_name]
-        sys.path.append(operator_info["packageLocation"])
-        operator_module_name = operator_info["className"]
-        operator_module = importlib.import_module(operator_info["classModule"])
+        sys.path.append(operator_info["package_location"])
+        operator_module_name = operator_info["class_name"]
+        operator_module = importlib.import_module(operator_info["class_module"])
 
     elif operator_name in __BUILTIN_OPERATORS__:
         operator_module_name = __BUILTIN_OPERATORS__[operator_name]
