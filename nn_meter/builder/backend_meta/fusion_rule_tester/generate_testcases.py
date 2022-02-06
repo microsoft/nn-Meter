@@ -161,7 +161,7 @@ class BasicFusion(TestCasesGenerator):
         testcases = [case.split('_') for case in config['BASIC_TESTCASES']]
         d1_required_layers = config['LAYERS_1D']
         for op1, op2 in testcases:
-            classname = f'BasicFusion_{op1}_{op2}'
+            class_name = f'BasicFusion_{op1}_{op2}'
             name = f'BF_{op1}_{op2}'
             cases = {
                 'ops': [op1, op2],
@@ -170,7 +170,7 @@ class BasicFusion(TestCasesGenerator):
                 input_shape = [config['SHAPE_1D']]
             else:
                 input_shape = [config['HW'], config['HW'], config['CIN']]
-            bf_cls = type(classname, (BasicFusionImpl,), {
+            bf_cls = type(class_name, (BasicFusionImpl,), {
                 'name': name,
                 'cases': cases,
                 'input_shape': input_shape,

@@ -8,16 +8,16 @@ from nn_meter.utils.path import get_filename_without_ext
 
 __BUILTIN_BACKENDS__ = {
     "tflite_cpu": {
-        "classModule": "nn_meter.builder.backends.tflite",
-        "className": "TFLiteCPUBackend"
+        "class_module": "nn_meter.builder.backends.tflite",
+        "class_name": "TFLiteCPUBackend"
     },
     "tflite_gpu": {
-        "classModule": "nn_meter.builder.backends.tflite",
-        "className": "TFLiteGPUBackend"
+        "class_module": "nn_meter.builder.backends.tflite",
+        "class_name": "TFLiteGPUBackend"
     },
     "openvino_vpu": {
-        "classModule": "nn_meter.builder.backends.openvino",
-        "className": "OpenVINOVPUBackend"
+        "class_module": "nn_meter.builder.backends.openvino",
+        "class_name": "OpenVINOVPUBackend"
     }
 }
 
@@ -168,14 +168,14 @@ def connect_backend(backend_name):
     """
     if backend_name in __REG_BACKENDS__:
         backend_info = __REG_BACKENDS__[backend_name]
-        sys.path.append(backend_info["packageLocation"])
+        sys.path.append(backend_info["package_location"])
     elif backend_name in __BUILTIN_BACKENDS__:
         backend_info = __BUILTIN_BACKENDS__[backend_name]
     else:
         raise ValueError(f"Unsupported backend name: {backend_name}. Please register the backend first.")
 
-    module = backend_info["classModule"]
-    name = backend_info["className"]
+    module = backend_info["class_module"]
+    name = backend_info["class_name"]
     backend_module = importlib.import_module(module)   
     backend_cls = getattr(backend_module, name)
 
