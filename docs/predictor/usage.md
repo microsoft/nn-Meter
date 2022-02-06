@@ -27,7 +27,7 @@ Users can get all predefined predictors and versions by running
 
 ```bash
 # to list all predefined predictors
-nn-meter --list-predictors 
+nn-meter --list-predictors
 ```
 
 ## Predict latency of saved CNN model

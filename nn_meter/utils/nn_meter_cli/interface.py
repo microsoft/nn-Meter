@@ -242,6 +242,12 @@ def nn_meter_cli():
         type=str,
         help="name of the registered kernel"
     )
+    unregister.add_argument(
+        "--predictor-version",
+        type=float,
+        help="the version of the predictor (if not specified, unregister all version)",
+        default=None
+    )
     unregister.set_defaults(func=unregister_module_cli)
 
     # Usage 7: change data folder

@@ -210,23 +210,23 @@ class MyBackend(BaseBackend):
 
 Create a yaml file with following keys as meta file:
 
-- `builtinName`: builtin name used in nn-Meter configuration file to call the customized backend, such as `"my_backend"`.
+- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized backend, such as `"my_backend"`.
 
-- `packageLocation`: the absolute path of the package.
+- `package_location`: the absolute path of the package.
 
-- `classModule`: the module of the backend class, in this example is `backend`, representing `backend.py`.
+- `class_module`: the module of the backend class, in this example is `backend`, representing `backend.py`.
 
-- `className`: the backend class name, in this example is `MyBackend`.
+- `class_name`: the backend class name, in this example is `MyBackend`.
 
 - `defaultConfigFile`: the absolute path of the default configuration file. 
 
 Following is an example of the yaml file:
 
 ```yaml
-builtinName: my_backend
-packageLocation: /home/USERNAME/working/customized_backend
-classModule: backend
-className: MyBackend
+builtin_name: my_backend
+package_location: /home/USERNAME/working/customized_backend
+class_module: backend
+class_name: MyBackend
 defaultConfigFile: /home/USERNAME/working/customized_backend/default_config.yaml
 ```
 

@@ -1,4 +1,4 @@
-## Customize Latency Predictor for Users' Device
+# Customize Latency Predictor for Users' Device
 
 nn-Meter support customized predictor for latency prediction. To utilize customized predictor, users should provide several kernel latency predictors and a fusion rule json file. Users could use [nn-Meter builder](../builder/overview.md) to build their own latency predictors.
 
@@ -8,7 +8,7 @@ After preparing kernel latency predictors and fusion rule following guidance [he
 
 Create a yaml file with following keys as meta file:
 
-- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized predictor, such as `"my_predictor"`.
+- `name`: builtin name used in nn-Meter configuration file to call the customized predictor, such as `"my_predictor"`.
 
 - `version`: the version of the customized predictor.
 
@@ -21,7 +21,7 @@ Create a yaml file with following keys as meta file:
 Following is an example of the yaml file:
 
 ```yaml
-builtin_name: my_predictor
+name: my_predictor
 version: 1.0
 category: cpu
 package_location: /home/USERNAME/working/customized_predictor
@@ -44,7 +44,7 @@ kernel_predictors:
     - concat
 ```
 
-### Step 3: Register Customized Predictor into nn-Meter
+### Step 2: Register Customized Predictor into nn-Meter
 
 Run the following command to register customized predictor into nn-Meter:
 
@@ -61,12 +61,12 @@ After predictor registration, users can view all predictors by running:
 nn-meter --list-predictors
 ```
 ```text
-(nn-Meter) Supported latency predictors: ('*' indicates customized predictors)
+(nn-Meter) Supported latency predictors:
 (nn-Meter) [Predictor] cortexA76cpu_tflite21: version=1.0
 (nn-Meter) [Predictor] adreno640gpu_tflite21: version=1.0
 (nn-Meter) [Predictor] adreno630gpu_tflite21: version=1.0
 (nn-Meter) [Predictor] myriadvpu_openvino2019r2: version=1.0
-(nn-Meter) [Predictor] * my_predictor: version=1.0
+(nn-Meter) [Predictor] my_predictor: version=1.0
 ```
 
 Note: the folder of customized predictor must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
@@ -83,12 +83,12 @@ Users can view all builtin and registered predictors by running:
 nn-meter --list-predictors
 ```
 ```text
-(nn-Meter) Supported latency predictors: ('*' indicates customized predictors)
+(nn-Meter) Supported latency predictors:
 (nn-Meter) [Predictor] cortexA76cpu_tflite21: version=1.0
 (nn-Meter) [Predictor] adreno640gpu_tflite21: version=1.0
 (nn-Meter) [Predictor] adreno630gpu_tflite21: version=1.0
 (nn-Meter) [Predictor] myriadvpu_openvino2019r2: version=1.0
-(nn-Meter) [Predictor] * my_predictor: version=1.0
+(nn-Meter) [Predictor] my_predictor: version=1.0
 ```
 
 Besides, users could unregister the predictor by calling its name in command:
@@ -106,7 +106,7 @@ After unregister the predictor, "my_predictor" will be removed from the predicto
 nn-meter --list-predictors
 ```
 ``` text
-(nn-Meter) Supported latency predictors: ('*' indicates customized predictors)
+(nn-Meter) Supported latency predictors:
 (nn-Meter) [Predictor] cortexA76cpu_tflite21: version=1.0
 (nn-Meter) [Predictor] adreno640gpu_tflite21: version=1.0
 (nn-Meter) [Predictor] adreno630gpu_tflite21: version=1.0

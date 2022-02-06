@@ -1,12 +1,12 @@
 # nn-Meter Builder
 
-nn-Meter builder is an open source tool for users to generate latency predictor on their own devices. There are three main parts in nn-Meter builder:
+nn-Meter builder is an open source tool for users to build latency predictor on their own devices. There are three main parts in nn-Meter builder:
 
 - **backend**: the module of connecting backends;
 
-- **backend_meta**: the meta tools related to backend, such as fusion rule tester;
+- **backend_meta**: the meta tools related to backend, such as fusion rule tester to detect fusion rules for users' backend;
 
-- **kernel_predictor_builder**: the tool to build kernel latency predictor.
+- **kernel_predictor_builder**: the tool to build different kernel latency predictors.
 
 ## <span id="create-workspace"> Create Workspace </span>
 

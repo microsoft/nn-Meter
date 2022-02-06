@@ -4,7 +4,7 @@ import os
 from packaging import version
 import logging
 
-from .utils import load_config_file, loading_to_local
+from .utils import load_config_file, loading_to_local, loading_customized_predictor
 from .prediction.predict_by_kernel import nn_predict
 from nn_meter.kernel_detector import KernelDetector
 from nn_meter.utils import get_user_data_folder
@@ -38,10 +38,10 @@ def load_predictor_config(predictor_name: str, predictor_version: float = None):
         return preds_info[0]
     elif n_preds > 1:
         # find the latest version of the predictor
-        latest_version, latest_version_idx = version.parse(preds_info[0]['version']), 0
+        latest_version, latest_version_idx = version.parse(str(preds_info[0]['version'])), 0
         for i in range(1, n_preds):
-            if version.parse(preds_info[i]['version']) > latest_version:
-                latest_version = version.parse(preds_info[i]['version'])
+            if version.parse(str(preds_info[i]['version'])) > latest_version:
+                latest_version = version.parse(str(preds_info[i]['version']))
                 latest_version_idx = i
         print(f'WARNING: There are multiple version for {predictor_name}, use the latest one ({str(latest_version)})')
         return preds_info[latest_version_idx]
@@ -55,14 +55,18 @@ def load_latency_predictor(predictor_name: str, predictor_version: float = None)
     @params:
 
     predictor_name: string to specify the name of the target latency predictor. All built-in predictors can be viewed by nn_meter.list_latency_predictors() 
-        or through the config file in nn_meter/configs/predictors.yaml.
+        or through the config file in ~/.nn_meter/config/predictors.yaml.
     
     predictor_version: string to specify the version of the target latency predictor. If not specified (default as None), the lateast version of the 
         predictor will be loaded.
     """
     user_data_folder = get_user_data_folder()
     pred_info = load_predictor_config(predictor_name, predictor_version)
-    kernel_predictors, fusionrule = loading_to_local(pred_info, os.path.join(user_data_folder, 'predictor'))
+    if "download" in pred_info:
+        kernel_predictors, fusionrule = loading_to_local(pred_info, os.path.join(user_data_folder, 'predictor'))
+    else:
+        kernel_predictors, fusionrule = loading_customized_predictor(pred_info)
+        
     return nnMeterPredictor(kernel_predictors, fusionrule)
 
 

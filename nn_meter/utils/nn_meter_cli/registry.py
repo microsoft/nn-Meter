@@ -8,12 +8,13 @@ import logging
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 __registry_cfg_filename__ = 'registry.yaml'
+__predictors_cfg_filename__ = 'predictors.yaml'
 
     
 def import_module(meta_data):
-    sys.path.append(meta_data["packageLocation"])
-    module_path = meta_data["classModule"]
-    class_name = meta_data["className"]
+    sys.path.append(meta_data["package_location"])
+    module_path = meta_data["class_module"]
+    class_name = meta_data["class_name"]
     module = importlib.import_module(module_path)   
     backend_cls = getattr(module, class_name)
     return backend_cls
@@ -22,12 +23,12 @@ def import_module(meta_data):
 def register_module(module_type, meta_file):
     with open(meta_file, "r") as fp:
         meta_data = yaml.load(fp, yaml.FullLoader)
-    builtin_name = meta_data.pop("builtinName")
+
+    # load module information to '~/.nn_meter/config/registry.yaml'
+    builtin_name = meta_data.pop("builtin_name")
     import_module(meta_data)
 
     # TODO: check necessary feature
-    if module_type == "predictors":
-        pass
     # for backend, check if there exits the default config file:
     if module_type == "backends":
         if not os.path.isfile(meta_data["defaultConfigFile"]):
@@ -47,9 +48,24 @@ def register_module(module_type, meta_file):
     logging.keyinfo(f"Successfully register {module_type[:-1]}: {builtin_name}")
 
 
+def register_predictor(meta_file):
+    with open(meta_file, "r") as fp:
+        meta_data = yaml.load(fp, yaml.FullLoader)
+    
+    # for predictors registration, load predictor information to '~/.nn_meter/config/predictors.yaml'
+    builtin_name = meta_data["name"]
+    with open(os.path.join(__user_config_folder__, __predictors_cfg_filename__), 'r') as fp:
+        prev_info = yaml.load(fp, yaml.FullLoader)
+    prev_info.append(meta_data)
+    
+    with open(os.path.join(__user_config_folder__, __predictors_cfg_filename__), 'w') as fp:
+        yaml.dump(prev_info, fp)
+    logging.keyinfo(f"Successfully register predictor: {builtin_name}")
+
+
 def register_module_cli(args):
     if args.predictor:
-        register_module("predictors", args.predictor)
+        register_predictor(args.predictor)
     elif args.backend:
         register_module("backends", args.backend)
     elif args.operator:
@@ -77,9 +93,25 @@ def unregister_module(module_type, module_name):
         logging.keyinfo(f"Unregister failed: there is no module named {module_name}.")
 
 
+def unregister_predictor(predictor_name, predictor_version):
+    success = False
+    with open(os.path.join(__user_config_folder__, __predictors_cfg_filename__), 'r') as fp:
+        prev_info = yaml.load(fp, yaml.FullLoader)
+    for i, p in enumerate(prev_info):
+        if p['name'] == predictor_name and (predictor_version is None or p['version'] == predictor_version):
+            prev_info.pop(i)
+            success = True
+    if success:
+        with open(os.path.join(__user_config_folder__, __predictors_cfg_filename__), 'w') as fp:
+            yaml.dump(prev_info, fp)
+        logging.keyinfo(f"Successfully unregister {predictor_name}.")
+    else:
+        logging.keyinfo(f"Unregister failed: there is no predictor named {predictor_name}.")
+
+
 def unregister_module_cli(args):
     if args.predictor:
-        unregister_module("predictors", args.predictor)
+        unregister_predictor(args.predictor, args.predictor_version)
     elif args.backend:
         unregister_module("backends", args.backend)
     elif args.operator:
