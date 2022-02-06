@@ -44,7 +44,7 @@ Please refer to [prepare_backend.md](prepare_backend.md) to prepare your own bac
 
 ## Detect Fusion Rule
 
-Please refer to [detect_fusion_rules.md](detect_fusion_rules.md) to detect fusion rule.
+Please refer to [test_fusion_rules.md](test_fusion_rules.md) to detect fusion rule.
 
 ## Build Kernel Latency Predictor
 
