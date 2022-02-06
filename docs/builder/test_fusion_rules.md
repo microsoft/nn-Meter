@@ -467,7 +467,7 @@ After unregister the operator, "op1" will be removed from the backend list.
 
 ## Build Other Test Case
 
-Customized other test case are more complicated. Here we describe the implementation of `TestCasesGenerator` first. We define the base of all test case generator in `nn_meter.builder.backend_meta.fusion_rule_tester.generate_testcases.TestCasesGenerator`. There are following methods in this base class:
+Customized other test case are more complicated. Here we describe the implementation of `TestCasesGenerator` first. We define the base of all test case generator in `nn_meter.builder.backend_meta.fusion_rule_tester.generate_testcase.TestCasesGenerator`. There are following methods in this base class:
 
 - `generate_testcase`: Generate all test models for this test case. At the **most time you won't** need to modify this.
 

@@ -13,7 +13,7 @@ def generate_testcases():
     from nn_meter.builder import builder_config
     config = builder_config.get_module('ruletest')
 
-    from .detect_fusion_rule import FusionRuleTester
+    from .test_fusion_rule import FusionRuleTester
     tester = FusionRuleTester()
     testcases = tester.generate()
 
@@ -38,7 +38,7 @@ def detect_fusion_rule(profiled_testcases):
         with open(profiled_testcases, 'r') as fp:
             profiled_testcases = read_profiled_results(json.load(fp))
 
-    from .detect_fusion_rule import FusionRuleTester
+    from .test_fusion_rule import FusionRuleTester
     tester = FusionRuleTester()
     result = tester.analyze(profiled_testcases)
 

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import networkx as nx
-from .generate_testcases import testcases_list
+from .generate_testcase import testcases_list
 from nn_meter.builder import builder_config
 
 config = builder_config.get_module('ruletest')
