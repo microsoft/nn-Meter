@@ -1,2 +1,19 @@
 KERNEL: None
 DETAIL: FALSE
+KERNELS:
+  - conv_bn_relu
+  - dwconv_bn_relu
+  - maxpool_block
+  - avgpool_block
+  - fc_block
+  - concat_block
+  - split_block
+  - channel_shuffle
+  - se_block
+  - globalavgpool_block
+  - bn_relu
+  - bn_block
+  - hswish_block
+  - relu_block
+  - add_relu
+  - add_block

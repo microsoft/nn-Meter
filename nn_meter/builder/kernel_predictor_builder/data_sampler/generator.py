@@ -5,46 +5,9 @@ import json
 import random
 import string
 import logging
-from ..config_lib import config_for_kernel
-from .finegrained_sampler import finegrained_kernel_sampling
-from .prior_distribution_sampler import prior_kernel_sampling
 from nn_meter.builder import builder_config
-from nn_meter.builder.utils import get_inputs_by_shapes, merge_prev_info
-from nn_meter.builder.nn_generator.tf_networks import blocks
-
-
-def generate_model_for_kernel(kernel_type, config, savepath=None):
-    """ get the nn model for predictor build. returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
-    """
-    try:
-        needed_config = {k: config[k] for k in config_for_kernel[kernel_type]}
-        if "POOL_STRIDES" in config_for_kernel[kernel_type] and "POOL_STRIDES" not in config:
-                needed_config["POOL_STRIDES"] = config["STRIDES"]
-    except:
-        raise NotImplementedError(f"The kernel_type={kernel_type} you called is not exist in our model zoo. Please implement the block and try again.")
-    if kernel_type == "fc_block":
-        input_shape = [config["CIN"]]
-        input_tensor_shape = [input_shape]
-    elif kernel_type == "add_block":
-        input_shape = [[config["HW"], config["HW"], config["CIN"]],
-                       [config["HW"], config["HW"], config["CIN"]]]
-    elif kernel_type == "concat_block":
-        input_shape = [[config["HW"], config["HW"], cin] 
-                       for cin in [config['CIN1'], config['CIN2'], config['CIN3'], config['CIN4']]
-                       if cin != 0]
-        input_tensor_shape = input_shape
-    else:
-        input_shape = [config["HW"], config["HW"], config["CIN"]]
-        input_tensor_shape = [input_shape]
-    model = getattr(blocks, kernel_type)(input_shape, needed_config)
-    model(get_inputs_by_shapes(input_tensor_shape))
-    if savepath:
-        from tensorflow import keras
-        keras.models.save_model(model, savepath)
-        logging.info(f"{kernel_type} model is generated and saved to {savepath}.")
-    else:
-        logging.info(f"{kernel_type} model is generated.")
-    return model, input_shape, needed_config
+from nn_meter.builder.utils import merge_prev_info
+from .utils import get_sampler_for_kernel, generate_model_for_kernel
 
 
 class KernelGenerator:
@@ -58,12 +21,7 @@ class KernelGenerator:
         self.mark = mark
 
     def generate_config(self, sampling_mode = 'prior', configs = None):
-        # initialize sampling, based on prior distribution
-        if sampling_mode == 'prior':
-            sampled_cfgs = prior_kernel_sampling(self.kernel_type, self.sample_num)
-        # fine-grained sampling for data with large error points
-        elif sampling_mode == 'finegrained':
-            sampled_cfgs = finegrained_kernel_sampling(self.kernel_type, configs, self.sample_num)
+        sampled_cfgs = get_sampler_for_kernel(self.kernel_type, self.sample_num, sampling_mode, configs)
         for i in range(len(sampled_cfgs)):
             random_id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             self.kernels[random_id] = {}
@@ -77,10 +35,10 @@ class KernelGenerator:
         for id, value in self.kernels.items():
             model_path = os.path.join(self.case_save_path, "_".join([kernel_type, self.mark, id]))
             kernel_cfg = value['config']
-            _, input_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, savepath=model_path)
+            _, input_tensor_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, savepath=model_path)
             self.kernels[id] = {
                 'model': model_path,
-                'shapes': [input_shape] if kernel_type != 'concat_block' else input_shape,
+                'shapes': input_tensor_shape,
                 'config': config
             }
         

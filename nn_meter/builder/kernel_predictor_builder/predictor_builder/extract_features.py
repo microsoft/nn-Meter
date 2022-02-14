@@ -1,39 +1,106 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import os
+import sys
+import yaml
 import json
-from ..config_lib import config_for_kernel
+import importlib
 from nn_meter.builder.backend_meta.utils import read_profiled_results
 
-def get_conv_flop_params(hw, cin, cout, kernel_size, stride):
-    params = cout * (kernel_size * kernel_size * cin + 1)
-    flops = 2 * hw / stride * hw / stride * params
-    return flops, params
+
+feature_for_kernel = {
+    # conv
+    "conv_bn_relu":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv_bn_relu6":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv_bn":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv_relu":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv_relu6":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv_hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv_block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv_bn_hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    # dwconv
+    "dwconv_bn":            ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_relu":          ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_relu6":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_bn_relu":       ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_bn_relu6":      ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_block":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_bn_hswish":     ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    # others
+    "maxpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
+    "avgpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
+    "fc_block":             ["CIN", "COUT"],
+    "concat_block":         ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
+    "split_block":          ["HW", "CIN"],
+    "channel_shuffle":      ["HW", "CIN"],
+    "se_block":             ["HW", "CIN"],
+    "globalavgpool_block":  ["HW", "CIN"],
+    "bn_relu":              ["HW", "CIN"],
+    "bn_block":             ["HW", "CIN"],
+    "hswish_block":         ["HW", "CIN"],
+    "relu_block":           ["HW", "CIN"],
+    "add_relu":             ["HW", "CIN"],
+    "add_block":            ["HW", "CIN"], 
+}
+
+__user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
+__registry_cfg_filename__ = 'registry.yaml'
+__REG_KERNELS__ = {}
+if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__)):
+    with open(os.path.join(__user_config_folder__, __registry_cfg_filename__), 'r') as fp:
+        registry_modules = yaml.load(fp, yaml.FullLoader)
+    if "kernels" in registry_modules:
+        __REG_KERNELS__ = registry_modules["kernels"]
 
 
-def get_dwconv_flop_params(hw, cout, kernel_size, stride):
-    params = cout * (kernel_size * kernel_size + 1)
-    flops = 2 * hw / stride * hw / stride * params
-    return flops, params
+class BaseFeatureParser:
+    def __init__(self, kernel_type):
+        self.kernel_type = kernel_type
+        self.needed_config = feature_for_kernel[kernel_type]
+
+    def get_feature_by_config(self, config_dict):
+        feature = [config_dict[data] for data in self.needed_config]
+        return feature
+
+    def get_config_by_feature(self, feature):
+        assert len(self.needed_config) == len(feature)
+        config = {k: v for k, v in zip(self.needed_config, feature)}
+        return config
 
 
-def get_fc_flop_params(cin, cout):
-    params = (2 * cin + 1) * cout
-    flops = params
-    return flops, params
+class FlopsParamParser(BaseFeatureParser):
+    def get_feature_by_config(self, config_dict):
+        feature = [config_dict[data] for data in self.needed_config]
+        from .utils import get_flops_params
+        flop, param = get_flops_params(self.kernel_type, config_dict)
+        flop /= 2e6
+        param /= 1e6
+        feature.extend([flop, param])
+        return feature
+
+    def get_config_by_feature(self, feature):
+        # remove flops and params num feature from feature vector
+        feature = feature[:-2]
+        assert len(self.needed_config) == len(feature)
+        config = {k: v for k, v in zip(self.needed_config, feature)}
+        return config
 
 
-def get_flops_params(kernel_type, config):
-    hw, cin, cout, kernel_size, stride = config["HW"], config["CIN"], config["COUT"], \
-                                         config["KERNEL_SIZE"], config["STRIDES"]
-    if "conv" in kernel_type:
-        return get_conv_flop_params(hw, cin, cout, kernel_size, stride)
-    elif "dwconv" in kernel_type:
-        return get_dwconv_flop_params(hw, cout, kernel_size, stride)
-    elif "fc" in kernel_type:
-        return get_fc_flop_params(cin, cout)
+def get_feature_parser(kernel_type):
+    if kernel_type in __REG_KERNELS__:
+        kernel_info = __REG_KERNELS__[kernel_type]
+        sys.path.append(kernel_info["package_location"])
+        parser_name = kernel_info["parser_name"]
+        parser_module = importlib.import_module(kernel_info["parser_module"])
+        return getattr(parser_module, parser_name)(kernel_type)
+    elif kernel_type in feature_for_kernel:
+        if "conv" in kernel_type or "dwconv" in kernel_type or "fc" in kernel_type:
+            return FlopsParamParser(kernel_type)
+        else:
+            return BaseFeatureParser(kernel_type)
 
 
-def get_data_by_profiled_results(kernel_type, cfgs_path, lats_path = None):
+def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_path = None):
     ''' return (features, latency)
     kernel_type (str): type of kernel
 
@@ -65,7 +132,10 @@ def get_data_by_profiled_results(kernel_type, cfgs_path, lats_path = None):
     if lats_path == None, it means latency information are also included in cfgs_path.
     '''
     if lats_path == None:
-        lats_path = cfgs_path
+        if type(cfgs_path) == tuple:
+            cfgs_path, lats_path = cfgs_path
+        else:
+            lats_path = cfgs_path
     if isinstance(cfgs_path, str):
         with open(cfgs_path, 'r') as fp:
             cfgs_dict = json.load(fp)[kernel_type]
@@ -80,19 +150,9 @@ def get_data_by_profiled_results(kernel_type, cfgs_path, lats_path = None):
     features, lats = [], []
     for id in cfgs_dict.keys():
         configs = cfgs_dict[id]["config"]
-        feature = get_features_by_config(kernel_type, configs)
+        feature = feature_parser.get_feature_by_config(configs)
         features.append(feature)
 
         latency = lats_dict[id]["latency"].avg
         lats.append(latency)
     return (features, lats)
-
-
-def get_features_by_config(kernel_type, config):
-    feature = [config[data] for data in config_for_kernel[kernel_type]]
-    if "conv" in kernel_type or "dwconv" in kernel_type or "fc" in kernel_type:
-        flop, param = get_flops_params(kernel_type, config)
-        flop /= 2e6
-        param /= 1e6
-        feature.extend([flop, param])
-    return feature

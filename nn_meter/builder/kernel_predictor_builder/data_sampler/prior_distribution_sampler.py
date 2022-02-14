@@ -3,7 +3,6 @@
 import random
 from .utils import *
 from .prior_config_lib.utils import *
-from ..config_lib import config_for_kernel
 
 
 def sampling_conv(count):
@@ -237,38 +236,3 @@ def sampling_concats(count):
         }
         ncfgs.append(c)
     return ncfgs
-
-
-def prior_kernel_sampling(kernel_type, count):
-    """
-    return the list of sampled data configurations in initial sampling phase
-
-    @params
-
-    kernel_type: identical kernel name 
-    count: for the target kernel, we sample `count` data from prior distribution.
-
-    """
-    assert kernel_type in config_for_kernel.keys(), f"Not supported kernel type: {kernel_type}. Supported type includes {config_for_kernel.keys()}."
-
-    if "conv" in kernel_type:
-        return sampling_conv(count)
-    elif "dwconv" in kernel_type:
-        return sampling_dwconv(count)
-    elif kernel_type in ['maxpool_block', 'avgpool_block']:
-        return sampling_pooling(count)
-    elif kernel_type == 'fc_block': # half samples have fixed cout as 1000, other samples have random cout
-        return sampling_fc(int(count * 0.5), fix_cout = 1000) + sampling_fc(int(count * 0.5), fix_cout = False)
-    elif "concat" in kernel_type:
-        return sampling_concats(count)
-    elif kernel_type in ['split_block', 'channel_shuffle', 'se_block']:
-        return sampling_hw_cin_odd(count)
-    elif kernel_type == 'globalavgpool_block': 
-        cfgs = sampling_hw_cin(count)
-        new_hws = [3] * (count // 2 + 1) + [7] * (count // 2 + 1)
-        new_hws = new_hws[:len(cfgs)]
-        import random; random.shuffle(new_hws)
-        for cfg, hw in zip(cfgs, new_hws): cfg["HW"] = hw
-        return cfgs
-    else: # 'hswish_block', 'bn_relu', 'bn_block', 'relu_block', 'add_relu', 'add_blocks'
-        return sampling_hw_cin(count, resize = True)

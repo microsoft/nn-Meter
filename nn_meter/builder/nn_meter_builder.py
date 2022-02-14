@@ -86,17 +86,15 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
     error_threshold (float, optional): the threshold of large error. Defaults to 0.2.
     """
-    from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data, get_data_by_profiled_results
+    from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data
     
     # init predictor builder with prior data sampler
     kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num, backend, sampling_mode='prior', mark='prior')
 
     # use current sampled data to build regression model, and locate data with large errors in testset
-    data = get_data_by_profiled_results(kernel_type, kernel_data)
-    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, data, backend, error_threshold=error_threshold)
+    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
     logging.info(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')    
-    
-    
+
     for i in range(1, iteration):
         # finegrained sampling and profiling for large error data
         new_kernel_data = sample_and_profile_kernel_data(kernel_type, finegrained_sample_num, backend,
@@ -104,8 +102,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
         # merge finegrained data with previous data and build new regression model
         kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
-        data = get_data_by_profiled_results(kernel_type, kernel_data)
-        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, data, backend, error_threshold=error_threshold)
+        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
         logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
-    return predictor, data
+    return predictor, kernel_data

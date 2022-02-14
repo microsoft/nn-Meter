@@ -17,14 +17,30 @@ def latency_metrics(y_pred, y_true):
     return rmse, rmspe, rmse / np.mean(y_true), acc5, acc10, acc15
 
 
-def get_config_by_features(kernel_type, feature):
-    from ..config_lib import config_for_kernel
-    config_name = config_for_kernel[kernel_type]
+def get_conv_flop_params(hw, cin, cout, kernel_size, stride):
+    params = cout * (kernel_size * kernel_size * cin + 1)
+    flops = 2 * hw / stride * hw / stride * params
+    return flops, params
 
-    # remove flops and params num feature from feature vector
-    if "conv" in kernel_type or "dwconv" in kernel_type or "fc" in kernel_type:
-        feature = feature[:-2]
 
-    assert len(config_name) == len(feature)
-    config = {k: v for k, v in zip(config_name, feature)}
-    return config 
+def get_dwconv_flop_params(hw, cout, kernel_size, stride):
+    params = cout * (kernel_size * kernel_size + 1)
+    flops = 2 * hw / stride * hw / stride * params
+    return flops, params
+
+
+def get_fc_flop_params(cin, cout):
+    params = (2 * cin + 1) * cout
+    flops = params
+    return flops, params
+
+
+def get_flops_params(kernel_type, config):
+    hw, cin, cout, kernel_size, stride = config["HW"], config["CIN"], config["COUT"], \
+                                         config["KERNEL_SIZE"], config["STRIDES"]
+    if "conv" in kernel_type:
+        return get_conv_flop_params(hw, cin, cout, kernel_size, stride)
+    elif "dwconv" in kernel_type:
+        return get_dwconv_flop_params(hw, cout, kernel_size, stride)
+    elif "fc" in kernel_type:
+        return get_fc_flop_params(cin, cout)

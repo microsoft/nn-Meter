@@ -10,42 +10,70 @@ The first step is sampling configuration values from the prior distribution, whi
 
 The second step is generating and profiling kernel model by configurations. Currently, the kernel blocks and corresponding configurations supported by nn-Meter include:
 
-```python
-config_for_kernel = {
-    # conv related kernels
-    "conv_bn_relu":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn_relu6":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_relu":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_relu6":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn_hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    # dwconv related kernels
-    "dwconv_bn":            ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu":          ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu6":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu":       ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu6":      ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_block":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_hswish":     ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    # other kernels
-    "maxpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
-    "avgpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
-    "fc_block":             ["CIN", "COUT"],
-    "concat_block":         ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
-    "split_block":          ["HW", "CIN"],
-    "channel_shuffle":      ["HW", "CIN"],
-    "se_block":             ["HW", "CIN"],
-    "globalavgpool_block": ["HW", "CIN"],
-    "bn_relu":              ["HW", "CIN"],
-    "bn_block":             ["HW", "CIN"],
-    "hswish_block":         ["HW", "CIN"],
-    "relu_block":           ["HW", "CIN"],
-    "add_relu":             ["HW", "CIN"],
-    "add_block":            ["HW", "CIN"], 
-}
-```
+(conv related kernels)
+
+- `"conv_bn_relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+- `"conv_bn_relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+- `"conv_bn"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+- `"conv_relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+- `"conv_relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+- `"conv_hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+- `"conv_block"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+- `"conv_bn_hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+
+(dwconv related kernels)
+
+- `"dwconv_bn"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+
+- `"dwconv_relu"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+
+- `"dwconv_relu6"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+
+- `"dwconv_bn_relu"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+
+- `"dwconv_bn_relu6"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+
+- `"dwconv_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+
+- `"dwconv_bn_hswish"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+
+(other kernels)
+
+- `"maxpool_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `POOL_STRIDES`
+
+- `"avgpool_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `POOL_STRIDES`
+
+- `"fc_block"`: `CIN`, `COUT`
+
+- `"concat_block"`: `HW`, `CIN1`, `CIN2`, `CIN3`, `CIN4`
+
+- `"split_block"`: `HW`, `CIN`
+
+- `"channel_shuffle"`: `HW`, `CIN`
+
+- `"se_block"`: `HW`, `CIN`
+
+- `"globalavgpool_block"`: `HW`, `CIN`
+
+- `"bn_relu"`: `HW`, `CIN`
+
+- `"bn_block"`: `HW`, `CIN`
+
+- `"hswish_block"`: `HW`, `CIN`
+
+- `"relu_block"`: `HW`, `CIN`
+
+- `"add_relu"`: `HW`, `CIN`
+
+- `"add_block"`: `HW`, `CIN`
+
 
 The first and second step are implemented by `nn_meter.builder.nn_meter_builder.sample_and_profile_kernel_data`. Here is an example:
 
@@ -67,27 +95,27 @@ Note: for kernels related to conv and dwconv, our experiment results have shown 
 After preparing the training data, we construct a random forest regression model as the kernel latency predictor. Here is an example:
 
 ```python
-from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data, get_data_by_profiled_results
+from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data
 
 kernel_type = "conv_bn_relu"
 backend = "tflite_cpu"
 error_threshold = 0.1
 
 # extract training feature and target from profiled results
-configs_file = os.join("<workspace-path>", "predictor_build", "results", "conv_bn_relu.json")
-latency_file = os.join("<workspace-path>", "predictor_build", "results", "profiled_conv_bn_relu.json")
-data = get_data_by_profiled_results(kernel_type, configs_file, latency_file)
+cfgs_path = os.join("<workspace-path>", "predictor_build", "results", "conv_bn_relu.json")
+lats_path = os.join("<workspace-path>", "predictor_build", "results", "profiled_conv_bn_relu.json")
+kernel_data = (cfgs_path, lats_path)
 
 # build latency predictor
-predictor, acc10, error_configs = build_predictor_by_data(kernel_type, data, backend, error_threshold=error_threshold)
+predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
 logging.info(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')    
 ```
 
-In the implementation, the method `get_data_by_profiled_results` accept both json file path string or dictionary of models. In `get_data_by_profiled_results`, the parameter `cfgs_path` and `lats_path` indicate the config information and latency information respectively. In addition, if the config information and latency information are in the same data holder, users could only specify `cfgs_path` and leave the `lats_path` as `None`.
+In the implementation, the tuple of `kernel_data` includes items of `cfgs_path` and `lats_path`, indicating the config information and latency information respectively. `cfgs_path` and `lats_path` accept both json file path string or dictionary of models. In addition, if the config information and latency information are in the same data holder, users could directly specify `kernel_data = cfgs_path`.
 
-In the feature extraction part, the all configs are extracted as features. Besides, for kernels containing conv, dwconv or fc layer, flops and number of parameters are also extracted as features for latency prediction.
+In the feature extraction part, the all configs are extracted as features. Besides, for kernels containing `conv`, `dwconv` or `fc` layer, flops and number of parameters are also extracted as features for latency prediction.
 
-After feature extraction, nn-Meter build the predictor by method `build_predictor_by_data`. The regression predictor are implemented by `sklearn.ensemble.RandomForestRegressor`. All data are split into training and validation data as 8:2. We have evaluate the prediction performance by the Root Mean Square Error (RMSE) and the relative Root Mean SQuare Percentage Error (RMSPE), that are the standard metrics in regression. Besides, we report the $\pm 5\%$ and $\pm 10\%$ accuracy, that are the percentage of models with predicted latency within the corresponding error bound relative to the measured latency. Smaller RMSE/RMSPE and larger  $\pm 5\%$ and $\pm 10\%$ accuracy suggest better performance.
+After feature extraction, nn-Meter build the predictor by method `build_predictor_by_data`. The regression predictor are implemented by `sklearn.ensemble.RandomForestRegressor`. All data are split into training and validation data as 8:2. We have evaluate the prediction performance by the Root Mean Square Error (RMSE) and the relative Root Mean SQuare Percentage Error (RMSPE), that are the standard metrics in regression. Besides, we report the $\pm 5\%$ and $\pm 10\%$ accuracy, that are the percentage of models with predicted latency within the corresponding error bound relative to the measured latency. Smaller `RMSE/RMSPE` and larger  $\pm 5\%$ and $\pm 10\%$ accuracy suggest better performance.
 
 The output of `build_predictor_by_data` includes the predictor class, $\pm 10\%$ accuracy and training data items with larger error than `error_threshold`. The large error data are used for the next step.
 
@@ -118,14 +146,13 @@ for i in range(1, iteration):
 
     # merge finegrained data with previous data and build new regression model
     kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
-    data = get_data_by_profiled_results(kernel_type, kernel_data)
-    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, data, backend, error_threshold=error_threshold)
+    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
     logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 ```
 
 ## End-to-end Demo
 
-nn-Meter have wrapped the four main steps into one method `nn_meter.builder.build_predictor_for_kernel`. There is an example to build latency predictor for `"conv_bn_relu"` kernel:
+nn-Meter have wrapped the four main steps into one method named `nn_meter.builder.build_predictor_for_kernel`. There is an example to build latency predictor for `"conv_bn_relu"` kernel:
 
 ```python
 # initialize builder config with workspace
@@ -146,5 +173,298 @@ In the experiment of nn-Meter, we set `init_sample_num` as 1000, `finegrained_sa
 
 
 # Build predictor for customized kernel
-TODO registration: kernels in blocks.py
-if user has a new kernel, he/she needs to add: 1) tf kernel code generation in `generator/networks`. 2) collect the prior data and implement sampling code.
+
+If users want to add new kernels to profile latency and build predictor, here are several steps to prepare and register new kernels.
+
+## Prepare Customized Kernels
+
+### Step 1: Prepare the Customized Kernel Class
+
+nn-Meter provide API for users to customize their own kernel block. In nn-Meter, each kernel is implemented by inheriting a base class named `nn_meter.builder.nn_generator.tf_networks.BaseBlock`. The kernel block has a input parameter `config` to feed configuration params for the kernel. There are two attributes should be claimed, including `input_shape` and `input_tensor_shape`, as well as one method named `get_model()`. 
+
+- `input_shape` defines the dimension of one model input shape without batch size. Generally, when the input shape is 3D, `input_shape` should be`[config["HW"], config["HW"], config["CIN"]]`, and when the input shape is 1D, `input_shape` should be`[config["CIN"]]`. 
+
+- `input_tensor_shape` is a list defining all model inputs. In basic situation, `input_tensor_shape` should be `[input_shape]` if the kernel only has one input. If the kernel has more than one input, such as `add_relu` kernel, `input_tensor_shape` is `[input_shape, input_shape]`.
+
+- `get_model` is the implementation of the kernel model and return a instance of `keras.Model` of the kernel.
+
+Users could refer to the following example to learn how to write a kernel class.
+
+``` python
+import tensorflow.keras as keras
+from nn_meter.builder.nn_generator.tf_networks import BaseBlock
+
+class ConvBnRelu(BaseBlock):
+    def __init__(self, config):
+        self.config = config
+        self.input_shape = [config["HW"], config["HW"], config["CIN"]]
+        self.input_tensor_shape = [self.input_shape]
+
+    def get_model(self):
+        class Model(keras.Model):
+            def __init__(self, kernel_size, strides):
+                super().__init__()
+                self.conv = keras.layers.Conv2D(
+                    cout,
+                    kernel_size=kernel_size,
+                    strides=strides,
+                    padding="same"
+                )
+                self.bn = keras.layers.BatchNormalization()
+                self.relu = keras.layers.ReLU()
+
+            def call(self, inputs):
+                x = self.conv(inputs)
+                x = self.bn(x)
+                x = self.relu(x)
+                return x
+
+        return Model(self.conv_op, self.bn_op, self.relu_op)
+```
+
+### Step 2: Collect the Prior Data and Implement Sampling Code
+
+Next, users should collect the prior data and implement the config sampler for customized kernel. In nn-Meter, config sampler of each kernel is implemented by inheriting a base class named `nn_meter.builder.kernel_predictor_builder.BaseConfigSampler`. The config sampler has two methods, including `prior_config_sampling` and `finegrained_config_sampling`. The output of both methods is a list of dicts, with each dict indicates a group of configuration.
+
+- `prior_config_sampling(self, sample_num)`: utilize the prior data to define the configuration sampling from the prior distribution.
+
+- `finegrained_config_sampling(self, sample_num, configs)`: for data in `configs`, perform fine-grained data sampling to generate random data around the large error data.
+
+Here is an example:
+
+``` python
+import random
+from nn_meter.builder.kernel_predictor_builder import BaseConfigSampler
+from nn_meter.builder.kernel_predictor_builder.data_sampler.utils import sample_based_on_distribution, data_validation
+from nn_meter.builder.kernel_predictor_builder.data_sampler.prior_config_lib.utils import read_conv_zoo
+
+class ConvSampler(BaseConfigSampler):
+
+    def prior_config_sampling(self, sample_num):
+        hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
+        new_cins = sample_based_on_distribution(cins, count)     
+        new_couts = sample_based_on_distribution(couts, count)
+
+        # 70% of sampled data are from prior distribution
+        count1 = int(count * 0.7)
+        new_hws = sample_based_on_distribution(hws, count1)
+        new_kernel_sizes = sample_based_on_distribution(kernel_sizes, count1)
+        new_strides = sample_based_on_distribution(strides, count1)
+        
+        new_kernel_sizes = data_validation(new_kernel_sizes, [1, 3, 5, 7])
+        new_strides = data_validation(new_strides, [1, 2, 4])
+        new_hws = data_validation(new_hws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
+        
+        # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
+        new_hws.extend([112] * int((count - count1) * 0.2) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.4)) # frequent settings
+        new_kernel_sizes.extend([5] * int((count - count1) * 0.4) + [7] * int((count - count1) * 0.6)) # frequent settings
+        new_strides.extend([2] * int((count - count1) * 0.4) + [1] * int((count - count1) * 0.6)) # frequent settings
+        random.shuffle(new_hws)
+        random.shuffle(new_strides)
+        random.shuffle(new_kernel_sizes)
+
+        ncfgs = []
+        for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
+            c = {
+                'HW': hw,
+                'CIN': cin,
+                'COUT': cout,
+                'KERNEL_SIZE': kernel_size,
+                'STRIDES': stride,
+            }
+            ncfgs.append(c)
+        return ncfgs
+    
+    def finegrained_config_sampling(self, sample_num, configs):
+        ncfgs = []
+        for cfg in configs:
+            cins, couts = sample_cin_cout(cfg['CIN'], cfg['COUT'], count)
+            for cin, cout in zip(cins, couts):
+                c = {
+                    'HW': cfg['HW'],
+                    'CIN': cin,
+                    'COUT': cout,
+                    'KERNEL_SIZE': cfg['KERNEL_SIZE'],
+                    'STRIDES': cfg['STRIDES'],
+                }
+                ncfgs.append(c)
+        return ncfgs
+```
+
+Note: all sampled configuration value will be feed into the kernels by the input `config`. Users should follow the same notation in sampler and kernel class to transfer parameters.
+
+### Step 3: Specify Kernel Feature for Training Predictor
+
+Finally, users should specify the feature of kernel for training the kernel latency predictor. nn-Meter provide a base class named `nn_meter.builder.kernel_predictor_builder.BaseFeatureParser`. The feature parser has two needed attributes named `kernel_type` and `needed_config`, as well as two methods, including `get_feature_by_config(self, config_dict)` and `get_config_by_feature`.
+
+- `kernel_type`: the builtin kernel type of the parser.
+
+- `needed_config`: the list of all config variables. such as `["HW", "CIN", "KERNEL_SIZE", "STRIDES"]`.
+
+- `get_feature_by_config(self, config_dict)`: convert the config_dict to feature list, new features based on configs is acceptable.
+
+- `get_config_by_feature(self, feature)`: convert the feature to config_dict.The newly added feature should be removed.
+
+Here is an example:
+
+``` python
+from nn_meter.builder.kernel_predictor_builder.BaseFeatureParser
+from nn_meter.builder.kernel_predictor_builder.utils import get_flops_params
+
+class FlopsParamParser(BaseFeatureParser):
+    def __init__(self, kernel_type):
+        self.kernel_type = kernel_type
+        self.needed_config = ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"]
+
+    def get_feature_by_config(self, config_dict):
+        feature = [config_dict[data] for data in self.needed_config]
+        
+        flop, param = get_flops_params(self.kernel_type, config_dict)
+        flop /= 2e6
+        param /= 1e6
+        feature.extend([flop, param])
+        return feature
+
+    def get_config_by_feature(self, feature):
+        # remove flops and params num feature from feature vector
+        feature = feature[:-2]
+        assert len(self.needed_config) == len(feature)
+        config = {k: v for k, v in zip(self.needed_config, feature)}
+        return config
+```
+
+## Register kernel to nn-Meter
+
+### Step 1: Create a Package for the Customized Kernel
+
+nn-Meter requires users to gather all code of kernel in a package with a fixed location. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
+
+``` text
+./customized_kernel/
+├── __init__.py
+├── kernel_script.py
+├── config_sampler.py
+└── feature_parser.py
+```
+
+The interface of customized kernel class, named `MyKernel`, are stored in `./customized_kernel/kernel_script.py`, and customized sampler `MySampler` in `./customized_kernel/config_sampler.py`, as well as feature parser `MyParser` in `./customized_kernel/feature_parser.py`, respectively.
+
+### Step 2: Prepare Meta File
+
+Create a yaml file with following keys as meta file:
+
+- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized kernel, such as `"mykernel"`.
+
+- `package_location`: the absolute path of the package folder.
+
+- `class_module`: the module of the kernel class, in this example is `kernel_script`, representing `kernel_script.py`.
+
+- `class_name`: the kernel class name, in this example is `MyKernel`.
+
+- `sampler_module`: the module of the kernel sampler, in this example is `config_sampler`, representing `config_sampler.py`.
+
+- `sampler_name`: the kernel sampler name, in this example is `MySampler`.
+
+- `parser_module`: the module of the kernel feature parser, in this example is `feature_parser`, representing `feature_parser.py`.
+
+- `parser_name`: the kernel parser name, in this example is `MyParser`.
+
+Following is an example of the yaml file:
+
+```yaml
+builtin_name: mykernel
+package_location: /data/USERNAME/working/tftest/kernel_package
+class_module: kernel_script
+class_name: MyKernel
+sampler_module: config_sampler
+sampler_name: MySampler
+parser_module: feature_parser
+parser_name: MyParser
+```
+
+### Step 3: Register Customized Kernel into nn-Meter
+
+Run the following command to register customized backend into nn-Meter:
+
+``` bash
+nn-meter register --kernel path/to/meta/file
+```
+If the registration success, nn-Meter will show:
+``` text
+(nn-Meter) Successfully register kernel: mykernel
+```
+
+When registering, nn-Meter will test whether the module can be imported first. If the registration success is not successful, please check the package according to the error information.
+
+After backend registration, users can view all kernels by running:
+``` bash
+nn-meter --list-kernels
+```
+```text
+(nn-Meter) Supported kernels: ('*' indicates customized kernels)
+(nn-Meter) [Kernel] conv_bn_relu
+(nn-Meter) [Kernel] conv_bn_relu6
+(nn-Meter) [Kernel] conv_bn
+(nn-Meter) [Kernel] conv_relu
+(nn-Meter) [Kernel] conv_relu6
+(nn-Meter) [Kernel] conv_hswish
+(nn-Meter) [Kernel] conv_block
+(nn-Meter) [Kernel] conv_bn_hswish
+(nn-Meter) [Kernel] dwconv_bn
+(nn-Meter) [Kernel] dwconv_relu
+(nn-Meter) [Kernel] dwconv_relu6
+(nn-Meter) [Kernel] dwconv_bn_relu
+(nn-Meter) [Kernel] dwconv_bn_relu6
+(nn-Meter) [Kernel] dwconv_block
+(nn-Meter) [Kernel] dwconv_bn_hswish
+(nn-Meter) [Kernel] maxpool_block
+(nn-Meter) [Kernel] avgpool_block
+(nn-Meter) [Kernel] fc_block
+(nn-Meter) [Kernel] concat_block
+(nn-Meter) [Kernel] split_block
+(nn-Meter) [Kernel] channel_shuffle
+(nn-Meter) [Kernel] se_block
+(nn-Meter) [Kernel] globalavgpool_block
+(nn-Meter) [Kernel] bn_relu
+(nn-Meter) [Kernel] bn_block
+(nn-Meter) [Kernel] hswish_block
+(nn-Meter) [Kernel] relu_block
+(nn-Meter) [Kernel] add_relu
+(nn-Meter) [Kernel] add_block
+(nn-Meter) [Kernel] * mykernel
+```
+
+Note: the package of customized kernel must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
+
+## Use the Customized Kernel in Experiment
+
+After registration, users could build latency predictor for the customized kernel:
+
+```python
+# initialize builder config with workspace
+from nn_meter.builder.utils import builder_config
+builder_config.init("path/to/workspace/folder") 
+
+# build latency predictor for customized kernel
+from nn_meter.builder import build_predictor_for_kernel
+kernel_type = "mykernel"
+backend = "tflite_cpu"
+
+predictor, data = build_predictor_for_kernel(
+    kernel_type, backend, init_sample_num = 1000, finegrained_sample_num = 10, iteration = 5, error_threshold = 0.1
+)
+```
+
+## Manage the Registered Kernel
+
+Users could unregister the kernel by calling its name in command:
+
+``` bash
+nn-meter unregister --kernel mykernel
+```
+``` text
+(nn-Meter) Successfully unregister mykernel.
+```
+
+After unregister the kernel, "mykernel" will be removed from the backend list.
+
