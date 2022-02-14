@@ -520,6 +520,7 @@ Besides, there are also several class attributes:
 Here is an example for customized test case:
 
 ```python
+from tensorflow import keras
 from nn_meter.builder.backend_meta.fusion_rule_tester import BaseTestCase
 
 class MyTestCase(BaseTestCase):
@@ -531,7 +532,7 @@ class MyTestCase(BaseTestCase):
     true_case = 'case1'
     deps = {
         'MON': True,
-        'dwconv_relu': True,
+        'BF_dwconv_relu': True,
     }
 
     def _model_block(self):
@@ -564,6 +565,15 @@ class MyTestCase(BaseTestCase):
         x = keras.layers.Add()([x, input_2])
 
         return keras.models.Model([input_1, input_2], x), [self.input_shape, self.input_shape]
+
+    def _model_dwconv_relu(self):
+        input_layer = keras.Input(shape=self.input_shape)
+
+        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
+        x = keras.layers.Relu()([x, input_layer])
+
+        return keras.models.Model(input_layer, x), [self.input_shape]
+
 ```
 
 ### Step 2: Create a Package for the Customized Test Case

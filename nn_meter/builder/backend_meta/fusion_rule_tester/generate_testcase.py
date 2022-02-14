@@ -1,14 +1,24 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import logging
 import os
+import sys
+import yaml
+import importlib
 from tensorflow import keras
-from .utils import generate_model_for_testcase
-from nn_meter.builder import builder_config
+from .utils import get_operator_by_name, generate_model_for_testcase
+from .build_models import SingleOpModel
 from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.backend_meta.utils import Latency
 
-config =  builder_config.get_module('ruletest')
-testcases_list = {}
+__user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
+__registry_cfg_filename__ = 'registry.yaml'
+__REG_TESTCASES__ = {}
+if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__)):
+    with open(os.path.join(__user_config_folder__, __registry_cfg_filename__), 'r') as fp:
+        registry_modules = yaml.load(fp, yaml.FullLoader)
+    if "testcases" in registry_modules:
+        __REG_TESTCASES__ = registry_modules["testcases"]
 
 
 class BaseTestCase:
@@ -18,13 +28,10 @@ class BaseTestCase:
     deps = {}
     input_shape = None
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        cls._register()
-
-    def __init__(self, **kwargs):
+    def __init__(self, config, **kwargs):
         self._kwargs = kwargs
         self.latency = {}
+        self.config = config
         self.load_config()
 
     def generate_testcase(self):
@@ -37,11 +44,20 @@ class BaseTestCase:
 
         for _, ops in self.cases.items():
             for op in ops:
-                model, shapes = getattr(self, '_model_' + op)()
-                testcase[op] = {
-                    'model': model,
-                    'shapes': shapes
-                }
+                try:
+                    model, shapes = getattr(self, '_model_' + op)()
+                    testcase[op] = {
+                        'model': model,
+                        'shapes': shapes
+                    }
+                except:
+                    layer, _, op1_is_two_inputs = get_operator_by_name(op, self.input_shape, self.config)
+                    model = SingleOpModel(layer)
+                    shapes = [self.input_shape] * (1 + op1_is_two_inputs)
+                    testcase[op] = {
+                        'model': model,
+                        'shapes': shapes
+                    }
         return testcase
 
     def save_testcase(self):
@@ -76,6 +92,7 @@ class BaseTestCase:
         return self.true_case
 
     def load_config(self):
+        config = self.config
         if not self.input_shape:
             self.input_shape = [config['HW'], config['HW'], config['CIN']]
         self.kernel_size = config['KERNEL_SIZE']
@@ -84,17 +101,11 @@ class BaseTestCase:
         self.model_dir = os.path.join(config['MODEL_DIR'], 'models')
         os.makedirs(self.model_dir, exist_ok=True)
 
-    @classmethod
-    def _register(cls):
-        if (cls.name != '' and cls.name.startswith("BF")) or \
-            (config['OTHER_TESTCASES'] != None and cls.name in config['OTHER_TESTCASES']):
-                testcases_list[cls.name] = cls
-
     def _model_block(self):
         pass
 
 
-class BasicFusionImpl(BaseTestCase):
+class BasicFusion(BaseTestCase):
     name = ''
     cases = {
         'ops': ['', ''],
@@ -103,7 +114,7 @@ class BasicFusionImpl(BaseTestCase):
 
     def load_config(self):
         super().load_config()
-        self.eps = config['EMP_ALPHA']
+        self.eps = self.config['EMP_ALPHA']
 
     def test(self):
         secondary_op_lat = min(lat for op, lat in self.latency.items() if op != 'block' or op != self.false_case)
@@ -134,7 +145,7 @@ class BasicFusionImpl(BaseTestCase):
             op2_alias += '_2'
 
         op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes = \
-            generate_model_for_testcase(op1, op2, self.input_shape, config)
+            generate_model_for_testcase(op1, op2, self.input_shape, self.config)
         testcase[op1_alias] = {
             'model': op1_model,
             'shapes': op1_shapes,
@@ -147,35 +158,7 @@ class BasicFusionImpl(BaseTestCase):
             'model': block_model,
             'shapes': block_shapes,
         }
-
         return testcase
-
-
-class BasicFusion(BaseTestCase):
-    name = ''
-    d1_required_layers = []
-
-    @classmethod
-    def _register(cls):
-        if config['BASIC_TESTCASES'] == None: return
-        testcases = [case.split('_') for case in config['BASIC_TESTCASES']]
-        d1_required_layers = config['LAYERS_1D']
-        for op1, op2 in testcases:
-            class_name = f'BasicFusion_{op1}_{op2}'
-            name = f'BF_{op1}_{op2}'
-            cases = {
-                'ops': [op1, op2],
-            }
-            if op1 in d1_required_layers or op2 in d1_required_layers:
-                input_shape = [config['SHAPE_1D']]
-            else:
-                input_shape = [config['HW'], config['HW'], config['CIN']]
-            bf_cls = type(class_name, (BasicFusionImpl,), {
-                'name': name,
-                'cases': cases,
-                'input_shape': input_shape,
-            })
-            testcases_list[bf_cls.name] = bf_cls
 
 
 class MultipleOutNodes(BaseTestCase):
@@ -240,3 +223,46 @@ class MultipleOutNodes(BaseTestCase):
         x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
+
+
+def generate_testcases():
+    testcases_list = {}
+    from nn_meter.builder import builder_config
+    config =  builder_config.get_module('ruletest')
+
+    if config['BASIC_TESTCASES'] != None:
+        testcases = [case.split('_') for case in config['BASIC_TESTCASES']]
+        d1_required_layers = config['LAYERS_1D']
+        for op1, op2 in testcases:
+            class_name = f'BasicFusion_{op1}_{op2}'
+            name = f'BF_{op1}_{op2}'
+            cases = {
+                'ops': [op1, op2],
+            }
+            if op1 in d1_required_layers or op2 in d1_required_layers:
+                input_shape = [config['SHAPE_1D']]
+            else:
+                input_shape = [config['HW'], config['HW'], config['CIN']]
+            bf_cls = type(class_name, (BasicFusion,), {
+                'name': name,
+                'cases': cases,
+                'input_shape': input_shape,
+            })
+            testcases_list[bf_cls.name] = bf_cls
+            
+    if config['OTHER_TESTCASES'] != None:
+        for testcase in config['OTHER_TESTCASES']:
+            if testcase == 'MON':
+                testcases_list[testcase] = MultipleOutNodes
+            else:
+                try:
+                    testcase_info = __REG_TESTCASES__[testcase]
+                    sys.path.append(testcase_info["package_location"])
+                    testcase_module_name = testcase_info["class_name"]
+                    testcase_module = importlib.import_module(testcase_info["class_module"])
+                    testcase_cls = getattr(testcase_module, testcase_module_name)
+                    testcases_list[testcase] = testcase_cls
+                except:
+                    raise KeyError(f'Unsupported test case: {testcase}.')
+
+    return testcases_list
