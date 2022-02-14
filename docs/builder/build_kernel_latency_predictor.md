@@ -384,7 +384,7 @@ parser_name: MyParser
 
 ### Step 3: Register Customized Kernel into nn-Meter
 
-Run the following command to register customized backend into nn-Meter:
+Run the following command to register customized kernel into nn-Meter:
 
 ``` bash
 nn-meter register --kernel path/to/meta/file

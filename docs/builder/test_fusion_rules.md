@@ -179,6 +179,7 @@ Note: if the input to this layer is 1 dimension tensor, users should add it into
 Besides of operator type, operator connection also impacts fusion rules. nn-Meter composed three basic connection types, including 1) single inbound and out bound, 2) multiple outbounds, and 3) multiple inbounds. Our study have shown that there will not be any fusion for multiple inbound type, so that we didn't provide any test case for it.
 
 To test multiple outbounds, nn-Meter formed a test case with two branches, named `'MON'`(multiple out nodes). The implementation of the test case block is shown below:
+
 ```python
 input_layer = keras.Input(shape=input_shape)
 x = keras.layers.DepthwiseConv2D(kernel_size, padding=padding)(input_layer)
@@ -258,28 +259,41 @@ The fusion rules json file will be a part of the customized predictor. Users cou
 
 Currently, nn-Meter support the following ops:
 
-```python
-operators = [
-    'conv',
-    'dwconv',
-    'convtrans',
-    'bn',
-    'maxpool',
-    'avgpool',
-    'globalavgpool',
-    'se',
-    'fc',
-    'relu',
-    'relu6',
-    'sigmoid',
-    'hswish',
-    'reshape',
-    'add',
-    'concat',
-    'flatten',
-    'split'
-]
-```
+- `'conv'`
+
+- `'dwconv'`
+
+- `'convtrans'`
+
+- `'bn'`
+
+- `'maxpool'`
+
+- `'avgpool'`
+
+- `'globalavgpool'`
+
+- `'se'`
+
+- `'fc'`
+
+- `'relu'`
+
+- `'relu6'`
+
+- `'sigmoid'`
+
+- `'hswish'`
+
+- `'reshape'`
+
+- `'add'`
+
+- `'concat'`
+
+- `'flatten'`
+
+- `'split'`
 
 Refer to [basic test cases](#basic-test-cases) for more details of supporting ops. To apply existing ops, users could directly declare the op name and ops connection in `'BASIC_TESTCASES'` from `<workspace-path>/configs/ruletest_config.yaml` to generate their own test cases.
 
@@ -329,7 +343,7 @@ class Sigmoid(BaseOperator):
         return func
 ```
 
-The third example is an operator function with two input tensor. In this case, users should notice that the `output_shape` must cover all probably cases for `input_shape`:
+The third example is an operator class with two input tensor. In this case, users should notice that the `output_shape` must cover all probably cases for `input_shape`:
 
 ``` python
 class Add(BaseOperator):
@@ -347,7 +361,7 @@ class Add(BaseOperator):
         return True
 ```
 
-Note: all configuration value are feed into the operators by the param `config`, which gets data from `<workspace-path>/configs/ruletest_config.yaml`. Users should follow the same way to transfer parameters. If there is any new parameters needed in `config`, users should also add the parameter and set its value in `<workspace-path>/configs/ruletest_config.yaml`.
+Note: all configuration value are feed into the operators by the param `config`, which gets data from `<workspace-path>/configs/ruletest_config.yaml`. Users should follow the same notation of configs to transfer parameters. If there is any new parameters needed in `config`, users should also add the parameter and set its value in `<workspace-path>/configs/ruletest_config.yaml`.
 
 ### Step 2: Create a Package for the Customized Operator
 
@@ -359,7 +373,7 @@ nn-Meter requires users to gather all code of operator in a package with a fixed
 └── operator_script.py
 ```
 
-The interface of customized operator function are stored in `./customized_operator/operator_script.py`. In this demo, the content of `operator_script.py` includes:
+The interface of customized operator class are stored in `./customized_operator/operator_script.py`. In this demo, the content of `operator_script.py` includes:
 
 ``` python
 from nn_meter.builder.nn_generator.tf_networks import BaseOperator
@@ -378,9 +392,9 @@ Create a yaml file with following keys as meta file:
 
 - `builtin_name`: builtin name used in nn-Meter configuration file to call the customized operator, such as `"op1"`. Note that there should not have any "\_" in the `buildinName`, as any "\_" will be regarded as the connection of different operators in test cases generation.
 
-- `package_location`: the absolute path of the package.
+- `package_location`: the absolute path of the package folder.
 
-- `class_module`: the module of the operator function, in this example is `operator_script`, representing `operator_script.py`. Actually, the registering operator is a function instead of a class. However, nn-Meter uses `class_module` here to synchronize with other registered modules.
+- `class_module`: the module of the operator class, in this example is `operator_script`, representing `operator_script.py`.
 
 - `class_name`: the operator class name, in this example is `Op1`.
 
@@ -395,7 +409,7 @@ class_name: Op1
 
 ### Step 4: Register Customized Operator into nn-Meter
 
-Run the following command to register customized backend into nn-Meter:
+Run the following command to register customized operator into nn-Meter:
 
 ``` bash
 nn-meter register --operator path/to/meta/file
@@ -445,9 +459,9 @@ After registration, users could apply the customized operator to generate test c
 ...
 BASIC_TESTCASES:
   - op1_relu
-OTHER_TESTCASES:
 LAYERS_1D:
   - fc
+  - op1
 ```
 
 Note: if the input to customized operator should be 1 dimension tensor, users need add the builtin name `LAYERS_1D`.
@@ -467,7 +481,8 @@ After unregister the operator, "op1" will be removed from the backend list.
 
 ## Build Other Test Case
 
-Customized other test case are more complicated. Here we describe the implementation of `TestCasesGenerator` first. We define the base of all test case generator in `nn_meter.builder.backend_meta.fusion_rule_tester.generate_testcase.TestCasesGenerator`. There are following methods in this base class:
+### Step 1: Prepare the Customized Test Case Class
+Customized other test case are more complicated. Here we describe the implementation of `BaseTestCase` first. We define the base of all test case generator in `nn_meter.builder.backend_meta.fusion_rule_tester.BaseTestCase`. There are following methods in this base class:
 
 - `generate_testcase`: Generate all test models for this test case. At the **most time you won't** need to modify this.
 
@@ -492,12 +507,22 @@ Customized other test case are more complicated. Here we describe the implementa
 
     **For all the time you will** need to implement `_model_block`.
 
-- `_register`: Only rules subclassing `TestCasesGenerator` will be registered into `testcases_list`. And only these test cases will be generated and profiled. You can access that all test cases by `nn_meter.builder.backend_meta.fusion_rule_tester.generate_testcases.testcases_list`.
+Besides, there are also several class attributes:
+
+- `name`: the name of the fusion rule
+
+- `cases`: The potential splitting possibility of `_model_block`.
+
+- `deps`: The truth of this rule will depend on truth of other rules.
+
+- `_model_block`: The structure of the tested block.
 
 Here is an example for customized test case:
 
 ```python
-class MyTestCase(TestCasesGenerator):
+from nn_meter.builder.backend_meta.fusion_rule_tester import BaseTestCase
+
+class MyTestCase(BaseTestCase):
     name = 'MyTestCase'
     cases = {
         'case1': ['dwconv_add', 'dwconv', 'dwconv', 'add', 'relu'],
@@ -505,7 +530,7 @@ class MyTestCase(TestCasesGenerator):
     }
     true_case = 'case1'
     deps = {
-        'Multiple_Outbounds': True,
+        'MON': True,
         'dwconv_relu': True,
     }
 
@@ -541,15 +566,78 @@ class MyTestCase(TestCasesGenerator):
         return keras.models.Model([input_1, input_2], x), [self.input_shape, self.input_shape]
 ```
 
-- `name`: the name of the rule
+### Step 2: Create a Package for the Customized Test Case
 
-- `cases`: The potential splitting possibility of `_model_block`.
+nn-Meter requires users to gather all code of test case in a package with a fixed location. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
 
-- `deps`: The truth of this rule will depend on truth of other rules.
+``` text
+./customized_testcase/
+├── __init__.py
+└── testcase_script.py
+```
 
-- `_model_block`: The structure of the tested block.
+The interface of customized test case class are stored in `./customized_testcase/testcase_script.py`.
 
-TODO: registration: test cases
+### Step 3: Prepare Meta File
+
+Create a yaml file with following keys as meta file:
+
+- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized test case, such as `"MyTC"`.
+
+- `package_location`: the absolute path of the package folder.
+
+- `class_module`: the module of the test case class, in this example is `testcase_script`, representing `testcase_script.py`.
+
+- `class_name`: the test case class name, in this example is `MyTestCase`.
+
+Following is an example of the yaml file:
+
+```yaml
+builtin_name: MyTC
+package_location: /home/USERNAME/working/customized_testcase
+class_module: testcase_script
+class_name: MyTC
+```
+
+### Step 4: Register Customized Test Case into nn-Meter
+
+Run the following command to register customized test case into nn-Meter:
+
+``` bash
+nn-meter register --testcase path/to/meta/file
+```
+If the registration success, nn-Meter will show:
+``` text
+(nn-Meter) Successfully register testcase: MyTC
+```
+
+When registering, nn-Meter will test whether the module can be imported first. If the registration success is not successful, please check the package according to the error information.
+
+Note: the package of customized operator must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
+
+### Use the Customized Operator in Experiment
+
+After registration, users could apply the customized operator to generate test case:
+
+``` yaml
+# .yaml file in `<workspace-path>/configs/ruletest_config.yaml`
+...
+OTHER_TESTCASES:
+  - MyTC
+```
+
+Note: if the truth of this fusion rule depends on truth of other rules, the test of precondition must be done first. That is, the fusion rule in attribute `deps` must be tested before or with the customized test case.
+
+### Manage the Registered Operator
+
+Users could unregister the test case by calling its name in command:
+
+``` bash
+nn-meter unregister --testcase MyTC
+```
+``` text
+(nn-Meter) Successfully unregister MyTC.
+```
 
 ## Use Customized Rules when Splitting
 

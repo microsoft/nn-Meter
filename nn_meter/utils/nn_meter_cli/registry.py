@@ -28,7 +28,7 @@ def register_module(module_type, meta_file):
     builtin_name = meta_data.pop("builtin_name")
     import_module(meta_data)
 
-    # TODO: check necessary feature
+    # TODO: check necessary feature and run test script
     # for backend, check if there exits the default config file:
     if module_type == "backends":
         if not os.path.isfile(meta_data["defaultConfigFile"]):

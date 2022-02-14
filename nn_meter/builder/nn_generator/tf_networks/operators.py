@@ -91,8 +91,10 @@ class GlobalAvgpool(BaseOperator):
         return [self.input_shape[2]]
 
 
-class Maxpool(BaseOperator):
+class MaxPool(BaseOperator):
     def get_model(self):
+        if "POOL_STRIDES" not in self.config:
+            self.config["POOL_STRIDES"] = self.config["STRIDES"]
         return keras.layers.MaxPool2D(
             pool_size=self.config["KERNEL_SIZE"],
             strides=self.config["POOL_STRIDES"],
@@ -100,13 +102,17 @@ class Maxpool(BaseOperator):
             )
 
     def get_output_shape(self):
+        if "POOL_STRIDES" not in self.config:
+            self.config["POOL_STRIDES"] = self.config["STRIDES"]
         output_h = (self.input_shape[0] - 1) // self.config["POOL_STRIDES"] + 1
         output_w = (self.input_shape[1] - 1) // self.config["POOL_STRIDES"] + 1
         return [output_h, output_w, self.input_shape[2]]
 
 
-class Avgpool(BaseOperator):
+class AvgPool(BaseOperator):
     def get_model(self):
+        if "POOL_STRIDES" not in self.config:
+            self.config["POOL_STRIDES"] = self.config["STRIDES"]
         return keras.layers.AveragePooling2D(
             pool_size=self.config["KERNEL_SIZE"],
             strides=self.config["POOL_STRIDES"],
@@ -114,11 +120,14 @@ class Avgpool(BaseOperator):
             )
 
     def get_output_shape(self):
+        if "POOL_STRIDES" not in self.config:
+            self.config["POOL_STRIDES"] = self.config["STRIDES"]
         output_h = (self.input_shape[0] - 1) // self.config["POOL_STRIDES"] + 1
         output_w = (self.input_shape[1] - 1) // self.config["POOL_STRIDES"] + 1
         return [output_h, output_w, self.input_shape[2]]
 
 #------------------------ other modules ------------------------#
+
 class SE(BaseOperator):
     def get_model(self):
         class SE(keras.layers.Layer):
@@ -189,6 +198,7 @@ class Hswish(BaseOperator):
         return func
 
 #---------------------- basic operation ----------------------#
+
 class Reshape(BaseOperator):
     def get_model(self):
         if len(self.input_shape) == 3:

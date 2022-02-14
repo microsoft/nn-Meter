@@ -11,7 +11,7 @@ config =  builder_config.get_module('ruletest')
 testcases_list = {}
 
 
-class TestCasesGenerator:
+class BaseTestCase:
     name = ''
     cases = None
     true_case = ''
@@ -94,7 +94,7 @@ class TestCasesGenerator:
         pass
 
 
-class BasicFusionImpl(TestCasesGenerator):
+class BasicFusionImpl(BaseTestCase):
     name = ''
     cases = {
         'ops': ['', ''],
@@ -151,7 +151,7 @@ class BasicFusionImpl(TestCasesGenerator):
         return testcase
 
 
-class BasicFusion(TestCasesGenerator):
+class BasicFusion(BaseTestCase):
     name = ''
     d1_required_layers = []
 
@@ -178,7 +178,7 @@ class BasicFusion(TestCasesGenerator):
             testcases_list[bf_cls.name] = bf_cls
 
 
-class MultipleOutNodes(TestCasesGenerator):
+class MultipleOutNodes(BaseTestCase):
     name = 'MON'
     cases = {
         'case1': ['relu_relu', 'relu_dwconv', 'dwconv'],
