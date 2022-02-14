@@ -102,7 +102,7 @@ def get_sampler_for_kernel(kernel_type, sample_num, sampling_mode, configs = Non
 
     # initialize sampling, based on prior distribution
     if sampling_mode == 'prior':
-        sampled_cfgs = sampler_class.prior_kernel_sampling(sample_num)
+        sampled_cfgs = sampler_class.prior_config_sampling(sample_num)
     # fine-grained sampling for data with large error points
     elif sampling_mode == 'finegrained':
         sampled_cfgs = sampler_class.finegrained_config_sampling(configs, sample_num)
@@ -110,7 +110,7 @@ def get_sampler_for_kernel(kernel_type, sample_num, sampling_mode, configs = Non
 
 
 def list_kernels():
-    return __BUILTIN_KERNELS__.keys() + ["* " + item for item in list(__REG_KERNELS__.keys())]
+    return list(__BUILTIN_KERNELS__.keys()) + ["* " + item for item in list(__REG_KERNELS__.keys())]
 
 
 def inverse_transform_sampling(data, n_bins = 40, n_samples = 1000):

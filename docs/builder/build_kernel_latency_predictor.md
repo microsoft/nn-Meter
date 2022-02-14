@@ -13,65 +13,38 @@ The second step is generating and profiling kernel model by configurations. Curr
 (conv related kernels)
 
 - `"conv_bn_relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-
 - `"conv_bn_relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-
 - `"conv_bn"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-
 - `"conv_relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-
 - `"conv_relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-
 - `"conv_hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-
 - `"conv_block"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-
 - `"conv_bn_hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 
 (dwconv related kernels)
-
 - `"dwconv_bn"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-
 - `"dwconv_relu"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-
 - `"dwconv_relu6"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-
 - `"dwconv_bn_relu"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-
 - `"dwconv_bn_relu6"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-
 - `"dwconv_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-
 - `"dwconv_bn_hswish"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
 
 (other kernels)
 
 - `"maxpool_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `POOL_STRIDES`
-
 - `"avgpool_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `POOL_STRIDES`
-
 - `"fc_block"`: `CIN`, `COUT`
-
 - `"concat_block"`: `HW`, `CIN1`, `CIN2`, `CIN3`, `CIN4`
-
 - `"split_block"`: `HW`, `CIN`
-
 - `"channel_shuffle"`: `HW`, `CIN`
-
 - `"se_block"`: `HW`, `CIN`
-
 - `"globalavgpool_block"`: `HW`, `CIN`
-
 - `"bn_relu"`: `HW`, `CIN`
-
 - `"bn_block"`: `HW`, `CIN`
-
 - `"hswish_block"`: `HW`, `CIN`
-
 - `"relu_block"`: `HW`, `CIN`
-
 - `"add_relu"`: `HW`, `CIN`
-
 - `"add_block"`: `HW`, `CIN`
 
 
@@ -102,8 +75,8 @@ backend = "tflite_cpu"
 error_threshold = 0.1
 
 # extract training feature and target from profiled results
-cfgs_path = os.join("<workspace-path>", "predictor_build", "results", "conv_bn_relu.json")
-lats_path = os.join("<workspace-path>", "predictor_build", "results", "profiled_conv_bn_relu.json")
+cfgs_path = os.path.join("<workspace-path>", "predictor_build", "results", "conv_bn_relu.json")
+lats_path = os.path.join("<workspace-path>", "predictor_build", "results", "profiled_conv_bn_relu.json")
 kernel_data = (cfgs_path, lats_path)
 
 # build latency predictor
@@ -156,7 +129,7 @@ nn-Meter have wrapped the four main steps into one method named `nn_meter.builde
 
 ```python
 # initialize builder config with workspace
-from nn_meter.builder.utils import builder_config
+from nn_meter.builder import builder_config
 builder_config.init("path/to/workspace/folder") 
 
 # build latency predictor for kernel
@@ -194,7 +167,9 @@ Users could refer to the following example to learn how to write a kernel class.
 import tensorflow.keras as keras
 from nn_meter.builder.nn_generator.tf_networks import BaseBlock
 
-class ConvBnRelu(BaseBlock):
+class MyKernel(BaseBlock):
+    ''' This kernel is built by Conv, BN, and Relu layer, which is the same as the builtin `conv_bn_relu` block.
+    '''
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -202,7 +177,7 @@ class ConvBnRelu(BaseBlock):
 
     def get_model(self):
         class Model(keras.Model):
-            def __init__(self, kernel_size, strides):
+            def __init__(self, cout, kernel_size, strides):
                 super().__init__()
                 self.conv = keras.layers.Conv2D(
                     cout,
@@ -219,7 +194,7 @@ class ConvBnRelu(BaseBlock):
                 x = self.relu(x)
                 return x
 
-        return Model(self.conv_op, self.bn_op, self.relu_op)
+        return Model(self.config["COUT"], self.config["KERNEL_SIZE"], self.config["STRIDES"])
 ```
 
 ### Step 2: Collect the Prior Data and Implement Sampling Code
@@ -237,16 +212,21 @@ import random
 from nn_meter.builder.kernel_predictor_builder import BaseConfigSampler
 from nn_meter.builder.kernel_predictor_builder.data_sampler.utils import sample_based_on_distribution, data_validation
 from nn_meter.builder.kernel_predictor_builder.data_sampler.prior_config_lib.utils import read_conv_zoo
+from nn_meter.builder.kernel_predictor_builder.data_sampler.finegrained_sampler import sample_cin_cout
 
-class ConvSampler(BaseConfigSampler):
+
+class MySampler(BaseConfigSampler):
+    ''' This sampler is for Conv related sampler. In `prior_config_sampling` method, all configs are sampled based on existing conv model. In
+    `finegrained_config_sampling` method, only cin and cout are sampled around the configs in parameter `configs`.
+    '''
 
     def prior_config_sampling(self, sample_num):
         hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
-        new_cins = sample_based_on_distribution(cins, count)     
-        new_couts = sample_based_on_distribution(couts, count)
+        new_cins = sample_based_on_distribution(cins, sample_num)     
+        new_couts = sample_based_on_distribution(couts, sample_num)
 
         # 70% of sampled data are from prior distribution
-        count1 = int(count * 0.7)
+        count1 = int(sample_num * 0.7)
         new_hws = sample_based_on_distribution(hws, count1)
         new_kernel_sizes = sample_based_on_distribution(kernel_sizes, count1)
         new_strides = sample_based_on_distribution(strides, count1)
@@ -256,9 +236,9 @@ class ConvSampler(BaseConfigSampler):
         new_hws = data_validation(new_hws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
         
         # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
-        new_hws.extend([112] * int((count - count1) * 0.2) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.4)) # frequent settings
-        new_kernel_sizes.extend([5] * int((count - count1) * 0.4) + [7] * int((count - count1) * 0.6)) # frequent settings
-        new_strides.extend([2] * int((count - count1) * 0.4) + [1] * int((count - count1) * 0.6)) # frequent settings
+        new_hws.extend([112] * int((sample_num - count1) * 0.2) + [56] * int((sample_num - count1) * 0.4) + [28] * int((sample_num - count1) * 0.4)) # frequent settings
+        new_kernel_sizes.extend([5] * int((sample_num - count1) * 0.4) + [7] * int((sample_num - count1) * 0.6)) # frequent settings
+        new_strides.extend([2] * int((sample_num - count1) * 0.4) + [1] * int((sample_num - count1) * 0.6)) # frequent settings
         random.shuffle(new_hws)
         random.shuffle(new_strides)
         random.shuffle(new_kernel_sizes)
@@ -278,7 +258,7 @@ class ConvSampler(BaseConfigSampler):
     def finegrained_config_sampling(self, sample_num, configs):
         ncfgs = []
         for cfg in configs:
-            cins, couts = sample_cin_cout(cfg['CIN'], cfg['COUT'], count)
+            cins, couts = sample_cin_cout(cfg['CIN'], cfg['COUT'], sample_num)
             for cin, cout in zip(cins, couts):
                 c = {
                     'HW': cfg['HW'],
@@ -308,10 +288,13 @@ Finally, users should specify the feature of kernel for training the kernel late
 Here is an example:
 
 ``` python
-from nn_meter.builder.kernel_predictor_builder.BaseFeatureParser
-from nn_meter.builder.kernel_predictor_builder.utils import get_flops_params
+from nn_meter.builder.kernel_predictor_builder import BaseFeatureParser
+from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
-class FlopsParamParser(BaseFeatureParser):
+class MyParser(BaseFeatureParser):
+    ''' This parser utilized config "HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES", as well as the flops and parameter number as feature, 
+    which is the same parser for Conv, Dwconv and FC related kernel.
+    '''
     def __init__(self, kernel_type):
         self.kernel_type = kernel_type
         self.needed_config = ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"]
@@ -373,7 +356,7 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: mykernel
-package_location: /data/USERNAME/working/tftest/kernel_package
+package_location: /home/USERNAME/working/tftest/kernel_package
 class_module: kernel_script
 class_name: MyKernel
 sampler_module: config_sampler
@@ -442,7 +425,7 @@ After registration, users could build latency predictor for the customized kerne
 
 ```python
 # initialize builder config with workspace
-from nn_meter.builder.utils import builder_config
+from nn_meter.builder import builder_config
 builder_config.init("path/to/workspace/folder") 
 
 # build latency predictor for customized kernel

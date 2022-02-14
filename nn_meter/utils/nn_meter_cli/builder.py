@@ -24,7 +24,11 @@ def list_operators_cli():
 
 
 def list_kernels_cli():
-    pass
+    from nn_meter.builder.kernel_predictor_builder.data_sampler.utils import list_kernels
+    kernels = list_kernels()
+    logging.keyinfo("Supported kernels: ('*' indicates customized kernels)")
+    for name in kernels:
+        logging.result(f"[Kernel] {name}")
 
 
 def list_special_testcases_cli():

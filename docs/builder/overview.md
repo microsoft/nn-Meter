@@ -28,7 +28,7 @@ After running the command, a workspace folder will be created, and a series of c
 After completing configuration, users could initialize workspace in `builder_config` module in python binding:
 
 ```python
-from nn_meter.builder.utils import builder_config
+from nn_meter.builder import builder_config
 
 # initialize builder config with workspace
 builder_config.init(

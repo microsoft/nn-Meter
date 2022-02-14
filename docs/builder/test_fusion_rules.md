@@ -27,7 +27,7 @@ Note: nn-Meter doesn't support different `"COUT"` parameters for conv layer. If 
 Users could open `<workspace-path>/configs/ruletest_config.yaml` and edit the content. After completing configuration, users could initialize workspace in `builder_config` module before building the fusion rule tester:
 
 ```python
-from nn_meter.builder.utils import builder_config
+from nn_meter.builder import builder_config
 
 # initialize builder config with workspace
 builder_config.init(
@@ -106,8 +106,7 @@ Note: the latency value will be recorded only when `'DETAIL'` set as `True` in `
 Here is an end-to-end demo for the progress for the fusion rule testing:
 
 ```python
-from nn_meter.builder import profile_models
-from nn_meter.builder.utils import builder_config
+from nn_meter.builder import profile_models, builder_config
 builder_config.init("path/to/workspace/folder") # initialize builder config with workspace
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder.backend_meta.fusion_rule_tester import generate_testcases, detect_fusion_rule

@@ -73,7 +73,7 @@ For VPU backends with OpenVINO, the required parameters include:
 Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content. After completing configuration, users could initialize workspace in `builder_config` module before connecting backend:
 
 ```python
-from nn_meter.builder.utils import builder_config
+from nn_meter.builder import builder_config
 
 # initialize builder config with workspace
 builder_config.init(
@@ -102,7 +102,7 @@ To apply the backend for model running, nn-Meter provides an interface `connect_
 ```python
 # initialize workspace in code
 workspace_path = "/path/to/workspace/" 
-from nn_meter.builder.utils import builder_config
+from nn_meter.builder import builder_config
 builder_config.init(workspace_path)
 
 # connect to backend

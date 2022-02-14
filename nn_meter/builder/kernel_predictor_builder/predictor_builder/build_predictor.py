@@ -45,7 +45,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
         y1, y2 = testy[i], predicts[i]
         error = abs(y1 - y2) / y1
         if error > error_threshold:
-            error_config = feature_parser.get_config_by_feature(kernel_type, testx[i])
+            error_config = feature_parser.get_config_by_feature(testx[i])
             error_configs.append(error_config)
     
     return predictor, acc10, error_configs
