@@ -289,7 +289,6 @@ Here is an example:
 
 ``` python
 from nn_meter.builder.kernel_predictor_builder import BaseFeatureParser
-from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
 class MyParser(BaseFeatureParser):
     ''' This parser utilized config "HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES", as well as the flops and parameter number as feature, 
@@ -301,8 +300,11 @@ class MyParser(BaseFeatureParser):
 
     def get_feature_by_config(self, config_dict):
         feature = [config_dict[data] for data in self.needed_config]
-        
-        flop, param = get_flops_params(self.kernel_type, config_dict)
+        hw, cin, cout, kernel_size, stride = config_dict["HW"], config_dict["CIN"], config_dict["COUT"], \
+            config_dict["KERNEL_SIZE"], config_dict["STRIDES"]
+        param = cout * (kernel_size * kernel_size + 1)
+        flop = 2 * hw / stride * hw / stride * param
+
         flop /= 2e6
         param /= 1e6
         feature.extend([flop, param])
