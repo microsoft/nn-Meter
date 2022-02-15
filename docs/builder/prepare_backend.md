@@ -14,7 +14,7 @@ Next, we will introduce how to setup the device and get connection to the backen
 
 ### TFLite Android Guide
 
-TODO: Introduction of Android Device and TFLite platform
+TFLite is a widely-used and efficient inference framework for Android device. To setup Android device and TFLite framework, here are several steps. 
 
 #### 1. Install ADB and Android SDK
 Follow [Android Guide](https://developer.android.com/studio) to install adb on your host device.
