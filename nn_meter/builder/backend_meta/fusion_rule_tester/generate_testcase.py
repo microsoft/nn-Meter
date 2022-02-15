@@ -11,6 +11,8 @@ from .build_models import SingleOpModel
 from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.backend_meta.utils import Latency
 
+__BUILTIN_TESTCASES__ = {'MON'}
+
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 __registry_cfg_filename__ = 'registry.yaml'
 __REG_TESTCASES__ = {}
@@ -252,7 +254,7 @@ def generate_testcases():
             
     if config['OTHER_TESTCASES'] != None:
         for testcase in config['OTHER_TESTCASES']:
-            if testcase == 'MON':
+            if testcase in __BUILTIN_TESTCASES__:
                 testcases_list[testcase] = MultipleOutNodes
             else:
                 try:
@@ -266,3 +268,6 @@ def generate_testcases():
                     raise KeyError(f'Unsupported test case: {testcase}.')
 
     return testcases_list
+
+def list_testcases():
+    return __BUILTIN_TESTCASES__ + ["* " + item for item in list(__REG_TESTCASES__.keys())]

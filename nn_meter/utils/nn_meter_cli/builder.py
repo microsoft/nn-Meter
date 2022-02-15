@@ -32,7 +32,11 @@ def list_kernels_cli():
 
 
 def list_special_testcases_cli():
-    pass
+    from nn_meter.builder.backend_meta.fusion_rule_tester.generate_testcase import list_testcases
+    testcases = list_testcases()
+    logging.keyinfo("Supported testcases: ('*' indicates customized test cases)")
+    for name in testcases:
+        logging.result(f"[TestCase] {name}")
 
 
 def create_workspace_cli(args):
