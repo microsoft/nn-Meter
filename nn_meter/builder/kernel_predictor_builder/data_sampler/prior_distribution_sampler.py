@@ -1,8 +1,46 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import random
-from .utils import *
+import numpy as np
 from .prior_config_lib.utils import *
+
+
+def inverse_transform_sampling(data, n_bins = 40, n_samples = 1000):
+    ''' calculate inversed cdf, for sampling by possibility
+    '''
+    import scipy.interpolate as interpolate
+    hist, bin_edges = np.histogram(data, bins=n_bins, density=True)
+    cum_values = np.zeros(bin_edges.shape)
+    cum_values[1:] = np.cumsum(hist*np.diff(bin_edges))
+    inv_cdf = interpolate.interp1d(cum_values, bin_edges)
+    r = np.random.rand(n_samples)
+    data = inv_cdf(r)
+    ndata = [int(x) for x in data]
+    return ndata
+
+
+def sample_based_on_distribution(data, count):
+    ''' use data to calculate a inversed cdf, and sample `count` data from such distribution
+    '''
+    return inverse_transform_sampling(data, n_samples=count)
+
+
+def data_validation(data, cdata):
+    ''' convert sampled data to valid configuration, e.g.,: kernel size = 1, 3, 5, 7
+
+    @params:
+    data: the origin data value.
+    cdata: valid configuration value.
+    '''
+    newlist = []
+    for da in cdata:
+        value = [abs(da - x) for x in data]
+        newlist.append(value)
+
+    newlist = list(np.asarray(newlist).T)    
+    cda = [list(d).index(min(d)) for d in newlist]
+    redata = [cdata[x] for x in cda]
+    return redata
 
 
 def sampling_conv(count):
@@ -12,7 +50,7 @@ def sampling_conv(count):
     Returned params include: (hw, cin, cout, kernel_size, strides)
     '''
     hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
-    new_cins = sample_based_on_distribution(cins, count)     
+    new_cins = sample_based_on_distribution(cins, count)
     new_couts = sample_based_on_distribution(couts, count)
 
     # 70% of sampled data are from prior distribution
@@ -20,7 +58,7 @@ def sampling_conv(count):
     new_hws = sample_based_on_distribution(hws, count1)
     new_kernel_sizes = sample_based_on_distribution(kernel_sizes, count1)
     new_strides = sample_based_on_distribution(strides, count1)
-    
+
     new_kernel_sizes = data_validation(new_kernel_sizes, [1, 3, 5, 7])
     new_strides = data_validation(new_strides, [1, 2, 4])
     new_hws = data_validation(new_hws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
