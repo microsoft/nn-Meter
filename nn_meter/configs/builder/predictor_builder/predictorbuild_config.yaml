@@ -1,19 +1,83 @@
 KERNEL: None
 DETAIL: FALSE
 KERNELS:
-  - conv_bn_relu
-  - dwconv_bn_relu
-  - maxpool_block
-  - avgpool_block
-  - fc_block
-  - concat_block
-  - split_block
-  - channel_shuffle
-  - se_block
-  - globalavgpool_block
-  - bn_relu
-  - bn_block
-  - hswish_block
-  - relu_block
-  - add_relu
-  - add_block
+  conv_bn_relu:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  dwconv_bn_relu:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  maxpool_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  avgpool_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  fc_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  concat_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  split_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  channel_shuffle:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  se_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  globalavgpool_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  bn_relu:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  bn_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  hswish_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  relu_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  add_relu:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1
+  add_block:
+    INIT_SAMPLE_NUM: 1000
+    FINEGRAINED_SAMPLE_NUM: 50
+    ITERATION: 5
+    ERROR_THRESHOLD: 0.1

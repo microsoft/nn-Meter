@@ -9,6 +9,7 @@ import numpy as np
 from . import config_sampler
 from nn_meter.builder.utils import get_inputs_by_shapes
 from nn_meter.builder.nn_generator.tf_networks import blocks
+logging = logging.getLogger("nn-Meter")
 
 
 __BUILTIN_KERNELS__ = {
