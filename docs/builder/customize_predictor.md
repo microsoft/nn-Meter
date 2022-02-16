@@ -1,4 +1,4 @@
-# Customize Latency Predictor for Users' Device
+# Use Customized Predictor for Latency Prediction
 
 nn-Meter support customized predictor for latency prediction. To utilize customized predictor, users should provide several kernel latency predictors and a fusion rule json file. Users could use [nn-Meter builder](../builder/overview.md) to build their own latency predictors.
 

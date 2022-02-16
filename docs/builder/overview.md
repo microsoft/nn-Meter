@@ -49,3 +49,6 @@ Please refer to [test_fusion_rules.md](test_fusion_rules.md) to detect fusion ru
 ## Build Kernel Latency Predictor
 
 Please refer to [build_kernel_latency_predictor.md](build_kernel_latency_predictor.md) to build kernel latency predictor.
+
+## Use Customized Predictor for Latency Prediction
+Please refer to [customize_predictor.md](customize_predictor.md) to utilize customized kernel latency predictors for model latency prediction.
