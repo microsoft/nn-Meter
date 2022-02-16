@@ -8,6 +8,7 @@ import logging
 from nn_meter.builder import builder_config
 from nn_meter.builder.utils import merge_prev_info
 from .utils import get_sampler_for_kernel, generate_model_for_kernel
+logging = logging.getLogger("nn-Meter")
 
 
 class KernelGenerator:

@@ -7,7 +7,6 @@ try:
 except ModuleNotFoundError:
     __version__ = 'UNKNOWN'
 
-import logging
 from functools import partial, partialmethod
 
 from .predictor import (
@@ -27,7 +26,9 @@ from .utils import (
 )
 from .dataset import bench_dataset
 
-
+# setup logging
+import sys
+import logging
 logging.KEYINFO = 22
 logging.addLevelName(logging.KEYINFO, 'KEYINFO')
 logging.Logger.keyinfo = partialmethod(logging.Logger.log, logging.KEYINFO)
@@ -37,3 +38,11 @@ logging.RESULT = 25
 logging.addLevelName(logging.RESULT, 'RESULT')
 logging.Logger.result = partialmethod(logging.Logger.log, logging.RESULT)
 logging.result = partial(logging.log, logging.RESULT)
+
+from logging import Formatter, StreamHandler
+handler = StreamHandler(sys.stdout)
+handler.setFormatter(Formatter("(nn-Meter) %(message)s"))
+logger = logging.getLogger("nn-Meter")
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False

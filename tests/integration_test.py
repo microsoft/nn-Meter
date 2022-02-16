@@ -3,9 +3,9 @@
 import re
 import os
 import time
-from glob import glob
 import logging
 import subprocess
+from glob import glob
 from nn_meter import download_from_url
 
 

@@ -1,4 +1,5 @@
-import re
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import os
 import time
 import logging

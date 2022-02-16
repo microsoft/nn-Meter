@@ -1,8 +1,11 @@
-import yaml
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import os
+import yaml
 import logging
 import pkg_resources
 from shutil import copyfile
+logging = logging.getLogger("nn-Meter")
 
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')

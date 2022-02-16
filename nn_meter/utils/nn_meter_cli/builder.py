@@ -3,6 +3,8 @@
 import os
 import yaml
 import logging
+logging = logging.getLogger("nn-Meter")
+
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 __registry_cfg_filename__ = 'registry.yaml'

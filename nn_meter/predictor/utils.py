@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import pickle
 import os
-from glob import glob
-import logging
 import yaml
+import pickle
+import logging
+from glob import glob
 from nn_meter.utils import download_from_url, create_user_configs
+logging = logging.getLogger("nn-Meter")
+
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
 

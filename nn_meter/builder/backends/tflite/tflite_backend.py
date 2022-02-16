@@ -4,6 +4,7 @@ import os
 import logging
 from ..interface import BaseBackend
 from nn_meter.builder.utils import get_tensor_by_shapes
+logging = logging.getLogger("nn-Meter")
 
 
 class TFLiteBackend(BaseBackend):

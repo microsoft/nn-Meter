@@ -4,6 +4,8 @@ import copy
 import json
 import logging
 from .utils import NumpyEncoder
+logging = logging.getLogger("nn-Meter")
+
 
 class ModelGraph:
     def __init__(self, filename=None, graph=None):

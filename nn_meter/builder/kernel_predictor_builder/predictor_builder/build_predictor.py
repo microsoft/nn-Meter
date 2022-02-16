@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from .utils import latency_metrics
 from .predictor_lib import init_predictor
 from .extract_features import get_feature_parser, get_data_by_profiled_results
+logging = logging.getLogger("nn-Meter")
 
 
 def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_threshold = 0.1):
