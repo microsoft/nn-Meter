@@ -7,7 +7,6 @@ from .registry import register_module_cli, unregister_module_cli
 from .predictor import list_latency_predictors_cli, apply_latency_predictor_cli, get_nnmeter_ir_cli
 from .builder import list_backends_cli, list_kernels_cli, list_operators_cli, list_special_testcases_cli, \
     test_backend_connection_cli, create_workspace_cli
-logging = logging.getLogger("nn-Meter")
 
 
 def nn_meter_info(args):

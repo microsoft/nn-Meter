@@ -4,7 +4,7 @@ import os
 import logging
 from glob import glob
 from nn_meter import list_latency_predictors, load_latency_predictor, model_file_to_graph
-logging = logging.getLogger("nn-Meter")
+
 
 def list_latency_predictors_cli():
     preds = list_latency_predictors()

@@ -5,7 +5,6 @@ import sys
 import yaml
 import logging
 import importlib
-logging = logging.getLogger("nn-Meter")
 
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
