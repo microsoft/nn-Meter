@@ -148,11 +148,12 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_pa
         lats_dict = lats_path[kernel_type] if kernel_type in lats_path else lats_path
 
     features, lats = [], []
-    for id in cfgs_dict.keys():
+    for id in lats_dict.keys():
         configs = cfgs_dict[id]["config"]
         feature = feature_parser.get_feature_by_config(configs)
-        features.append(feature)
-
         latency = lats_dict[id]["latency"].avg
-        lats.append(latency)
+        
+        if lats != 0:
+            features.append(feature)
+            lats.append(latency)
     return (features, lats)

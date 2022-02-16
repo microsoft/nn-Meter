@@ -6,7 +6,7 @@ import logging
 from . import builder_config
 from nn_meter.builder.utils import merge_prev_info
 from nn_meter.builder.backends import connect_backend
-
+logging = logging.getLogger("nn-Meter")
 
 def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None):
     """ run models with given backend and return latency of testcase models
@@ -32,9 +32,12 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
     for _, modules in models.items():
         for _, model in modules.items():
             model_path = model['model']
-            profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'])
-            for metric in metrics:
-                model[metric] = profiled_res[metric]
+            try:
+                profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'])
+                for metric in metrics:
+                    model[metric] = profiled_res[metric]
+            except:
+                pass
 
     # save information to json file
     detail = builder_config.get('DETAIL', mode)
@@ -93,7 +96,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
     # use current sampled data to build regression model, and locate data with large errors in testset
     predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
-    logging.info(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')    
+    logging.keyinfo(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     for i in range(1, iteration):
         # finegrained sampling and profiling for large error data
@@ -106,3 +109,36 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
         logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     return predictor, kernel_data
+
+
+def build_latency_predictor(backend):
+    """ 
+    Build latency predictor for all kernel in `<workspace-path>/configs/predictorbuild_config.yaml`
+
+    @params
+
+    backend (str): the name of backend instance to profile models
+
+    """
+    kernels = builder_config.get("KERNELS", 'predbuild')
+    ws_path = builder_config.get('MODEL_DIR', 'predbuild')
+
+    for kernel_type in kernels:
+        init_sample_num = kernels[kernel_type]["INIT_SAMPLE_NUM"]
+        finegrained_sample_num = kernels[kernel_type]["FINEGRAINED_SAMPLE_NUM"]
+        iteration = kernels[kernel_type]["ITERATION"]
+        error_threshold = kernels[kernel_type]["ERROR_THRESHOLD"]
+        predictor, _ = build_predictor_for_kernel(
+            kernel_type, backend, 
+            init_sample_num = init_sample_num,
+            finegrained_sample_num = finegrained_sample_num,
+            iteration = iteration,
+            error_threshold = error_threshold
+            )
+
+        # save predictor
+        import pickle
+        save_path = os.path.join(ws_path, "results", f"{kernel_type}.pkl")
+        with open(save_path, 'wb') as fp:
+            pickle.dump(predictor, fp)
+        logging.keyinfo(f"Saved the predictor for {kernel_type} in path {save_path}.")
