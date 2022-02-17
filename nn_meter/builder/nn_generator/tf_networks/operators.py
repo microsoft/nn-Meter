@@ -131,16 +131,17 @@ class AvgPool(BaseOperator):
 class SE(BaseOperator):
     def get_model(self):
         class SE(keras.layers.Layer):
-            def __init__(self):
+            def __init__(self, input_shape):
                 super().__init__()
+                self.in_shape = input_shape
                 self.conv1 = keras.layers.Conv2D(
-                    filters=self.input_shape[-1] // 4,
+                    filters=self.in_shape[-1] // 4,
                     kernel_size=[1, 1],
                     strides=[1, 1],
                     padding="same",
                 )
                 self.conv2 = keras.layers.Conv2D(
-                    filters=self.input_shape[-1],
+                    filters=self.in_shape[-1],
                     kernel_size=[1, 1],
                     strides=[1, 1],
                     padding="same",
@@ -149,7 +150,7 @@ class SE(BaseOperator):
             def call(self, inputs):
                 x = tf.nn.avg_pool(
                     inputs,
-                    ksize=[1] + self.input_shape[0:2] + [1],
+                    ksize=[1] + self.in_shape[0:2] + [1],
                     strides=[1, 1, 1, 1],
                     padding="VALID",
                 )
@@ -158,7 +159,7 @@ class SE(BaseOperator):
                 x = self.conv2(x)
                 x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
                 return x * inputs
-        return SE()
+        return SE(self.input_shape)
 
 
 class FC(BaseOperator):

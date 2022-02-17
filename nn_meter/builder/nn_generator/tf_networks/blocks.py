@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import logging
 import tensorflow as tf
 import tensorflow.keras as keras
 from .operators import *
-from nn_meter.builder.utils import get_tensor_by_shapes 
-
+from nn_meter.builder.utils import get_inputs_by_shapes 
+logging = logging.getLogger("nn-Meter")
 
 class BaseBlock:
     def __init__(self, config):
@@ -28,7 +29,30 @@ class BaseBlock:
         pass
     
     def test_block(self):
-        pass
+        import os, shutil
+        from typing import List
+        model_path = "./temp_model"
+        model = self.get_model()
+        model_output = model(get_inputs_by_shapes(self.input_tensor_shape))
+        
+        # check model save and reload
+        keras.models.save_model(model, model_path)
+        restore_model = keras.models.load_model(model_path)
+        if isinstance(model_output, List):
+            output_shape = [mod.shape for mod in model_output]
+            restore_output_shape = [mod.shape for mod in restore_model(get_inputs_by_shapes(self.input_tensor_shape))]
+        else:
+            output_shape = model_output.shape
+            restore_output_shape = restore_model(get_inputs_by_shapes(self.input_tensor_shape)).shape
+        assert output_shape == restore_output_shape
+        shutil.rmtree(model_path)
+
+        # check model convert to tflite
+        converter = tf.lite.TFLiteConverter.from_keras_model(restore_model)
+        tflite_model = converter.convert()
+        open(model_path + '.tflite', 'wb').write(tflite_model)
+        os.remove(model_path + '.tflite')
+        logging.keyinfo("Testing block is success!")
 
 
 class ConvBnRelu(BaseBlock):
@@ -754,10 +778,9 @@ class ReluBlock(BaseBlock):
 class AddRelu(BaseBlock):
     def __init__(self, config):
         self.config = config
-        self.input_shape = [[config["HW"], config["HW"], config["CIN"]],
-                       [config["HW"], config["HW"], config["CIN"]]]
-        self.input_tensor_shape = self.input_shape
-        
+        self.input_shape = [config["HW"], config["HW"], config["CIN"]]
+        self.input_tensor_shape = [self.input_shape]
+
         add_op = Add(self.input_shape, config)
         self.add_op, out_shape = add_op.get_model(), add_op.get_output_shape()
 
