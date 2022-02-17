@@ -12,10 +12,8 @@ __registry_cfg_filename__ = 'registry.yaml'
 __predictors_cfg_filename__ = 'predictors.yaml'
 
     
-def import_module(meta_data):
-    sys.path.append(meta_data["package_location"])
-    module_path = meta_data["class_module"]
-    class_name = meta_data["class_name"]
+def import_module(package_location, module_path, class_name):
+    sys.path.append(package_location)
     module = importlib.import_module(module_path)   
     backend_cls = getattr(module, class_name)
     return backend_cls
@@ -27,13 +25,16 @@ def register_module(module_type, meta_file):
 
     # load module information to '~/.nn_meter/config/registry.yaml'
     builtin_name = meta_data.pop("builtin_name")
-    import_module(meta_data)
+    import_module(meta_data["package_location"], meta_data["class_module"], meta_data["class_name"])
 
-    # TODO: check necessary feature and run test script
+    # check necessary feature and run test script
     # for backend, check if there exits the default config file:
     if module_type == "backends":
         if not os.path.isfile(meta_data["defaultConfigFile"]):
             raise ValueError(f"The default config file {meta_data['defaultConfigFile']} does not exist")
+    elif module_type == "kernels":
+        import_module(meta_data["package_location"], meta_data["sampler_module"], meta_data["sampler_name"])
+        import_module(meta_data["package_location"], meta_data["parser_module"], meta_data["parser_name"])
 
     prev_info = {}
     if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__)):

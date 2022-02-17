@@ -221,10 +221,6 @@ Here is an example:
 ``` python
 import random
 from nn_meter.builder.kernel_predictor_builder import BaseConfigSampler
-from nn_meter.builder.kernel_predictor_builder.data_sampler.utils import sample_based_on_distribution, data_validation
-from nn_meter.builder.kernel_predictor_builder.data_sampler.prior_config_lib.utils import read_conv_zoo
-from nn_meter.builder.kernel_predictor_builder.data_sampler.finegrained_sampler import sample_cin_cout
-
 
 class MySampler(BaseConfigSampler):
     ''' This sampler is for Conv related sampler. In `prior_config_sampling` method, all configs are sampled based on existing conv model. In
@@ -232,29 +228,11 @@ class MySampler(BaseConfigSampler):
     '''
 
     def prior_config_sampling(self, sample_num):
-        hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
-        new_cins = sample_based_on_distribution(cins, sample_num)     
-        new_couts = sample_based_on_distribution(couts, sample_num)
-
-        # 70% of sampled data are from prior distribution
-        count1 = int(sample_num * 0.7)
-        new_hws = sample_based_on_distribution(hws, count1)
-        new_kernel_sizes = sample_based_on_distribution(kernel_sizes, count1)
-        new_strides = sample_based_on_distribution(strides, count1)
-        
-        new_kernel_sizes = data_validation(new_kernel_sizes, [1, 3, 5, 7])
-        new_strides = data_validation(new_strides, [1, 2, 4])
-        new_hws = data_validation(new_hws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
-        
-        # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
-        new_hws.extend([112] * int((sample_num - count1) * 0.2) + [56] * int((sample_num - count1) * 0.4) + [28] * int((sample_num - count1) * 0.4)) # frequent settings
-        new_kernel_sizes.extend([5] * int((sample_num - count1) * 0.4) + [7] * int((sample_num - count1) * 0.6)) # frequent settings
-        new_strides.extend([2] * int((sample_num - count1) * 0.4) + [1] * int((sample_num - count1) * 0.6)) # frequent settings
-        random.shuffle(new_hws)
-        random.shuffle(new_strides)
-        random.shuffle(new_kernel_sizes)
-
-        ncfgs = []
+        new_hws = ...
+        new_cins = ...
+        new_couts = ...
+        new_kernel_sizes = ...
+        new_strides = ...
         for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
             c = {
                 'HW': hw,
@@ -269,7 +247,8 @@ class MySampler(BaseConfigSampler):
     def finegrained_config_sampling(self, sample_num, configs):
         ncfgs = []
         for cfg in configs:
-            cins, couts = sample_cin_cout(cfg['CIN'], cfg['COUT'], sample_num)
+            cins = ...
+            couts = ...
             for cin, cout in zip(cins, couts):
                 c = {
                     'HW': cfg['HW'],
