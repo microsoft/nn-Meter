@@ -226,7 +226,7 @@ def sampling_hw_cin_odd(count):
     ''' sampling configs for kernels with hw and cin (only odd values) parameter, in case for split / se / channelshuffle
     Returned params include: (hw, cin)
     '''
-    hws, cins, _, _ = read_conv_zoo()
+    hws, cins, _, _, _, _ = read_conv_zoo()
     new_cins = sample_based_on_distribution(cins, count)
    
     count1 = int(count * 0.8)
