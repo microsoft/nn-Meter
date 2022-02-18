@@ -54,3 +54,10 @@ def merge_prev_info(new_info, info_save_path = None, prev_info = None):
         else:
             prev_info[module_key] = new_info[module_key]
     return prev_info
+
+
+def save_profiled_results(models, save_path, detail):
+    new_models = merge_prev_info(new_info=models, info_save_path=save_path)
+    from .backend_meta.utils import dump_profiled_results
+    with open(save_path, 'w') as fp:
+        json.dump(dump_profiled_results(new_models, detail=detail), fp, indent=4)

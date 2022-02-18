@@ -4,6 +4,7 @@ import os
 import json
 import logging
 from . import builder_config
+from .utils import save_profiled_results
 from nn_meter.builder.utils import merge_prev_info
 from nn_meter.builder.backends import connect_backend
 logging = logging.getLogger("nn-Meter")
@@ -29,10 +30,13 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
     ws_mode_path = builder_config.get('MODEL_DIR', mode)
     model_save_path = os.path.join(ws_mode_path, 'models')
     os.makedirs(model_save_path, exist_ok=True)
-    info_save_path = os.path.join(ws_mode_path, "results", save_name)
+    info_save_path = os.path.join(ws_mode_path, "results")
     os.makedirs(info_save_path, exist_ok=True)
 
     # profile model and get metric results
+    count = 0
+    detail = builder_config.get('DETAIL', mode)
+    save_name = save_name or "profiled_results.json"
     for _, modules in models.items():
         for _, model in modules.items():
             model_path = model['model']
@@ -41,16 +45,15 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                 for metric in metrics:
                     model[metric] = profiled_res[metric]
             except:
-                open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['model'], model['config'], "\n") 
+                open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['model'] + "\n")
+
+            # save information to json file
+            count += 1
+            if count % 50 == 0:
+                save_profiled_results(models, os.path.join(info_save_path, save_name), detail)
 
     # save information to json file
-    detail = builder_config.get('DETAIL', mode)
-    save_name = save_name or "profiled_results.json"
-    new_models = merge_prev_info(new_info=models, info_save_path=info_save_path)
-    os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
-    from .backend_meta.utils import dump_profiled_results
-    with open(info_save_path, 'w') as fp:
-        json.dump(dump_profiled_results(new_models, detail=detail), fp, indent=4)
+    save_profiled_results(models, os.path.join(info_save_path, save_name), detail)    
     logging.keyinfo(f"Save the profiled models information to {info_save_path}")
 
     return models
