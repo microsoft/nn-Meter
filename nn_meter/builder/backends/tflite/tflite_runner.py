@@ -27,7 +27,7 @@ class TFLiteRunner(BaseRunner):
         self._graph_path = graph_path
         self._dst_graph_path = dst_graph_path
 
-    def run(self, preserve=False, clean=False, taskset='70'):
+    def run(self, preserve=False, clean=True, taskset='70'):
         """
         @params:
         preserve: tflite file exists in remote dir. No need to push it again.

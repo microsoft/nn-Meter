@@ -8,7 +8,7 @@ from .extract_features import get_feature_parser, get_data_by_profiled_results
 logging = logging.getLogger("nn-Meter")
 
 
-def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_threshold = 0.1):
+def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_threshold = 0.1, save_path = None):
     """
     build regression model by sampled data and latency, locate data with large-errors. Returns (current predictor, 10% Accuracy, error_cfgs), 
     where error_cfgs represent configuration list, where each item is a configuration for one large-error-data.
@@ -39,6 +39,12 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     predicts = predictor.predict(testx)
     rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(predicts, testy)
     logging.info(f"rmse: {rmse}; rmspe: {rmspe}; error: {error}; 5% accuracy: {acc5}; 10% accuracy: {acc10}; 15% accuracy: {acc15}.")
+    
+    # dump the predictor model
+    import pickle
+    with open(save_path, 'wb') as fp:
+        pickle.dump(predictor, fp)
+    logging.keyinfo(f"Saved the predictor for {kernel_type} in path {save_path}.")
 
     # locate large error data
     error_configs = []

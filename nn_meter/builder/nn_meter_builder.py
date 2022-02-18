@@ -29,6 +29,10 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
     ws_mode_path = builder_config.get('MODEL_DIR', mode)
     model_save_path = os.path.join(ws_mode_path, 'models')
     os.makedirs(model_save_path, exist_ok=True)
+    info_save_path = os.path.join(ws_mode_path, "results", save_name)
+    os.makedirs(info_save_path, exist_ok=True)
+
+    # profile model and get metric results
     for _, modules in models.items():
         for _, model in modules.items():
             model_path = model['model']
@@ -37,12 +41,11 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                 for metric in metrics:
                     model[metric] = profiled_res[metric]
             except:
-                pass
+                open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['model'], model['config'], "\n") 
 
     # save information to json file
     detail = builder_config.get('DETAIL', mode)
     save_name = save_name or "profiled_results.json"
-    info_save_path = os.path.join(ws_mode_path, "results", save_name)
     new_models = merge_prev_info(new_info=models, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     from .backend_meta.utils import dump_profiled_results
@@ -90,12 +93,15 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
     error_threshold (float, optional): the threshold of large error. Defaults to 0.2.
     """
     from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data
+    ws_mode_path = builder_config.get('MODEL_DIR', 'predbuild')
     
+
     # init predictor builder with prior data sampler
     kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num, backend, sampling_mode='prior', mark='prior')
 
     # use current sampled data to build regression model, and locate data with large errors in testset
-    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
+    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold,
+                                                              save_path=os.path.join(ws_mode_path, "results", f"Predictor_{kernel_type}_iter0.pkl"))
     logging.keyinfo(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     for i in range(1, iteration):
@@ -105,7 +111,8 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
         # merge finegrained data with previous data and build new regression model
         kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
-        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
+        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold,
+                                                                  save_path=os.path.join(ws_mode_path, "results", f"Predictor_{kernel_type}_iter{i}.pkl"))
         logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     return predictor, kernel_data
@@ -128,17 +135,10 @@ def build_latency_predictor(backend):
         finegrained_sample_num = kernels[kernel_type]["FINEGRAINED_SAMPLE_NUM"]
         iteration = kernels[kernel_type]["ITERATION"]
         error_threshold = kernels[kernel_type]["ERROR_THRESHOLD"]
-        predictor, _ = build_predictor_for_kernel(
+        build_predictor_for_kernel(
             kernel_type, backend, 
             init_sample_num = init_sample_num,
             finegrained_sample_num = finegrained_sample_num,
             iteration = iteration,
             error_threshold = error_threshold
             )
-
-        # save predictor
-        import pickle
-        save_path = os.path.join(ws_path, "results", f"{kernel_type}.pkl")
-        with open(save_path, 'wb') as fp:
-            pickle.dump(predictor, fp)
-        logging.keyinfo(f"Saved the predictor for {kernel_type} in path {save_path}.")
