@@ -54,7 +54,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
 
     # save information to json file
     save_profiled_results(models, os.path.join(info_save_path, save_name), detail)    
-    logging.keyinfo(f"Save the profiled models information to {info_save_path}")
+    logging.keyinfo(f"Save the profiled models information to {os.path.join(info_save_path, save_name)}")
 
     return models
 
