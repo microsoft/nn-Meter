@@ -36,11 +36,14 @@ def get_fc_flop_params(cin, cout):
 
 
 def get_flops_params(kernel_type, config):
-    hw, cin, cout, kernel_size, stride = config["HW"], config["CIN"], config["COUT"], \
-                                         config["KERNEL_SIZE"], config["STRIDES"]
-    if "conv" in kernel_type:
+    if "dwconv" in kernel_type:
+        hw, cin, kernel_size, stride = config["HW"], config["CIN"], \
+            config["KERNEL_SIZE"], config["STRIDES"]
+        return get_dwconv_flop_params(hw, cin, kernel_size, stride)
+    elif "conv" in kernel_type:
+        hw, cin, cout, kernel_size, stride = config["HW"], config["CIN"], \
+            config["COUT"], config["KERNEL_SIZE"], config["STRIDES"]
         return get_conv_flop_params(hw, cin, cout, kernel_size, stride)
-    elif "dwconv" in kernel_type:
-        return get_dwconv_flop_params(hw, cout, kernel_size, stride)
     elif "fc" in kernel_type:
+        cin, cout = config["CIN"], config["COUT"]
         return get_fc_flop_params(cin, cout)

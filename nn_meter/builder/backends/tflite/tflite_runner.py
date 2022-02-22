@@ -49,7 +49,7 @@ class TFLiteRunner(BaseRunner):
                                f' --kernel_path={self._dst_kernel_path}' \
                                f' --num_threads={self._num_threads}' \
                                f' --num_runs={self._num_runs}' \
-                               f' --warm_umps={self._warm_ups}' \
+                               f' --warmup_runs={self._warm_ups}' \
                                f' --graph={self._dst_graph_path}' \
                                f' --enable_op_profiling=true' \
                                f' --use_gpu={"true" if self.use_gpu else "false"}')

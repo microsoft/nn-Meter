@@ -46,7 +46,8 @@ class TFLiteCPULatencyParser(BaseParser):
         total_latency = Latency()
         match = re.search(total_latency_regex, content, re.MULTILINE)
         if match:
-            total_latency = Latency(float(match[1]), float(match[2]))
+            # convert microseconds to millisecond
+            total_latency = Latency(float(match[1]) / 1000, float(match[2]) / 1000)
 
         return total_latency
     

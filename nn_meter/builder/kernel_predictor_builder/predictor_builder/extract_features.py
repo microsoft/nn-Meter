@@ -153,8 +153,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_pa
             configs = cfgs_dict[id]["config"]
             feature = feature_parser.get_feature_by_config(configs)
             latency = lats_dict[id]["latency"].avg
-            
-            if lats != 0:
+            if latency != 0.0:
                 features.append(feature)
                 lats.append(latency)
         except:
