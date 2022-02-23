@@ -23,9 +23,9 @@ def get_tensor_by_shapes(shapes):
 def merge_prev_info(new_info, info_save_path = None, prev_info = None):
     ''' merge new_info with previous info and return the updated info. This method is used in two cases: 
 
-    1. before save `new_info` to `info_save_path`, we need to check if the `info_save_path` is empty. If `info_save_path`
-    is not empty, this method will help merge the previous info saved in `info_save_path` for a incrementally storage and
-    avoid information loss. In this case, params `new_info` and `info_save_path` are needed.
+    1. before save `new_info` to `info_save_path`, we need to check if the `info_save_path` is an existing file. If `info_save_path`
+    exists, this method will help merge the previous info saved in `info_save_path` for a incrementally storage and avoid information
+    loss. In this case, params `new_info` and `info_save_path` are needed.
 
     2. extend the dictionary of `prev_info` with `new_info`. In this case, params `new_info` and `prev_info` are needed.
     

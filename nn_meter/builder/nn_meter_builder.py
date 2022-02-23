@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 import os
 import json
+import time
 import logging
 from . import builder_config
 from .utils import save_profiled_results
@@ -9,12 +10,68 @@ from nn_meter.builder.utils import merge_prev_info
 from nn_meter.builder.backends import connect_backend
 logging = logging.getLogger("nn-Meter")
 
-def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None):
+
+def convert_models(backend, models, mode = 'predbuild', broken_point_mode = False):
     """ run models with given backend and return latency of testcase models
 
     @params:
 
-    backend (BaseBackend): applied backend with its config, should be a subclass of BaseBackend
+    backend (subclass instance of BaseBackend): applied backend instance
+
+    models (str or dict): the Dict of models or the path of the json file about models information 
+
+    mode (str): the mode for running models, including ['ruletest', 'predbuild']
+
+    broken_point_mode (boolean): broken_point_mode will skip all models have attributes "converted_model"
+
+    """
+    if isinstance(models, str):
+        save_name = os.path.basename(models)
+        with open(models, 'r') as fp:
+            models = json.load(fp)
+    else:
+        save_name = "converted_results.json"
+
+    ws_mode_path = builder_config.get('MODEL_DIR', mode)
+    model_save_path = os.path.join(ws_mode_path, 'models')
+    os.makedirs(model_save_path, exist_ok=True)
+    info_save_path = os.path.join(ws_mode_path, "results")
+    os.makedirs(info_save_path, exist_ok=True)
+
+    # convert models
+    count = 0
+    for _, modules in models.items():
+        for _, model in modules.items():
+            if broken_point_mode and 'converted_model' in model:
+                continue
+            try:
+                model_path = model['model']
+                converted_model = backend.convert_model(model_path, model_save_path, model['shapes'])
+                model['converted_model'] = converted_model
+            except:
+                open(os.path.join(info_save_path, "convert_error.log"), 'a').write(model['model'] + "\n")
+
+            # save information to json file for per 50 models
+            count += 1
+            if count % 50 == 0:
+                with open(os.path.join(info_save_path, save_name), 'w') as fp:
+                    json.dump(models, fp, indent=4)
+
+    # save information to json file
+    with open(os.path.join(info_save_path, save_name), 'w') as fp:
+        json.dump(models, fp, indent=4)
+    logging.keyinfo(f"Save the converted models information to {os.path.join(info_save_path, save_name)}")
+    
+    return models
+
+
+def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
+                   have_converted = False, broken_point_mode = False, reference_result = None):
+    """ run models with given backend and return latency of testcase models
+
+    @params:
+
+    backend (subclass instance of BaseBackend): applied backend instance
 
     models (str or dict): the Dict of models or the path of the json file about models information 
 
@@ -22,6 +79,11 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
 
     metrics (list): required metrics to report. We only support latency for metric by now.
 
+    save_name (str): the save name to store profiled results. The whole path should be "<workspace>/<mode-folder>/results/<save-name>"
+
+    have_converted (boolean): if the model have been converted to the needed format by backend, the model will not be converted
+        before profiling. The model path of `model['converted_model']` will be profiled on device directly. The conversion of
+        model could be done by appling `nn_meter.builder.convert_models`
     """
     if isinstance(models, str):
         with open(models, 'r') as fp:
@@ -33,30 +95,44 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
     info_save_path = os.path.join(ws_mode_path, "results")
     os.makedirs(info_save_path, exist_ok=True)
 
-    # profile model and get metric results
+    # profile models and get metric results
     count = 0
     detail = builder_config.get('DETAIL', mode)
     save_name = save_name or "profiled_results.json"
+    logging.info("Profiling ...")
     for _, modules in models.items():
         for _, model in modules.items():
-            model_path = model['model']
-            try:
-                profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'])
-                for metric in metrics:
-                    model[metric] = profiled_res[metric]
-            except:
-                open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['model'] + "\n")
+            if have_converted: # the models have been converted for the backend
+                try:
+                    model_path = model['converted_model']
+                    profiled_res = backend.profile(model_path, metrics, model['shapes'])
+                    for metric in metrics:
+                        model[metric] = profiled_res[metric]
+                    time.sleep(2)
+                except:
+                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['converted_model'] + "\n")
+            else: # the models have not been converted
+                try:
+                    model_path = model['model']
+                    profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'], metrics)
+                    for metric in metrics:
+                        model[metric] = profiled_res[metric]
+                    time.sleep(2)
+                except:
+                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['model'] + "\n")
 
-            # save information to json file
+            # save information to json file for per 50 models
             count += 1
             if count % 50 == 0:
                 save_profiled_results(models, os.path.join(info_save_path, save_name), detail)
+                logging.keyinfo(f"{count} model complete. Still profiling... Save the intermediate results to {os.path.join(info_save_path, save_name)}.")
 
     # save information to json file
     save_profiled_results(models, os.path.join(info_save_path, save_name), detail)    
-    logging.keyinfo(f"Save the profiled models information to {os.path.join(info_save_path, save_name)}")
+    logging.keyinfo(f"All {count} models complete. Save all success profiled results to {os.path.join(info_save_path, save_name)}.")
 
     return models
+
 
 def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mode = 'prior', configs = None, mark = '', detail = True):
     ''' sample kernel configs and profile kernel model based on configs
