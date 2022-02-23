@@ -33,10 +33,9 @@ class OpenVINOBackend(BaseBackend):
         patched_pb_path = patch_frozenpb(pb_path, os.path.join(self.venv, 'bin/python'))
         return patched_pb_path
 
-    def profile(self, model, model_name, savedpath, input_shape, metrics=['latency']):
+    def profile(self, converted_model, metrics = ['latency'], input_shape = None):
         """convert the model to the backend platform and run the model on the backend, return required metrics 
         of the running results. We only support latency for metric by now.
         """
-        patched_pb_path = self.convert_model(model, model_name, savedpath, input_shape)
-        self.runner.load_graph(patched_pb_path, os.path.join(self.tmp_dir, model_name))
+        self.runner.load_graph(converted_model, self.tmp_dir)
         return self.parser.parse(self.runner.run(input_shape)).results.get(metrics)

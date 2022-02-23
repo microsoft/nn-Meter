@@ -38,7 +38,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     predictor.fit(trainx, trainy)
     predicts = predictor.predict(testx)
     rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(predicts, testy)
-    logging.info(f"rmse: {rmse}; rmspe: {rmspe}; error: {error}; 5% accuracy: {acc5}; 10% accuracy: {acc10}; 15% accuracy: {acc15}.")
+    logging.info(f"rmse: {rmse:.4f}; rmspe: {rmspe:.4f}; error: {error:.4f}; 5% accuracy: {acc5:.4f}; 10% accuracy: {acc10:.4f}; 15% accuracy: {acc15:.4f}.")
     
     # dump the predictor model
     import pickle

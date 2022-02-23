@@ -4,6 +4,7 @@ import os
 import sys
 import yaml
 import importlib
+from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.utils.path import get_filename_without_ext
 
 __BUILTIN_BACKENDS__ = {
@@ -64,41 +65,46 @@ class BaseBackend:
         self.parser_kwargs = {}
         self.runner_kwargs = {}
     
-    def convert_model(self, model, model_name, savedpath, input_shape=None):
-        """ convert the Keras model instance to the type required by the backend inference
-        """
-        return model
-
-    def profile(self, model, model_name, savedpath, input_shape=None, metrics=['latency']):
-        """
-        convert the model to the backend platform and run the model on the backend, return required metrics 
-        of the running results. nn-Meter only support latency for metric by now. Users may provide other
-        metrics in their customized backend.
+    def convert_model(self, model_path, save_path, input_shape=None):
+        """ convert the Keras model instance to the type required by the backend inference.
 
         @params:
         
-        model: the Keras model waiting to profile
+        model_path: the Keras model waiting to profile
         
         model_name: the name of the model
         
-        savedpath: path to save the converted model
+        save_path: path to save the converted model
         
         input_shape: the shape of input tensor for inference, a random tensor according to the shape will be 
             generated and used
-        
-        metrics: a list of required metrics name. Defaults to ['latency']
-        
-        """
-        converted_model = self.convert_model(model, model_name, savedpath, input_shape)
-        return self.parser.parse(self.runner.run(converted_model)).results.get(metrics)
-
-    def profile_model_file(self, model_path, savedpath, input_shape = None, metrics = ['latency']):
-        """ load model by model file path and run ``self.profile()``
         """
         import tensorflow as tf
         model_name = get_filename_without_ext(model_path)
         model = tf.keras.models.load_model(model_path)
-        return self.profile(model, model_name, savedpath, input_shape, metrics)
+        model(get_tensor_by_shapes(input_shape))
+        converted_model = os.path.join(save_path, model_name)
+        # convert model and save the converted model to path `converted_model`
+        return converted_model
+
+    def profile(self, converted_model, metrics = ['latency'], input_shape = None):
+        """
+        run the model on the backend, return required metrics of the running results. nn-Meter only support latency
+        for metric by now. Users may provide other metrics in their customized backend.
+
+        converted_model: the model path in type of backend required
+        
+        metrics: a list of required metrics name. Defaults to ['latency']
+        
+        """
+        return self.parser.parse(self.runner.run(converted_model)).results.get(metrics)
+
+    def profile_model_file(self, model_path, save_path, input_shape = None, metrics = ['latency']):
+        """ load model by model file path, convert model file, and run ``self.profile()``
+        """
+        converted_model = self.convert_model(model_path, save_path, input_shape)
+        res = self.profile(converted_model, metrics, input_shape)
+        return res
 
     def test_connection(self):
         """ check the status of backend interface connection.

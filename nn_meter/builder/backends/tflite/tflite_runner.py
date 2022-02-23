@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import os
 from ..interface import BaseRunner
 
 
@@ -23,16 +24,15 @@ class TFLiteRunner(BaseRunner):
         self._num_runs = num_runs
         self._warm_ups = warm_ups
 
-    def load_graph(self, graph_path, dst_graph_path):
-        self._graph_path = graph_path
-        self._dst_graph_path = dst_graph_path
-
-    def run(self, preserve=False, clean=True, taskset='70'):
+    def run(self, graph_path, preserve=False, clean=True, taskset='70'):
         """
         @params:
         preserve: tflite file exists in remote dir. No need to push it again.
         clean: remove tflite file after running.
         """
+        model_name = os.path.basename(graph_path)
+        remote_graph_path = os.path.join(self._dst_graph_path, model_name)
+
         from ppadb.client import Client as AdbClient
         client = AdbClient(host="127.0.0.1", port=5037)
         if self._serial:
@@ -43,20 +43,24 @@ class TFLiteRunner(BaseRunner):
         taskset_cmd = f'taskset {taskset}' if taskset else '' 
 
         if not preserve:
-            device.push(self._graph_path, self._dst_graph_path)
+            device.push(graph_path, remote_graph_path)
         try:
-            res = device.shell(f' {taskset_cmd} {self._benchmark_model_path}' \
-                               f' --kernel_path={self._dst_kernel_path}' \
+            if self._dst_kernel_path:
+                kernel_cmd = f'--kernel_path={self._dst_kernel_path}'
+            res = device.shell(f' {taskset_cmd} {self._benchmark_model_path} {kernel_cmd}' \
                                f' --num_threads={self._num_threads}' \
                                f' --num_runs={self._num_runs}' \
                                f' --warmup_runs={self._warm_ups}' \
-                               f' --graph={self._dst_graph_path}' \
+                               f' --graph={remote_graph_path}' \
                                f' --enable_op_profiling=true' \
                                f' --use_gpu={"true" if self.use_gpu else "false"}')
         except:
             raise
         finally:
             if clean:
-                device.shell('rm {self._dst_graph_path}')
+                if self._serial:
+                    os.system(f"adb -s 98281FFAZ009SV shell rm {remote_graph_path}")
+                else:
+                    os.system(f"adb shell rm {remote_graph_path}")
 
         return res
