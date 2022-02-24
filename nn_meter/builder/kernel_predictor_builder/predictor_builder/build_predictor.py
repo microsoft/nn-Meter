@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+import os
 import logging
 from sklearn.model_selection import train_test_split
 from .utils import latency_metrics
@@ -8,7 +9,7 @@ from .extract_features import get_feature_parser, get_data_by_profiled_results
 logging = logging.getLogger("nn-Meter")
 
 
-def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_threshold = 0.1, save_path = None):
+def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_threshold = 0.1, mark = '', save_path = None):
     """
     build regression model by sampled data and latency, locate data with large-errors. Returns (current predictor, 10% Accuracy, error_cfgs), 
     where error_cfgs represent configuration list, where each item is a configuration for one large-error-data.
@@ -21,10 +22,14 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     backend (str): target device, relative to predictor initialization
     
     error_threshold (float): default = 0.1, should be no less than 0.1. if prediction error (`abs(pred - true) / true`) > error_threshold,
-        we treat this data as a large-error-data.    
+        we treat this data as a large-error-data.
+
+    mark (str): the mark for the running results. Defaults to ''.
+
+    save_path (str): the folder to save results file such as feature table and predictor pkl file
     """
     feature_parser = get_feature_parser(kernel_type)
-    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data)
+    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data, save_path=os.path.join(save_path, f'Feature_{kernel_type}_{mark}.csv'))
 
     # get data for regression
     X, Y = data
@@ -42,6 +47,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     
     # dump the predictor model
     import pickle
+    save_path = os.path.join(save_path, f"Predictor_{kernel_type}_{mark}.pkl")
     with open(save_path, 'wb') as fp:
         pickle.dump(predictor, fp)
     logging.keyinfo(f"Saved the predictor for {kernel_type} in path {save_path}.")

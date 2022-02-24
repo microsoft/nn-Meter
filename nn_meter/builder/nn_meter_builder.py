@@ -180,8 +180,8 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
     kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num, backend, sampling_mode='prior', mark='prior')
 
     # use current sampled data to build regression model, and locate data with large errors in testset
-    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold,
-                                                              save_path=os.path.join(ws_mode_path, "results", f"Predictor_{kernel_type}_iter0.pkl"))
+    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold, mark='prior',
+                                                              save_path=os.path.join(ws_mode_path, "results"))
     logging.keyinfo(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     for i in range(1, iteration):
@@ -191,8 +191,8 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
         # merge finegrained data with previous data and build new regression model
         kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
-        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold,
-                                                                  save_path=os.path.join(ws_mode_path, "results", f"Predictor_{kernel_type}_iter{i}.pkl"))
+        predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold, mark='finegrained{i}',
+                                                                  save_path=os.path.join(ws_mode_path, "results"))
         logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     return predictor, kernel_data

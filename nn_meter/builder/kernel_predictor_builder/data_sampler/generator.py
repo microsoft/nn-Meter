@@ -67,7 +67,7 @@ def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = '
 
     sample_num (int): the sampling number of configs
 
-    mark (str, optional): the mark to run . Defaults to ''.
+    mark (str, optional): the mark for the running results. Defaults to ''.
 
     sampling_mode (str, optional): the sampling mode for config generation, supporting mode includes 'prior' and 'finegrained'.
         Defaults to be 'prior'.

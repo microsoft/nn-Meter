@@ -4,8 +4,10 @@ import os
 import sys
 import yaml
 import json
+import logging
 import importlib
 from nn_meter.builder.backend_meta.utils import read_profiled_results
+logging = logging.getLogger("nn-Meter")
 
 
 feature_for_kernel = {
@@ -100,36 +102,40 @@ def get_feature_parser(kernel_type):
             return BaseFeatureParser(kernel_type)
 
 
-def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_path = None):
+def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_path = None, save_path = None):
     ''' return (features, latency)
     kernel_type (str): type of kernel
+    
+    feature_parser (subclass instance of BaseFeatureParser) the parser containing the feature parsing script
 
     cfgs_path: path of config information dict, or dict of "origin_kernels.json", such as
-    {
-        "conv_bn_relu": {
-            "id_0": {
-                "model": "...",
-                "shapes": [[14, 14, 98]],
-                "config": {
-                    "HW": 14,
-                    "CIN": 98,
-                    "COUT": 120,
-                    "KERNEL_SIZE": 3,
-                    "STRIDES": 1
-                },
+        {
+            "conv_bn_relu": {
+                "id_0": {
+                    "model": "...",
+                    "shapes": [[14, 14, 98]],
+                    "config": {
+                        "HW": 14,
+                        "CIN": 98,
+                        "COUT": 120,
+                        "KERNEL_SIZE": 3,
+                        "STRIDES": 1
+                    },
+                }
             }
         }
-    }
 
     lats_path: pathe of profiled latency information dict, or dict of "profiled_results", such as
-    {
-        "conv_bn_relu": {
-            "id_0": {
-                "latency": "42.001 +- 1.0"
+        {
+            "conv_bn_relu": {
+                "id_0": {
+                    "latency": "42.001 +- 1.0"
+                }
             }
         }
-    }
-    if lats_path == None, it means latency information are also included in cfgs_path.
+        if lats_path == None, it means latency information are also included in cfgs_path.
+
+    save_path: the path to save the feature and latency information
     '''
     if lats_path == None:
         if type(cfgs_path) == tuple:
@@ -147,15 +153,30 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_pa
     else:
         lats_dict = lats_path[kernel_type] if kernel_type in lats_path else lats_path
 
-    features, lats = [], []
+    paths, features, lats = [], [], []
     for id in lats_dict.keys():
         try:
+            path = cfgs_dict[id]["model"]
             configs = cfgs_dict[id]["config"]
             feature = feature_parser.get_feature_by_config(configs)
             latency = lats_dict[id]["latency"].avg
             if latency != 0.0:
+                paths.append(os.path.basename(path))
                 features.append(feature)
                 lats.append(latency)
         except:
             pass
+
+    # save features and latency information to `save_path`
+    if save_path:
+       import pandas as pd
+       cols = feature_parser.needed_config[:]
+       if len(features[0]) - len(feature_parser.needed_config) > 0:
+           cols += [f'feature_{i}' for i in range(len(features[0]) - len(feature_parser.needed_config))]
+       data_df = pd.DataFrame(features, columns=cols)
+       data_df = pd.concat([pd.DataFrame(paths, columns=["model_path"]), data_df], axis=1)
+       data_df["latency_ms"] = lats
+       data_df.to_csv(save_path)
+       logging.info(f'Saved the feature table for {kernel_type} in path {save_path}.')
+
     return (features, lats)

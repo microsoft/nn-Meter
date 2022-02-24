@@ -98,7 +98,10 @@ lats_path = os.path.join("<workspace-path>", "predictor_build", "results", "prof
 kernel_data = (cfgs_path, lats_path)
 
 # build latency predictor
-predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
+predictor, acc10, error_configs = build_predictor_by_data(
+    kernel_type, kernel_data, backend, error_threshold=error_threshold, mark="prior",
+    save_path=os.path.join("<workspace-path>", "predictor_build", "results")
+)
 logging.info(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')    
 ```
 
@@ -137,7 +140,10 @@ for i in range(1, iteration):
 
     # merge finegrained data with previous data and build new regression model
     kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
-    predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold)
+    predictor, acc10, error_configs = build_predictor_by_data(
+        kernel_type, kernel_data, backend, error_threshold=error_threshold, mark="prior",
+        save_path=os.path.join("<workspace-path>", "predictor_build", "results")
+        )
     logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 ```
 
