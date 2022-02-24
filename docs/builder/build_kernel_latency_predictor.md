@@ -61,6 +61,24 @@ kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num = 1000
 
 The generated models are saved in `<workspace-path>/predictor_build/models`, and the configuration information and profiled results are dumped in json file to `<workspace-path>/predictor_build/results/<kernel_type>.json` and `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`.
 
+The method `sample_and_profile_kernel_data` is composed by three main steps, `generate_config_sample`, `convert_models`, `profile_models`. Here is an example as a decomposition of `sample_and_profile_kernel_data`. Users could choose the decomposed interfaces if needed.
+``` python
+from nn_meter.builder.kernel_predictor_builder import generate_config_sample
+from nn_meter.builder import convert_models
+# sample configs for kernel and generate models
+models = generate_config_sample(kernel_type, sample_num, mark=mark, 
+                                    sampling_mode=sampling_mode, configs=configs)
+
+# connect to backend, run models and get latency
+backend = connect_backend(backend_name="tflite-cpu")
+
+# convert the model to the needed format by backend, in order to increase efficiency when profiling on device.
+models = convert_models(backend, saved_name, broken_point_mode=True)
+
+# run models with given backend and return latency of testcase models
+profiled_results = profile_models(backend, models, mode='predbuild', save_name="xxx.json", have_converted=True)
+```
+
 Note: for kernels related to conv and dwconv, our experiment results have shown that all kernels containing one conv layer or one dwconv layer have almost the same latency results. Thus in nn-Meter, all kernels containing one conv or dwconv layer shares the same kernel predictor.
 
 ## Step 3: Initialize Kernel Latency Predictor

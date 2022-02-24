@@ -48,6 +48,13 @@ def merge_prev_info(new_info, info_save_path = None, prev_info = None):
     if prev_info == None:
         return new_info
 
+    if isinstance(prev_info, str):
+        with open(prev_info, 'r') as fp:
+            prev_info = json.load(fp)
+    if isinstance(new_info, str):
+        with open(new_info, 'r') as fp:
+            new_info = json.load(fp)
+
     for module_key in new_info.keys():
         if module_key in prev_info:
             prev_info[module_key].update(new_info[module_key])

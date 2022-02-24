@@ -45,8 +45,7 @@ class TFLiteRunner(BaseRunner):
         if not preserve:
             device.push(graph_path, remote_graph_path)
         try:
-            if self._dst_kernel_path:
-                kernel_cmd = f'--kernel_path={self._dst_kernel_path}'
+            kernel_cmd = f'--kernel_path={self._dst_kernel_path}' if self._dst_kernel_path else ''
             res = device.shell(f' {taskset_cmd} {self._benchmark_model_path} {kernel_cmd}' \
                                f' --num_threads={self._num_threads}' \
                                f' --num_runs={self._num_runs}' \

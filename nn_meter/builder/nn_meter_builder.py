@@ -12,7 +12,7 @@ logging = logging.getLogger("nn-Meter")
 
 
 def convert_models(backend, models, mode = 'predbuild', broken_point_mode = False):
-    """ run models with given backend and return latency of testcase models
+    """ convert the model to the needed format by backend, in order to increase efficiency when profiling on device.
 
     @params:
 
@@ -66,7 +66,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
 
 
 def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
-                   have_converted = False, broken_point_mode = False, reference_result = None):
+                   have_converted = False):
     """ run models with given backend and return latency of testcase models
 
     @params:
@@ -109,8 +109,9 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
                     time.sleep(2)
+                    count += 1
                 except:
-                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['converted_model'] + "\n")
+                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['model'] + "\n")
             else: # the models have not been converted
                 try:
                     model_path = model['model']
@@ -118,11 +119,11 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
                     time.sleep(2)
+                    count += 1
                 except:
                     open(os.path.join(info_save_path, "profile_error.log"), 'a').write(model['model'] + "\n")
 
             # save information to json file for per 50 models
-            count += 1
             if count % 50 == 0:
                 save_profiled_results(models, os.path.join(info_save_path, save_name), detail)
                 logging.keyinfo(f"{count} model complete. Still profiling... Save the intermediate results to {os.path.join(info_save_path, save_name)}.")
@@ -139,13 +140,13 @@ def sample_and_profile_kernel_data(kernel_type, sample_num, backend, sampling_mo
     '''
     from nn_meter.builder.kernel_predictor_builder import generate_config_sample
 
-    # generate test cases
-    kernels = generate_config_sample(kernel_type, sample_num, mark=mark, 
+    # sample configs for kernel and generate models
+    models = generate_config_sample(kernel_type, sample_num, mark=mark, 
                                      sampling_mode=sampling_mode, configs=configs)
     
-    # connect to backend, run test cases and get latency
+    # connect to backend, run models and get latency
     backend = connect_backend(backend_name=backend)
-    profiled_results = profile_models(backend, kernels, mode='predbuild', save_name=f"profiled_{kernel_type}.json")
+    profiled_results = profile_models(backend, models, mode='predbuild', save_name=f"profiled_{kernel_type}.json")
     return profiled_results
 
 
@@ -207,7 +208,6 @@ def build_latency_predictor(backend):
 
     """
     kernels = builder_config.get("KERNELS", 'predbuild')
-    ws_path = builder_config.get('MODEL_DIR', 'predbuild')
 
     for kernel_type in kernels:
         init_sample_num = kernels[kernel_type]["INIT_SAMPLE_NUM"]

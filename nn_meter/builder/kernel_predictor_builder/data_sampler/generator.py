@@ -81,7 +81,7 @@ def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = '
 
     # save information to json file in incrementally mode
     ws_mode_path = builder_config.get('MODEL_DIR', "predbuild")
-    info_save_path = os.path.join(ws_mode_path, "results", f"{kernel_type}.json")
+    info_save_path = os.path.join(ws_mode_path, "results", f"{kernel_type}_{mark}.json")
     new_kernels_info = merge_prev_info(new_info=kernels_info, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     with open(info_save_path, 'w') as fp:

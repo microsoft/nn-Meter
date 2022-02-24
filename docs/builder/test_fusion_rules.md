@@ -37,7 +37,7 @@ builder_config.init(
 
 Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
 
-## Step 2. Create testcases
+## Step 2. Create Test Cases
 
 Following configuration from `<workspace-path>/configs/ruletest_config.yaml`, the test cases can be created by running:
 
