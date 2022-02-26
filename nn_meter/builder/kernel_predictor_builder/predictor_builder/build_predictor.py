@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
+import pandas as pd
 import logging
 from sklearn.model_selection import train_test_split
 from .utils import latency_metrics
@@ -29,7 +30,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     save_path (str): the folder to save results file such as feature table and predictor pkl file
     """
     feature_parser = get_feature_parser(kernel_type)
-    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data, save_path=os.path.join(save_path, f'Feature_{kernel_type}_{mark}.csv'))
+    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data, save_path=os.path.join(save_path, f'Data_{kernel_type}_{mark}.csv'))
 
     # get data for regression
     X, Y = data
@@ -44,6 +45,13 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     predicts = predictor.predict(testx)
     rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(predicts, testy)
     logging.info(f"rmse: {rmse:.4f}; rmspe: {rmspe:.4f}; error: {error:.4f}; 5% accuracy: {acc5:.4f}; 10% accuracy: {acc10:.4f}; 15% accuracy: {acc15:.4f}.")
+    
+    # dump the test set with predicts to csv file
+    test_res = pd.DataFrame(testx, columns=[f'feature{i}' for i in range(len(testx[0]))])
+    test_res["True"] = testy
+    test_res["Pred"] = predicts
+    test_res.to_csv(os.path.join(save_path, f"TestResult_{kernel_type}_{mark}.csv"), index=False)
+    logging.info(f"All test data and predicted results are stored in path {os.path.join(save_path, f'TestResult_{kernel_type}_{mark}.csv')}")
     
     # dump the predictor model
     import pickle

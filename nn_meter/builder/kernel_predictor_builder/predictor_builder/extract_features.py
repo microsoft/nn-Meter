@@ -176,7 +176,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_pa
        data_df = pd.DataFrame(features, columns=cols)
        data_df = pd.concat([pd.DataFrame(paths, columns=["model_path"]), data_df], axis=1)
        data_df["latency_ms"] = lats
-       data_df.to_csv(save_path)
-       logging.info(f'Saved the feature table for {kernel_type} in path {save_path}.')
+       data_df.to_csv(save_path, index=False)
+       logging.info(f'Saved the feature table of all data for {kernel_type} in path {save_path}.')
 
     return (features, lats)
