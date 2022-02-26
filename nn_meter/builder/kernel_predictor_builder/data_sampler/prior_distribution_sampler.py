@@ -49,7 +49,7 @@ def sampling_conv(count):
     The values are stored in prior_config_lib/conv.csv.
     Returned params include: (hw, cin, cout, kernel_size, strides)
     '''
-    hws, cins, couts, kernel_sizes, _, strides = read_conv_zoo()
+    hws, cins, couts, kernel_sizes, strides = read_conv_zoo()
     new_cins = sample_based_on_distribution(cins, count)
     new_couts = sample_based_on_distribution(couts, count)
 
@@ -203,7 +203,7 @@ def sampling_hw_cin(count):
     ''' sampling configs for kernels with hw and cin parameter
     Returned params include: (hw, cin)
     '''
-    hws, cins, _, _ = read_conv_zoo()
+    hws, cins, _, _, _ = read_conv_zoo()
     new_cins = sample_based_on_distribution(cins, count)
    
     count1 = int(count * 0.8)
@@ -226,7 +226,7 @@ def sampling_hw_cin_odd(count):
     ''' sampling configs for kernels with hw and cin (only odd values) parameter, in case for split / se / channelshuffle
     Returned params include: (hw, cin)
     '''
-    hws, cins, _, _, _, _ = read_conv_zoo()
+    hws, cins, _, _, _ = read_conv_zoo()
     new_cins = sample_based_on_distribution(cins, count)
    
     count1 = int(count * 0.8)
@@ -249,7 +249,7 @@ def sampling_concats(count):
     ''' sampling functions for concat kernel
     Returned params include: (hw, ns, cin1, cin2, cin3, cin4), ns are in [2, 4]
     '''
-    hws, cins, _, _, _, _ = read_conv_zoo()
+    hws, cins, _, _, _ = read_conv_zoo()
     new_hws = sample_based_on_distribution(hws, count)
     new_cins1 = sample_based_on_distribution(cins, count)
     new_cins2 = sample_based_on_distribution(cins, count)

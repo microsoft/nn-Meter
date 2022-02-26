@@ -38,6 +38,6 @@ setup(
         'console_scripts': ['nn-meter=nn_meter.utils.nn_meter_cli.interface:nn_meter_cli'],
     },
     install_requires=[
-        'numpy', 'tqdm', 'networkx', 'requests', 'protobuf', 'PyYAML', 'scikit_learn', 'packaging', 'jsonlines'
+        'numpy', 'pandas', 'tqdm', 'networkx', 'requests', 'protobuf', 'PyYAML', 'scikit_learn', 'packaging', 'jsonlines'
     ],
 )
