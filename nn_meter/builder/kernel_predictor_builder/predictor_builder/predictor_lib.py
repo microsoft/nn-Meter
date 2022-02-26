@@ -65,7 +65,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "fc": {
+    "fc_block": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
