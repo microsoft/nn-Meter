@@ -43,17 +43,17 @@ nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --ten
 # for ONNX (*.onnx) file
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
 #Example Usage
-nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --tensorflow mobilenetv3small_0.onnx 
+nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --onnx mobilenetv3small_0.onnx 
 
 # for torch model from torchvision model zoo (str)
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
 #Example Usage
-nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --torchvision mobilenet_v2 mobilenet_v2
+nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --torchvision mobilenet_v2
 
 # for nn-Meter IR (*.json) file
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
 #Example Usage
-nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --tensorflow mobilenetv3small_0.json 
+nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --nn-meter-ir mobilenetv3small_0.json 
 ```
 
 `--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest version of the predictor.
