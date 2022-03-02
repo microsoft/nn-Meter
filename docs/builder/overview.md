@@ -10,7 +10,7 @@ nn-Meter builder is an open source tool for users to build latency predictor on 
 
 ## <span id="create-workspace"> Create Workspace </span>
 
-Before employing any events of nn-Meter builder, a workspace folder should be create. In nn-Meter builder, a workspace refers to a direction to save experiment configs, test case models for detecting fusion rules, kernel models for building latency predictor, and results files for a group of experiments. Users could create a workspace folder by running the following command:
+Before using nn-Meter builder, a workspace folder should be created. In nn-Meter builder, a workspace refers to a direction to save experiment configs, test case models for detecting fusion rules, kernel models for building latency predictor, and results files for a group of experiments. Users can create a workspace folder by running the following command:
 
 ``` Bash
 # for TFLite platform
@@ -25,7 +25,7 @@ nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
 
 After running the command, a workspace folder will be created, and a series of configuration file will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/*.yaml` and edit the content to change configuration. 
 
-After completing configuration, users could initialize workspace in `builder_config` module in python binding:
+Then, users are required to initialize workspace in `builder_config` module via python binding:
 
 ```python
 from nn_meter.builder import builder_config
@@ -36,7 +36,7 @@ builder_config.init(
 ) # change the text to required platform type and workspace path
 ```
 
-Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
+Note: after executing ``builder_config.init``, the config are loaded permanently. If users want to update a config, it's required to repeat this initialization process again.
 
 ## Connect Backend
 
