@@ -1,8 +1,8 @@
 # Use Customized Predictor for Latency Prediction
 
-nn-Meter support customized predictor for latency prediction. To utilize customized predictor, users should provide several kernel latency predictors and a fusion rule json file. Users could use [nn-Meter builder](../builder/overview.md) to build their own latency predictors.
+nn-Meter supports customized latency predictors, which can be built on users' devices. To utilize customized predictor in nn-Meter, users should provide all the necessary kernel latency predictors and a fusion rule json file. Users could use [nn-Meter builder](../builder/overview.md) to build their own latency predictors.
 
-After preparing kernel latency predictors and fusion rule following guidance [here](../builder/overview.md), users should register the predictor to nn-Meter for reuse. First of all, put all kernel latency predictors and the fusion rule json file into one folder in a fixed location. The kernel latency predictors should be named by the kernel name, such as `"conv-bn-relu.pkl"`. The fusion rule json file should be named as `"fusion_rules.json"`.
+After preparing kernel latency predictors and fusion rule following guidance [here](../builder/overview.md), users should register the predictor to nn-Meter for reuse. First of all, put all kernel latency predictors and the fusion rule json file into one folder in a predefined location. The kernel latency predictors should be named by the kernel name, such as `"conv-bn-relu.pkl"`. The fusion rule json file should be named as `"fusion_rules.json"`.
 
 ### Step 1: Prepare Meta File
 
@@ -71,7 +71,7 @@ nn-meter --list-predictors
 
 Note: the folder of customized predictor must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
 
-## Use the Customized Backend in Experiment
+## Use the Customized Latency Predictor
 
 After registration, users could get access to the customized predictor by the same way as the builtin predictors. Following [here](usage.md) to get all usages.
 
