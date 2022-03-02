@@ -1,20 +1,32 @@
 # Setup Device and Backend
 
-To get the inference latency of a model on mobile devices, we implement several backends. These backends will run the model and parse the command line outputs to get latency results. We provide a consistent API for such backends. Currently we provide three instances on two inference frameworks, i.e., CPU backend (named `"tflite_cpu"`), GPU backend (named `"tflite_gpu"`) with TFLite platform, and VPU backend (named `"openvino_vpu"`) with OpenVINO platform. Users could list all the supported backends by running
+To profile the inference latency of a model on mobile devices, we implement several backends, where each backend consists of a software-stack inference framework and a hardware. These backends will run the model and parse the command line outputs to get latency results. To hide the measurement complexities caused by various inference frameworks and hardware devices, we provide a consistent API for backends. Currently we provide three instances on two inference frameworks, i.e., CPU backend (named `"tflite_cpu"`), GPU backend (named `"tflite_gpu"`) with TFLite platform, and VPU backend (named `"openvino_vpu"`) with OpenVINO platform. 
+
+Users could list all the supported backends by running
 ```
 nn-meter --list-backends
 ```
 
-Besides of the current backends, users can implement a customized backend via nn-Meter to build latency predictors for your own devices. nn-Meter  allows users to install the customized backend as a builtin algorithm, in order for users to use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md). 
+Besides of the current backends, users can implement a customized backend via nn-Meter to build latency predictors for your own devices. We  allow users to install the customized backend as a builtin algorithm, so that users can easily use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md). 
 
-Next, we will introduce how to setup the device and get connection to the backend.
+Next, we will introduce how to build the customized backend. The process is to setup the device and get connection to the backend.
 
 
 ## Setup Device
 
+### Prepare your Enviroment
+When you build a new backend, we recommend to use [virtualenv](https://virtualenv.pypa.io/en/latest/). We use python3.6 as our test environment.
+
+``` Bash
+virtualenv openvino_env
+source openvino_env/bin/activate
+pip install -r docs/requirements/openvino_requirements.txt
+deactivate
+```
+
 ### TFLite Android Guide
 
-TFLite is a widely-used and efficient inference framework for Android device. To setup Android device and TFLite framework, here are several steps. 
+TFLite is a widely-used and efficient inference framework for Android device. To setup Android device and TFLite framework, we list out the major steps as followings. 
 
 #### 1. Install ADB and Android SDK
 Follow [Android Guide](https://developer.android.com/studio) to install adb on your host device.
@@ -25,7 +37,8 @@ The easiest way is to directly download Android Studio from [this page](https://
 #### 2. Get TFLite Benchmark Model
 The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released a modified version of `benchmark_model` based on `tensorflow==2.1`. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
 
-NOTE: in the situation to deal with customized test case, our `benchmark_model` is probably not suitable. Users could follow [Official Guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
+NOTE: On a same hardware, the different versions of `benchmark_model` can result in different inference latency for a same model. We recommend users compile and build the `benchmark_model` for latest version. Users could follow [Official Guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
+
 
 #### 3. Setup Benckmark Tool on Device
 
@@ -42,18 +55,10 @@ adb shell chmod +x /data/local/tmp/benchmark_model
 
 Follow [OpenVINO Installation Guide](https://docs.openvinotoolkit.org/latest/installation_guides.html) to install openvino on your host.
 
-Since some tools for VPU use a different tensorflow and python version from nn_meter, you need to provide seperate environments for the main tool and VPU. We recommend to use [virtualenv](https://virtualenv.pypa.io/en/latest/). We use python3.6 as our test environment.
-
-``` Bash
-virtualenv openvino_env
-source openvino_env/bin/activate
-pip install -r docs/requirements/openvino_requirements.txt
-deactivate
-```
 
 ## <span id="prepare-configuration-file"> Prepare Configuration File </span>
 
-When connecting to backend, a series of configs should be declared and appointed by users. After creating workspace folder ([Workspace Guidance](overview.md#create-workspace)), a yaml file named `backend_config.yaml` will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content to change configuration.
+When connecting to backend, a series of configs should be manually defined by users. Firstly, users are required to create a workspace folder([Workspace Guidance](overview.md#create-workspace)). Then, a yaml file named `backend_config.yaml` will be created in `<workspace-path>/configs/`. Users can open `<workspace-path>/configs/backend_config.yaml` and edit the content to change configuration.
 
 Specifically, for Android CPU or GPU backends, the required parameters include:
 
@@ -70,7 +75,7 @@ For VPU backends with OpenVINO, the required parameters include:
 - `DEVICE_SERIAL`: serial id of the device
 - `DATA_TYPE`: data type of the model (e.g., fp16, fp32)
 
-Users could open `<workspace-path>/configs/backend_config.yaml` and edit the content. After completing configuration, users could initialize workspace in `builder_config` module before connecting backend:
+When the configuration edits are done, users should initialize the workspace in `builder_config` module before connecting the backend:
 
 ```python
 from nn_meter.builder import builder_config
@@ -81,23 +86,23 @@ builder_config.init(
 ) # change the text to required platform type and workspace path
 ```
 
-Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
+Note: after executing ``builder_config.init``, the config are loaded permanently. If users want to update a config, it's required to repeat this initialization process again.
+
 
 ## Connect to Backend
-
-Users could test if the connection is healthy by running
+We recommend users run the following command to test the connection with your backend:
 
 ``` Bash
 nn-meter connect --backend <backend-name> --workspace <path/to/workspace>
 ```
 
-If the connection is successful, there will be a message saying:
+If the connection is successfully built, a message will be shown as:
 
 ``` text
 (nn-Meter) hello backend !
 ```
 
-To apply the backend for model running, nn-Meter provides an interface `connect_backend` to initialize the backend connection. When using `connect_backend`, name of the required backend needs to be declared. 
+To apply the backend for model inference and profiling, nn-Meter provides an interface `connect_backend` to initialize the backend connection. When using `connect_backend`, you need define a name for the backend. 
 
 ```python
 # initialize workspace in code
@@ -110,7 +115,7 @@ from nn_meter.builder.backends import connect_backend
 backend = connect_backend(backend_name='tflite_cpu')
 ...
 ```
-Users could follow [this example](../../examples/nn-meter_builder_with_tflite.ipynb) to further know about our API.
+Users can follow [this example](../../examples/nn-meter_builder_with_tflite.ipynb) to get more details about our API.
 
 
 # <span id="build-customized-backend"> Build Customized Backend </span>
