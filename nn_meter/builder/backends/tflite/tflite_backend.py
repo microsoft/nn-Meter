@@ -10,13 +10,13 @@ logging = logging.getLogger("nn-Meter")
 
 class TFLiteBackend(BaseBackend):
     parser_class = None
-    runner_class = None
+    profiler_class = None
 
     def update_configs(self):
         """update the config parameters for TFLite platform
         """
         super().update_configs()
-        self.runner_kwargs.update({
+        self.profiler_kwargs.update({
             'dst_kernel_path': self.configs['KERNEL_PATH'],
             'serial': self.configs['DEVICE_SERIAL'],
             'benchmark_model_path': self.configs['BENCHMARK_MODEL_PATH'],

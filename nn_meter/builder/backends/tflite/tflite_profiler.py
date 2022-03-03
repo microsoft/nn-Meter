@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
-from ..interface import BaseRunner
+from ..interface import BaseProfiler
 
 
-class TFLiteRunner(BaseRunner):
+class TFLiteProfiler(BaseProfiler):
     use_gpu = None
 
     def __init__(self, dst_kernel_path, benchmark_model_path, graph_path='', dst_graph_path='', serial='', num_threads=1, num_runs=50, warm_ups=10):
@@ -24,7 +24,7 @@ class TFLiteRunner(BaseRunner):
         self._num_runs = num_runs
         self._warm_ups = warm_ups
 
-    def run(self, graph_path, preserve=False, clean=True, taskset='70'):
+    def profile(self, graph_path, preserve=False, clean=True, taskset='70'):
         """
         @params:
         preserve: tflite file exists in remote dir. No need to push it again.

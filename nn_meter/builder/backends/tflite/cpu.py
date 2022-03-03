@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import re
-from .tflite_runner import TFLiteRunner
+from .tflite_profiler import TFLiteProfiler
 from .tflite_backend import TFLiteBackend
 from ..interface import BaseParser
 from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
@@ -61,10 +61,10 @@ class TFLiteCPULatencyParser(BaseParser):
         return results
 
 
-class TFLiteCPURunner(TFLiteRunner):
+class TFLiteCPUProfiler(TFLiteProfiler):
     use_gpu = False
 
 
 class TFLiteCPUBackend(TFLiteBackend):
     parser_class = TFLiteCPULatencyParser
-    runner_class = TFLiteCPURunner
+    profiler_class = TFLiteCPUProfiler

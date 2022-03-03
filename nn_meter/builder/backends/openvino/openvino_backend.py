@@ -8,13 +8,13 @@ from nn_meter.utils.path import get_filename_without_ext
 
 class OpenVINOBackend(BaseBackend):
     parser_class = None
-    runner_class = None
+    profiler_class = None
 
     def update_configs(self):
         """update the config parameters for OpenVINO platform
         """
         super().update_configs()
-        self.runner_kwargs.update({
+        self.profiler_kwargs.update({
             'venv': self.configs['OPENVINO_ENV'],
             'optimizer': self.configs['OPTIMIZER_PATH'],
             'runtime_dir': self.configs['OPENVINO_RUNTIME_DIR'],
@@ -37,5 +37,5 @@ class OpenVINOBackend(BaseBackend):
         """convert the model to the backend platform and run the model on the backend, return required metrics 
         of the running results. We only support latency for metric by now.
         """
-        self.runner.load_graph(converted_model, self.tmp_dir)
-        return self.parser.parse(self.runner.run(input_shape)).results.get(metrics)
+        self.profiler.load_graph(converted_model, self.tmp_dir)
+        return self.parser.parse(self.profiler.profile(input_shape)).results.get(metrics)

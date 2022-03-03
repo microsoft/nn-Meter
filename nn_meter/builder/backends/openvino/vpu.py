@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import re
-from .openvino_runner import OpenVINORunner
+from .openvino_profiler import OpenVINOProfiler
 from .openvino_backend import OpenVINOBackend
 from ..interface import BaseParser
 from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
@@ -45,10 +45,10 @@ class OpenVINOVPULatencyParser(BaseParser):
         return results
 
 
-class OpenVINOVPURunner(OpenVINORunner):
+class OpenVINOVPUProfiler(OpenVINOProfiler):
     device = "MYRIAD"
 
 
 class OpenVINOVPUBackend(OpenVINOBackend):
     parser_class = OpenVINOVPULatencyParser
-    runner_class = OpenVINOVPURunner
+    profiler_class = OpenVINOVPUProfiler

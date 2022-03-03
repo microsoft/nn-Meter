@@ -7,11 +7,11 @@ import shutil
 import serial
 
 from .utils import restart
-from ..interface import BaseRunner
+from ..interface import BaseProfiler
 from nn_meter.utils.pyutils import get_pyver
 
 
-class OpenVINORunner(BaseRunner):
+class OpenVINOProfiler(BaseProfiler):
 
     device = None
 
@@ -28,7 +28,7 @@ class OpenVINORunner(BaseRunner):
         self._graph_path = graph_path
         self._dst_graph_path = dst_graph_path
 
-    def run(self, shapes, retry=2):
+    def profile(self, shapes, retry=2):
         interpreter_path = os.path.join(self._venv, 'bin/python')
         pyver = get_pyver(interpreter_path)
 

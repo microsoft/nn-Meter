@@ -124,11 +124,11 @@ Users can follow [this example](../../examples/nn-meter_builder_with_tflite.ipyn
 
 nn-Meter provides API for users to customize their own backend. Here we firstly describe the implementation of `BaseBackend`. We define the base of all backend in `nn_meter.builder.backend.BaseBackend` as follows:
 
-- `runner_class`: a subclass inherit form `nn_meter.builder.backend.BaseRunner` to specify the running command of the backend. A runner contains commands to push the model to mobile device, run the model on the mobile device, get stdout from the mobile device, and related operations. In the implementation of a runner, an interface of ``Runner.run()`` is required. Users need to modify this **at the most time**.
+- `profiler_class`: a subclass inherit form `nn_meter.builder.backend.BaseProfiler` to specify the running command of the backend. A profiler contains commands to push the model to mobile device, run the model on the mobile device, get stdout from the mobile device, and related operations. In the implementation of a profiler, an interface of ``Profiler.profile()`` is required. Users need to modify this **at the most time**.
 
-    - `run`: Main steps of ``Runner.run()`` includes 1) push the model file to edge devices, 2) profile models in required times and get back running results. Return the running results on edge device.
+    - `profile`: Main steps of ``Profiler.profile()`` includes 1) push the model file to edge devices, 2) profile models in required times and get back running results. Return the running results on edge device.
 
-- `parser_class`: a subclass inherit form `nn_meter.builder.backend.BaseParser` to parse the profiled results. A parser parses the stdout from runner and get required metrics. In the implementation of a parser, interface of `Parser.parse()` and property of `Parser.results()` are required.  Users are required to modify this **all the time**.
+- `parser_class`: a subclass inherit form `nn_meter.builder.backend.BaseParser` to parse the profiled results. A parser parses the stdout from device runner and get required metrics. In the implementation of a parser, interface of `Parser.parse()` and property of `Parser.results()` are required.  Users are required to modify this **all the time**.
     
     - `parse`: a string parser to parse profiled results value from the standard output of devices runner. This method should return the instance class itself.
 
@@ -148,14 +148,14 @@ nn-Meter provides API for users to customize their own backend. Here we firstly 
 Here is an example of how to create a new backend class:
 
 ```python
-from nn_meter.builder.backend import BaseBackend, BaseParser, BaseRunner
+from nn_meter.builder.backend import BaseBackend, BaseParser, BaseProfiler
 
 class MyParser(BaseParser): ...
-class MyRunner(BaseRunner): ...
+class MyProfiler(BaseProfiler): ...
 
 class MyBackend(BaseBackend):
     parser_class = MyParser
-    runner_class = MyRunner
+    profiler_class = MyProfiler
 ```
 
 Besides these customized backends, nn-Meter also provide TFLite backend (`nn_meter.builder.backend.TFLiteBackend`), and OpenVINO backend (`nn_meter.builder.backend.OpenVINOBackend`). If users want to create new device instance based on TFLite or OpenVINO, you can firstly inherit these two classes. Some methods such as  `convert_model`, `profile`, and `test_connection` can be reused.
@@ -163,21 +163,21 @@ Besides these customized backends, nn-Meter also provide TFLite backend (`nn_met
 Here is an example that firstly inherits `TFLiteBackend` and then creates a backend named `my_tflite`:
 
 ```python
-from nn_meter.builder.backend import TFLiteBackend, TFLiteRunner, BaseParser
+from nn_meter.builder.backend import TFLiteBackend, TFLiteProfiler, BaseParser
 
 class MyParser(BaseParser): ...
-class MyRunner(TFLiteRunner): ...
+class MyProfiler(TFLiteProfiler): ...
 
 class MyTFLiteBackend(TFLiteBackend):
     parser_class = MyParser
-    runner_class = MyRunner
+    profiler_class = MyProfiler
 ```
 
 ## Register Backend to nn-Meter
 
 ### Step 1: Create a Package for the Customized Backend
 
-After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. This config file will be copied to workspace when running `nn-meter create --customized-workspace`. Users can refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config files in a package with a predefined location. The folder should contain all relevant classes, such as `Parser` and `Runner`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
+After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. This config file will be copied to workspace when running `nn-meter create --customized-workspace`. Users can refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config files in a package with a predefined location. The folder should contain all relevant classes, such as `Parser` and `Profiler`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
 
 ``` text
 ./customized_backend/
@@ -191,15 +191,15 @@ The interface of customized backend class is stored in `./customized_backend/bac
 
 ``` python
 import logging
-from nn_meter.builder.backends import BaseBackend, BaseParser, BaseRunner
+from nn_meter.builder.backends import BaseBackend, BaseParser, BaseProfiler
 
 class MyParser(BaseParser): ...
 
-class MyRunner(BaseRunner): ...
+class MyProfiler(BaseProfiler): ...
 
 class MyBackend(BaseBackend):
     parser_class = MyParser
-    runner_class = MyRunner
+    profiler_class = MyProfiler
 
     def __init__(self, config):
         pass

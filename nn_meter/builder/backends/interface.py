@@ -39,16 +39,16 @@ class BaseBackend:
 
     @params:
 
-    runner_class: a subclass inherit form `nn_meter.builder.backend.BaseRunner` to specify the running command of
-        the backend. A runner contains commands to push the model to mobile device, run the model on the mobile device,
-        get stdout from the mobile device, and related operations. In the implementation of a runner, an interface of
-        ``Runner.run()`` is required.
+    profiler_class: a subclass inherit form `nn_meter.builder.backend.BaseProfiler` to specify the running command of
+        the backend. A profiler contains commands to push the model to mobile device, run the model on the mobile device,
+        get stdout from the mobile device, and related operations. In the implementation of a profiler, an interface of
+        ``Profiler.profile()`` is required.
     
     parser_class: a subclass inherit form `nn_meter.builder.backend.BaseParser` to parse the profiled results.
-        A parser parses the stdout from runner and get required metrics. In the implementation of a parser, interface
+        A parser parses the stdout from devices profiler and get required metrics. In the implementation of a parser, interface
         of `Parser.parse()` and property of `Parser.results()` are required.
     """
-    runner_class = None
+    profiler_class = None
     parser_class = None
 
     def __init__(self, configs):
@@ -57,13 +57,13 @@ class BaseBackend:
         self.configs = configs
         self.update_configs()
         self.parser = self.parser_class(**self.parser_kwargs)
-        self.runner = self.runner_class(**self.runner_kwargs)
+        self.profiler = self.profiler_class(**self.profiler_kwargs)
 
     def update_configs(self):
         """ update the config parameters for the backend
         """
         self.parser_kwargs = {}
-        self.runner_kwargs = {}
+        self.profiler_kwargs = {}
     
     def convert_model(self, model_path, save_path, input_shape=None):
         """ convert the Keras model instance to the type required by the backend inference.
@@ -97,7 +97,7 @@ class BaseBackend:
         metrics: a list of required metrics name. Defaults to ['latency']
         
         """
-        return self.parser.parse(self.runner.run(converted_model)).results.get(metrics)
+        return self.parser.parse(self.profiler.profile(converted_model)).results.get(metrics)
 
     def profile_model_file(self, model_path, save_path, input_shape = None, metrics = ['latency']):
         """ load model by model file path, convert model file, and run ``self.profile()``
@@ -112,13 +112,13 @@ class BaseBackend:
         pass
 
 
-class BaseRunner:
+class BaseProfiler:
     """
-    Specify the running command of the backend. A runner contains commands to push the model to mobile device, run the model 
+    Specify the profiling command of the backend. A profiler contains commands to push the model to mobile device, run the model 
     on the mobile device, get stdout from the mobile device, and related operations. 
     """
-    def run(self):
-        """ Main steps of ``Runner.run()`` includes 1) push the model file to edge devices, 2) run models in required times
+    def profile(self):
+        """ Main steps of ``Profiler.profile()`` includes 1) push the model file to edge devices, 2) run models in required times
         and get back running results. Return the running results on edge device.
         """
         output = ''
@@ -127,7 +127,7 @@ class BaseRunner:
 
 class BaseParser:
     """
-    Parse the profiled results. A parser parses the stdout from runner and get required metrics.
+    Parse the profiled results. A parser parses the stdout from devices runner and get required metrics.
     """
     def parse(self, content):
         """ A string parser to parse profiled results value from the standard output of devices runner. This method should return the instance
@@ -135,7 +135,7 @@ class BaseParser:
 
         @params
         
-        content: the standard output from device runner       
+        content: the standard output from device       
         """
         return self
 

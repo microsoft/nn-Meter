@@ -2,15 +2,15 @@
 # Licensed under the MIT license.
 from .tflite import (
     TFLiteBackend,
-    TFLiteRunner
+    TFLiteProfiler
 )
 from .openvino import (
     OpenVINOBackend,
-    OpenVINORunner
+    OpenVINOProfiler
 )
 from .interface import (
     BaseBackend,
-    BaseRunner,
+    BaseProfiler,
     BaseParser,
     connect_backend,
     list_backends
