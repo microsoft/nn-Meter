@@ -43,6 +43,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     # start training
     predictor.fit(trainx, trainy)
     predicts = predictor.predict(testx)
+    pred_error_list = [abs(y1 - y2) / y1 for y1, y2 in zip(testy, predicts)]
     rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(predicts, testy)
     logging.info(f"rmse: {rmse:.4f}; rmspe: {rmspe:.4f}; error: {error:.4f}; 5% accuracy: {acc5:.4f}; 10% accuracy: {acc10:.4f}; 15% accuracy: {acc15:.4f}.")
     
@@ -50,6 +51,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     test_res = pd.DataFrame(testx, columns=[f'feature{i}' for i in range(len(testx[0]))])
     test_res["True"] = testy
     test_res["Pred"] = predicts
+    test_res["Error"] = pred_error_list
     test_res.to_csv(os.path.join(save_path, f"TestResult_{kernel_type}_{mark}.csv"), index=False)
     logging.info(f"All test data and predicted results are stored in path {os.path.join(save_path, f'TestResult_{kernel_type}_{mark}.csv')}")
     
@@ -63,9 +65,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     # locate large error data
     error_configs = []
     for i in range(len(testx)):
-        y1, y2 = testy[i], predicts[i]
-        error = abs(y1 - y2) / y1
-        if error > error_threshold:
+        if pred_error_list[i] > error_threshold:
             error_config = feature_parser.get_config_by_feature(testx[i])
             error_configs.append(error_config)
     

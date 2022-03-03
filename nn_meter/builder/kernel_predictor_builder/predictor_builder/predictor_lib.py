@@ -402,7 +402,7 @@ def init_predictor(kernel_type, backend):
             n_estimators = 370,
             min_samples_leaf = 1,
             min_samples_split = 2,
-            max_features = 2,
+            max_features = "auto",
             oob_score = True,
             random_state = 10,
         )
