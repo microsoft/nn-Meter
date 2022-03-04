@@ -35,7 +35,7 @@ The easiest way is to directly download Android Studio from [this page](https://
 
 
 #### 2. Get TFLite Benchmark Model
-The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released a modified version of `benchmark_model` based on `tensorflow==2.1`. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/benchmark_model).
+The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released two modified version of `benchmark_model` based on `tensorflow==2.1` and `tensorflow==2.7`, respectively. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/blob/dev/rule-tester/material/inference_framework_binaries/).
 
 NOTE: On a same hardware, the different versions of `benchmark_model` can result in different inference latency for a same model. We recommend users compile and build the `benchmark_model` for latest version. Users could follow [Official Guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
 
