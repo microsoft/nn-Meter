@@ -36,7 +36,7 @@ class KernelGenerator:
         for id, value in self.kernels.items():
             model_path = os.path.join(self.case_save_path, "_".join([kernel_type, self.mark, id]))
             kernel_cfg = value['config']
-            _, input_tensor_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, savepath=model_path)
+            _, input_tensor_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, save_path=model_path)
             self.kernels[id] = {
                 'model': model_path,
                 'shapes': input_tensor_shape,

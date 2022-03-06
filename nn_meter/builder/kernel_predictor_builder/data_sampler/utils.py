@@ -58,7 +58,7 @@ if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__
         __REG_KERNELS__ = registry_modules["kernels"]
 
 
-def generate_model_for_kernel(kernel_type, config, savepath):
+def generate_model_for_kernel(kernel_type, config, save_path):
     """ get the nn model for predictor build. returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
     """
     # get kernel class information
@@ -79,8 +79,8 @@ def generate_model_for_kernel(kernel_type, config, savepath):
 
     # save model file to savepath
     from tensorflow import keras
-    keras.models.save_model(model, savepath)
-    logging.info(f"{kernel_type} model is generated and saved to {savepath}.")
+    keras.models.save_model(model, save_path)
+    logging.info(f"{kernel_type} model is generated and saved to {save_path}.")
 
     return model, input_tensor_shape, config
 

@@ -56,8 +56,10 @@ class BaseBackend:
         """
         self.configs = configs
         self.update_configs()
-        self.parser = self.parser_class(**self.parser_kwargs)
-        self.profiler = self.profiler_class(**self.profiler_kwargs)
+        if self.parser_class:
+            self.parser = self.parser_class(**self.parser_kwargs)
+        if self.profiler_class:
+            self.profiler = self.profiler_class(**self.profiler_kwargs)
 
     def update_configs(self):
         """ update the config parameters for the backend
