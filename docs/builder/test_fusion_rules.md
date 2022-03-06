@@ -300,7 +300,7 @@ If users want to add new operators into basic test cases, here are several steps
 
 ### Step 1: Prepare the Customized Operator Class
 
-nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by inheriting a base class named `nn_meter.builder.nn_generator.tf_networks.BaseOperator`. The class has two input parameters, including `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. There are following methods in this base class:
+nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by inheriting a base class named `nn_meter.builder.nn_generator.BaseOperator`. The class has two input parameters, including `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. There are following methods in this base class:
 
 - `get_model`: Return the model function of the operator. Users need to modify this **all the time**.
 
@@ -375,7 +375,7 @@ nn-Meter requires users to gather all code of operator in a package with a fixed
 The interface of customized operator class are stored in `./customized_operator/operator_script.py`. In this demo, the content of `operator_script.py` includes:
 
 ``` python
-from nn_meter.builder.nn_generator.tf_networks import BaseOperator
+from nn_meter.builder.nn_generator import BaseOperator
 from tensorflow import keras
 
 def Op1(BaseOperator):

@@ -188,7 +188,7 @@ If users want to add new kernels to profile latency and build predictor, here ar
 
 ### Step 1: Prepare the Customized Kernel Class
 
-nn-Meter provide API for users to customize their own kernel block. In nn-Meter, each kernel is implemented by inheriting a base class named `nn_meter.builder.nn_generator.tf_networks.BaseBlock`. The kernel block has a input parameter `config` to feed configuration params for the kernel. There are two attributes should be claimed, including `input_shape` and `input_tensor_shape`, as well as one method named `get_model()`. 
+nn-Meter provide API for users to customize their own kernel block. In nn-Meter, each kernel is implemented by inheriting a base class named `nn_meter.builder.nn_generator.BaseBlock`. The kernel block has a input parameter `config` to feed configuration params for the kernel. There are two attributes should be claimed, including `input_shape` and `input_tensor_shape`, as well as one method named `get_model()`. 
 
 - `input_shape` defines the dimension of one model input shape without batch size. Generally, when the input shape is 3D, `input_shape` should be`[config["HW"], config["HW"], config["CIN"]]`, and when the input shape is 1D, `input_shape` should be`[config["CIN"]]`. 
 
@@ -200,7 +200,7 @@ Users could refer to the following example to learn how to write a kernel class.
 
 ``` python
 import tensorflow.keras as keras
-from nn_meter.builder.nn_generator.tf_networks import BaseBlock
+from nn_meter.builder.nn_generator import BaseBlock
 
 class MyKernel(BaseBlock):
     ''' This kernel is built by Conv, BN, and Relu layer, which is the same as the builtin `conv_bn_relu` block.

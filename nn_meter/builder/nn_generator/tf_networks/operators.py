@@ -3,27 +3,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-
-
-class BaseOperator:
-    def __init__(self, input_shape, config=None):
-        self.input_shape = input_shape
-        self.config = config
-
-    def get_model(self):
-        pass
-
-    def get_output_shape(self):
-        return self.input_shape
-
-    def get_is_two_inputs(self):
-        return False
-    
-    def test_operator():
-        ''' for users to test the model when registration. Do not need to override by users.
-        '''
-        pass
-
+from ..interface import BaseOperator
 
 ''' 
 This file contains the keras implementation of operators, return (the function of the operator (tf.keras.Model), the output shape of the operator)
