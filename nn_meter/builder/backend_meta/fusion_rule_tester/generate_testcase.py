@@ -7,7 +7,6 @@ import importlib
 from tensorflow import keras
 from .utils import get_operator_by_name, generate_model_for_testcase
 from .build_models import SingleOpModel
-from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.builder.backend_meta.utils import Latency
 
 __BUILTIN_TESTCASES__ = {'MON'}
@@ -62,6 +61,7 @@ class BaseTestCase:
         return testcase
 
     def save_testcase(self):
+        from nn_meter.builder.nn_generator.tf_networks.utils import get_tensor_by_shapes
         testcase = self.generate_testcase()
 
         for op, model in testcase.items():

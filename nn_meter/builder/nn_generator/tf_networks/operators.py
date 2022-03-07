@@ -6,7 +6,7 @@ from tensorflow import keras
 from ..interface import BaseOperator
 
 ''' 
-This file contains the keras implementation of operators, return (the function of the operator (tf.keras.Model), the output shape of the operator)
+This file contains the keras implementation of operators
 '''
 
 #---------------------- convolution layer ----------------------#

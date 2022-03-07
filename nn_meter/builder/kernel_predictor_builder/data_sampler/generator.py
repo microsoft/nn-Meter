@@ -19,6 +19,7 @@ class KernelGenerator:
         self.case_save_path = os.path.join(self.ws_path, 'models')
         self.kernel_info = {kernel_type: {}}
         self.kernels = self.kernel_info[self.kernel_type]
+        self.implement = builder_config.get('IMPLEMENT', 'predbuild')
         self.mark = mark
 
     def generate_config(self, sampling_mode = 'prior', configs = None):
@@ -36,7 +37,7 @@ class KernelGenerator:
         for id, value in self.kernels.items():
             model_path = os.path.join(self.case_save_path, "_".join([kernel_type, self.mark, id]))
             kernel_cfg = value['config']
-            _, input_tensor_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, save_path=model_path)
+            _, input_tensor_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, save_path=model_path, implement=self.implement)
             self.kernels[id] = {
                 'model': model_path,
                 'shapes': input_tensor_shape,

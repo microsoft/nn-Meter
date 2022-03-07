@@ -3,7 +3,6 @@
 import os
 import logging
 from ..interface import BaseBackend
-from nn_meter.builder.utils import get_tensor_by_shapes
 from nn_meter.utils.path import get_filename_without_ext
 logging = logging.getLogger("nn-Meter")
 
@@ -29,7 +28,6 @@ class TFLiteBackend(BaseBackend):
         import tensorflow as tf
         model_name = get_filename_without_ext(model_path)
         model = tf.keras.models.load_model(model_path)
-        model(get_tensor_by_shapes(input_shape))
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
         tflite_model = converter.convert()
         converted_model = os.path.join(save_path, model_name + '.tflite')

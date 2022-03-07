@@ -5,10 +5,7 @@ import sys
 import yaml
 import logging
 import importlib
-import numpy as np
 from . import config_sampler
-from nn_meter.builder.utils import get_inputs_by_shapes
-from nn_meter.builder.nn_generator.tf_networks import blocks
 logging = logging.getLogger("nn-Meter")
 
 
@@ -58,9 +55,16 @@ if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__
         __REG_KERNELS__ = registry_modules["kernels"]
 
 
-def generate_model_for_kernel(kernel_type, config, save_path):
+def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorflow'):
     """ get the nn model for predictor build. returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
     """
+    if implement == 'tensorflow':
+        from nn_meter.builder.nn_generator.tf_networks import blocks
+    elif implement == 'torch':
+        from nn_meter.builder.nn_generator.torch_networks import blocks
+    else:
+        raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
+    
     # get kernel class information
     if kernel_type in __REG_KERNELS__:
         kernel_info = __REG_KERNELS__[kernel_type]
@@ -75,11 +79,9 @@ def generate_model_for_kernel(kernel_type, config, save_path):
     kernel_class = getattr(kernel_module, kernel_name)(config)
     input_tensor_shape = kernel_class.input_tensor_shape
     model = kernel_class.get_model()
-    model(get_inputs_by_shapes(input_tensor_shape))
 
     # save model file to savepath
-    from tensorflow import keras
-    keras.models.save_model(model, save_path)
+    kernel_class.save_model(save_path)
     logging.info(f"{kernel_type} model is generated and saved to {save_path}.")
 
     return model, input_tensor_shape, config

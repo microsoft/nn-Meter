@@ -4,8 +4,7 @@ import os
 import sys
 import yaml
 import importlib
-from nn_meter.builder.utils import get_tensor_by_shapes
-from nn_meter.utils.path import get_filename_without_ext
+
 
 __BUILTIN_BACKENDS__ = {
     "tflite_cpu": {
@@ -81,12 +80,8 @@ class BaseBackend:
         input_shape: the shape of input tensor for inference, a random tensor according to the shape will be 
             generated and used
         """
-        import tensorflow as tf
-        model_name = get_filename_without_ext(model_path)
-        model = tf.keras.models.load_model(model_path)
-        model(get_tensor_by_shapes(input_shape))
-        converted_model = os.path.join(save_path, model_name)
         # convert model and save the converted model to path `converted_model`
+        converted_model = ...
         return converted_model
 
     def profile(self, converted_model, metrics = ['latency'], input_shape = None):

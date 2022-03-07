@@ -1,5 +1,6 @@
 KERNEL: None
 DETAIL: FALSE
+IMPLEMENT: tensorflow
 KERNELS:
   conv_bn_relu:
     INIT_SAMPLE_NUM: 1000

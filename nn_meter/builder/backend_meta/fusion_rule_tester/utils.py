@@ -64,7 +64,7 @@ def get_operator_by_name(operator_name, input_shape, config = None):
 
 def generate_model_for_testcase(op1, op2, input_shape, config):
     from .build_models import SingleOpModel, TwoOpModel
-    from nn_meter.builder.utils import get_inputs_by_shapes
+    from nn_meter.builder.nn_generator.tf_networks.utils import get_inputs_by_shapes
     layer1, op1_output_shape, op1_is_two_inputs = get_operator_by_name(op1, input_shape, config)
     layer2, _, op2_is_two_inputs = get_operator_by_name(op2, op1_output_shape, config)
 

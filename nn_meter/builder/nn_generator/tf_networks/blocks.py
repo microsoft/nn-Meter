@@ -5,11 +5,43 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from .operators import *
 from ..interface import BaseBlock
-from nn_meter.builder.utils import get_inputs_by_shapes
+from .utils import get_inputs_by_shapes
 logging = logging.getLogger("nn-Meter")
 
 
-class ConvBnRelu(BaseBlock):
+class TFBlock(BaseBlock):
+    def test_block(self):
+        import os, shutil
+        from typing import List
+        model_path = "./temp_model"
+        model = self.get_model()
+        model_output = model(get_inputs_by_shapes(self.input_tensor_shape))
+        
+        # check model save and reload
+        keras.models.save_model(model, model_path)
+        restore_model = keras.models.load_model(model_path)
+        if isinstance(model_output, List):
+            output_shape = [mod.shape for mod in model_output]
+            restore_output_shape = [mod.shape for mod in restore_model(get_inputs_by_shapes(self.input_tensor_shape))]
+        else:
+            output_shape = model_output.shape
+            restore_output_shape = restore_model(get_inputs_by_shapes(self.input_tensor_shape)).shape
+        assert output_shape == restore_output_shape
+        shutil.rmtree(model_path)
+
+        # check model convert to tflite
+        converter = tf.lite.TFLiteConverter.from_keras_model(restore_model)
+        tflite_model = converter.convert()
+        open(model_path + '.tflite', 'wb').write(tflite_model)
+        os.remove(model_path + '.tflite')
+        logging.keyinfo("Testing block is success!")
+
+    def save_model(self, save_path):
+        model = self.get_model()
+        keras.models.save_model(model, save_path)
+
+
+class ConvBnRelu(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -37,11 +69,12 @@ class ConvBnRelu(BaseBlock):
                 x = self.bn(x)
                 x = self.relu(x)
                 return x
+        model = Model(self.conv_op, self.bn_op, self.relu_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
-        return Model(self.conv_op, self.bn_op, self.relu_op)
 
-
-class ConvBnRelu6(BaseBlock):
+class ConvBnRelu6(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -70,10 +103,12 @@ class ConvBnRelu6(BaseBlock):
                 x = self.relu6(x)
                 return x
 
-        return Model(self.conv_op, self.bn_op, self.relu6_op)
+        model = Model(self.conv_op, self.bn_op, self.relu6_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvBn(BaseBlock):
+class ConvBn(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -97,10 +132,12 @@ class ConvBn(BaseBlock):
                 x = self.bn(x)
                 return x
 
-        return Model(self.conv_op, self.bn_op)
+        model = Model(self.conv_op, self.bn_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvRelu(BaseBlock):
+class ConvRelu(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -124,10 +161,12 @@ class ConvRelu(BaseBlock):
                 x = self.relu(x)
                 return x
 
-        return Model(self.conv_op, self.relu_op)
+        model = Model(self.conv_op, self.relu_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvRelu6(BaseBlock):
+class ConvRelu6(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -151,10 +190,12 @@ class ConvRelu6(BaseBlock):
                 x = self.relu6(x)
                 return x
 
-        return Model(self.conv_op, self.relu6_op)
+        model = Model(self.conv_op, self.relu6_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvHswish(BaseBlock):
+class ConvHswish(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -178,10 +219,12 @@ class ConvHswish(BaseBlock):
                 x = self.hswish(x)
                 return x
 
-        return Model(self.conv_op, self.hswish_op)
+        model = Model(self.conv_op, self.hswish_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvBlock(BaseBlock):
+class ConvBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -199,10 +242,12 @@ class ConvBlock(BaseBlock):
             def call(self, inputs):
                 return self.conv(inputs)
 
-        return Model(self.conv_op)
+        model = Model(self.conv_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvBnHswish(BaseBlock):
+class ConvBnHswish(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -231,10 +276,12 @@ class ConvBnHswish(BaseBlock):
                 x = self.hswish(x)
                 return x
 
-        return Model(self.conv_op, self.bn_op, self.hswish_op)
+        model = Model(self.conv_op, self.bn_op, self.hswish_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvBnReluMaxPool(BaseBlock):
+class ConvBnReluMaxPool(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -268,10 +315,12 @@ class ConvBnReluMaxPool(BaseBlock):
                 x = self.maxpool(x)
                 return x
 
-        return Model(self.conv_op, self.bn_op, self.relu_op, self.maxpool_op)
+        model = Model(self.conv_op, self.bn_op, self.relu_op, self.maxpool_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class DwConvBn(BaseBlock):
+class DwConvBn(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -295,10 +344,12 @@ class DwConvBn(BaseBlock):
                 x = self.bn(x)
                 return x
 
-        return Model(self.dwconv_op, self.bn_op)
+        model = Model(self.dwconv_op, self.bn_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class DwConvRelu(BaseBlock):
+class DwConvRelu(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -322,10 +373,12 @@ class DwConvRelu(BaseBlock):
                 x = self.relu(x)
                 return x
 
-        return Model(self.dwconv_op, self.relu_op)
+        model = Model(self.dwconv_op, self.relu_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class DwConvRelu6(BaseBlock):
+class DwConvRelu6(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -349,10 +402,12 @@ class DwConvRelu6(BaseBlock):
                 x = self.relu6(x)
                 return x
 
-        return Model(self.dwconv_op, self.relu6_op)
+        model = Model(self.dwconv_op, self.relu6_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class DwConvBnRelu(BaseBlock):
+class DwConvBnRelu(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -381,10 +436,12 @@ class DwConvBnRelu(BaseBlock):
                 x = self.relu(x)
                 return x
 
-        return Model(self.dwconv_op, self.bn_op, self.relu_op)
+        model = Model(self.dwconv_op, self.bn_op, self.relu_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class DwConvBnRelu6(BaseBlock):
+class DwConvBnRelu6(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -413,10 +470,12 @@ class DwConvBnRelu6(BaseBlock):
                 x = self.relu6(x)
                 return x
 
-        return Model(self.dwconv_op, self.bn_op, self.relu6_op)
+        model = Model(self.dwconv_op, self.bn_op, self.relu6_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class DwConvBlock(BaseBlock):
+class DwConvBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -434,10 +493,12 @@ class DwConvBlock(BaseBlock):
             def call(self, inputs):
                 return self.dwconv(inputs)
 
-        return Model(self.dwconv_op)
+        model = Model(self.dwconv_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConvBnHswish(BaseBlock):
+class ConvBnHswish(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -466,10 +527,12 @@ class ConvBnHswish(BaseBlock):
                 x = self.hswish(x)
                 return x
 
-        return Model(self.dwconv_op, self.bn_op, self.hswish_op)
+        model = Model(self.dwconv_op, self.bn_op, self.hswish_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class MaxPoolBlock(BaseBlock):
+class MaxPoolBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -487,10 +550,12 @@ class MaxPoolBlock(BaseBlock):
             def call(self, inputs):
                 return self.maxpool(inputs)
 
-        return Model(self.maxpool_op)
+        model = Model(self.maxpool_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class AvgPoolBlock(BaseBlock):
+class AvgPoolBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -508,10 +573,12 @@ class AvgPoolBlock(BaseBlock):
             def call(self, inputs):
                 return self.avgpool(inputs)
 
-        return Model(self.avgpool_op)
+        model = Model(self.avgpool_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class FCBlock(BaseBlock):
+class FCBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["CIN"]]
@@ -529,10 +596,12 @@ class FCBlock(BaseBlock):
             def call(self, inputs):
                 return self.fc(inputs)
 
-        return Model(self.fc_op)
+        model = Model(self.fc_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ConcatBlock(BaseBlock):
+class ConcatBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [[config["HW"], config["HW"], cin]
@@ -552,10 +621,12 @@ class ConcatBlock(BaseBlock):
             def call(self, inputs):
                 return self.concat(inputs)
 
-        return Model(self.concat_op)
+        model = Model(self.concat_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class SplitBlock(BaseBlock):
+class SplitBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -573,10 +644,12 @@ class SplitBlock(BaseBlock):
             def call(self, inputs):
                 return self.split(inputs)
 
-        return Model(self.split_op)
+        model = Model(self.split_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ChannelShuffle(BaseBlock):
+class ChannelShuffle(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -594,10 +667,12 @@ class ChannelShuffle(BaseBlock):
                 x = tf.reshape(x, [-1, h, w, c])
                 return x
 
-        return Model()
+        model = Model()
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class SEBlock(BaseBlock):
+class SEBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -615,10 +690,12 @@ class SEBlock(BaseBlock):
             def call(self, inputs):
                 return self.se(inputs)
 
-        return Model(self.se_op)
+        model = Model(self.se_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class GlobalAvgPoolBlock(BaseBlock):
+class GlobalAvgPoolBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -636,10 +713,12 @@ class GlobalAvgPoolBlock(BaseBlock):
             def call(self, inputs):
                 return self.globalavgpool(inputs)
 
-        return Model(self.globalavgpool_op)
+        model = Model(self.globalavgpool_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class BnRelu(BaseBlock):
+class BnRelu(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -663,10 +742,12 @@ class BnRelu(BaseBlock):
                 x = self.relu(x)
                 return x
 
-        return Model(self.bn_op, self.relu_op)
+        model = Model(self.bn_op, self.relu_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class BnBlock(BaseBlock):
+class BnBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -684,10 +765,12 @@ class BnBlock(BaseBlock):
             def call(self, inputs):
                 return self.bn(inputs)
 
-        return Model(self.bn_op)
+        model = Model(self.bn_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class HswishBlock(BaseBlock):
+class HswishBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -705,10 +788,12 @@ class HswishBlock(BaseBlock):
             def call(self, inputs):
                 return self.hswish(inputs)
 
-        return Model(self.hswish_op)
+        model = Model(self.hswish_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class ReluBlock(BaseBlock):
+class ReluBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -726,10 +811,12 @@ class ReluBlock(BaseBlock):
             def call(self, inputs):
                 return self.relu(inputs)
 
-        return Model(self.relu_op)
+        model = Model(self.relu_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class AddRelu(BaseBlock):
+class AddRelu(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -753,10 +840,12 @@ class AddRelu(BaseBlock):
                 x = self.relu(x)
                 return x
 
-        return Model(self.add_op, self.relu_op)
+        model = Model(self.add_op, self.relu_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class AddBlock(BaseBlock):
+class AddBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -774,10 +863,12 @@ class AddBlock(BaseBlock):
             def call(self, inputs):
                 return self.add([inputs, inputs])
 
-        return Model(self.add_op)
+        model = Model(self.add_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class GroupedConvBlock(BaseBlock):
+class GroupedConvBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -804,10 +895,12 @@ class GroupedConvBlock(BaseBlock):
                 ]
                 return tf.concat(x, axis=3)    
 
-        return Model(self.cout, self.num_groups, self.config['KERNEL_SIZE'], self.config['STRIDES'])
+        model = Model(self.cout, self.num_groups, self.config['KERNEL_SIZE'], self.config['STRIDES'])
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
 
 
-class MixedConvBlock(BaseBlock):
+class MixedConvBlock(TFBlock):
     def __init__(self, config):
         self.config = config
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
@@ -833,4 +926,6 @@ class MixedConvBlock(BaseBlock):
                 ]
                 return tf.concat(x, axis=3)    
 
-        return Model(self.cout, self.num_groups, self.config['STRIDES'])
+        model = Model(self.cout, self.num_groups, self.config['STRIDES'])
+        model(get_inputs_by_shapes(self.input_tensor_shape))
+        return model
