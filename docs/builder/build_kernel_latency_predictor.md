@@ -188,7 +188,7 @@ If users want to add new kernels to profile latency and build predictor, here ar
 
 ### Step 1: Prepare the Customized Kernel Class
 
-nn-Meter provide API for users to customize their own kernel block. In nn-Meter, each kernel is implemented by inheriting a base class named `nn_meter.builder.nn_generator.BaseBlock`. The kernel block has a input parameter `config` to feed configuration params for the kernel. There are two attributes should be claimed, including `input_shape` and `input_tensor_shape`, as well as one method named `get_model()`. nn-Meter support both tensorflow and torch implementation for the kernel model. Here we use tensorflow implementation as an example. 
+nn-Meter provide API for users to customize their own kernel block. In nn-Meter, each kernel is implemented by inheriting a base class named `nn_meter.builder.nn_generator.BaseBlock`. The kernel block has a input parameter `config` to feed configuration params for the kernel. There are two attributes should be claimed, including `input_shape` and `input_tensor_shape`, as well as one method named `get_model()`. nn-Meter support both tensorflow and torch implementation for the kernel model. Users could switch the kernel implementation between tensorflow and torch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use tensorflow implementation as an example. 
 
 - `input_shape` defines the dimension of one model input shape without batch size. Generally, when the input shape is 3D, `input_shape` should be`[config["HW"], config["HW"], config["CIN"]]`, and when the input shape is 1D, `input_shape` should be`[config["CIN"]]`. 
 
