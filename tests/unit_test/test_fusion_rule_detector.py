@@ -5,7 +5,7 @@
 
 from nn_meter.builder import profile_models
 from nn_meter.builder import builder_config
-builder_config.init("/data/jiahang/working/tftest") # initialize builder config with workspace
+builder_config.init("/path/to/workspace/") # initialize builder config with workspace
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder.backend_meta.fusion_rule_tester import generate_testcases, detect_fusion_rule
 
