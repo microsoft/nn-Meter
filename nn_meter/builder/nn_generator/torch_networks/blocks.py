@@ -18,7 +18,7 @@ class TorchBlock(BaseBlock):
         torch.onnx.export(
             model,
             get_inputs_by_shapes(self.input_tensor_shape),
-            save_path,
+            save_path + ".onnx",
             input_names=['input'],
             output_names=['output'],
             verbose=False,
@@ -31,7 +31,7 @@ class TorchBlock(BaseBlock):
 class ConvBnRelu(TorchBlock):
     def __init__(self, config):
         self.config = config
-        self.input_shape = [config["HW"], config["HW"], config["CIN"]]
+        self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
 
         conv_op = Conv(self.input_shape, config)
@@ -51,7 +51,7 @@ class ConvBnRelu(TorchBlock):
                 self.bn = bn_op
                 self.relu = relu_op
 
-            def call(self, inputs):
+            def forward(self, inputs):
                 x = self.conv(inputs)
                 x = self.bn(x)
                 x = self.relu(x)
@@ -63,7 +63,7 @@ class ConvBnRelu(TorchBlock):
 class DwConvBnRelu(TorchBlock):
     def __init__(self, config):
         self.config = config
-        self.input_shape = [config["HW"], config["HW"], config["CIN"]]
+        self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
 
         dwconv_op = DwConv(self.input_shape, config)
@@ -83,7 +83,7 @@ class DwConvBnRelu(TorchBlock):
                 self.bn = bn_op
                 self.relu = relu_op
 
-            def call(self, inputs):
+            def forward(self, inputs):
                 x = self.dwconv(inputs)
                 x = self.bn(x)
                 x = self.relu(x)
