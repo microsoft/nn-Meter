@@ -5,9 +5,7 @@ import copy
 import math
 import logging
 from .protobuf_helper import ProtobufHelper as ph
-
-
-logging = logging.getLogger(__name__)
+logging = logging.getLogger("nn-Meter")
 
 
 class ShapeInference:

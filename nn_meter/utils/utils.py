@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
-from zipfile import ZipFile
-from tqdm import tqdm
-import requests
-import logging
 import json
+import requests
 import numpy as np
+from tqdm import tqdm
+from zipfile import ZipFile
+
 
 def download_from_url(urladdr, ppath):
     """
@@ -21,7 +21,6 @@ def download_from_url(urladdr, ppath):
     if not os.path.isdir(ppath):
         os.makedirs(ppath)
 
-    logging.keyinfo(f'Download from {urladdr}')
     response = requests.get(urladdr, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     block_size = 2048  # 2 Kibibyte

@@ -28,7 +28,7 @@ jobs:
         path: |
           ~/.nn_meter
           /home/runner/work/nn-Meter/data/testmodels
-        key: ${{hashFiles('nn_meter/configs/predictors.yaml')}}-${{hashFiles('tests/integration_test.py')}}
+        key: ${{hashFiles('nn_meter/configs/predictors.yaml')}}-${{hashFiles('tests/integration_test/test_latency_predictor.py')}}
 
     - name: Install dependencies
       run: |
@@ -40,10 +40,10 @@ jobs:
       run: pip install -U .
 
     - name: Integration test
-      run: python tests/integration_test_torch.py --apply-nni
+      run: python tests/integration_test/test_latency_predictor_torch.py --apply-nni
     
     - name: Diff result with reference
-      run: diff tests/data/reference_result_nni_based_torch.txt tests/test_result_nni_based_torch.txt
+      run: diff tests/integration_test/data/reference_result_nni_based_torch.txt tests/integration_test/test_result_nni_based_torch.txt
         
     - name: clean env
-      run: rm tests/test_result_nni_based_torch.txt
+      run: rm tests/integration_test/test_result_nni_based_torch.txt

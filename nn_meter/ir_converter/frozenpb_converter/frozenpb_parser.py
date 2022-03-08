@@ -3,12 +3,9 @@
 import re
 import copy
 import logging
-
 from .protobuf_helper import ProtobufHelper
 from nn_meter.utils.import_package import try_import_tensorflow
-
-
-logging = logging.getLogger(__name__)
+logging = logging.getLogger("nn-Meter")
 
 
 class FrozenPbParser:

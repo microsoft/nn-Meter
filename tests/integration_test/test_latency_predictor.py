@@ -3,9 +3,9 @@
 import re
 import os
 import time
-from glob import glob
 import logging
 import subprocess
+from glob import glob
 from nn_meter import download_from_url
 
 
@@ -52,7 +52,7 @@ def parse_latency_info(info):
     
 
 # integration test to predict model latency
-def integration_test(model_type, url, ppath, output_name = "tests/test_result.txt"):
+def integration_test(model_type, url, ppath, output_name = "tests/integration_test/test_result.txt"):
     """
     download the kernel predictors from the url
     @params:
@@ -109,7 +109,7 @@ def check_getir_module(model_type, ppath):
 
 if __name__ == "__main__":
     check_package_status()
-    output_name = "tests/test_result.txt"
+    output_name = "tests/integration_test/test_result.txt"
 
     # check tensorflow model
     integration_test(

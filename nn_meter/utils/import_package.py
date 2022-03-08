@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 import logging
 from packaging import version
+logging = logging.getLogger("nn-Meter")
 
 
 def try_import_onnx(require_version = ["1.9.0"]):

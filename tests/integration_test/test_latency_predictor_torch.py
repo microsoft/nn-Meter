@@ -1,9 +1,10 @@
-import re
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import os
 import time
 import logging
 import subprocess
-from integration_test import *
+from test_latency_predictor import *
 import argparse
 
 
@@ -24,7 +25,7 @@ __torchvision_model_zoo__ = {
 
     
 # integration test to predict model latency
-def integration_test_onnx_based_torch(model_type, model_list, output_name = "tests/test_result_onnx_based_torch.txt"):
+def integration_test_onnx_based_torch(model_type, model_list, output_name = "tests/integration_test/test_result_onnx_based_torch.txt"):
     """
     download the kernel predictors from the url
     @params:
@@ -59,7 +60,7 @@ def integration_test_onnx_based_torch(model_type, model_list, output_name = "tes
             logging.error(f"Meets ERROR when checking --torchvision {model_list} --predictor {pred_name} --predictor-version {pred_version}")
 
 # integration test to predict model latency
-def integration_test_nni_based_torch(output_name = "tests/test_result_nni_based_torch.txt", output = True):
+def integration_test_nni_based_torch(output_name = "tests/integration_test/test_result_nni_based_torch.txt", output = True):
     """
     download the kernel predictors from the url
     @params:
@@ -118,4 +119,3 @@ if __name__ == "__main__":
                 'resnet18', 'alexnet', 'vgg16', 'squeezenet', 'densenet161', 'inception_v3', 'googlenet', 
                 'shufflenet_v2', 'mobilenet_v2', 'resnext50_32x4d', 'wide_resnet50_2', 'mnasnet']
         )
-    

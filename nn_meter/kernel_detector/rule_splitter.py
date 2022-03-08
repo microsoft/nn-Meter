@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 from .rule_reader import RuleReader
-from ..utils.match_helper import MatchHelper
-from ..utils.fusion_aware_graph import FusionAwareGraph
+from .utils.match_helper import MatchHelper
+from .utils.fusion_aware_graph import FusionAwareGraph
 from nn_meter.utils.graph_tool import ModelGraph
 
 
@@ -46,10 +46,6 @@ class RuleSplitter:
                 node_type = fusion_graph.get_type(i)
                 if not self.rule_reader.is_fusible(node_type, outnode_type):
                     continue
-                # RT
-                if self.rule_reader.query_rule("RT"):
-                    if not fusion_graph.is_ready(j):
-                        continue
                 # fuse node
                 if mon == 0:
                     fusion_graph.fuse(i, j)

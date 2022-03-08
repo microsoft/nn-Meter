@@ -5,6 +5,7 @@ from itertools import chain
 from .utils import get_tensor_shape
 from .constants import SLICE_TYPE
 from nn_meter.utils.import_package import try_import_onnx
+logging = logging.getLogger("nn-Meter")
 
 
 class OnnxConverter:

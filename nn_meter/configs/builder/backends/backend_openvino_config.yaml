@@ -1,0 +1,5 @@
+OPENVINO_ENV: 
+OPTIMIZER_PATH': /data/openvino_2019.2.242/deployment_tools/model_optimizer/mo_tf.py
+OPENVINO_RUNTIME_DIR': /data/openvino_2019.2.242/bin
+DEVICE_SERIAL': /dev/ttyUSB4
+DATA_TYPE': FP16

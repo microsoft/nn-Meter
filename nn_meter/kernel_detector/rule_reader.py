@@ -1,14 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import json
-from ..fusionlib import get_fusion_unit
+from .fusion_lib import get_fusion_unit
 from nn_meter.utils.graph_tool import ModelGraph
 
 
 class RuleReader:
     rules_default = {
         "MON": 0,
-        "RT": True,
         "FN": True,
     }
 

@@ -3,8 +3,8 @@
 from nn_meter.utils.graph_tool import ModelGraph
 from .utils.constants import DUMMY_TYPES
 from .utils.ir_tools import convert_nodes
-from .rulelib.rule_reader import RuleReader
-from .rulelib.rule_splitter import RuleSplitter
+from .rule_reader import RuleReader
+from .rule_splitter import RuleSplitter
 
 
 class KernelDetector:
@@ -21,11 +21,7 @@ class KernelDetector:
         self.model_graph.refresh()
         self.bbs = self.splitter.split(self.model_graph)
 
-    @property
-    def kernels(self):
-        """
-        TODO: Should be a method and renamed to get_kernels()
-        """
+    def get_kernels(self):
         kernels = []
         self._global_index = 0
         self._layer_kernel_dict = {}
