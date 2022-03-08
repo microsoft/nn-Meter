@@ -1,12 +1,10 @@
 # Overview
-Note: This is an beta (preview) version which is still under refining.
-
 nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices.
 
 ## Key Techniques
 nn-Meter contains two key techniques: (i) kernel detection to automatically detect the execution unit of model inference via a set of well-designed test cases; (ii) adaptive sampling to efficiently sample the most beneficial configurations from a large space to build accurate kernel-level latency predictors.
 
-nn-Meter currently supports multiple input model formats, please refer [input_models](input_models.md) for more details.
+nn-Meter currently supports multiple input model formats, please refer [input_models](predictor/input_models.md) for more details.
 
 As discussed in nn-Meter paper, the approach is general to any DNN models on diverse edge devices. However, the current implementation considers the major CNN architectures on four types of hardware platforms. The following table shows the prediction performance of tested CNN model families on mobile CPU (i.e., *cortexA76cpu_tflite21*), mobile GPU 640 (i.e., *adreno640gpu_tflite21*), mobile GPU 630 (i.e., *adreno630gpu_tflite21*) and Intel VPU (i.e., *myriadvpu_openvino2019r2*).
 
@@ -19,8 +17,26 @@ If you have a new hardware to predict DNN latency,  a re-run of nn-Meter is requ
 ## Learn More
 - [Get started](quick_start.md)
 
-- [How to use nn-Meter Predictor](predictor/usage.md)
+- nn-Meter Key Techniques
 
-- [nn-Meter in hardware-aware NAS](predictor/hardware-aware-model-design.md)
+    - [Operator](ops.md)
 
-- [nn-Meter bench dataset](dataset.md)
+    - [Kernel](kernel.md)
+
+- nn-Meter Predictor
+
+    - [How to use nn-Meter Predictor](predictor/usage.md)
+
+    - [nn-Meter in hardware-aware NAS](predictor/hardware-aware-model-design.md)
+
+- [nn-Meter Bench Dataset](dataset.md)
+
+- [nn-Meter Builder](builder/overview.md)
+
+    - [Connect Backend](builder/prepare_backend.md)
+
+    - [Detect Fusion Rules on Backend](builder/test_fusion_rules.md)
+
+    - [Build Kernel Latency Predictor](builder/build_kernel_latency_predictor.md)
+
+    - [Use Customized Predictor for Prediction](builder/customize_predictor.md)

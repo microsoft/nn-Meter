@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import os, sys
+import os
 import logging
 import jsonlines
 from glob import glob
-
 from nn_meter.predictor import latency_metrics, list_latency_predictors, load_latency_predictor
 from nn_meter.utils import download_from_url, get_user_data_folder
+logging = logging.getLogger("nn-Meter")
 
 
 __user_dataset_folder__ = os.path.join(get_user_data_folder(), 'dataset')
@@ -22,7 +22,6 @@ def bench_dataset(url="https://github.com/microsoft/nn-Meter/releases/download/v
     return datasets
         
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stdout, format="(nn-Meter) %(message)s", level=logging.KEYINFO)
 
     datasets = bench_dataset()
     hws = list_latency_predictors()

@@ -1,0 +1,20 @@
+{
+    "mean_1": {
+        "attr": {
+            "type": "Mean",
+            "attr": {}
+        },
+        "inbounds": [
+        ]
+    },
+
+    "reshape_2": {
+        "attr": {
+            "type": "Reshape",
+            "attr": {}
+        },
+        "inbounds": [
+            "mean_1"
+        ]
+    }
+}

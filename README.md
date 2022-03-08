@@ -1,5 +1,3 @@
-Note: This is an beta (preview) version which is still under refining.
-
 **nn-Meter** is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices. The key idea is dividing a whole model inference into kernels, i.e., the execution units of fused operators on a device, and conduct kernel-level prediction. We currently evaluate four popular platforms on a large dataset of 26k models. It achieves 99.0% (mobile CPU), 99.1% (mobile Adreno 640 GPU), 99.0% (mobile Adreno 630 GPU), and 83.4% (Intel VPU) prediction accuracy.
 
 The current supported hardware and inference frameworks:
@@ -73,7 +71,7 @@ Here is a summary of supported inputs of the two methods.
 |     Tensorflow     |             Checkpoint file dumped by `tf.saved_model()` and end with `.pb`             |                 Checkpoint file dumped by `tf.saved_model` and end with `.pb`                 |
 |       Torch       |                              Models in `torchvision.models`                              |                                   Object of `torch.nn.Module`                                   |
 |        Onnx        | Checkpoint file dumped by `torch.onnx.export()` or `onnx.save()` and end with `.onnx` |           Checkpoint file dumped by `onnx.save()` or model loaded by `onnx.load()`           |
-| nn-Meter IR graph |     Json file in the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph)     | `dict` object following the format of [nn-Meter IR Graph](./docs/input_models.md#nnmeter-ir-graph) |
+| nn-Meter IR graph |     Json file in the format of [nn-Meter IR Graph](./docs/predictor/input_models.md#nnmeter-ir-graph)     | `dict` object following the format of [nn-Meter IR Graph](./docs/predictor/input_models.md#nnmeter-ir-graph) |
 |    NNI IR graph    |                                              -                                              |                                        NNI IR graph object                                        |
 
 In both methods, users could appoint predictor name and version to target a specific hardware platform (device). Currently, nn-Meter supports prediction on the following four configs:
@@ -94,20 +92,28 @@ nn-meter --list-predictors
 
 ## Predict latency of saved CNN model
 
-After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands
+After installation, a command named `nn-meter` is enabled. To predict the latency for a CNN model with a predefined predictor in command line, users can run the following commands (sample models can be downloaded [here](./material/testmodels))
 
 ```bash
 # for Tensorflow (*.pb) file
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --tensorflow <pb-file_or_folder> 
+# Example Usage
+nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --tensorflow mobilenetv3small_0.pb 
 
 # for ONNX (*.onnx) file
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --onnx <onnx-file_or_folder>
+#Example Usage
+nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --onnx mobilenetv3small_0.onnx 
 
 # for torch model from torchvision model zoo (str)
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --torchvision <model-name> <model-name>... 
+#Example Usage
+nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --torchvision mobilenet_v2
 
 # for nn-Meter IR (*.json) file
 nn-meter predict --predictor <hardware> [--predictor-version <version>] --nn-meter-ir <json-file_or_folder> 
+#Example Usage
+nn-meter predict --predictor cortexA76cpu_tflite21 --predictor-version 1.0 --nn-meter-ir mobilenetv3small_0.json 
 ```
 
 `--predictor-version <version>` arguments is optional. When the predictor version is not specified by users, nn-meter will use the latest version of the predictor.

@@ -1,0 +1,5 @@
+tensorflow
+serial
+pure-python-adb
+typing
+networkx

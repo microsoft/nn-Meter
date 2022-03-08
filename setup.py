@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nn-meter',
-    version='1.1',
+    version='1.1dev',
     description='nn-Meter is a novel and efficient system to accurately predict the inference latency of DNN models on diverse edge devices.',
     long_description = open('README.md', encoding='utf-8').read(),
     long_description_content_type = 'text/markdown',
@@ -26,12 +26,18 @@ setup(
         ],
     packages=find_packages(),
     package_data={
-        'nn_meter': ['configs/*.yaml', 'kernel_detector/fusionlib/*.json'],
+        'nn_meter': [
+            'configs/*.yaml',
+            'configs/builder/backends/*.yaml',
+            'configs/builder/fusion_rule_tester/*.yaml',
+            'configs/builder/predictor_builder/*.yaml',
+            'builder/kernel_predictor_builder/data_sampler/prior_config_lib/*.csv',
+            'kernel_detector/fusion_lib/*.json'],
     },
     entry_points={
-        'console_scripts': ['nn-meter=nn_meter.nn_meter_cli:nn_meter_cli'],
+        'console_scripts': ['nn-meter=nn_meter.utils.nn_meter_cli.interface:nn_meter_cli'],
     },
     install_requires=[
-        'numpy', 'tqdm', 'networkx', 'requests', 'protobuf', 'PyYAML', 'scikit_learn', 'packaging', 'jsonlines'
+        'numpy', 'pandas', 'tqdm', 'networkx', 'requests', 'protobuf', 'PyYAML', 'scikit_learn', 'packaging', 'jsonlines'
     ],
 )

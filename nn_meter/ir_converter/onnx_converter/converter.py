@@ -5,6 +5,7 @@ from itertools import chain
 from .utils import get_tensor_shape
 from .constants import SLICE_TYPE
 from nn_meter.utils.import_package import try_import_onnx
+logging = logging.getLogger("nn-Meter")
 
 
 class OnnxConverter:
@@ -77,17 +78,17 @@ class OnnxConverter:
         sliced_tensors = set()
         selected_slice = set()
         for node in self.graph.node:
-            outbounds = []
-            inbounds = []
-            
             if node.op_type == SLICE_TYPE:
                 tensor = node.input[0]
                 if tensor in sliced_tensors:
                     continue
                 else:
                     sliced_tensors.add(tensor)
-                    selected_slice.add(node.name)     
+                    selected_slice.add(node.name)
 
+        for node in self.graph.node:
+            outbounds = []
+            inbounds = []
             if node.op_type == SLICE_TYPE and node.name not in selected_slice:
                 continue
             
