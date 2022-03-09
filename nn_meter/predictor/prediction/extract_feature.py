@@ -90,7 +90,10 @@ def get_predict_features(config):
             if "inputh" in item:
                 inputh = item["inputh"]
             else:
-                inputh = item["input_tensors"][0][1]
+                if len(item["input_tensors"][0]) == 2:
+                    inputh = item["input_tensors"][0][0]
+                else:
+                    inputh = item["input_tensors"][0][1]
             cin = item["cin"]
             features = [inputh, cin]
         elif op in ["bn", "relu", "bn-relu"]:
