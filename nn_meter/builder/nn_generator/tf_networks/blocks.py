@@ -682,7 +682,7 @@ class SEBlock(TFBlock):
         self.se_op = se_op.get_model()
 
     def get_model(self):
-        class Model(tf.keras.Model):
+        class Model(keras.Model):
             def __init__(self, se_op):
                 super().__init__()
                 self.se = se_op
