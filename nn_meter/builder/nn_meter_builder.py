@@ -118,7 +118,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'], metrics)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
-                    time.sleep(2)
+                    time.sleep(0.2)
                     count += 1
                 except:
                     open(os.path.join(info_save_path, "profile_error.log"), 'a').write(id + "\n")

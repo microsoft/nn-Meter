@@ -20,7 +20,7 @@ class TorchBlock(BaseBlock):
         torch.onnx.export(
             model,
             get_inputs_by_shapes(self.input_tensor_shape),
-            save_path + ".onnx",
+            save_path,
             input_names=['input'],
             output_names=['output'],
             verbose=False,

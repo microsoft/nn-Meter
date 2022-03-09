@@ -20,7 +20,9 @@ class KernelGenerator:
         self.kernel_info = {kernel_type: {}}
         self.kernels = self.kernel_info[self.kernel_type]
         self.implement = builder_config.get('IMPLEMENT', 'predbuild')
+        self.model_suffix = "" if self.implement == 'tensorflow' else ".onnx"
         self.mark = mark
+        os.makedirs(self.case_save_path, exist_ok=True)
 
     def generate_config(self, sampling_mode = 'prior', configs = None):
         sampled_cfgs = get_sampler_for_kernel(self.kernel_type, self.sample_num, sampling_mode, configs)
@@ -35,7 +37,7 @@ class KernelGenerator:
         kernel_type = self.kernel_type
         logging.info(f"building kernel for {kernel_type}...")
         for id, value in self.kernels.items():
-            model_path = os.path.join(self.case_save_path, "_".join([kernel_type, self.mark, id]))
+            model_path = os.path.join(self.case_save_path, ("_".join([kernel_type, self.mark, id]) + self.model_suffix))
             kernel_cfg = value['config']
             _, input_tensor_shape, config = generate_model_for_kernel(kernel_type, kernel_cfg, save_path=model_path, implement=self.implement)
             self.kernels[id] = {
