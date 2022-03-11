@@ -178,6 +178,11 @@ class Hswish(BaseOperator):
             return tf.nn.relu6(tf.math.add(inputs, 3)) * 0.16667
         return func
 
+
+class Glue(BaseOperator):
+    def get_model(self):
+        return super().get_model()
+
 #---------------------- basic operation ----------------------#
 
 class Reshape(BaseOperator):
