@@ -19,7 +19,7 @@ class TorchBlock(BaseBlock):
         model = self.get_model()
         torch.onnx.export(
             model,
-            get_inputs_by_shapes(self.input_tensor_shape),
+            get_inputs_by_shapes(self.input_tensor_shape, self.batch_size),
             save_path,
             input_names=['input'],
             output_names=['output'],
@@ -31,10 +31,11 @@ class TorchBlock(BaseBlock):
 
 
 class ConvBnRelu(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -63,10 +64,11 @@ class ConvBnRelu(TorchBlock):
 
 
 class ConvBnRelu6(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -95,10 +97,11 @@ class ConvBnRelu6(TorchBlock):
 
 
 class ConvBn(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -122,10 +125,11 @@ class ConvBn(TorchBlock):
 
 
 class ConvRelu(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -149,10 +153,11 @@ class ConvRelu(TorchBlock):
 
 
 class ConvRelu6(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -176,10 +181,11 @@ class ConvRelu6(TorchBlock):
 
 
 class ConvHswish(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -203,10 +209,11 @@ class ConvHswish(TorchBlock):
 
 
 class ConvBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op = conv_op.get_model()
@@ -224,10 +231,11 @@ class ConvBlock(TorchBlock):
 
 
 class ConvBnHswish(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -256,10 +264,11 @@ class ConvBnHswish(TorchBlock):
 
 
 class ConvBnReluMaxPool(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
@@ -293,10 +302,11 @@ class ConvBnReluMaxPool(TorchBlock):
 
 
 class DwConvBn(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
@@ -320,10 +330,11 @@ class DwConvBn(TorchBlock):
 
 
 class DwConvRelu(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
@@ -347,10 +358,11 @@ class DwConvRelu(TorchBlock):
 
 
 class DwConvRelu6(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
@@ -374,10 +386,11 @@ class DwConvRelu6(TorchBlock):
 
 
 class DwConvBnRelu(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
@@ -406,10 +419,11 @@ class DwConvBnRelu(TorchBlock):
 
 
 class DwConvBnRelu6(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
@@ -438,10 +452,11 @@ class DwConvBnRelu6(TorchBlock):
 
 
 class DwConvBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op = dwconv_op.get_model()
@@ -459,10 +474,11 @@ class DwConvBlock(TorchBlock):
 
 
 class ConvBnHswish(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
@@ -491,10 +507,11 @@ class ConvBnHswish(TorchBlock):
 
 
 class MaxPoolBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         maxpool_op = MaxPool(self.input_shape, config)
         self.maxpool_op = maxpool_op.get_model()
@@ -512,10 +529,11 @@ class MaxPoolBlock(TorchBlock):
 
 
 class AvgPoolBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         avgpool_op = AvgPool(self.input_shape, config)
         self.avgpool_op = avgpool_op.get_model()
@@ -533,10 +551,11 @@ class AvgPoolBlock(TorchBlock):
 
 
 class FCBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         fc_op = FC(self.input_shape, config)
         self.fc_op = fc_op.get_model()
@@ -554,12 +573,13 @@ class FCBlock(TorchBlock):
 
 
 class ConcatBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [[config["HW"], config["HW"], cin]
                        for cin in [config['CIN1'], config['CIN2'], config['CIN3'], config['CIN4']]
                        if cin != 0]
         self.input_tensor_shape = self.input_shape
+        self.batch_size = batch_size
         
         concat_op = Concat(self.input_shape, config)
         self.concat_op = concat_op.get_model()
@@ -577,10 +597,11 @@ class ConcatBlock(TorchBlock):
 
 
 class SplitBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         split_op = Split(self.input_shape, config)
         self.split_op = split_op.get_model()
@@ -598,10 +619,11 @@ class SplitBlock(TorchBlock):
 
 
 class ChannelShuffle(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
     def get_model(self):
         class Model(nn.Module):
@@ -617,10 +639,11 @@ class ChannelShuffle(TorchBlock):
 
 
 class SEBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         se_op = SE(self.input_shape, config)
         self.se_op = se_op.get_model()
@@ -642,10 +665,11 @@ class GlobalAvgPoolBlock(TorchBlock):
 
 
 class BnRelu(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         bn_op = BN(self.input_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
@@ -669,10 +693,11 @@ class BnRelu(TorchBlock):
 
 
 class BnBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         bn_op = BN(self.input_shape, config)
         self.bn_op = bn_op.get_model()
@@ -690,10 +715,11 @@ class BnBlock(TorchBlock):
 
 
 class HswishBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         hswish_op = Hswish(self.input_shape, config)
         self.hswish_op = hswish_op.get_model()
@@ -711,10 +737,11 @@ class HswishBlock(TorchBlock):
 
 
 class ReluBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         relu_op = Relu(self.input_shape, config)
         self.relu_op = relu_op.get_model()
@@ -732,10 +759,11 @@ class ReluBlock(TorchBlock):
 
 
 class AddRelu(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
 
         add_op = Add(self.input_shape, config)
         self.add_op, out_shape = add_op.get_model(), add_op.get_output_shape()
@@ -759,10 +787,11 @@ class AddRelu(TorchBlock):
 
 
 class AddBlock(TorchBlock):
-    def __init__(self, config):
+    def __init__(self, config, batch_size = 1):
         self.config = config
         self.input_shape = [config["CIN"], config["HW"], config["HW"]]
         self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
         
         add_op = Add(self.input_shape, config)
         self.add_op = add_op.get_model()
