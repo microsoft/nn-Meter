@@ -1,5 +1,6 @@
 DETAIL: FALSE
 IMPLEMENT: tensorflow
+BATCH_SIZE: 1
 KERNELS:
   conv_bn_relu:
     INIT_SAMPLE_NUM: 10000

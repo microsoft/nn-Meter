@@ -55,7 +55,7 @@ if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__
         __REG_KERNELS__ = registry_modules["kernels"]
 
 
-def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorflow'):
+def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorflow', batch_size=1):
     """ get the nn model for predictor build. returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
     """
     if implement == 'tensorflow':
@@ -76,7 +76,7 @@ def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorf
         kernel_module = blocks
 
     # get kernel class and create kernel instance by needed_config
-    kernel_class = getattr(kernel_module, kernel_name)(config)
+    kernel_class = getattr(kernel_module, kernel_name)(config, batch_size)
     input_tensor_shape = kernel_class.input_tensor_shape
     model = kernel_class.get_model()
 
