@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os
+import shutil
 import logging
 from ..interface import BaseBackend
 from nn_meter.utils.path import get_filename_without_ext
@@ -32,6 +33,7 @@ class TFLiteBackend(BaseBackend):
         tflite_model = converter.convert()
         converted_model = os.path.join(save_path, model_name + '.tflite')
         open(converted_model, 'wb').write(tflite_model)
+        shutil.rmtree(model_path)
         return converted_model
 
     def test_connection(self):

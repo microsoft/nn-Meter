@@ -66,7 +66,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
 
 
 def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
-                   have_converted = False):
+                   have_converted = False, **kwargs):
     """ run models with given backend and return latency of testcase models
 
     @params:
@@ -105,7 +105,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
             if have_converted: # the models have been converted for the backend
                 try:
                     model_path = model['converted_model']
-                    profiled_res = backend.profile(model_path, metrics, model['shapes'])
+                    profiled_res = backend.profile(model_path, metrics, model['shapes'], **kwargs)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
                     time.sleep(2)
@@ -115,7 +115,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
             else: # the models have not been converted
                 try:
                     model_path = model['model']
-                    profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'], metrics)
+                    profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'], metrics, **kwargs)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
                     time.sleep(0.2)
