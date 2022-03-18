@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 import torch
 import torch.nn as nn
-from .utils import get_padding, get_output_shape_with_padding
+from .utils import get_padding
 from ..interface import BaseOperator
 
 '''
