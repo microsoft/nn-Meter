@@ -10,7 +10,7 @@ from .extract_features import get_feature_parser, get_data_by_profiled_results
 logging = logging.getLogger("nn-Meter")
 
 
-def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_threshold = 0.1, mark = '', save_path = None):
+def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_threshold = 0.1, mark = '', save_path = None, predict_label = "latency"):
     """
     build regression model by sampled data and latency, locate data with large-errors. Returns (current predictor, 10% Accuracy, error_cfgs), 
     where error_cfgs represent configuration list, where each item is a configuration for one large-error-data.
@@ -28,9 +28,11 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     mark (str): the mark for the running results. Defaults to ''.
 
     save_path (str): the folder to save results file such as feature table and predictor pkl file
+    
+    predict_label (str): the predicting label to build kernel predictor
     """
     feature_parser = get_feature_parser(kernel_type)
-    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data, save_path=os.path.join(save_path, f'Data_{kernel_type}_{mark}.csv'))
+    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data, save_path=os.path.join(save_path, f'Data_{kernel_type}_{mark}.csv'), predict_label=predict_label)
 
     # get data for regression
     X, Y = data
