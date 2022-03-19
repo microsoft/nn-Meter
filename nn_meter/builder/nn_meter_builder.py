@@ -110,7 +110,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     model_path = model['converted_model']
                     profiled_res = backend.profile(model_path, metrics, model['shapes'], **kwargs)
                     for metric in metrics:
-                        model[metric] = profiled_res.data[metric]
+                        model[metric] = profiled_res[metric]
                     time.sleep(0.2)
                     count += 1
                 except Exception as e:
@@ -120,7 +120,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     model_path = model['model']
                     profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'], metrics, **kwargs)
                     for metric in metrics:
-                        model[metric] = profiled_res.data[metric]
+                        model[metric] = profiled_res[metric]
                     time.sleep(0.2)
                     count += 1
                 except Exception as e:
