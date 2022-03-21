@@ -627,6 +627,7 @@ class ConcatBlock(TFBlock):
                        for cin in [config['CIN1'], config['CIN2'], config['CIN3'], config['CIN4']]
                        if cin != 0]
         self.input_tensor_shape = self.input_shape
+        self.batch_size = batch_size
         
         concat_op = Concat(self.input_shape, config)
         self.concat_op = concat_op.get_model()
