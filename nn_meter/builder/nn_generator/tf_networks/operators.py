@@ -58,9 +58,14 @@ class ConvTrans(BaseOperator):
 
 #------------------ normalization and pooling ------------------#
 
-class BN(BaseOperator):
+class BatchNorm(BaseOperator):
     def get_model(self):
         return keras.layers.BatchNormalization()
+
+
+class LayerNorm(BaseOperator):
+    def get_model(self):
+        return keras.layers.LayerNormalization()
 
 
 class GlobalAvgpool(BaseOperator):
@@ -110,7 +115,7 @@ class AvgPool(BaseOperator):
 
 class SE(BaseOperator):
     def get_model(self):
-        class SE(keras.layers.Layer):
+        class Layer(keras.layers.Layer):
             def __init__(self, input_shape):
                 super().__init__()
                 self.in_shape = input_shape
@@ -139,7 +144,7 @@ class SE(BaseOperator):
                 x = self.conv2(x)
                 x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
                 return x * inputs
-        return SE(self.input_shape)
+        return Layer(self.input_shape)
 
 
 class FC(BaseOperator):
@@ -150,6 +155,56 @@ class FC(BaseOperator):
     def get_output_shape(self):
         cout = self.input_shape[-1] if "COUT" not in self.config else self.config["COUT"]
         return self.input_shape[:-1] + [cout]
+
+
+class TransformerFC(BaseOperator):
+    def get_model(self):
+        return super().get_model()
+
+
+class MultiHeadPositionalEmbedding(BaseOperator):
+    def get_model(self):
+        class Layer(keras.layers.Layer):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+            def build(self, input_shape, **kwargs):
+                _, num_heads, qq_blocks, kk_blocks = input_shape
+                self.bb = self.add_weight(name="positional_embedding", shape=(kk_blocks, num_heads), initializer="zeros", trainable=True)
+                strides = int(tf.math.ceil(tf.math.sqrt(float(kk_blocks / qq_blocks))))
+                q_blocks_h = q_blocks_w = int(tf.math.sqrt(float(qq_blocks)))
+                k_blocks_h = k_blocks_w = int(tf.math.sqrt(float(kk_blocks)))
+
+                x1, y1 = tf.meshgrid(range(q_blocks_h), range(q_blocks_w))
+                x2, y2 = tf.meshgrid(range(k_blocks_h), range(k_blocks_w))
+                aa = tf.concat([tf.reshape(x1, (-1, 1)), tf.reshape(y1, (-1, 1))], axis=-1)
+                bb = tf.concat([tf.reshape(x2, (-1, 1)), tf.reshape(y2, (-1, 1))], axis=-1)
+                # print(f">>>> {aa.shape = }, {bb.shape = }") # aa.shape = (16, 2), bb.shape = (49, 2)
+                cc = [tf.math.abs(bb - ii * strides) for ii in aa]
+                self.bb_pos = tf.stack([ii[:, 0] + ii[:, 1] * k_blocks_h for ii in cc])
+                # print(f">>>> {self.bb_pos.shape = }")    # self.bb_pos.shape = (16, 49)
+
+                super().build(input_shape)
+
+            def call(self, inputs, **kwargs):
+                pos_bias = tf.gather(self.bb, self.bb_pos)
+                pos_bias = tf.transpose(pos_bias, [2, 0, 1])
+                return inputs + pos_bias
+
+            def load_resized_pos_emb(self, source_layer):
+                if isinstance(source_layer, dict):
+                    source_bb = source_layer["positional_embedding:0"]  # weights
+                else:
+                    source_bb = source_layer.bb  # layer
+                hh = ww = int(tf.math.sqrt(float(source_bb.shape[0])))
+                ss = tf.reshape(source_bb, (hh, ww, source_bb.shape[-1]))  # [hh, ww, num_heads]
+                target_hh = target_ww = int(tf.math.sqrt(float(self.bb.shape[0])))
+                tt = tf.image.resize(ss, [target_hh, target_ww])  # [target_hh, target_ww, num_heads]
+                tt = tf.reshape(tt, (self.bb.shape))  # [target_hh * target_ww, num_heads]
+                self.bb.assign(tt)
+
+        return Layer()
+
 
 #-------------------- activation function --------------------#
 
@@ -172,6 +227,10 @@ class Sigmoid(BaseOperator):
         return func
 
 
+class Softmax(BaseOperator):
+    def get_model(self):
+        return keras.layers.Softmax()
+
 class Hswish(BaseOperator):
     def get_model(self):
         def func(inputs):
@@ -179,26 +238,23 @@ class Hswish(BaseOperator):
         return func
 
 
-class Glue(BaseOperator):
+class Gelu(BaseOperator):
     def get_model(self):
-        return super().get_model()
+        def func(inputs):
+            return tf.nn.gelu(inputs)
+        return func
 
 #---------------------- basic operation ----------------------#
 
 class Reshape(BaseOperator):
     def get_model(self):
-        if len(self.input_shape) == 3:
-            self.output_shape = [self.input_shape[2], self.input_shape[0], self.input_shape[1]]
-            def func(inputs):
-                return tf.reshape(inputs, [1] + self.output_shape)
-        else:
-            self.output_shape = [1, 2, int(self.input_shape[0] / 2)]
-            def func(inputs):
-                return tf.reshape(inputs, [1] + self.output_shape)
+        # use the shape in self.config
+        def func(inputs):
+            return tf.reshape(inputs, self.config["SHAPE"])
         return func
 
     def get_output_shape(self):
-        return self.output_shape
+        return self.config["SHAPE"]
 
 
 class Add(BaseOperator):
@@ -249,3 +305,24 @@ class Split(BaseOperator):
 
     def get_output_shape(self):
         return [self.input_shape[0], self.input_shape[1], self.input_shape[2] // 2]
+
+
+class Dropout(BaseOperator):
+    def get_model(self):
+        return keras.layers.Dropout()
+
+    def get_output_shape(self):
+        return super().get_output_shape() #TODO
+
+class Matmul(BaseOperator):
+    def get_model(self):
+        def func(inputs):
+            return tf.matmul(inputs[0], inputs[1])
+        return func
+
+
+class Transpose(BaseOperator):
+    def get_model(self):
+        def func(inputs):
+            return tf.transpose(inputs, perm=self.config["PERM"])
+        return func

@@ -10,7 +10,8 @@ __BUILTIN_OPERATORS__ = {
     "conv": "Conv",
     "dwconv": "DwConv",
     "convtrans": "ConvTrans",
-    "bn": "BN",
+    "bn": "BatchNorm",
+    "ln": "LayerNorm",
     "globalavgpool": "GlobalAvgpool",
     "maxpool": "MaxPool",
     "avgpool": "AvgPool",
@@ -20,11 +21,14 @@ __BUILTIN_OPERATORS__ = {
     "relu6": "Relu6",
     "sigmoid": "Sigmoid",
     "hswish": "Hswish",
+    "gelu": "Gelu",
     "reshape": "Reshape",
     "add": "Add",
     "concat": "Concat",
     "flatten": "Flatten",
-    "split": "Split"
+    "split": "Split",
+    "mhpe": "MultiHeadPositionalEmbedding",
+    "dropout": "Dropout"
 }
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')

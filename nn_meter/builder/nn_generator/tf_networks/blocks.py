@@ -50,7 +50,7 @@ class ConvBnRelu(TFBlock):
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         relu_op = Relu(out_shape, config)
@@ -83,7 +83,7 @@ class ConvBnRelu6(TFBlock):
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         relu6_op = Relu6(out_shape, config)
@@ -117,7 +117,7 @@ class ConvBn(TFBlock):
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
@@ -256,7 +256,7 @@ class ConvBnHswish(TFBlock):
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         hswish_op = Hswish(out_shape, config)
@@ -290,7 +290,7 @@ class ConvBnReluMaxPool(TFBlock):
         conv_op = Conv(self.input_shape, config)
         self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         relu_op = Relu(out_shape, config)
@@ -329,7 +329,7 @@ class DwConvBn(TFBlock):
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
@@ -416,7 +416,7 @@ class DwConvBnRelu(TFBlock):
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         relu_op = Relu(out_shape, config)
@@ -450,7 +450,7 @@ class DwConvBnRelu6(TFBlock):
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         relu6_op = Relu6(out_shape, config)
@@ -507,7 +507,7 @@ class ConvBnHswish(TFBlock):
         dwconv_op = DwConv(self.input_shape, config)
         self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
 
-        bn_op = BN(out_shape, config)
+        bn_op = BatchNorm(out_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         hswish_op = Hswish(out_shape, config)
@@ -724,7 +724,7 @@ class BnRelu(TFBlock):
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
         self.input_tensor_shape = [self.input_shape]
 
-        bn_op = BN(self.input_shape, config)
+        bn_op = BatchNorm(self.input_shape, config)
         self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
         
         relu_op = Relu(out_shape, config)
@@ -753,7 +753,7 @@ class BnBlock(TFBlock):
         self.input_shape = [config["HW"], config["HW"], config["CIN"]]
         self.input_tensor_shape = [self.input_shape]
 
-        bn_op = BN(self.input_shape, config)
+        bn_op = BatchNorm(self.input_shape, config)
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
