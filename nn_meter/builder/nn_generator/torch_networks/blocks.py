@@ -575,7 +575,7 @@ class FCBlock(TorchBlock):
 class ConcatBlock(TorchBlock):
     def __init__(self, config, batch_size = 1):
         self.config = config
-        self.input_shape = [[config["HW"], config["HW"], cin]
+        self.input_shape = [[cin, config["HW"], config["HW"]]
                        for cin in [config['CIN1'], config['CIN2'], config['CIN3'], config['CIN4']]
                        if cin != 0]
         self.input_tensor_shape = self.input_shape
@@ -661,7 +661,25 @@ class SEBlock(TorchBlock):
 
 
 class GlobalAvgPoolBlock(TorchBlock):
-    pass
+    def __init__(self, config, batch_size = 1):
+        self.config = config
+        self.input_shape = [config["HW"], config["HW"], config["CIN"]]
+        self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
+
+        globalavgpool_op = GlobalAvgpool(self.input_shape, config)
+        self.globalavgpool_op = globalavgpool_op.get_model()
+
+    def get_model(self):
+        class Model(nn.Module):
+            def __init__(self, globalavgpool_op):
+                super().__init__()
+                self.globalavgpool = globalavgpool_op
+
+            def forward(self, inputs):
+                return self.globalavgpool(inputs)
+
+        return Model(self.globalavgpool_op)
 
 
 class BnRelu(TorchBlock):
