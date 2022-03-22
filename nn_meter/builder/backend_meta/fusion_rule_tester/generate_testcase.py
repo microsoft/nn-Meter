@@ -93,13 +93,9 @@ class BaseTestCase:
         return self.true_case
 
     def load_config(self):
-        config = self.config
         if not self.input_shape:
-            self.input_shape = [config['HW'], config['HW'], config['CIN']]
-        self.kernel_size = config['KERNEL_SIZE']
-        self.cout = config['COUT']
-        self.padding = config['PADDING']
-        self.model_dir = os.path.join(config['MODEL_DIR'], 'models')
+            self.input_shape = [self.config['HW'], self.config['HW'], self.config['CIN']]
+        self.model_dir = os.path.join(self.config['MODEL_DIR'], 'models')
         os.makedirs(self.model_dir, exist_ok=True)
 
     def _model_block(self):
@@ -177,11 +173,11 @@ class MultipleOutNodes(BaseTestCase):
     def _model_block(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.config['KERNEL_SIZE'], padding=self.config['PADDING'])(input_layer)
         branch_1 = keras.layers.ReLU(negative_slope=0)(x)
         branch_1 = keras.layers.ReLU(negative_slope=0)(branch_1)
         branch_2 = keras.layers.ReLU(negative_slope=2)(x)
-        branch_2 = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(branch_2)
+        branch_2 = keras.layers.DepthwiseConv2D(self.config['KERNEL_SIZE'], padding=self.config['PADDING'])(branch_2)
 
         return keras.models.Model(input_layer, [branch_1, branch_2]), [self.input_shape]
 
@@ -196,7 +192,7 @@ class MultipleOutNodes(BaseTestCase):
     def _model_dwconv_relu_relu(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.config['KERNEL_SIZE'], padding=self.config['PADDING'])(input_layer)
         x = keras.layers.ReLU()(x)
         x = keras.layers.ReLU()(x)
 
@@ -206,14 +202,14 @@ class MultipleOutNodes(BaseTestCase):
         input_layer = keras.Input(shape=self.input_shape)
 
         x = keras.layers.ReLU()(input_layer)
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(x)
+        x = keras.layers.DepthwiseConv2D(self.config['KERNEL_SIZE'], padding=self.config['PADDING'])(x)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
 
     def _model_dwconv_relu(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.config['KERNEL_SIZE'], padding=self.config['PADDING'])(input_layer)
         x = keras.layers.ReLU()(x)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
@@ -221,7 +217,7 @@ class MultipleOutNodes(BaseTestCase):
     def _model_dwconv(self):
         input_layer = keras.Input(shape=self.input_shape)
 
-        x = keras.layers.DepthwiseConv2D(self.kernel_size, padding=self.padding)(input_layer)
+        x = keras.layers.DepthwiseConv2D(self.config['KERNEL_SIZE'], padding=self.config['PADDING'])(input_layer)
 
         return keras.models.Model(input_layer, x), [self.input_shape]
 
@@ -240,10 +236,13 @@ def generate_testcases():
             cases = {
                 'ops': [op1, op2],
             }
-            if op1 in d1_required_layers or op2 in d1_required_layers:
+            if d1_required_layers and (op1 in d1_required_layers or op2 in d1_required_layers):
                 input_shape = [config['SHAPE_1D']]
             else:
-                input_shape = [config['HW'], config['HW'], config['CIN']]
+                if "INPUT_SHAPE" in config:
+                    input_shape = config["INPUT_SHAPE"]
+                else:
+                    input_shape = [config['HW'], config['HW'], config['CIN']]
             bf_cls = type(class_name, (BasicFusion,), {
                 'name': name,
                 'cases': cases,

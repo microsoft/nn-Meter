@@ -157,11 +157,6 @@ class FC(BaseOperator):
         return self.input_shape[:-1] + [cout]
 
 
-class TransformerFC(BaseOperator):
-    def get_model(self):
-        return super().get_model()
-
-
 class MultiHeadPositionalEmbedding(BaseOperator):
     def get_model(self):
         class Layer(keras.layers.Layer):
@@ -169,8 +164,9 @@ class MultiHeadPositionalEmbedding(BaseOperator):
                 super().__init__(**kwargs)
 
             def build(self, input_shape, **kwargs):
+                print(input_shape)
                 _, num_heads, qq_blocks, kk_blocks = input_shape
-                self.bb = self.add_weight(name="positional_embedding", shape=(kk_blocks, num_heads), initializer="zeros", trainable=True)
+                self.bb = self.add_weight(shape=(kk_blocks, num_heads), initializer="zeros", trainable=True)
                 strides = int(tf.math.ceil(tf.math.sqrt(float(kk_blocks / qq_blocks))))
                 q_blocks_h = q_blocks_w = int(tf.math.sqrt(float(qq_blocks)))
                 k_blocks_h = k_blocks_w = int(tf.math.sqrt(float(kk_blocks)))
@@ -231,6 +227,7 @@ class Softmax(BaseOperator):
     def get_model(self):
         return keras.layers.Softmax()
 
+
 class Hswish(BaseOperator):
     def get_model(self):
         def func(inputs):
@@ -248,13 +245,23 @@ class Gelu(BaseOperator):
 
 class Reshape(BaseOperator):
     def get_model(self):
-        # use the shape in self.config
-        def func(inputs):
-            return tf.reshape(inputs, self.config["SHAPE"])
+        if "SHAPE_TO" not in self.config:
+            if len(self.input_shape) == 3:
+                self.output_shape = [self.input_shape[2], self.input_shape[0], self.input_shape[1]]
+                def func(inputs):
+                    return tf.reshape(inputs, [1] + self.output_shape)
+            else:
+                self.output_shape = [1, 2, int(self.input_shape[0] / 2)]
+                def func(inputs):
+                    return tf.reshape(inputs, [1] + self.output_shape)
+        else:
+            self.output_shape = self.config["SHAPE_TO"]
+            def func(inputs):
+                return tf.reshape(inputs, [1] + self.output_shape)
         return func
 
     def get_output_shape(self):
-        return self.config["SHAPE"]
+        return self.output_shape
 
 
 class Add(BaseOperator):
@@ -299,26 +306,33 @@ class Flatten(BaseOperator):
 
 class Split(BaseOperator):
     def get_model(self):
-        def func(inputs):
-            return tf.split(inputs, num_or_size_splits=2, axis=3)
+        if "SPLIT_DIM" not in self.config:
+            self.output_shape = [self.input_shape[0], self.input_shape[1], self.input_shape[2] // 2]
+            def func(inputs):
+                return tf.split(inputs, num_or_size_splits=2, axis=3)
+        else:
+            self.output_shape = [[self.input_shape[0], self.input_shape[1], dim] for dim in self.config["SPLIT_DIM"]]
+            def func(inputs):
+                return tf.split(inputs, self.config["SPLIT_DIM"], axis=-1)
         return func
 
     def get_output_shape(self):
-        return [self.input_shape[0], self.input_shape[1], self.input_shape[2] // 2]
+        return self.output_shape
 
 
 class Dropout(BaseOperator):
     def get_model(self):
-        return keras.layers.Dropout()
+        return keras.layers.Dropout(rate=0.2)
 
-    def get_output_shape(self):
-        return super().get_output_shape() #TODO
 
 class Matmul(BaseOperator):
     def get_model(self):
         def func(inputs):
-            return tf.matmul(inputs[0], inputs[1])
+            return tf.matmul(inputs[0], inputs[1], transpose_b=self.config["TRANSPOSE"])
         return func
+
+    def get_output_shape(self):
+        return super().get_output_shape() #TODO
 
 
 class Transpose(BaseOperator):
@@ -326,3 +340,6 @@ class Transpose(BaseOperator):
         def func(inputs):
             return tf.transpose(inputs, perm=self.config["PERM"])
         return func
+
+    def get_output_shape(self):
+        return super().get_output_shape() #TODO
