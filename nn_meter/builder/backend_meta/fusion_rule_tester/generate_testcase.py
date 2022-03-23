@@ -66,7 +66,7 @@ class BaseTestCase:
 
         for op, model in testcase.items():
             model_path = os.path.join(self.model_dir, self.name + '_' + op)
-            model['model'](get_tensor_by_shapes(model['shapes']))
+            model['model'](get_tensor_by_shapes(model['shapes'], batch_size=self.config['BATCH_SIZE']))
             keras.models.save_model(model['model'], model_path)
             testcase[op]['model'] = model_path
 
