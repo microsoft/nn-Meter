@@ -1,108 +1,104 @@
-import tensorflow as tf
-from tensorflow import keras
-from torch import softmax
 from .operators import *
-LAYER_NORM_EPSILON = 1e-5
-CONV_KERNEL_INITIALIZER = tf.keras.initializers.VarianceScaling(scale=2.0, mode="fan_out", distribution="truncated_normal")
 
-
-def scaled_dot_product_attention(qq, kk, vv, key_dim, attn_ratio, output_dim, activation="hard_swish", name="", layer_norm=False):
+def scaled_dot_product_attention(qq, kk, vv, key_dim, attn_ratio, output_dim):
     # qq, kk, vv: [batch, num_heads, blocks, key_dim]
-    FLOAT_DTYPE = tf.keras.mixed_precision.global_policy().compute_dtype
-    qk_scale = tf.math.sqrt(tf.cast(key_dim, FLOAT_DTYPE))
+    
+    # FLOAT_DTYPE = tf.keras.mixed_precision.global_policy().compute_dtype
+    # qk_scale = tf.math.sqrt(tf.cast(key_dim, FLOAT_DTYPE))
+    qk_scale = ...
+    
     # print(f"{qq.shape = }, {kk.shape = }")
     # attn = tf.matmul(qq, kk, transpose_b=True) / qk_scale   # [batch, num_heads, q_blocks, k_blocks]
-    attn = keras.layers.Lambda(lambda xx: tf.matmul(xx[0], xx[1], transpose_b=True), name=name and name + "Lambda")([qq, kk]) / qk_scale
+    attn = Matmul([qq, kk]) / qk_scale # [4, 4, 32, 32]
     # print(f"{attn.shape = }")
-    attn = MultiHeadPositionalEmbedding(name=name + "attn_pos")(attn)
+    attn = MultiHeadPositionalEmbedding(attn)
     # attn = tf.nn.softmax(attn, axis=-1)
     attn = Softmax(axis=-1)(attn)
 
     # output = tf.matmul(attn, vv)    # [batch, num_heads, q_blocks, key_dim * attn_ratio]
     output = Matmul([attn, vv])
-    output = tf.transpose(output, perm=[0, 2, 1, 3], name=name and name + "transpose")  # [batch, q_blocks, num_heads, key_dim * attn_ratio]
-    output = tf.reshape(output, [-1, output.shape[1], output.shape[2] * output.shape[3]])  # [batch, q_blocks, channel * attn_ratio]
+    output = Transpose(perm=[0, 2, 1, 3])(output)  # [batch, q_blocks, num_heads, key_dim * attn_ratio]
+    output = Reshape([-1, output.shape[1], output.shape[2] * output.shape[3]])(output)  # [batch, q_blocks, channel * attn_ratio]
     output = Hswish(output)
-    output = keras.layers.Dense(output_dim, use_bias=False, name=name + "out")(output)
-    if not layer_norm:
-        output = BatchNorm(output)
+    output = FC(output_dim, use_bias=False)(output)
+    output = BatchNorm(output)
     return output
 
 
-def mhsa_with_multi_head_position_windows(inputs, output_dim, num_heads, key_dim, v_dim, window_size, activation="hard_swish", name=""):
+def mhsa_with_multi_head_position_windows(inputs, output_dim, num_heads, key_dim, v_dim, window_size):
     # attention, batchnorm
-    B, blocks, C = inputs.shape
-    key_dim = int(key_dim)
-    embed_dim = key_dim * num_heads
-    embed_dim_v = int(v_dim * num_heads)
+    B, blocks, C = inputs.shape # [14, 14, 128]
+    key_dim = int(key_dim) # 32
+    embed_dim = key_dim * num_heads # 128
+    embed_dim_v = int(v_dim * num_heads) # 128
 
     if window_size > 1:
-        ww = window_size * window_size
-        inputs = tf.reshape(inputs, (-1, ww, C))
-        _B, _, _ = inputs.shape
+        ww = window_size * window_size # 49
+        inputs = Reshape((-1, ww, C))(inputs) # [14, 14, 128] -> [4, 49, 128]
+        _B, _, _ = inputs.shape # [4, 49, 128]
     else:
         ww = blocks
         _B = B
 
-    qkv_dim = int(2 * embed_dim + embed_dim_v)
-    qkv = keras.layers.Dense(qkv_dim, use_bias=False, name=name + "qkv")(inputs)
-    qkv = BatchNorm(qkv)
-    qkv = tf.reshape(qkv, (-1, ww, num_heads, int(qkv_dim//num_heads)), name=name and name + "reshape")
-    qkv = tf.transpose(qkv, perm=[0, 2, 1, 3], name=name and name + "Lambda")
-    qq, kk, vv = tf.split(qkv, [key_dim, key_dim, v_dim], axis=-1, name=name and name + "split")
-    att = scaled_dot_product_attention(qq, kk, vv, key_dim, 1, output_dim=output_dim, activation=activation, name=name)
-    att = tf.reshape(att, (-1, blocks, C))
+    qkv_dim = int(2 * embed_dim + embed_dim_v) # 384
+    qkv = FC(qkv_dim, use_bias=False)(inputs) # [4, 49, 128] -> [4, 49, 384]
+    qkv = BatchNorm(qkv) # [4, 49, 384] -> [4, 49, 384]
+    qkv = Reshape((-1, ww, num_heads, int(qkv_dim//num_heads)))(qkv) # [4, 49, 384] -> [4, 49, 4, 96]
+    qkv = Transpose(perm=[0, 2, 1, 3])(qkv) # [4, 49, 4, 96] -> [4, 4, 49, 96]
+    qq, kk, vv = Split([key_dim, key_dim, v_dim])(qkv) # [4, 4, 49, 96] -> [[4, 4, 49, 32], [4, 4, 49, 32], [4, 4, 49, 32]]
+    att = scaled_dot_product_attention(qq, kk, vv, key_dim, 1, output_dim=output_dim) # [4, 4, 49, 32]
+    att = Reshape((-1, blocks, C))(att)
     return att
 
 
-def mhsa_with_multi_head_position_windows_layer_norm(inputs, output_dim, num_heads, key_dim, v_dim, window_size, activation="hard_swish", name=""):
+def mhsa_with_multi_head_position_windows_layer_norm(inputs, output_dim, num_heads, key_dim, v_dim, window_size):
     # attention layernorm
-    B, blocks, C = inputs.shape
-    key_dim = int(key_dim)
-    embed_dim = key_dim * num_heads
-    embed_dim_v = int(v_dim * num_heads)
+    B, blocks, C = inputs.shape # [14, 14, 128]
+    key_dim = int(key_dim) # 32
+    embed_dim = key_dim * num_heads # 128
+    embed_dim_v = int(v_dim * num_heads) # 128
 
-    inputs = LayerNorm(inputs, name=name+'_ln_attn')
+    inputs = LayerNorm(inputs) # [14, 14, 128] -> [14, 14, 128]
     if window_size > 1:
-        ww = window_size * window_size
-        inputs = tf.reshape(inputs, (-1, ww, C))
-        _B, _, _ = inputs.shape
+        ww = window_size * window_size # 49
+        inputs = Reshape((-1, ww, C))(inputs) # [14, 14, 128] -> [4, 49, 128]
+        _B, _, _ = inputs.shape # [4, 49, 128]
     else:
         ww = blocks
         _B = B
     
-    qkv_dim = int(2 * embed_dim + embed_dim_v)
-    qkv = keras.layers.Dense(qkv_dim, use_bias=False, name=name + "qkv")(inputs)
-    qkv = Hswish(qkv)
-    qkv = tf.reshape(qkv, (-1, ww, num_heads, int(qkv_dim//num_heads)), name=name and name + "reshape")
-    qkv = tf.transpose(qkv, perm=[0, 2, 1, 3], name=name and name + "Lambda")
-    qq, kk, vv = tf.split(qkv, [key_dim, key_dim, v_dim], axis=-1, name=name and name + "split")
-    att = scaled_dot_product_attention(qq, kk, vv, key_dim, 1, output_dim=output_dim, activation=activation, name=name, layer_norm=True)
-    att = tf.reshape(att, (-1, blocks, C))
+    qkv_dim = int(2 * embed_dim + embed_dim_v) # 384
+    qkv = FC(qkv_dim, use_bias=False)(inputs) # [4, 49, 128] -> [4, 49, 384]
+    qkv = Hswish(qkv) # [4, 49, 384] -> [4, 49, 384]
+    qkv = Reshape((-1, ww, num_heads, int(qkv_dim//num_heads)))(qkv) # [4, 49, 384] -> [4, 49, 4, 96]
+    qkv = Transpose(perm=[0, 2, 1, 3])(qkv) # [4, 49, 4, 96] -> [4, 4, 49, 96]
+    qq, kk, vv = Split([key_dim, key_dim, v_dim])(qkv) # [4, 4, 49, 96] -> [[4, 4, 49, 32], [4, 4, 49, 32], [4, 4, 49, 32]]
+    att = scaled_dot_product_attention(qq, kk, vv, key_dim, 1, output_dim=output_dim, layer_norm=True)
+    att = Reshape((-1, blocks, C))(att)
     return att
 
 
-def res_mlp_block(inputs, mlp_ratio, drop_rate=0, use_bias=False, activation="hard_swish", name=""):
+def res_mlp_block(inputs, mlp_ratio, drop_rate=0, use_bias=False):
     # MLP batchnorm
-    in_channels = inputs.shape[-1]
+    in_channels = inputs.shape[-1] # [14, 14, 128]
 
-    nn = keras.layers.Dense(int(in_channels * mlp_ratio), use_bias=use_bias, name=name + "1_dense")(inputs)
-    nn = BatchNorm(nn)
-    nn = Hswish(nn)
-    nn = keras.layers.Dense(in_channels, use_bias=use_bias)(nn)
-    nn = BatchNorm(nn)
+    nn = FC(int(in_channels * mlp_ratio))(inputs)  # [14, 14, 128] -> [14, 14, 256]
+    nn = BatchNorm(nn) # [14, 14, 256] -> [14, 14, 256]
+    nn = Hswish(nn) # [14, 14, 256] -> [14, 14, 256]
+    nn = FC(in_channels)(nn) # [14, 14, 256] -> [14, 14, 128]
+    nn = BatchNorm(nn) # [14, 14, 128] -> [14, 14, 128]
     if drop_rate > 0:
-        nn = Dropout(drop_rate, noise_shape=(None, 1, 1), name=name + "drop")(nn)
-    return Add([inputs, nn])
+        nn = Dropout(drop_rate, noise_shape=(None, 1, 1))(nn) # [14, 14, 128] -> [14, 14, 128]
+    return Add([inputs, nn]) # [14, 14, 128] -> [14, 14, 128]
 
 
-def res_mlp_block_layer_norm(inputs, mlp_ratio, drop_rate=0, use_bias=False, activation="hard_swish", name=""):
+def res_mlp_block_layer_norm(inputs, mlp_ratio, drop_rate=0, use_bias=False):
     # MLP layernorm
-    in_channels = inputs.shape[-1]
-    inputs = LayerNorm(inputs)
-    nn = keras.layers.Dense(int(in_channels * mlp_ratio), use_bias=use_bias)(inputs)
-    nn = Hswish(nn)
-    nn = keras.layers.Dense(in_channels, use_bias=use_bias)(nn)
+    in_channels = inputs.shape[-1] # [14, 14, 128]
+    inputs = LayerNorm(inputs) # [14, 14, 128] -> [14, 14, 128]
+    nn = FC(int(in_channels * mlp_ratio))(inputs) # [14, 14, 128] -> [14, 14, 256]
+    nn = Hswish(nn) # [14, 14, 256] -> [14, 14, 256]
+    nn = FC(in_channels)(nn) # [14, 14, 256] -> [14, 14, 128]
     if drop_rate > 0:
-        nn = Dropout(drop_rate, noise_shape=(None, 1, 1), name=name + "drop")(nn)
-    return Add(name=name + "add")([inputs, nn])
+        nn = Dropout(drop_rate, noise_shape=(None, 1, 1))(nn)
+    return Add([inputs, nn])

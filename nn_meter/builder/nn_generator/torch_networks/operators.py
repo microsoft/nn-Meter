@@ -53,7 +53,7 @@ class ConvTrans(BaseOperator):
 
 #------------------ normalization and pooling ------------------#
 
-class BN(BaseOperator):
+class BatchNorm(BaseOperator):
     def get_model(self):
         cin = self.input_shape[0]
         return nn.BatchNorm2d(cin)
