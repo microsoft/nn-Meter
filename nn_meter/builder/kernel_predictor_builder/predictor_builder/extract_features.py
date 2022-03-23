@@ -102,7 +102,7 @@ def get_feature_parser(kernel_type):
             return BaseFeatureParser(kernel_type)
 
 
-def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_path = None, save_path = None):
+def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_path = None, save_path = None, predict_label = "latency"):
     ''' return (features, latency)
     kernel_type (str): type of kernel
     
@@ -125,7 +125,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_pa
             }
         }
 
-    lats_path: pathe of profiled latency information dict, or dict of "profiled_results", such as
+    labs_path: path of profiled label information dict, or dict of "profiled_results", such as
         {
             "conv_bn_relu": {
                 "id_0": {
@@ -133,37 +133,42 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_pa
                 }
             }
         }
-        if lats_path == None, it means latency information are also included in cfgs_path.
+        if labs_path == None, it means latency (or other label) information are also included in cfgs_path.
 
     save_path: the path to save the feature and latency information
+
+    predict_label (str): the predicting label to build kernel predictor
     '''
-    if lats_path == None:
+    if labs_path == None:
         if type(cfgs_path) == tuple:
-            cfgs_path, lats_path = cfgs_path
+            cfgs_path, labs_path = cfgs_path
         else:
-            lats_path = cfgs_path
+            labs_path = cfgs_path
     if isinstance(cfgs_path, str):
         with open(cfgs_path, 'r') as fp:
             cfgs_dict = json.load(fp)[kernel_type]
     else:
         cfgs_dict = cfgs_path[kernel_type] if kernel_type in cfgs_path else cfgs_path
-    if isinstance(lats_path, str):
-        with open(lats_path, 'r') as fp:
-            lats_dict = read_profiled_results(json.load(fp))[kernel_type]
+    if isinstance(labs_path, str):
+        with open(labs_path, 'r') as fp:
+            labs_dict = read_profiled_results(json.load(fp))[kernel_type]
     else:
-        lats_dict = lats_path[kernel_type] if kernel_type in lats_path else lats_path
+        labs_dict = labs_path[kernel_type] if kernel_type in labs_path else labs_path
 
-    paths, features, lats = [], [], []
-    for id in lats_dict.keys():
+    paths, features, labs = [], [], []
+    for id in labs_dict.keys():
         try:
             path = cfgs_dict[id]["model"]
             configs = cfgs_dict[id]["config"]
             feature = feature_parser.get_feature_by_config(configs)
-            latency = lats_dict[id]["latency"].avg
-            if latency != 0.0:
+            if predict_label == "latency":
+                label = labs_dict[id]["latency"].avg
+            else:
+                label = labs_dict[id][predict_label]
+            if label != 0.0:
                 paths.append(os.path.basename(path))
                 features.append(feature)
-                lats.append(latency)
+                labs.append(label)
         except:
             pass
 
@@ -171,12 +176,12 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, lats_pa
     if save_path:
        import pandas as pd
        cols = feature_parser.needed_config[:]
-       if len(features[0]) - len(feature_parser.needed_config) > 0:
+       if len(features[0]) - len(feature_parser.needed_config) > 0: # there are extra features beyond needed config
            cols += [f'feature_{i}' for i in range(len(features[0]) - len(feature_parser.needed_config))]
        data_df = pd.DataFrame(features, columns=cols)
        data_df = pd.concat([pd.DataFrame(paths, columns=["model_path"]), data_df], axis=1)
-       data_df["latency_ms"] = lats
+       data_df[predict_label] = labs
        data_df.to_csv(save_path, index=False)
        logging.info(f'Saved the feature table of all data for {kernel_type} in path {save_path}.')
 
-    return (features, lats)
+    return (features, labs)

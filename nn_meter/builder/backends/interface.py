@@ -84,7 +84,7 @@ class BaseBackend:
         converted_model = ...
         return converted_model
 
-    def profile(self, converted_model, metrics = ['latency'], input_shape = None):
+    def profile(self, converted_model, metrics = ['latency'], input_shape = None, **kwargs):
         """
         run the model on the backend, return required metrics of the running results. nn-Meter only support latency
         for metric by now. Users may provide other metrics in their customized backend.
@@ -94,13 +94,13 @@ class BaseBackend:
         metrics: a list of required metrics name. Defaults to ['latency']
         
         """
-        return self.parser.parse(self.profiler.profile(converted_model)).results.get(metrics)
+        return self.parser.parse(self.profiler.profile(converted_model, **kwargs)).results.get(metrics)
 
-    def profile_model_file(self, model_path, save_path, input_shape = None, metrics = ['latency']):
+    def profile_model_file(self, model_path, save_path, input_shape = None, metrics = ['latency'], **kwargs):
         """ load model by model file path, convert model file, and run ``self.profile()``
         """
         converted_model = self.convert_model(model_path, save_path, input_shape)
-        res = self.profile(converted_model, metrics, input_shape)
+        res = self.profile(converted_model, metrics, input_shape, **kwargs)
         return res
 
     def test_connection(self):
