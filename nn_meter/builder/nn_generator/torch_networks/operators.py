@@ -174,7 +174,7 @@ class Reshape(BaseOperator):
 class Add(BaseOperator):
     def get_model(self):
         def func(inputs):
-            return torch.add(inputs, inputs)
+            return torch.add(inputs[0], inputs[1])
         return func
 
     def get_output_shape(self):
