@@ -226,8 +226,8 @@ def sampling_hw_cin(count):
     return ncfgs
 
 
-def sampling_hw_cin_odd(count):
-    ''' sampling configs for kernels with hw and cin (only odd values) parameter, in case for split / se / channelshuffle
+def sampling_hw_cin_even(count):
+    ''' sampling configs for kernels with hw and cin (only even values) parameter, in case for split / se / channelshuffle
     Returned params include: (hw, cin)
     '''
     hws, cins, _, _, _ = read_conv_zoo()
