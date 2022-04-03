@@ -378,6 +378,35 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
+    "add_block": {
+        "tflite_cpu": {
+            "max_depth": 50,
+            "n_estimators": 570,
+            "min_samples_leaf": 1,
+            "min_samples_split": 2,
+            "max_features": 3,
+            "oob_score": True,
+            "random_state": 10,
+        },
+        "tflite_gpu": {
+            "max_depth": 50,
+            "n_estimators": 570,
+            "min_samples_leaf": 1,
+            "min_samples_split": 2,
+            "max_features": 3,
+            "oob_score": True,
+            "random_state": 10,
+        },
+        "openvino_vpu": {
+            "max_depth": 50,
+            "n_estimators": 570,
+            "min_samples_leaf": 1,
+            "min_samples_split": 2,
+            "max_features": 3,
+            "oob_score": True,
+            "random_state": 10,
+        }
+    },
     "split_block": {
         "tflite_cpu": {
             "max_depth": 50,

@@ -20,17 +20,17 @@ feature_for_kernel = {
     "conv_hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     "conv_block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     "conv_bn_hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    # dwconv
-    "dwconv_bn":            ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu":          ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu6":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu":       ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu6":      ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_block":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_hswish":     ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    # others
-    "maxpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
-    "avgpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
+    # dwconv ("COUT" will always be the same as "CIN")
+    "dwconv_bn":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_relu":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_relu6":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_bn_relu":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_bn_relu6":      ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_block":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv_bn_hswish":     ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    # others ("COUT" will always be the same as "CIN")
+    "maxpool_block":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
+    "avgpool_block":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
     "fc_block":             ["CIN", "COUT"],
     "concat_block":         ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
     "split_block":          ["HW", "CIN"],
@@ -41,8 +41,10 @@ feature_for_kernel = {
     "bn_block":             ["HW", "CIN"],
     "hswish_block":         ["HW", "CIN"],
     "relu_block":           ["HW", "CIN"],
-    "add_relu":             ["HW", "CIN"],
-    "add_block":            ["HW", "CIN"], 
+    # In "add_relu" block and "add_block", the second feature "CIN" will always be the same as
+    # the third feature
+    "add_relu":             ["HW", "CIN", "CIN"],
+    "add_block":            ["HW", "CIN", "CIN"], 
 }
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
@@ -61,6 +63,8 @@ class BaseFeatureParser:
         self.needed_config = feature_for_kernel[kernel_type]
 
     def get_feature_by_config(self, config_dict):
+        if "COUT" not in config_dict and "COUT" in self.needed_config:
+            config_dict["COUT"] = config_dict["CIN"]
         feature = [config_dict[data] for data in self.needed_config]
         return feature
 
@@ -72,6 +76,8 @@ class BaseFeatureParser:
 
 class FlopsParamParser(BaseFeatureParser):
     def get_feature_by_config(self, config_dict):
+        if "COUT" not in config_dict and "COUT" in self.needed_config:
+            config_dict["COUT"] = config_dict["CIN"]
         feature = [config_dict[data] for data in self.needed_config]
         from .utils import get_flops_params
         flop, param = get_flops_params(self.kernel_type, config_dict)
@@ -102,7 +108,8 @@ def get_feature_parser(kernel_type):
             return BaseFeatureParser(kernel_type)
 
 
-def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_path = None, save_path = None, predict_label = "latency"):
+def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_path = None,
+                                 save_path = None, predict_label = "latency"):
     ''' return (features, latency)
     kernel_type (str): type of kernel
     

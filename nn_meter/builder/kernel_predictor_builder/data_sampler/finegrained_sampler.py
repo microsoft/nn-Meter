@@ -94,7 +94,7 @@ def finegrained_sampling_pooling(cfgs, count):
                 'HW': cfg['HW'],
                 'CIN': cin,
                 'KERNEL_SIZE': cfg['KERNEL_SIZE'],
-                'STRIDES': cfg['STRIDES'],
+                'STRIDES': cfg['POOL_STRIDES'],
             }
             ncfgs.append(c)
     return ncfgs
