@@ -2,9 +2,35 @@
 
 nn-Meter supports customized latency predictors, which can be built on users' devices. To utilize customized predictor in nn-Meter, users should provide all the necessary kernel latency predictors and a fusion rule json file. Users could use [nn-Meter builder](../builder/overview.md) to build their own latency predictors.
 
-After preparing kernel latency predictors and fusion rule following guidance [here](../builder/overview.md), users should register the predictor to nn-Meter for reuse. First of all, put all kernel latency predictors and the fusion rule json file into one folder in a predefined location. The kernel latency predictors should be named by the kernel name, such as `"conv-bn-relu.pkl"`. The fusion rule json file should be named as `"fusion_rules.json"`.
+After preparing kernel latency predictors and fusion rules following guidance [here](../builder/overview.md), users could register the predictor to nn-Meter for reuse.
 
-### Step 1: Prepare Meta File
+### Step 1: Collect predictors and fusion rules
+
+After preparing kernel latency predictors and fusion rules, there will be a folder containing all kernel predictors in `<workspace-path>/predictor_build/results/predictors/`, and a json file containing the fusion rules in `<workspace-path>/fusion_rule_test/results/detected_fusion_rule.json`. The first step is to collect all kernel latency predictors and the fusion rule json file into one folder in a predefined location. The kernel latency predictors should be named by the kernel name with the training mark such as `"prior"` or `"finegrained"` removed. The fusion rule json file should be named as `"fusion_rules.json"`. Here is an example of the folder:
+
+``` text
+/home/{USERNAME}/working/customized_predictor
+├── fusion_rules.json
+├── add.pkl
+├── addrelu.pkl
+├── avgpool.pkl
+├── bn.pkl
+├── bnrelu.pkl
+├── channelshuffle.pkl
+├── concat.pkl
+├── conv-bn-relu.pkl
+├── dwconv-bn-relu.pkl
+├── fc.pkl
+├── global-avgpool.pkl
+├── hswish.pkl
+├── maxpool.pkl
+├── meta.yaml
+├── relu.pkl
+├── se.pkl
+└── split.pkl
+```
+
+### Step 2: Prepare Meta File
 
 Create a yaml file with following keys as meta file:
 
@@ -24,7 +50,7 @@ Following is an example of the yaml file:
 name: my_predictor
 version: 1.0
 category: cpu
-package_location: /home/USERNAME/working/customized_predictor
+package_location: /home/{USERNAME}/working/customized_predictor
 kernel_predictors:
     - conv-bn-relu
     - dwconv-bn-relu
@@ -44,7 +70,7 @@ kernel_predictors:
     - concat
 ```
 
-### Step 2: Register Customized Predictor into nn-Meter
+### Step 3: Register Customized Predictor into nn-Meter
 
 Run the following command to register customized predictor into nn-Meter:
 

@@ -12,39 +12,40 @@ logging = logging.getLogger("nn-Meter")
 
 feature_for_kernel = {
     # conv
-    "conv_bn_relu":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn_relu6":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_relu":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_relu6":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn_hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn-relu":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn-relu6":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-relu":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-relu6":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn-hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     # dwconv ("COUT" will always be the same as "CIN")
-    "dwconv_bn":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu6":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu6":      ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_block":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_hswish":     ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    # others ("COUT" will always be the same as "CIN")
-    "maxpool_block":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
-    "avgpool_block":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
-    "fc_block":             ["CIN", "COUT"],
-    "concat_block":         ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
-    "split_block":          ["HW", "CIN"],
-    "channel_shuffle":      ["HW", "CIN"],
-    "se_block":             ["HW", "CIN"],
-    "globalavgpool_block":  ["HW", "CIN"],
-    "bn_relu":              ["HW", "CIN"],
-    "bn_block":             ["HW", "CIN"],
-    "hswish_block":         ["HW", "CIN"],
-    "relu_block":           ["HW", "CIN"],
-    # In "add_relu" block and "add_block", the second feature "CIN" will always be the same as
+    "dwconv-bn":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-relu":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-relu6":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-bn-relu":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-bn-relu6":      ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-block":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-bn-hswish":     ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    # pooling ("COUT" will always be the same as "CIN")
+    "maxpool":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
+    "avgpool":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
+    # others
+    "fc":                   ["CIN", "COUT"],
+    "concat":               ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
+    "split":                ["HW", "CIN"],
+    "channelshuffle":       ["HW", "CIN"],
+    "se":                   ["HW", "CIN"],
+    "global-avgpool":       ["HW", "CIN"],
+    "bnrelu":               ["HW", "CIN"],
+    "bn":                   ["HW", "CIN"],
+    "hswish":               ["HW", "CIN"],
+    "relu":                 ["HW", "CIN"],
+    # In "addrelu" block and "add" block, the second feature "CIN" will always be the same as
     # the third feature
-    "add_relu":             ["HW", "CIN", "CIN"],
-    "add_block":            ["HW", "CIN", "CIN"], 
+    "addrelu":              ["HW", "CIN", "CIN"],
+    "add":                  ["HW", "CIN", "CIN"], 
 }
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
@@ -117,7 +118,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
 
     cfgs_path: path of config information dict, or dict of "origin_kernels.json", such as
         {
-            "conv_bn_relu": {
+            "conv-bn-relu": {
                 "id_0": {
                     "model": "...",
                     "shapes": [[14, 14, 98]],
@@ -134,7 +135,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
 
     labs_path: path of profiled label information dict, or dict of "profiled_results", such as
         {
-            "conv_bn_relu": {
+            "conv-bn-relu": {
                 "id_0": {
                     "latency": "42.001 +- 1.0"
                 }

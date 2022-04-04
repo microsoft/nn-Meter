@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 
 __PREDICTOR_ZOO__ = {
-    "conv_bn_relu": {
+    "conv-bn-relu": {
         "tflite_cpu": {
             "max_depth": 70,
             "n_estimators": 320,
@@ -35,7 +35,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "dwconv_bn_relu": {
+    "dwconv-bn-relu": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 240,
@@ -65,7 +65,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "fc_block": {
+    "fc": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -95,7 +95,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "channel_shuffle": {
+    "channelshuffle": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -115,7 +115,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "se_block": {
+    "se": {
         "tflite_cpu": {
             "max_depth": 20,
             "n_estimators": 290,
@@ -144,7 +144,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "maxpool_block": {
+    "maxpool": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 210,
@@ -173,7 +173,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "globalavgpool_block": {
+    "global-avgpool": {
         "tflite_cpu": {
             "max_depth": 70,
             "n_estimators": 370,
@@ -184,7 +184,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "hswish_block": {
+    "hswish": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 190,
@@ -213,7 +213,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "avgpool_block": {
+    "avgpool": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -242,7 +242,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "bn_relu": {
+    "bnrelu": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -271,7 +271,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "relu_block": {
+    "relu": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -300,7 +300,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "bn_block": {
+    "bn": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 370,
@@ -329,7 +329,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "concat_block": {
+    "concat": {
         "tflite_cpu": {
             "max_depth": 100,
             "n_estimators": 690,
@@ -349,7 +349,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "add_relu": {
+    "addrelu": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 570,
@@ -378,7 +378,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "add_block": {
+    "add": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 570,
@@ -407,7 +407,7 @@ __PREDICTOR_ZOO__ = {
             "random_state": 10,
         }
     },
-    "split_block": {
+    "split": {
         "tflite_cpu": {
             "max_depth": 50,
             "n_estimators": 190,
