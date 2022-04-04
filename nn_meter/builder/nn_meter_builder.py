@@ -6,7 +6,7 @@ import time
 import logging
 from . import builder_config
 from .utils import save_profiled_results
-from nn_meter.builder.utils import merge_prev_info
+from nn_meter.builder.utils import merge_info
 from nn_meter.builder.backends import connect_backend
 logging = logging.getLogger("nn-Meter")
 
@@ -32,10 +32,10 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
     else:
         save_name = "converted_results.json"
 
-    ws_mode_path = builder_config.get('MODEL_DIR', mode)
-    model_save_path = os.path.join(ws_mode_path, 'models')
+    workspace_path = builder_config.get('WORKSPACE', mode)
+    model_save_path = os.path.join(workspace_path, 'models')
     os.makedirs(model_save_path, exist_ok=True)
-    info_save_path = os.path.join(ws_mode_path, "results")
+    info_save_path = os.path.join(workspace_path, "results")
     os.makedirs(info_save_path, exist_ok=True)
 
     # convert models
@@ -92,10 +92,10 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
         with open(models, 'r') as fp:
             models = json.load(fp)
 
-    ws_mode_path = builder_config.get('MODEL_DIR', mode)
-    model_save_path = os.path.join(ws_mode_path, 'models')
+    workspace_path = builder_config.get('WORKSPACE', mode)
+    model_save_path = os.path.join(workspace_path, 'models')
     os.makedirs(model_save_path, exist_ok=True)
-    info_save_path = os.path.join(ws_mode_path, "results")
+    info_save_path = os.path.join(workspace_path, "results")
     os.makedirs(info_save_path, exist_ok=True)
 
     # profile models and get metric results
@@ -180,7 +180,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
  
     """
     from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data
-    ws_mode_path = builder_config.get('MODEL_DIR', 'predbuild')
+    workspace_path = builder_config.get('WORKSPACE', 'predbuild')
     
 
     # init predictor builder with prior data sampler
@@ -188,7 +188,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
     # use current sampled data to build regression model, and locate data with large errors in testset
     predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold, mark='prior',
-                                                              save_path=os.path.join(ws_mode_path, "results"), predict_label=predict_label)
+                                                              save_path=os.path.join(workspace_path, "results"), predict_label=predict_label)
     logging.keyinfo(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     for i in range(1, iteration):
@@ -197,9 +197,9 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
                                                   sampling_mode = 'finegrained', configs=error_configs, mark=f'finegrained{i}')
 
         # merge finegrained data with previous data and build new regression model
-        kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
+        kernel_data = merge_info(new_info=new_kernel_data, prev_info=kernel_data)
         predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold, mark='finegrained{i}',
-                                                                  save_path=os.path.join(ws_mode_path, "results"), predict_label=predict_label)
+                                                                  save_path=os.path.join(workspace_path, "results"), predict_label=predict_label)
         logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     return predictor, kernel_data

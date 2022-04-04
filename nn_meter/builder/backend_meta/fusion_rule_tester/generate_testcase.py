@@ -65,7 +65,7 @@ class BaseTestCase:
         testcase = self.generate_testcase()
 
         for op, model in testcase.items():
-            model_path = os.path.join(self.model_dir, self.name + '_' + op)
+            model_path = os.path.join(self.workspace_path, self.name + '_' + op)
             model['model'](get_tensor_by_shapes(model['shapes']))
             keras.models.save_model(model['model'], model_path)
             testcase[op]['model'] = model_path
@@ -99,8 +99,8 @@ class BaseTestCase:
         self.kernel_size = config['KERNEL_SIZE']
         self.cout = config['COUT']
         self.padding = config['PADDING']
-        self.model_dir = os.path.join(config['MODEL_DIR'], 'models')
-        os.makedirs(self.model_dir, exist_ok=True)
+        self.workspace_path = os.path.join(config['WORKSPACE'], 'models')
+        os.makedirs(self.workspace_path, exist_ok=True)
 
     def _model_block(self):
         pass

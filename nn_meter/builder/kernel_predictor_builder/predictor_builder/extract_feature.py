@@ -116,7 +116,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
     
     feature_parser (subclass instance of BaseFeatureParser) the parser containing the feature parsing script
 
-    cfgs_path: path of config information dict, or dict of "origin_kernels.json", such as
+    cfgs_path (str or dict): path of config information dict, or dict of "origin_kernels.json", such as
         {
             "conv-bn-relu": {
                 "id_0": {
@@ -133,7 +133,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
             }
         }
 
-    labs_path: path of profiled label information dict, or dict of "profiled_results", such as
+    labs_path (str or dict): path of profiled label information dict, or dict of "profiled_results", such as
         {
             "conv-bn-relu": {
                 "id_0": {
@@ -143,7 +143,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
         }
         if labs_path == None, it means latency (or other label) information are also included in cfgs_path.
 
-    save_path: the path to save the feature and latency information
+    save_path (str): the path to save the feature and latency information
 
     predict_label (str): the predicting label to build kernel predictor
     '''

@@ -56,7 +56,7 @@ if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__
 
 
 def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorflow', batch_size=1):
-    """ get the nn model for predictor build. returns: input_tensors, output_tensors, configuration_key, and graphname, they are for saving tensorflow v1.x models
+    """ get the nn model for predictor build.
     """
     if implement == 'tensorflow':
         from nn_meter.builder.nn_generator.tf_networks import blocks
