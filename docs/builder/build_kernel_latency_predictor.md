@@ -151,7 +151,7 @@ The iterative process continues until the predictor accuracy meets user's requir
 
 Here is an example for adaptive data sampling:
 ```python
-from nn_meter.builder.utils import merge_prev_info
+from nn_meter.builder.utils import merge_info
 
 finegrained_sample_num = 10
 
@@ -161,7 +161,7 @@ for i in range(1, 5):
                                                      sampling_mode = 'finegrained', configs=error_configs, mark=f'finegrained{i}')
 
     # merge finegrained data with previous data and build new regression model
-    kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
+    kernel_data = merge_info(new_info=new_kernel_data, prev_info=kernel_data)
     _, acc10, error_configs = build_predictor_by_data(kernel_type,
                                                       kernel_data,
                                                       backend,
