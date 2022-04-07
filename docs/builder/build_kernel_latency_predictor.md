@@ -12,71 +12,86 @@ The second step is generating and profiling kernel model by configurations. Curr
 
 (conv related kernels)
 
-- `"conv_bn_relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-- `"conv_bn_relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-- `"conv_bn"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-- `"conv_relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-- `"conv_relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-- `"conv_hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-- `"conv_block"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
-- `"conv_bn_hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-bn-relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-bn-relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-bn"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-block"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"conv-bn-hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 
 (dwconv related kernels)
-- `"dwconv_bn"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-- `"dwconv_relu"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-- `"dwconv_relu6"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-- `"dwconv_bn_relu"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-- `"dwconv_bn_relu6"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-- `"dwconv_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
-- `"dwconv_bn_hswish"`: `HW`, `CIN`, `KERNEL_SIZE`, `STRIDES`
+- `"dwconv-bn"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"dwconv-relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"dwconv-relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"dwconv-bn-relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"dwconv-bn-relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"dwconv-block"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
+- `"dwconv-bn-hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 
 (other kernels)
 
-- `"maxpool_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `POOL_STRIDES`
-- `"avgpool_block"`: `HW`, `CIN`, `KERNEL_SIZE`, `POOL_STRIDES`
-- `"fc_block"`: `CIN`, `COUT`
-- `"concat_block"`: `HW`, `CIN1`, `CIN2`, `CIN3`, `CIN4`
-- `"split_block"`: `HW`, `CIN`
-- `"channel_shuffle"`: `HW`, `CIN`
-- `"se_block"`: `HW`, `CIN`
-- `"globalavgpool_block"`: `HW`, `CIN`
-- `"bn_relu"`: `HW`, `CIN`
-- `"bn_block"`: `HW`, `CIN`
-- `"hswish_block"`: `HW`, `CIN`
-- `"relu_block"`: `HW`, `CIN`
-- `"add_relu"`: `HW`, `CIN`
-- `"add_block"`: `HW`, `CIN`
+- `"maxpool"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `POOL_STRIDES`
+- `"avgpool"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `POOL_STRIDES`
+- `"fc"`: `CIN`, `COUT`
+- `"concat"`: `HW`, `CIN1`, `CIN2`, `CIN3`, `CIN4`
+- `"split"`: `HW`, `CIN`
+- `"channelshuffle"`: `HW`, `CIN`
+- `"se"`: `HW`, `CIN`
+- `"global-avgpool"`: `HW`, `CIN`
+- `"bnrelu"`: `HW`, `CIN`
+- `"bn"`: `HW`, `CIN`
+- `"hswish"`: `HW`, `CIN`
+- `"relu"`: `HW`, `CIN`
+- `"addrelu"`: `HW`, `CIN`
+- `"add"`: `HW`, `CIN`
 
 
 The first and second step are implemented by `nn_meter.builder.nn_meter_builder.sample_and_profile_kernel_data`. Here is an example:
 
 ``` python
+from nn_meter.builder import builder_config 
 from nn_meter.builder.nn_meter_builder import sample_and_profile_kernel_data
-kernel_type = "conv_bn_relu"
-backend = "tflite_cpu"
+workspace = "/path/to/workspace/"
+builder_config.init(workspace)
 
-# init predictor builder with prior data sampler
-kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num = 1000, backend, sampling_mode='prior', mark='prior')
+kernel_type = "conv-bn-relu"
+sample_num = 10
+backend = "tflite_cpu"
+mark = "test"
+
+kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num = sample_num,
+                                             backend=backend, sampling_mode='prior', mark=mark)
 ```
 
 The generated models are saved in `<workspace-path>/predictor_build/models`, and the configuration information and profiled results are dumped in json file to `<workspace-path>/predictor_build/results/<kernel_type>.json` and `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`.
 
-The method `sample_and_profile_kernel_data` is composed by three main steps, `generate_config_sample`, `convert_models`, `profile_models`. Here is an example as a decomposition of `sample_and_profile_kernel_data`. Users could choose the decomposed interfaces if needed.
-``` python
-from nn_meter.builder.kernel_predictor_builder import generate_config_sample
-from nn_meter.builder import convert_models
-# sample configs for kernel and generate models
-models = generate_config_sample(kernel_type, sample_num, mark=mark, 
-                                    sampling_mode=sampling_mode, configs=configs)
+The method `sample_and_profile_kernel_data` is composed by three main steps, `generate_config_sample`, `convert_models`, and `profile_models`. Here is an example as a decomposition of `sample_and_profile_kernel_data`. Users could choose the decomposed interfaces if needed.
 
-# connect to backend, run models and get latency
+``` python
+from nn_meter.builder.backends import connect_backend
+from nn_meter.builder.kernel_predictor_builder import generate_config_sample
+from nn_meter.builder import builder_config, convert_models, profile_models  
+workspace = "/path/to/workspace/"
+builder_config.init(workspace)
+
 backend = connect_backend(backend_name="tflite-cpu")
 
+kernel_type = "conv-bn-relu"
+sample_num = 10
+mark = "test"
+
+# sample configs for kernel and generate models
+models = generate_config_sample(kernel_type, sample_num, mark=mark,
+                                sampling_mode="prior")
+
 # convert the model to the needed format by backend, in order to increase efficiency when profiling on device.
-models = convert_models(backend, saved_name, broken_point_mode=True)
+models = convert_models(backend, f"{workspace}/predictor_build/results/{kernel_type}_{mark}.json")
 
 # run models with given backend and return latency of testcase models
-profiled_results = profile_models(backend, models, mode='predbuild', save_name="xxx.json", have_converted=True)
+profiled_results = profile_models(backend, models, mode='predbuild', have_converted=True,
+                                  save_name=f"profiled_{kernel_type}.json")
 ```
 
 Note: for kernels related to conv and dwconv, our experiment results have shown that all kernels containing one conv layer or one dwconv layer have almost the same latency results. Thus in nn-Meter, all kernels containing one conv or dwconv layer shares the same kernel predictor.
@@ -86,23 +101,28 @@ Note: for kernels related to conv and dwconv, our experiment results have shown 
 After preparing the training data, we construct a random forest regression model as the kernel latency predictor. Here is an example:
 
 ```python
+import os
+from nn_meter.builder import builder_config
 from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data
+workspace = "/path/to/workspace/"
+builder_config.init(workspace)
 
-kernel_type = "conv_bn_relu"
+kernel_type = "conv-bn-relu"
+mark = "prior"
 backend = "tflite_cpu"
 error_threshold = 0.1
 
 # extract training feature and target from profiled results
-cfgs_path = os.path.join("<workspace-path>", "predictor_build", "results", "conv_bn_relu.json")
-lats_path = os.path.join("<workspace-path>", "predictor_build", "results", "profiled_conv_bn_relu.json")
+cfgs_path = os.path.join(workspace, "predictor_build", "results", f"{kernel_type}_{mark}.json")
+lats_path = os.path.join(workspace, "predictor_build", "results", f"profiled_{kernel_type}.json")
 kernel_data = (cfgs_path, lats_path)
 
 # build latency predictor
 predictor, acc10, error_configs = build_predictor_by_data(
     kernel_type, kernel_data, backend, error_threshold=error_threshold, mark="prior",
-    save_path=os.path.join("<workspace-path>", "predictor_build", "results")
+    save_path=os.path.join(workspace, "predictor_build", "results")
 )
-logging.info(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')    
+print(f'Iteration 0: acc10 {acc10}, error_configs number: {len(error_configs)}')    
 ```
 
 In the implementation, the tuple of `kernel_data` includes items of `cfgs_path` and `lats_path`, indicating the config information and latency information respectively. `cfgs_path` and `lats_path` accept both json file path string or dictionary of models. In addition, if the config information and latency information are in the same data holder, users could directly specify `kernel_data = cfgs_path`.
@@ -131,34 +151,39 @@ The iterative process continues until the predictor accuracy meets user's requir
 
 Here is an example for adaptive data sampling:
 ```python
-for i in range(1, iteration):
+from nn_meter.builder.utils import merge_info
+
+finegrained_sample_num = 10
+
+for i in range(1, 5):
     # finegrained sampling and profiling for large error data
-    new_kernel_data = sample_and_profile_kernel_data(
-        kernel_type, finegrained_sample_num, backend,
-        sampling_mode = 'finegrained', configs=error_configs, mark=f'finegrained{i}'
-    )
+    new_kernel_data = sample_and_profile_kernel_data(kernel_type, finegrained_sample_num, backend,
+                                                     sampling_mode = 'finegrained', configs=error_configs, mark=f'finegrained{i}')
 
     # merge finegrained data with previous data and build new regression model
-    kernel_data = merge_prev_info(new_info=new_kernel_data, prev_info=kernel_data)
-    predictor, acc10, error_configs = build_predictor_by_data(
-        kernel_type, kernel_data, backend, error_threshold=error_threshold, mark="prior",
-        save_path=os.path.join("<workspace-path>", "predictor_build", "results")
-        )
-    logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
+    kernel_data = merge_info(new_info=new_kernel_data, prev_info=kernel_data)
+    _, acc10, error_configs = build_predictor_by_data(kernel_type,
+                                                      kernel_data,
+                                                      backend,
+                                                      error_threshold=error_threshold,
+                                                      mark='finegrained{i}',
+                                                      save_path=os.path.join(workspace, "results"))
+    print(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 ```
 
 ## End-to-end Demo
 
-nn-Meter have wrapped the four main steps into one method named `nn_meter.builder.build_predictor_for_kernel`. There is an example to build latency predictor for `"conv_bn_relu"` kernel:
+nn-Meter have wrapped the four main steps into one method named `nn_meter.builder.build_predictor_for_kernel`. There is an example to build latency predictor for `"conv-bn-relu"` kernel:
 
 ```python
 # initialize builder config with workspace
 from nn_meter.builder import builder_config
-builder_config.init("path/to/workspace/folder") 
+workspace = "/path/to/workspace/"
+builder_config.init(workspace)
 
 # build latency predictor for kernel
 from nn_meter.builder import build_predictor_for_kernel
-kernel_type = "conv_bn_relu"
+kernel_type = "conv-bn-relu"
 backend = "tflite_cpu"
 
 predictor, data = build_predictor_for_kernel(
@@ -173,7 +198,8 @@ nn-Meter also provided a end-to-end method for users to build a series of genera
 ``` python
 # initialize builder config with workspace
 from nn_meter.builder import builder_config
-builder_config.init("path/to/workspace/folder") # initialize builder config with workspace
+workspace = "/path/to/workspace/"
+builder_config.init(workspace)
 
 # build latency predictor for kernel
 from nn_meter.builder import build_latency_predictor
@@ -192,7 +218,7 @@ nn-Meter provide API for users to customize their own kernel block. In nn-Meter,
 
 - `input_shape` defines the dimension of one model input shape without batch size. Generally, when the input shape is 3D, `input_shape` should be`[config["HW"], config["HW"], config["CIN"]]`, and when the input shape is 1D, `input_shape` should be`[config["CIN"]]`. 
 
-- `input_tensor_shape` is a list defining all model inputs. In basic situation, `input_tensor_shape` should be `[input_shape]` if the kernel only has one input. If the kernel has more than one input, such as `add_relu` kernel, `input_tensor_shape` is `[input_shape, input_shape]`.
+- `input_tensor_shape` is a list defining all model inputs. In basic situation, `input_tensor_shape` should be `[input_shape]` if the kernel only has one input. If the kernel has more than one input, such as `addrelu` kernel, `input_tensor_shape` is `[input_shape, input_shape]`.
 
 - `get_model` is the implementation of the kernel model and return a instance of `keras.Model` of the kernel.
 
@@ -203,7 +229,7 @@ import tensorflow.keras as keras
 from nn_meter.builder.nn_generator import BaseBlock
 
 class MyKernel(BaseBlock):
-    ''' This kernel is built by Conv, BN, and Relu layer, which is the same as the builtin `conv_bn_relu` block.
+    ''' This kernel is built by Conv, BN, and Relu layer, which is the same as the builtin `conv-bn-relu` block.
     '''
     def __init__(self, config):
         self.config = config
@@ -305,8 +331,7 @@ Here is an example:
 from nn_meter.builder.kernel_predictor_builder import BaseFeatureParser
 
 class MyParser(BaseFeatureParser):
-    ''' This parser utilized config "HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES", as well as the flops and parameter number as feature, 
-    which is the same parser for Conv, Dwconv and FC related kernel.
+    ''' This parser utilized config "HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES", as well as the flops and parameter number as feature.
     '''
     def __init__(self, kernel_type):
         self.kernel_type = kernel_type
@@ -372,7 +397,7 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: mykernel
-package_location: /home/USERNAME/working/tftest/kernel_package
+package_location: /home/{USERNAME}/working/tftest/kernel_package
 class_module: kernel_script
 class_name: MyKernel
 sampler_module: config_sampler
@@ -401,35 +426,35 @@ nn-meter --list-kernels
 ```
 ```text
 (nn-Meter) Supported kernels: ('*' indicates customized kernels)
-(nn-Meter) [Kernel] conv_bn_relu
-(nn-Meter) [Kernel] conv_bn_relu6
-(nn-Meter) [Kernel] conv_bn
-(nn-Meter) [Kernel] conv_relu
-(nn-Meter) [Kernel] conv_relu6
-(nn-Meter) [Kernel] conv_hswish
-(nn-Meter) [Kernel] conv_block
-(nn-Meter) [Kernel] conv_bn_hswish
-(nn-Meter) [Kernel] dwconv_bn
-(nn-Meter) [Kernel] dwconv_relu
-(nn-Meter) [Kernel] dwconv_relu6
-(nn-Meter) [Kernel] dwconv_bn_relu
-(nn-Meter) [Kernel] dwconv_bn_relu6
-(nn-Meter) [Kernel] dwconv_block
-(nn-Meter) [Kernel] dwconv_bn_hswish
-(nn-Meter) [Kernel] maxpool_block
-(nn-Meter) [Kernel] avgpool_block
-(nn-Meter) [Kernel] fc_block
-(nn-Meter) [Kernel] concat_block
-(nn-Meter) [Kernel] split_block
-(nn-Meter) [Kernel] channel_shuffle
-(nn-Meter) [Kernel] se_block
-(nn-Meter) [Kernel] globalavgpool_block
-(nn-Meter) [Kernel] bn_relu
-(nn-Meter) [Kernel] bn_block
-(nn-Meter) [Kernel] hswish_block
-(nn-Meter) [Kernel] relu_block
-(nn-Meter) [Kernel] add_relu
-(nn-Meter) [Kernel] add_block
+(nn-Meter) [Kernel] conv-bn-relu
+(nn-Meter) [Kernel] conv-bn-relu6
+(nn-Meter) [Kernel] conv-bn
+(nn-Meter) [Kernel] conv-relu
+(nn-Meter) [Kernel] conv-relu6
+(nn-Meter) [Kernel] conv-hswish
+(nn-Meter) [Kernel] conv-block
+(nn-Meter) [Kernel] conv-bn-hswish
+(nn-Meter) [Kernel] dwconv-bn
+(nn-Meter) [Kernel] dwconv-relu
+(nn-Meter) [Kernel] dwconv-relu6
+(nn-Meter) [Kernel] dwconv-bn-relu
+(nn-Meter) [Kernel] dwconv-bn-relu6
+(nn-Meter) [Kernel] dwconv-block
+(nn-Meter) [Kernel] dwconv-bn-hswish
+(nn-Meter) [Kernel] maxpool
+(nn-Meter) [Kernel] avgpool
+(nn-Meter) [Kernel] fc
+(nn-Meter) [Kernel] concat
+(nn-Meter) [Kernel] split
+(nn-Meter) [Kernel] channelshuffle
+(nn-Meter) [Kernel] se
+(nn-Meter) [Kernel] global-avgpool
+(nn-Meter) [Kernel] bnrelu
+(nn-Meter) [Kernel] bn
+(nn-Meter) [Kernel] hswish
+(nn-Meter) [Kernel] relu
+(nn-Meter) [Kernel] addrelu
+(nn-Meter) [Kernel] add
 (nn-Meter) [Kernel] * mykernel
 ```
 

@@ -401,7 +401,7 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: op1
-package_location: /home/USERNAME/working/customized_operator
+package_location: /home/{USERNAME}/working/customized_operator
 class_module: operator_script
 class_name: Op1
 ```
@@ -603,7 +603,7 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: MyTC
-package_location: /home/USERNAME/working/customized_testcase
+package_location: /home/{USERNAME}/working/customized_testcase
 class_module: testcase_script
 class_name: MyTC
 ```

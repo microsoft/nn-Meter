@@ -229,10 +229,10 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: my_backend
-package_location: /home/USERNAME/working/customized_backend
+package_location: /home/{USERNAME}/working/customized_backend
 class_module: backend
 class_name: MyBackend
-defaultConfigFile: /home/USERNAME/working/customized_backend/default_config.yaml
+defaultConfigFile: /home/{USERNAME}/working/customized_backend/default_config.yaml
 ```
 
 ### Step 3: Register Customized Backend into nn-Meter

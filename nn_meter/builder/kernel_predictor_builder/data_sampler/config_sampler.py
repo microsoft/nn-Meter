@@ -41,7 +41,7 @@ class PoolingSampler(BaseConfigSampler):
         return sampling_pooling(sample_num)
 
     def finegrained_config_sampling(self, configs, sample_num):
-        return finegrained_sampling_pooling(sample_num, fix_ks=3, fix_stride=1)
+        return finegrained_sampling_pooling(configs, sample_num)
 
 
 class FCSampler(BaseConfigSampler):

@@ -12,37 +12,40 @@ logging = logging.getLogger("nn-Meter")
 
 feature_for_kernel = {
     # conv
-    "conv_bn_relu":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn_relu6":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_relu":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_relu6":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    "conv_bn_hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
-    # dwconv
-    "dwconv_bn":            ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu":          ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_relu6":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu":       ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_relu6":      ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_block":         ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
-    "dwconv_bn_hswish":     ["HW", "CIN", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn-relu":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn-relu6":        ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-relu":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-relu6":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-bn-hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    # dwconv ("COUT" will always be the same as "CIN")
+    "dwconv-bn":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-relu":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-relu6":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-bn-relu":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-bn-relu6":      ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-block":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-bn-hswish":     ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    # pooling ("COUT" will always be the same as "CIN")
+    "maxpool":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
+    "avgpool":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
     # others
-    "maxpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
-    "avgpool_block":        ["HW", "CIN", "KERNEL_SIZE", "POOL_STRIDES"],
-    "fc_block":             ["CIN", "COUT"],
-    "concat_block":         ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
-    "split_block":          ["HW", "CIN"],
-    "channel_shuffle":      ["HW", "CIN"],
-    "se_block":             ["HW", "CIN"],
-    "globalavgpool_block":  ["HW", "CIN"],
-    "bn_relu":              ["HW", "CIN"],
-    "bn_block":             ["HW", "CIN"],
-    "hswish_block":         ["HW", "CIN"],
-    "relu_block":           ["HW", "CIN"],
-    "add_relu":             ["HW", "CIN"],
-    "add_block":            ["HW", "CIN"], 
+    "fc":                   ["CIN", "COUT"],
+    "concat":               ["HW", "CIN1", "CIN2", "CIN3", "CIN4"],
+    "split":                ["HW", "CIN"],
+    "channelshuffle":       ["HW", "CIN"],
+    "se":                   ["HW", "CIN"],
+    "global-avgpool":       ["HW", "CIN"],
+    "bnrelu":               ["HW", "CIN"],
+    "bn":                   ["HW", "CIN"],
+    "hswish":               ["HW", "CIN"],
+    "relu":                 ["HW", "CIN"],
+    # In "addrelu" block and "add" block, the second feature "CIN" will always be the same as
+    # the third feature
+    "addrelu":              ["HW", "CIN", "CIN"],
+    "add":                  ["HW", "CIN", "CIN"], 
 }
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
@@ -61,6 +64,8 @@ class BaseFeatureParser:
         self.needed_config = feature_for_kernel[kernel_type]
 
     def get_feature_by_config(self, config_dict):
+        if "COUT" not in config_dict and "COUT" in self.needed_config:
+            config_dict["COUT"] = config_dict["CIN"]
         feature = [config_dict[data] for data in self.needed_config]
         return feature
 
@@ -72,6 +77,8 @@ class BaseFeatureParser:
 
 class FlopsParamParser(BaseFeatureParser):
     def get_feature_by_config(self, config_dict):
+        if "COUT" not in config_dict and "COUT" in self.needed_config:
+            config_dict["COUT"] = config_dict["CIN"]
         feature = [config_dict[data] for data in self.needed_config]
         from .utils import get_flops_params
         flop, param = get_flops_params(self.kernel_type, config_dict)
@@ -102,15 +109,16 @@ def get_feature_parser(kernel_type):
             return BaseFeatureParser(kernel_type)
 
 
-def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_path = None, save_path = None, predict_label = "latency"):
+def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_path = None,
+                                 save_path = None, predict_label = "latency"):
     ''' return (features, latency)
     kernel_type (str): type of kernel
     
     feature_parser (subclass instance of BaseFeatureParser) the parser containing the feature parsing script
 
-    cfgs_path: path of config information dict, or dict of "origin_kernels.json", such as
+    cfgs_path (str or dict): path of config information dict, or dict of "origin_kernels.json", such as
         {
-            "conv_bn_relu": {
+            "conv-bn-relu": {
                 "id_0": {
                     "model": "...",
                     "shapes": [[14, 14, 98]],
@@ -125,9 +133,9 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
             }
         }
 
-    labs_path: path of profiled label information dict, or dict of "profiled_results", such as
+    labs_path (str or dict): path of profiled label information dict, or dict of "profiled_results", such as
         {
-            "conv_bn_relu": {
+            "conv-bn-relu": {
                 "id_0": {
                     "latency": "42.001 +- 1.0"
                 }
@@ -135,7 +143,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
         }
         if labs_path == None, it means latency (or other label) information are also included in cfgs_path.
 
-    save_path: the path to save the feature and latency information
+    save_path (str): the path to save the feature and latency information
 
     predict_label (str): the predicting label to build kernel predictor
     '''
