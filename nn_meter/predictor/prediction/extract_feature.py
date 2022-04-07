@@ -63,7 +63,7 @@ def get_predict_features(config):
         elif "pool" in op and "global" not in op:
             features = [inputh, cin, cout, ks, s]
         elif "global-pool" in op or "global-avgpool" in op or "gap" in op:
-            inputh = item["inputh"]
+            inputh = item["inputh"] if hasattr(item, "inputh") else 1
             cin = item["cin"]
             features = [inputh, cin]
         elif "channelshuffle" in op:
