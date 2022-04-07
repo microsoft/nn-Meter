@@ -165,7 +165,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
                 label = labs_dict[id]["latency"].avg
             else:
                 label = labs_dict[id][predict_label]
-            if label != 0.0:
+            if label != 0.0 and label < 200.0:
                 paths.append(os.path.basename(path))
                 features.append(feature)
                 labs.append(label)
