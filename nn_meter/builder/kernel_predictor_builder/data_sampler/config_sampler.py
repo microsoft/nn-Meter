@@ -76,9 +76,9 @@ class GlobalAvgPoolSampler(BaseConfigSampler):
 
     def prior_config_sampling(self, sample_num):
         cfgs = sampling_hw_cin(sample_num)
-        new_hws = [3] * (sample_num // 2 + 1) + [7] * (sample_num // 2 + 1)
-        new_hws = new_hws[:len(cfgs)]
+        new_hws = [1] * (sample_num // 2 + 1) + [3] * (sample_num // 2 + 1) + [7] * (sample_num // 2 + 1)
         import random; random.shuffle(new_hws)
+        new_hws = new_hws[:len(cfgs)]
         for cfg, hw in zip(cfgs, new_hws): cfg["HW"] = hw
         return cfgs
 

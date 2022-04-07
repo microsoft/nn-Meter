@@ -39,6 +39,9 @@ def predict_model(model, predictors):
             pys = pred.predict(dicts[kernel]) # in unit of ms
             if len(pys) != 0:
                 py += sum(pys)
+            print("## --------", kernel, sum(pys))
+            for item in zip(dicts[kernel], pys):
+                print(item)
 
     return py
 

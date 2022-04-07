@@ -226,5 +226,318 @@
             ],
             "outbounds": []
         }
+    },
+    {
+        "ReduceMean_0": {
+            "attr": {
+                "attr": {
+                    "axes": [
+                        2,
+                        3
+                    ],
+                    "keepdims": 1
+                },
+                "type": "gap",
+                "input_shape": [
+                    [
+                        1,
+                        112,
+                        112,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Conv_1"
+            ],
+            "inbounds": []
+        },
+        "Conv_1": {
+            "attr": {
+                "attr": {
+                    "dilations": [
+                        1,
+                        1
+                    ],
+                    "group": 1,
+                    "pads": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "strides": [
+                        1,
+                        1
+                    ],
+                    "ks": [
+                        1,
+                        1
+                    ]
+                },
+                "type": "conv",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Relu_2"
+            ],
+            "inbounds": [
+                "ReduceMean_0"
+            ]
+        },
+        "Relu_2": {
+            "attr": {
+                "attr": {},
+                "type": "relu",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Conv_3"
+            ],
+            "inbounds": [
+                "Conv_1"
+            ]
+        },
+        "Conv_3": {
+            "attr": {
+                "attr": {
+                    "dilations": [
+                        1,
+                        1
+                    ],
+                    "group": 1,
+                    "pads": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "strides": [
+                        1,
+                        1
+                    ],
+                    "ks": [
+                        1,
+                        1
+                    ]
+                },
+                "type": "conv",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Add_5",
+                "Mul_9"
+            ],
+            "inbounds": [
+                "Relu_2"
+            ]
+        },
+        "Add_5": {
+            "attr": {
+                "attr": {},
+                "type": "add",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Clip_6"
+            ],
+            "inbounds": [
+                "Conv_3"
+            ]
+        },
+        "Clip_6": {
+            "attr": {
+                "attr": {
+                    "max": 6.0,
+                    "min": 0.0
+                },
+                "type": "relu",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Div_8"
+            ],
+            "inbounds": [
+                "Add_5"
+            ]
+        },
+        "Div_8": {
+            "attr": {
+                "attr": {},
+                "type": "div",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Mul_9"
+            ],
+            "inbounds": [
+                "Clip_6"
+            ]
+        },
+        "Mul_9": {
+            "attr": {
+                "attr": {},
+                "type": "mul",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ],
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Mul_10"
+            ],
+            "inbounds": [
+                "Conv_3",
+                "Div_8"
+            ]
+        },
+        "Mul_10": {
+            "attr": {
+                "attr": {},
+                "type": "mul",
+                "input_shape": [
+                    [
+                        1,
+                        112,
+                        112,
+                        64
+                    ],
+                    [
+                        1,
+                        112,
+                        112,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        112,
+                        112,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [],
+            "inbounds": [
+                "Mul_9"
+            ]
+        }
     }
 ]

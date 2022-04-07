@@ -4,6 +4,15 @@ import random
 import numpy as np
 from .prior_config_lib.utils import *
 
+_conv_hw_candidate = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 64,
+    66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98,
+    100, 102, 104, 106, 108, 110, 112, 128, 132, 136, 140, 144, 148, 152,
+    156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208,
+    212, 216, 220, 224
+]
 
 def inverse_transform_sampling(data, n_bins = 40, n_samples = 1000):
     ''' calculate inversed cdf, for sampling by possibility
@@ -55,14 +64,13 @@ def sampling_conv(count):
 
     # 70% of sampled data are from prior distribution
     count1 = int(count * 0.7)
-    new_hws = sample_based_on_distribution(hws, count1)
+    new_hws = list(map(int, np.random.choice(_conv_hw_candidate, size=count1, replace=True)))
     new_kernel_sizes = sample_based_on_distribution(kernel_sizes, count1)
     new_strides = sample_based_on_distribution(strides, count1)
 
     new_kernel_sizes = data_validation(new_kernel_sizes, [1, 3, 5, 7])
     new_strides = data_validation(new_strides, [1, 2, 4])
-    new_hws = data_validation(new_hws, [1, 3, 7, 8, 13, 14, 27, 28, 32, 56, 112, 224])
-    
+
     # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
     new_hws.extend([112] * int((count - count1) * 0.2) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.4)) # frequent settings
     new_kernel_sizes.extend([5] * int((count - count1) * 0.4) + [7] * int((count - count1) * 0.6)) # frequent settings
