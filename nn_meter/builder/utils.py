@@ -4,8 +4,8 @@ import os
 import json
 
 
-def merge_prev_info(new_info, info_save_path = None, prev_info = None):
-    ''' merge new_info with previous info and return the updated info. This method is used in two cases: 
+def merge_info(new_info, info_save_path = None, prev_info = None):
+    ''' merge `new_info` with previous info and return the updated info. This method is used in two cases: 
 
     1. before save `new_info` to `info_save_path`, we need to check if the `info_save_path` is an existing file. If `info_save_path`
     exists, this method will help merge the previous info saved in `info_save_path` for a incrementally storage and avoid information
@@ -47,8 +47,8 @@ def merge_prev_info(new_info, info_save_path = None, prev_info = None):
     return prev_info
 
 
-def save_profiled_results(models, save_path, detail):
-    new_models = merge_prev_info(new_info=models, info_save_path=save_path)
+def save_profiled_results(models, save_path, detail, metrics = ["latency"]):
+    new_models = merge_info(new_info=models, info_save_path=save_path)
     from .backend_meta.utils import dump_profiled_results
     with open(save_path, 'w') as fp:
-        json.dump(dump_profiled_results(new_models, detail=detail), fp, indent=4)
+        json.dump(dump_profiled_results(new_models, detail=detail, metrics=metrics), fp, indent=4)

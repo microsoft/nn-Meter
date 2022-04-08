@@ -71,11 +71,9 @@ class BaseBackend:
 
         @params:
         
-        model_path: the Keras model waiting to profile
+        model_path: the path of model waiting to profile
         
-        model_name: the name of the model
-        
-        save_path: path to save the converted model
+        save_path: folder to save the converted model
         
         input_shape: the shape of input tensor for inference, a random tensor according to the shape will be 
             generated and used
@@ -84,23 +82,33 @@ class BaseBackend:
         converted_model = ...
         return converted_model
 
-    def profile(self, converted_model, metrics = ['latency'], input_shape = None):
+    def profile(self, converted_model, metrics = ['latency'], input_shape = None, **kwargs):
         """
         run the model on the backend, return required metrics of the running results. nn-Meter only support latency
         for metric by now. Users may provide other metrics in their customized backend.
+
+        @params:
 
         converted_model: the model path in type of backend required
         
         metrics: a list of required metrics name. Defaults to ['latency']
         
         """
-        return self.parser.parse(self.profiler.profile(converted_model)).results.get(metrics)
+        return self.parser.parse(self.profiler.profile(converted_model, **kwargs)).results.get(metrics)
 
-    def profile_model_file(self, model_path, save_path, input_shape = None, metrics = ['latency']):
+    def profile_model_file(self, model_path, save_path, input_shape = None, metrics = ['latency'], **kwargs):
         """ load model by model file path, convert model file, and run ``self.profile()``
+        @params:
+
+        model_path: the path of model waiting to profile
+        
+        save_path: folder to save the converted model
+        
+        input_shape: the shape of input tensor for inference, a random tensor according to the shape will be 
+            generated and used
         """
         converted_model = self.convert_model(model_path, save_path, input_shape)
-        res = self.profile(converted_model, metrics, input_shape)
+        res = self.profile(converted_model, metrics, input_shape, **kwargs)
         return res
 
     def test_connection(self):
@@ -149,7 +157,6 @@ def connect_backend(backend_name):
     
     Available backend and corresponding configs: 
     - For backend based on TFLite platform: {
-        'MODEL_DIR': path to the folder (on host device) where temporary models will be generated.
         'REMOTE_MODEL_DIR': path to the folder (on mobile device) where temporary models will be copied to.
         'KERNEL_PATH': path (on mobile device) where the kernel implementations will be dumped.
         'BENCHMARK_MODEL_PATH': path (on android device) where the binary file `benchmark_model` is deployed.

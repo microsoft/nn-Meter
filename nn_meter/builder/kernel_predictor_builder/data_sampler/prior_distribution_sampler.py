@@ -184,8 +184,12 @@ def sampling_pooling(count):
     new_cins = sample_based_on_distribution(cins, count)
     new_hws = sample_based_on_distribution(hws, count)
     new_hws = data_validation(new_hws, [14, 28, 56, 112, 224])
-    new_kernel_sizes = data_validation(kernel_size, [2, 3])
-    new_strides = data_validation(strides, [1, 2])
+    new_kernel_sizes = list(kernel_size) * (count // len(kernel_size) + 1)
+    new_kernel_sizes = data_validation(new_kernel_sizes, [2, 3])
+    random.shuffle(new_kernel_sizes)
+    new_strides = list(strides) * (count // len(strides) + 1)
+    new_strides = data_validation(new_strides, [1, 2])
+    random.shuffle(new_strides)
     
     ncfgs = []
     for hw, cin, kernel_size, stride in zip(new_hws, new_cins, new_kernel_sizes, new_strides):
@@ -222,8 +226,8 @@ def sampling_hw_cin(count):
     return ncfgs
 
 
-def sampling_hw_cin_odd(count):
-    ''' sampling configs for kernels with hw and cin (only odd values) parameter, in case for split / se / channelshuffle
+def sampling_hw_cin_even(count):
+    ''' sampling configs for kernels with hw and cin (only even values) parameter, in case for split / se / channelshuffle
     Returned params include: (hw, cin)
     '''
     hws, cins, _, _, _ = read_conv_zoo()

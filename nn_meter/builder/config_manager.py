@@ -95,7 +95,7 @@ class ConfigManager(ConfigData):
         self.set_module(backend, 'backend')
         self.set_module(ruletest, 'ruletest')
         self.set_module(predbuild, 'predbuild')
-        self.set('MODEL_DIR', os.path.join(self.workspace_path, "fusion_rule_test"), 'ruletest')
-        self.set('MODEL_DIR', os.path.join(self.workspace_path, "predictor_build"), 'predbuild')
+        self.set('WORKSPACE', os.path.join(self.workspace_path, "fusion_rule_test"), 'ruletest')
+        self.set('WORKSPACE', os.path.join(self.workspace_path, "predictor_build"), 'predbuild')
 
 builder_config = ConfigManager()
