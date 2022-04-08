@@ -53,8 +53,7 @@ class BaseTestCase:
 
         for op, model in testcase.items():
             model_path = os.path.join(self.workspace_path, self.name + '_' + op)
-            # import pdb; pdb.set_trace()
-            save_model(model, model_path, self.implement)
+            model_path = save_model(model, model_path, self.implement)
             testcase[op]['model'] = model_path
 
         return testcase
