@@ -40,11 +40,11 @@ def add_flops_param(res):
                 
 
 
-def get_kernels_by_block(block, hw, cin, cout, kernel_size, expand_ratio, stride):
+def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stride):
 
     if block == "first_conv_hswish": 
         '''
-        get_kernels_by_block("first_conv_hswish", 224, 3, 16, 3, 0, 2) 
+        get_block_arch_by_name("first_conv_hswish", 224, 3, 16, 3, 0, 2) 
         ############ conv-bn-relu 1.3386911250000026
         ([224, 3, 16, 3, 2, 5.619712, 0.000448], 1.3386911250000026)
         ############ hswish 0.48690411216216334
@@ -61,7 +61,7 @@ def get_kernels_by_block(block, hw, cin, cout, kernel_size, expand_ratio, stride
         
     elif block == "first_conv_relu":
         '''
-        get_kernels_by_block("first_conv_relu", 224, 3, 16, 3, 0, 2) 
+        get_block_arch_by_name("first_conv_relu", 224, 3, 16, 3, 0, 2) 
         ############ conv-bn-relu 1.3386911250000026
         ([224, 3, 16, 3, 2, 5.619712, 0.000448], 1.3386911250000026)
         '''
@@ -73,7 +73,7 @@ def get_kernels_by_block(block, hw, cin, cout, kernel_size, expand_ratio, stride
         
     elif block == "logits_block":
         '''
-        get_kernels_by_block("logits_block", 1, 1280, 1000, 0, 0, 0)
+        get_block_arch_by_name("logits_block", 1, 1280, 1000, 0, 0, 0)
         ############ gap 0.17857104864864878
         ([1, 1280], 0.17857104864864878)
         ############ fc 0.25056936216216186
@@ -90,7 +90,7 @@ def get_kernels_by_block(block, hw, cin, cout, kernel_size, expand_ratio, stride
         
     elif block == "resnet_ds_relu":
         '''
-        get_kernels_by_block("resnet_ds_relu", 224, 3, 16, 3, 3, 2)
+        get_block_arch_by_name("resnet_ds_relu", 224, 3, 16, 3, 3, 2)
         # ############ conv-bn-relu 10.479946887187499
         # ([224, 3, 48, 1, 1, 9.633792, 0.000192], 1.4586173656249992)
         # ([224, 48, 48, 3, 2, 260.714496, 0.020784], 7.908706312499999)

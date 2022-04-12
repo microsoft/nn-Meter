@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-from .get_block_arch import get_kernels_by_block
+from .get_block_arch import get_block_arch_by_name
 from .. import load_latency_predictor
 
 class BlockLatencyPredictor:
@@ -44,9 +44,20 @@ class BlockLatencyPredictor:
 
     def get_latency(self, name, hw, cin, cout, kernel_size, expand_ratio, 
                     stride, activation, use_se):
+        '''
+        name: choose from ["mobilenetv1", "mobilenetv2", "mobilenetv3", "resnet", "first_conv", "logits_block"]
+        hw (int)
+        cin (int)
+        cout (int)
+        kernel_size (int)
+        expand_ratio (float)
+        stride (int)
+        activation: choose from ["relu", "hswish"]
+        use_se (Boolean)
+        '''
         type = self.get_type(name, cin, cout, stride, activation, use_se)
         from nn_meter.predictor.prediction.utils import get_kernel_name
-        dicts = get_kernels_by_block(type, hw, cin, cout, kernel_size, expand_ratio, stride)
+        dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
         py = 0
         for kernel in dicts:
             kernelname = get_kernel_name(kernel)
