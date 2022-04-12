@@ -138,9 +138,9 @@ def torch_model_to_graph(model, input_shape=(1, 3, 224, 224), apply_nni=False):
     from nn_meter.kernel_detector.utils.ir_tools import convert_nodes
     model_graph = ModelGraph(graph=convert_nodes(ir_graph))
     model_graph.refresh()
-    with open("/data/jiahang/working/search_block/ir_graph_lib/se.json", "w+") as fp:
-        json.dump(model_graph.graph,
-            fp,
-            indent=4
-        )
+    # with open("/data/jiahang/working/search_block/ir_graph_lib/se.json", "w+") as fp:
+    #     json.dump(model_graph.graph,
+    #         fp,
+    #         indent=4
+    #     )
     return ir_graph

@@ -5,6 +5,91 @@ import json
 import logging
 from ..utils import read_profiled_results
 from nn_meter.builder.utils import merge_info
+from nn_meter.builder.backend_meta.utils import Latency
+
+
+class BaseTestCase:
+    name = ''
+    cases = None
+    true_case = ''
+    deps = {}
+    input_shape = None
+    implement = None
+
+    def __init__(self, config, **kwargs):
+        self._kwargs = kwargs
+        self.latency = {}
+        self.config = config
+        self.load_config()
+
+    def generate_testcase(self):
+        testcase = {}
+        model, shapes = self._model_block()
+        testcase['block'] = {
+            'model': model,
+            'shapes': shapes,
+        }
+
+        for _, ops in self.cases.items():
+            for op in ops:
+                try:
+                    model, shapes = getattr(self, '_model_' + op)()
+                    testcase[op] = {
+                        'model': model,
+                        'shapes': shapes
+                    }
+                except:
+                    from .utils import generate_single_model
+                    model, shapes = generate_single_model(op, self.input_shape, self.config, self.implement)
+                    testcase[op] = {
+                        'model': model,
+                        'shapes': shapes
+                    }
+        return testcase
+
+    def save_testcase(self):
+        from .utils import save_model
+        testcase = self.generate_testcase()
+
+        for op, model in testcase.items():
+            model_path = os.path.join(self.workspace_path, self.name + '_' + op)
+            model_path = save_model(model, model_path, self.implement)
+            testcase[op]['model'] = model_path
+
+        return testcase
+
+    def load_latency(self, testcase):
+        self.latency['block'] = Latency(testcase['block']['latency'])
+
+        for case, ops in self.cases.items():
+            latency_sum = 0
+            for op in ops:
+                if op not in self.latency:
+                    self.latency[op] = Latency(testcase[op]['latency'])
+                latency_sum += self.latency[op]
+            self.latency[case] = latency_sum
+
+    def test(self):
+        true_case_lat_diff = abs(self.latency[self.true_case].avg - self.latency['block'].avg)
+
+        for case, _ in self.cases.items():
+            if case != self.true_case and true_case_lat_diff > abs(self.latency[case].avg - self.latency['block'].avg):
+                return case
+
+        return self.true_case
+
+    def load_config(self):
+        config = self.config
+        if not self.input_shape:
+            self.input_shape = [config['HW'], config['HW'], config['CIN']]
+        self.kernel_size = config['KERNEL_SIZE']
+        self.cout = config['COUT']
+        self.padding = config['PADDING']
+        self.workspace_path = os.path.join(config['WORKSPACE'], 'models')
+        os.makedirs(self.workspace_path, exist_ok=True)
+
+    def _model_block(self):
+        pass
 
 
 def generate_testcases():
