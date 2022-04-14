@@ -31,7 +31,7 @@ def predict_model(model, predictors):
         if rkernel not in dicts:
             dicts[rkernel] = []
         dicts[rkernel].append(features)
-
+    res = ''
     for kernel in dicts:
         kernelname = get_kernel_name(kernel)
         if kernelname in predictors:
@@ -39,9 +39,10 @@ def predict_model(model, predictors):
             pys = pred.predict(dicts[kernel]) # in unit of ms
             if len(pys) != 0:
                 py += sum(pys)
-            print("## --------", kernel, sum(pys))
-            for item in zip(dicts[kernel], pys):
-                print(item)
+
+            for lat, feature in zip(pys, dicts[kernel]):
+                res += f'{kernel}, {lat}, {", ".join(list(map(str, feature)))}\n'
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/predict_result.txt", 'a').write(res + 'end\n')  
 
     return py
 
