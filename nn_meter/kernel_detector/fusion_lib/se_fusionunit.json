@@ -539,5 +539,257 @@
                 "Mul_9"
             ]
         }
+    },
+    {
+        "ReduceMean_0": {
+            "attr": {
+                "attr": {
+                    "axes": [
+                        3
+                    ],
+                    "keepdims": 1
+                },
+                "type": "gap",
+                "input_shape": [
+                    [
+                        1,
+                        224,
+                        224,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        224,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "ReduceMean_1"
+            ],
+            "inbounds": []
+        },
+        "ReduceMean_1": {
+            "attr": {
+                "attr": {
+                    "axes": [
+                        2
+                    ],
+                    "keepdims": 1
+                },
+                "type": "gap",
+                "input_shape": [
+                    [
+                        1,
+                        224,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Conv_2"
+            ],
+            "inbounds": [
+                "ReduceMean_0"
+            ]
+        },
+        "Conv_2": {
+            "attr": {
+                "attr": {
+                    "dilations": [
+                        1,
+                        1
+                    ],
+                    "group": 1,
+                    "pads": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "strides": [
+                        1,
+                        1
+                    ],
+                    "ks": [
+                        1,
+                        1
+                    ]
+                },
+                "type": "conv",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Relu_3"
+            ],
+            "inbounds": [
+                "ReduceMean_1"
+            ]
+        },
+        "Relu_3": {
+            "attr": {
+                "attr": {},
+                "type": "relu",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Conv_4"
+            ],
+            "inbounds": [
+                "Conv_2"
+            ]
+        },
+        "Conv_4": {
+            "attr": {
+                "attr": {
+                    "dilations": [
+                        1,
+                        1
+                    ],
+                    "group": 1,
+                    "pads": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "strides": [
+                        1,
+                        1
+                    ],
+                    "ks": [
+                        1,
+                        1
+                    ]
+                },
+                "type": "conv",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        16
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "HardSigmoid_5"
+            ],
+            "inbounds": [
+                "Relu_3"
+            ]
+        },
+        "HardSigmoid_5": {
+            "attr": {
+                "attr": {
+                    "alpha": 0.1666666716337204
+                },
+                "type": "hardsigmoid",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [
+                "Mul_6"
+            ],
+            "inbounds": [
+                "Conv_4"
+            ]
+        },
+        "Mul_6": {
+            "attr": {
+                "attr": {},
+                "type": "mul",
+                "input_shape": [
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ],
+                    [
+                        1,
+                        1,
+                        1,
+                        64
+                    ]
+                ],
+                "output_shape": [
+                    [
+                        1,
+                        224,
+                        224,
+                        64
+                    ]
+                ]
+            },
+            "outbounds": [],
+            "inbounds": [
+                "HardSigmoid_5"
+            ]
+        }
     }
 ]
