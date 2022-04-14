@@ -62,8 +62,31 @@ class TFLiteProfiler(BaseProfiler):
         finally:
             if clean:
                 if self._serial:
-                    os.system(f"adb -s 98281FFAZ009SV shell rm {remote_graph_path}")
+                    os.system(f"adb -s {self._serial} shell rm {remote_graph_path}")
                 else:
                     os.system(f"adb shell rm {remote_graph_path}")
 
         return res
+
+def parse_res(content):
+    import re
+    start_regex = r'[= ]*Run Order[= ]*'
+    end_regex = r'[= ]*Top by Computation Time[= ]*'
+    node_regex = r'\s*(\w+)\s*[\d.e-]+\s*[\d.e-]+\s*([\d.e-]+)\s*[\d.e-]+%\s*[\d.e-]+%\s*[\d.e-]+\s*1\s*(\S*)'
+    flag = False
+    firstmatch = True
+
+    nodes = ''
+    for line in content.splitlines():
+        if flag:
+            match = re.search(node_regex, line)
+            if match:
+                if not firstmatch:
+                    nodes += f'{match[1]}, {float(match[2])}\n'
+                else:
+                    firstmatch = False
+        if re.search(start_regex, line):
+            flag = True
+        if re.search(end_regex, line):
+            flag = False
+    return nodes + "end\n"

@@ -71,7 +71,8 @@ def get_predict_features(config):
         elif "split" in op:
             features = [inputh, cin]
         elif "se" in op or "SE" in op:
-            inputh = item["input_tensors"][-1][-2]
+            inputh = item["input_tensors"][-1][-3]
+            # inputh = item["input_tensors"][-1][-2]
             cin = item["input_tensors"][-1][-1]
             features = [inputh, cin]
         elif "concat" in op:  # maximum 4 branches
