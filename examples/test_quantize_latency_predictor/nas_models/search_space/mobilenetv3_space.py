@@ -13,8 +13,8 @@ class MobileNetV3Space:
         base_stage_width = [16, 16, 24, 40, 80, 112, 160, 960, 1280]
         self.stage_width = [make_divisible(w * self.width_mult) for w in base_stage_width] 
         self.stride_stages = [1, 2, 2, 2, 1, 2]
-        self.act_stages = ['relu', 'relu', 'relu', 'h_swish', 'h_swish', 'h_swish']
-        self.se_stages = [False, False, True, False, True, True]
+        self.act_stages = ['relu', 'relu', 'relu', 'relu', 'relu', 'relu']
+        self.se_stages = [False, False, False, False, False, False]
         self.num_block_stages = [1] + [max(self.depth_list)] * 5
 
         self.block_configs = []

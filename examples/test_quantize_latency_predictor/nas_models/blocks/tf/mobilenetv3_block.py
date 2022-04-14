@@ -7,6 +7,17 @@ from ...search_space.mobilenetv3_space import MobileNetV3Space
 from ...common import make_divisible
 
 
+# class HSwish(tf.keras.Model):
+    
+#     def __init__(self):
+#         super().__init__()
+#         self.relu6 = layers.ReLU(6)
+
+#     def call(self, x):
+#         return x * self.relu6(x + 3.) * (1. / 6.)
+
+
+# implementation in nn-meter
 class HSwish(tf.keras.Model):
     
     def __init__(self):
@@ -14,7 +25,7 @@ class HSwish(tf.keras.Model):
         self.relu6 = layers.ReLU(6)
 
     def call(self, x):
-        return x * self.relu6(x + 3.) * (1. / 6.)
+        return tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
 
 
 class HSigmoid(tf.keras.Model):
@@ -34,24 +45,55 @@ def build_act(act: str):
         return HSwish()
 
 
-class SE(tf.keras.Model):
-    def __init__(self, num_channels, se_ratio=0.25):
-        super().__init__()
-        self.pool = layers.GlobalAveragePooling2D()
-        self.squeeze = layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
-        self.relu = layers.ReLU()
-        self.excite = layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
-        self.hsigmoid = HSigmoid()
+# class SE(tf.keras.Model):
+#     def __init__(self, num_channels, se_ratio=0.25):
+#         super().__init__()
+#         self.pool = layers.GlobalAveragePooling2D()
+#         self.squeeze = layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
+#         self.relu = layers.ReLU()
+#         self.excite = layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
+#         self.hsigmoid = HSigmoid()
 
-    def call(self, x):
-        x0 = x
-        x = self.pool(x)
-        x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
-        x = self.squeeze(x)
-        x = self.relu(x)
-        x = self.excite(x)
-        x = self.hsigmoid(x)
-        return x * x0
+#     def call(self, x):
+#         x0 = x
+#         x = self.pool(x)
+#         x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
+#         x = self.squeeze(x)
+#         x = self.relu(x)
+#         x = self.excite(x)
+#         x = self.hsigmoid(x)
+#         return x * x0
+
+# implementation in nn-meter
+class SE(tf.keras.layers.Layer):
+    def __init__(self, num_channels):
+        super().__init__()
+        self.conv1 = tf.keras.layers.Conv2D(
+            filters=num_channels // 4,
+            kernel_size=[1, 1],
+            strides=[1, 1],
+            padding="same",
+        )
+        self.conv2 = tf.keras.layers.Conv2D(
+            filters=num_channels,
+            kernel_size=[1, 1],
+            strides=[1, 1],
+            padding="same",
+        )
+
+    def call(self, inputs):
+        hw = inputs.shape[1]
+        x = tf.nn.avg_pool(
+            inputs,
+            ksize=[1, hw, hw, 1],
+            strides=[1, 1, 1, 1],
+            padding="VALID",
+        )
+        x = self.conv1(x)
+        x = tf.nn.relu(x)
+        x = self.conv2(x)
+        x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
+        return x * inputs
     
 
 class BasicBlock(tf.keras.Model):
@@ -97,7 +139,7 @@ class _ConvBnAct(BasicBlock):
    
     def __init__(self, hwin, cin, cout, kernel_size, strides, name='convbnact', act='relu', use_bn=True) -> None:
         super().__init__(hwin, cin)
-        self.conv = layers.Conv2D(filters=cout, kernel_size=kernel_size, strides=strides, padding='same', use_bias=False)
+        self.conv = layers.Conv2D(filters=cout, kernel_size=kernel_size, strides=strides, padding='same')
         self.use_bn = use_bn
         if use_bn:
             self.bn = layers.BatchNormalization()
@@ -134,19 +176,19 @@ class _ConvBnAct(BasicBlock):
 class FirstConv(_ConvBnAct):
 
     def __init__(self, hwin, cin, cout) -> None:
-        super().__init__(hwin, cin, cout, kernel_size=3, strides=2, name='first_conv', act='h_swish')
+        super().__init__(hwin, cin, cout, kernel_size=3, strides=2, name='first_conv', act='relu')
 
 
 class FinalExpand(_ConvBnAct):
 
     def __init__(self, hwin, cin, cout) -> None:
-        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='final_expand', act='h_swish')
+        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='final_expand', act='relu')
 
 
 class FeatureMix(_ConvBnAct):
 
     def __init__(self, hwin, cin, cout) -> None:
-        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='feature_mix', act='h_swish', use_bn=False)
+        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='feature_mix', act='relu', use_bn=False)
 
     def call(self, x):
         x = tf.reduce_mean(x, [1, 2], keepdims=True)
@@ -210,14 +252,14 @@ class MBConv(BasicBlock):
 
         if self.expand_ratio > 1:
             self.inverted_bottleneck = tf.keras.Sequential([
-                layers.Conv2D(filters=self.feature_size, kernel_size=1, padding='same', use_bias=False),
+                layers.Conv2D(filters=self.feature_size, kernel_size=1, padding='same'),
                 layers.BatchNormalization(),
                 build_act(self.act)
             ])
         else:
             self.inverted_bottleneck = None
         self.depth_conv = tf.keras.Sequential([
-            layers.DepthwiseConv2D(kernel_size=kernel_size, strides=strides, padding='same', use_bias=False),
+            layers.DepthwiseConv2D(kernel_size=kernel_size, strides=strides, padding='same'),
             layers.BatchNormalization(),
             build_act(self.act)
         ])
@@ -226,7 +268,7 @@ class MBConv(BasicBlock):
             self.se = SE(self.feature_size)
 
         self.point_conv = tf.keras.Sequential([
-            layers.Conv2D(filters=cout, kernel_size=1, padding='same', use_bias=False),
+            layers.Conv2D(filters=cout, kernel_size=1, padding='same'),
             layers.BatchNormalization()
         ])
 

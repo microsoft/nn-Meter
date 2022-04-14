@@ -115,19 +115,19 @@ class _ConvBnAct(BasicBlock):
 class FirstConv(_ConvBnAct):
 
     def __init__(self, hwin, cin, cout) -> None:
-        super().__init__(hwin, cin, cout, kernel_size=3, strides=2, name='first_conv', act='h_swish')
+        super().__init__(hwin, cin, cout, kernel_size=3, strides=2, name='first_conv', act='relu')
 
 
 class FinalExpand(_ConvBnAct):
 
     def __init__(self, hwin, cin, cout) -> None:
-        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='final_expand', act='h_swish')
+        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='final_expand', act='relu')
 
 
 class FeatureMix(_ConvBnAct):
 
     def __init__(self, hwin, cin, cout) -> None:
-        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='feature_mix', act='h_swish', use_bn=False)
+        super().__init__(hwin, cin, cout, kernel_size=1, strides=1, name='feature_mix', act='relu', use_bn=False)
 
     def forward(self, x: torch.Tensor):
         x = x.mean(3, keepdim=True).mean(2, keepdim=True)
