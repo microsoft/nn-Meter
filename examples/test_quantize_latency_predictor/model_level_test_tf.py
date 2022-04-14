@@ -1,334 +1,257 @@
-from curses import KEY_SAVE
-import logging
 import os
-import json
-import time
-import torch
-from torch import nn
-# from tensorflow import keras
+from tensorflow import keras
+import tensorflow as tf
 from nn_meter.dataset.bench_dataset import latency_metrics
 from nn_meter.builder.backends import connect_backend
 from nn_meter.predictor import load_latency_predictor
 from nn_meter.builder import builder_config
-from .nas_models.networks.torch.mobilenetv3 import MobileNetV3Net
-from .nas_models.blocks.torch.mobilenetv3_block import SE
-from nn_meter.builder.nn_generator.torch_networks.utils import get_inputs_by_shapes
-from .nas_models.blocks.torch.mobilenetv3_block import block_dict, BasicBlock
-from .nas_models.search_space.mobilenetv3_space import MobileNetV3Space
-from .nas_models.common import parse_sample_str
+from nn_meter.builder.nn_generator.tf_networks.utils import get_inputs_by_shapes
 
+from nas_models.blocks.torch.mobilenetv3_block import block_dict, BasicBlock
+from nas_models.search_space.mobilenetv3_space import MobileNetV3Space
+from nas_models.common import parse_sample_str
+output_path = "/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor"
+output_name = os.path.join(output_path, "MobilenetV3_test")
 
-workspace = "/sdc/jiahang/working/ort_mobilenetv3_workspace"
+workspace = "/data1/jiahang/working/pixel4_mobilenetv3_workspace"
 builder_config.init(workspace)
-backend = connect_backend(backend_name='ort_cpu_int8')
-predictor_name = "onnxruntime_int8"
+backend = connect_backend(backend_name='tflite_cpu_int8')
+predictor_name = "tflite27_cpu_int8"
+
+# workspace = "/data1/jiahang/working/tflite21_workspace"
+# builder_config.init(workspace)
+# backend = connect_backend(backend_name='tflite_cpu')
+# predictor_name = "cortexA76cpu_tflite21"
+
 predictor = load_latency_predictor(predictor_name)
-
-
-def profile_and_predict(model, input_shape, mark=""):
+def profile_and_predict(model_tf, model_torch, input_shape):
     print("\n")
-    print(model)
-    # input_shape example [3, 224, 224]
-    torch.onnx.export(
-            model,
-            get_inputs_by_shapes([[*input_shape]], 1),
-            f"/sdc/jiahang/working/ort_mobilenetv3_workspace/code/test.onnx",
-            input_names=['input'],
-            output_names=['output'],
-            verbose=False,
-            export_params=True,
-            opset_version=12,
-            do_constant_folding=True,
-        )
-    res = backend.profile_model_file(f"/sdc/jiahang/working/ort_mobilenetv3_workspace/code/test.onnx",
-                               f"/sdc/jiahang/working/ort_mobilenetv3_workspace/code/",
-                               input_shape=[[*input_shape]]
-                            )    
-    pred_lat = predictor.predict(model, "torch", input_shape=tuple([1] + input_shape), apply_nni=False) # in unit of ms
-    print(f"[{mark}]: ", "profiled: ", res["latency"].avg, "predicted: ", pred_lat)
-    input_shape = list(model(get_inputs_by_shapes([[*input_shape]], 1)).shape)[1:]
+    model_tf(get_inputs_by_shapes([[*input_shape]]))
+    tf.keras.models.save_model(model_tf, output_name)
+
+    res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]])
+
+    pred_lat = predictor.predict(model_torch, "torch", input_shape=tuple([1] + [input_shape[2], input_shape[0], input_shape[1]]), apply_nni=False) # in unit of ms
+    # print(pred_lat)
+    print("profiled: ", res["latency"].avg, "predicted: ", pred_lat)
     return res["latency"].avg, pred_lat
 
-## ------------- model level
+# ## ------------- model level
 sample_str = "ks55355773757755735757_e66643464363346436436_d22343"
-# model = MobileNetV3Net(sample_str)
-# real, pred = profile_and_predict(model, [3, 224, 224], mark="")
+def get_model_result(sample_str):
+    from nas_models.networks.tf.mobilenetv3 import MobileNetV3Net as MobileNetV3Net_tf
+    from nas_models.networks.torch.mobilenetv3 import MobileNetV3Net as MobileNetV3Net_torch
+    model_tf = MobileNetV3Net_tf(sample_str)
+    model_torch = MobileNetV3Net_torch(sample_str)
+    real, pred = profile_and_predict(model_tf, model_torch, [224, 224, 3])
+    return real, pred
+
+# ##------- block level random sample
+# ##--- first mobile conv
+# from nas_models.blocks.tf.mobilenetv3_block import FirstConv as FirstConv_tf
+# from nas_models.blocks.torch.mobilenetv3_block import FirstConv as FirstConv_torch
+# model_tf = FirstConv_tf(224, 3, 16)
+# model_torch = FirstConv_torch(224, 3, 16)
+# print(model_torch)
+# predictor = load_latency_predictor(predictor_name)
+# real, pred = profile_and_predict(model_tf, model_torch, [224, 224, 3])
+
+# ##--- first mobile conv
+# from nas_models.blocks.tf.mobilenetv3_block import FirstMBConv as FirstMBConv_tf
+# from nas_models.blocks.torch.mobilenetv3_block import FirstMBConv as FirstMBConv_torch
+# model_tf = FirstMBConv_tf(112, 16, 16)
+# model_torch = FirstMBConv_torch(112, 16, 16)
+# print(model_torch)
+# predictor = load_latency_predictor(predictor_name)
+# real, pred = profile_and_predict(model_tf, model_torch, [112, 112, 16])
 
 
-## ------------- block level
-# width_mult = 1.0
-# num_classes=1000
-# block_dict=block_dict
-# hw = 224
-# space = MobileNetV3Space(width_mult=width_mult, num_classes=num_classes, hw=hw)
+# # ##--- RandomMBConv1
+# # input:28x28x40-output:28x28x40-k:3-e:6-act:relu-se:1
+# from nas_models.blocks.tf.mobilenetv3_block import MBConv as MBConv_tf
+# from nas_models.blocks.torch.mobilenetv3_block import MBConv as MBConv_torch
+# model_tf = MBConv_tf(28, 40, 40, 3, 6, 1, act='relu', se=0)
+# model_torch = MBConv_torch(28, 40, 40, 3, 6, 1, act='relu', se=0)
+# print(model_torch)
+# predictor = load_latency_predictor(predictor_name)
+# real, pred = profile_and_predict(model_tf, model_torch, [28, 28, 40])
 
-# sample_config = parse_sample_str(sample_str)
-
-# blocks = []
-# first_conv = block_dict['first_conv'](hwin=hw, cin=3, cout=space.stage_width[0])
-# first_mbconv = block_dict['first_mbconv'](
-#     hwin=hw//2,
-#     cin=space.stage_width[0],
-#     cout=space.stage_width[1]
-# )
-# blocks.append(first_conv)
-# blocks.append(first_mbconv)
-
-# hwin = hw // 2
-# cin = space.stage_width[1]
-# block_idx = 0
-# for strides, cout, max_depth, depth, act, se in zip(
-#     space.stride_stages[1:], space.stage_width[2:], 
-#     space.num_block_stages[1:], sample_config['d'],
-#     space.act_stages[1:], space.se_stages[1:]
-# ):
-#     for i in range(depth):
-#         k = sample_config['ks'][block_idx + i]
-#         e = sample_config['e'][block_idx + i]
-#         strides = 1 if i > 0 else strides
-#         print(hwin, cin, cout, k, strides)
-#         blocks.append(block_dict['mbconv'](hwin, cin, cout, kernel_size=k, expand_ratio=e, strides=strides,
-#             act=act, se=int(se)))
-#         cin = cout 
-#         hwin //= strides
-#     block_idx += max_depth
-# # blocks = nn.Sequential(*blocks)
-
-# final_expand = block_dict['final_expand'].build_from_config(space.block_configs[-3])
-# blocks.append(final_expand)
-# feature_mix = block_dict['feature_mix'].build_from_config(space.block_configs[-2])
-# blocks.append(feature_mix)
-# logits = block_dict['logits'].build_from_config(space.block_configs[-1])
-# blocks.append(logits)
-
-# res_collection = []
-# input_shape = [3, 224, 224]
-# for i, block in enumerate(blocks):
-#     real, pred = profile_and_predict(block, input_shape, mark=str(i))      
-#     input_shape = list(block(get_inputs_by_shapes([[*input_shape]], 1)).shape)[1:]
-#     res_collection.append([i, input_shape, real, pred])
-#     # break
-# print(res_collection)
+# # RandomMBConv2
+# # input:56x56x24-output:56x56x24-k:3-e:3-act:relu-se:0
+# from nas_models.blocks.tf.mobilenetv3_block import MBConv as MBConv_tf
+# from nas_models.blocks.torch.mobilenetv3_block import MBConv as MBConv_torch
+# model_tf = MBConv_tf(56, 24, 24, 3, 3, 2, act='relu', se=0)
+# model_torch = MBConv_torch(56, 24, 24, 3, 3, 2, act='h_swish', se=0)
+# print(model_torch)
+# predictor = load_latency_predictor(predictor_name)
+# real, pred = profile_and_predict(model_tf, model_torch, [56, 56, 24])
 
 
-## ------------- op level
-from nn_meter.builder.nn_generator.torch_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
+# ##------- block level lut
+def get_tf_blocks(sample_str):
+    from nas_models.search_space.mobilenetv3_space import MobileNetV3Space
+    from nas_models.blocks.tf.mobilenetv3_block import FirstConv, FirstMBConv, MBConv, FinalExpand, FeatureMix, Logits
+    width_mult = 1.0
+    num_classes = 1000
+    hw = 224
+    space = MobileNetV3Space(width_mult=width_mult, num_classes=num_classes, hw=hw)
 
-# conv-bn-relu
-reals, preds = [], []
-configs = [
-    [224, 3, 16, 3, 2], 
-    [112, 16, 16, 1, 1], 
-    [112, 16, 96, 1, 1], 
-    [56, 96, 24, 1, 1], 
-    [56, 24, 144, 1, 1], 
-    [56, 144, 24, 1, 1], 
-    [56, 24, 72, 1, 1], 
-    [28, 72, 40, 1, 1], 
-    [28, 40, 160, 1, 1], 
-    [28, 160, 40, 1, 1], 
-    [28, 40, 120, 1, 1], 
-    [14, 120, 80, 1, 1], 
-    [14, 80, 480, 1, 1], 
-    [14, 480, 80, 1, 1], 
-    [14, 80, 240, 1, 1], 
-    [14, 240, 80, 1, 1], 
-    [14, 80, 320, 1, 1], 
-    [14, 320, 112, 1, 1], 
-    [14, 112, 672, 1, 1], 
-    [14, 672, 112, 1, 1], 
-    [14, 112, 448, 1, 1], 
-    [14, 448, 112, 1, 1], 
-    [14, 112, 336, 1, 1], 
-    [14, 336, 112, 1, 1], 
-    [14, 112, 672, 1, 1], 
-    [7, 672, 160, 1, 1], 
-    [7, 160, 640, 1, 1], 
-    [7, 640, 160, 1, 1], 
-    [7, 160, 480, 1, 1], 
-    [7, 480, 160, 1, 1], 
-    [7, 160, 960, 1, 1], 
-    [1, 960, 1280, 1, 1]
-]
-for i, config in enumerate(configs):
-    hwin, cin, cout, k, strides = config
-    config_in = {
-        "HW": hwin,
-        "CIN": cin,
-        "COUT": cin,
-        "KERNEL_SIZE": k,
-        "STRIDES": strides
-    }
-    input_shape = [cin, hwin, hwin]
-    model = ConvBnRelu(config_in).get_model()
-    try:
-        real, pred = profile_and_predict(model, input_shape, mark=str(i))
-        reals.append(real)
-        preds.append(pred)
-    except:
-        print("wrong!!", config)
-        
-rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-for item in zip(preds, reals):
-    print(item)
-print(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
+    sample_config = parse_sample_str(sample_str)
+
+    blocks = []
+    first_conv = FirstConv(hwin=hw, cin=3, cout=space.stage_width[0])
+    first_mbconv = FirstMBConv(
+        hwin=hw//2,
+        cin=space.stage_width[0],
+        cout=space.stage_width[1]
+    )
+    blocks.append(first_conv)
+    blocks.append(first_mbconv)
+
+    hwin = hw // 2
+    cin = space.stage_width[1]
+    block_idx = 0
+    for strides, cout, max_depth, depth, act, se in zip(
+        space.stride_stages[1:], space.stage_width[2:], 
+        space.num_block_stages[1:], sample_config['d'],
+        space.act_stages[1:], space.se_stages[1:]
+    ):
+        for i in range(depth):
+            k = sample_config['ks'][block_idx + i]
+            e = sample_config['e'][block_idx + i]
+            strides = 1 if i > 0 else strides
+            blocks.append(MBConv(hwin, cin, cout, kernel_size=k, expand_ratio=e, strides=strides,
+                act=act, se=int(se)))
+            cin = cout 
+            hwin //= strides
+        block_idx += max_depth
+    # blocks = tf.keras.Sequential(blocks)
+
+    final_expand = FinalExpand.build_from_config(space.block_configs[-3])
+    blocks.append(final_expand)
+    feature_mix = FeatureMix.build_from_config(space.block_configs[-2])
+    blocks.append(feature_mix)
+    logits = Logits.build_from_config(space.block_configs[-1])
+    blocks.append(logits)
+    return blocks
 
 
-# hswish
-class HSwish(nn.Module):
+def get_torch_blocks(sample_str):
+    from nas_models.networks.torch.mobilenetv3 import MobileNetV3Net
+    from nas_models.blocks.torch.mobilenetv3_block import SE, block_dict, BasicBlock
+    from nas_models.search_space.mobilenetv3_space import MobileNetV3Space
+    from nas_models.common import parse_sample_str
     
-    def __init__(self):
-        super().__init__()
-        self.relu6 = nn.ReLU(6)
+    width_mult = 1.0
+    num_classes = 1000
+    hw = 224
+    space = MobileNetV3Space(width_mult=width_mult, num_classes=num_classes, hw=hw)
 
-    def forward(self, x):
-        return x * self.relu6(x + 3.) * (1. / 6.)
+    sample_config = parse_sample_str(sample_str)
 
+    blocks = []
+    first_conv = block_dict['first_conv'](hwin=hw, cin=3, cout=space.stage_width[0])
+    first_mbconv = block_dict['first_mbconv'](
+        hwin=hw//2,
+        cin=space.stage_width[0],
+        cout=space.stage_width[1]
+    )
+    blocks.append(first_conv)
+    blocks.append(first_mbconv)
 
-reals, preds = [], []
-configs = [
-    [112, 16],
-    [28, 120],
-    [14, 120],
-    [14, 480],
-    [14, 480],
-    [14, 240],
-    [14, 240],
-    [14, 320],
-    [14, 320],
-    [14, 672],
-    [14, 672],
-    [14, 448],
-    [14, 448],
-    [14, 336],
-    [14, 336],
-    [14, 672],
-    [7, 672],
-    [7, 640],
-    [7, 640],
-    [7, 480],
-    [7, 480],
-    [7, 960],
-    [1, 1280],
-]
+    hwin = hw // 2
+    cin = space.stage_width[1]
+    block_idx = 0
+    for strides, cout, max_depth, depth, act, se in zip(
+        space.stride_stages[1:], space.stage_width[2:], 
+        space.num_block_stages[1:], sample_config['d'],
+        space.act_stages[1:], space.se_stages[1:]
+    ):
+        for i in range(depth):
+            k = sample_config['ks'][block_idx + i]
+            e = sample_config['e'][block_idx + i]
+            strides = 1 if i > 0 else strides
+            # print(hwin, cin, cout, k, strides)
+            blocks.append(block_dict['mbconv'](hwin, cin, cout, kernel_size=k, expand_ratio=e, strides=strides,
+                act=act, se=int(se)))
+            cin = cout 
+            hwin //= strides
+        block_idx += max_depth
+    # blocks = nn.Sequential(*blocks)
 
-for i, config in enumerate(configs):
-    hwin, cin = config
-    config_in = {
-        "HW": hwin,
-        "CIN": cin
-    }
-    input_shape = [cin, hwin, hwin]
-    model = HSwish()
-    # try:
-    real, pred = profile_and_predict(model, input_shape, mark='')
-    reals.append(real)
-    preds.append(pred)
-    # except:
-        # print("wrong!!", config)
-        
-rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-for item in zip(preds, reals):
-    print(item)
-print(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
+    final_expand = block_dict['final_expand'].build_from_config(space.block_configs[-3])
+    blocks.append(final_expand)
+    feature_mix = block_dict['feature_mix'].build_from_config(space.block_configs[-2])
+    blocks.append(feature_mix)
+    logits = block_dict['logits'].build_from_config(space.block_configs[-1])
+    blocks.append(logits)
+    return blocks
 
 
+def get_block_result(sample_str):
+    real_collection, pred_collection = [], []
+    input_shape = [224, 224, 3]
+    for block_tf, block_torch in zip(get_tf_blocks(sample_str), get_torch_blocks(sample_str)):
+        real, pred = profile_and_predict(block_tf, block_torch, input_shape)      
+        input_shape = list(block_tf(get_inputs_by_shapes([[*input_shape]], 1)).shape)[1:]
+        real_collection.append(real)
+        pred_collection.append(pred)
+        print("Complete one block !!!!")
+        # break
 
-# dwconv-bn-relu
-reals, preds = [], []
-configs = [
-    [112, 16, 16, 3, 1],
-    [112, 96, 96, 5, 2],
-    [56, 144, 144, 5, 1],
-    [56, 72, 72, 5, 2],
-    [28, 160, 160, 7, 1],
-    [28, 120, 120, 7, 2],
-    [14, 480, 480, 5, 1],
-    [14, 240, 240, 7, 1],
-    [14, 320, 320, 5, 1],
-    [14, 672, 672, 5, 1],
-    [14, 448, 448, 7, 1],
-    [14, 336, 336, 3, 1],
-    [14, 672, 672, 5, 2],
-    [7, 640, 640, 7, 1],
-    [7, 480, 480, 5, 1]
-]
-for i, config in enumerate(configs):
-    hwin, cin, cout, k, strides = config
-    config_in = {
-        "HW": hwin,
-        "CIN": cin,
-        "COUT": cin,
-        "KERNEL_SIZE": k,
-        "STRIDES": strides
-    }
-    input_shape = [cin, hwin, hwin]
-    model = DwConvBnRelu(config_in).get_model()
-    try:
-        real, pred = profile_and_predict(model, input_shape, mark='')
-        reals.append(real)
-        preds.append(pred)
-    except:
-        print("wrong!!", config)
-
-rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-for item in zip(preds, reals):
-    print(item)
-print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
-
-
-
-# se
-from modules.blocks.torch.mobilenetv3_block import SE
-
-reals, preds = [], []
-configs = [
-    [28, 72],
-	[28, 160],
-	[14, 320], 
-	[14, 672], 
-	[14, 448], 
-	[14, 336], 
-	[7, 672],
-	[7, 640],
-	[7, 480]
-]
-for i, config in enumerate(configs):
-    hwin, cin = config
-    config_in = {
-        "HW": hwin,
-        "CIN": cin
-    }
-    input_shape = [cin, hwin, hwin]
-    model = SE(cin)
-    try:
-        real, pred = profile_and_predict(model, input_shape, mark='')
-        reals.append(real)
-        preds.append(pred)
-    except:
-        print("wrong!!", config)
-        
-rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-for item in zip(preds, reals):
-    print(item)
-print(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
-
-
-# class HSwish(nn.Module):
+    # print(real_collection, pred_collection)
+    return sum(real_collection), sum(pred_collection)
     
-#     def __init__(self):
-#         super().__init__()
-#         self.relu6 = nn.ReLU(6)
+open('/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/profile_result.txt', 'w').write("nodes\n")    
+open('/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/predict_result.txt', 'w').write("nodes\n")
 
-#     def forward(self, x):
-#         return x * self.relu6(x + 3.) * (1. / 6.)
+sample_strs = [
+    "ks33575373355333733735_e36436643443366644444_d34224",
+	"ks35557755553357557577_e34444634446634344346_d32422",
+	"ks35573553777537353577_e66663643664464634434_d34434",
+	"ks35575755357375333535_e34666346446634666633_d33243",
+	"ks35733755577537357533_e43646344343444466666_d44433",
+	"ks37757555775335335773_e64343634434466646363_d43234",
+	"ks37773735737755577555_e44643443334363446366_d32423",
+	"ks53553373573735557757_e34636464334363443346_d42324",
+	"ks53555333377537333333_e33633333633343636334_d32432",
+	"ks55553557735733337735_e36464663366646633664_d22224",
+	"ks55555733737375537357_e34644636646344434364_d24323",
+	"ks55573357337355575377_e33343463434364663346_d22422",
+	"ks55737375555373577575_e36446363464646643466_d23242",
+	"ks55753555755337375337_e66344643364433434463_d34343",
+	"ks57335333733333533377_e33346433336463334364_d43234",
+	"ks57337553533753375775_e44663363644434663633_d33233",
+	"ks57375737773337373753_e33364336363434633364_d22332",
+	"ks57557335355733777337_e63444464363664336346_d23344",
+	"ks57733337777753577735_e63646443644334363433_d24234",
+	"ks73733375355333755335_e33344646466636636466_d23434",
+	"ks75337773755575777735_e36364334333636463364_d32433",
+	"ks75355577775533333577_e33463434364443336334_d32433",
+	"ks75373355357337757553_e43436636646446446663_d34342",
+	"ks75577553557535557753_e46434336343336466343_d32342",
+	"ks77333575553355355757_e44663344344363346444_d24423",
+	"ks77533353535353555375_e43344646446663636433_d43243",
+	"ks77533573753375577735_e64334433446646446333_d43422",
+	"ks77575333733335375335_e44364434346443664444_d44322",
+	"ks77773333355577337577_e33336464633644643333_d43434",
+	"ks77773533335735575575_e66466646643433364334_d24243"
+]
+model_res, blocks_res = [], []
+pred_res = []
+for sample_str in sample_strs:
+    # real, pred = get_model_result(sample_str)
+    real_collection, pred_collection = get_block_result(sample_str)
+    # print(pred_collection, pred)
+    # assert int(pred) == int(pred_collection)
+    # model_res.append(real)
+    # blocks_res.append(real_collection)
+    # pred_res.append(pred)
+    # break
+# print(model_res)
+# print(blocks_res)
+# print(pred_res)
 
-
-# model = HSwish()
-
-# pred_lat = predictor.predict(model, "torch", input_shape=(1, 3, 224, 224), apply_nni=False) # in unit of ms
-
-# from modules.blocks.torch.mobilenetv3_block import SE
-# model = SE(64)
-# profile_and_predict(model, [64, 112, 112], mark="")
-
+# 30个模型，profiled model latency和sum of blocks latency均在5%误差内
+from nn_meter.dataset.bench_dataset import latency_metrics
+# print(latency_metrics(model_res, blocks_res))
