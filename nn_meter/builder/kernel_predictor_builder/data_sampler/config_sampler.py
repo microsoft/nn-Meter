@@ -20,7 +20,7 @@ class BaseConfigSampler:
 class ConvSampler(BaseConfigSampler):
 
     def prior_config_sampling(self, sample_num):
-        return sampling_conv(sample_num)
+        return sampling_conv_ofa(sample_num)
 
     def finegrained_config_sampling(self, configs, sample_num):
         return finegrained_sampling_conv(configs, sample_num)
@@ -29,7 +29,7 @@ class ConvSampler(BaseConfigSampler):
 class DwConvSampler(BaseConfigSampler):
 
     def prior_config_sampling(self, sample_num):
-        return sampling_dwconv(sample_num)
+        return sampling_dwconv_ofa(sample_num)
 
     def finegrained_config_sampling(self, configs, sample_num):
         return finegrained_sampling_dwconv(configs, sample_num)
@@ -66,7 +66,7 @@ class ConcatSampler(BaseConfigSampler):
 class CinEvenSampler(BaseConfigSampler):
 
     def prior_config_sampling(self, sample_num):
-        return sampling_hw_cin_even(sample_num)
+        return sampling_hw_cin_even_ofa(sample_num)
 
     def finegrained_config_sampling(self, configs, sample_num):
         return finegrained_sampling_hw_cin_even(configs, sample_num)
@@ -89,7 +89,7 @@ class GlobalAvgPoolSampler(BaseConfigSampler):
 class HwCinSampler(BaseConfigSampler):
 
     def prior_config_sampling(self, sample_num):
-        return sampling_hw_cin(sample_num)
+        return sampling_hw_cin_ofa(sample_num)
     
     def finegrained_config_sampling(self, configs, sample_num):
         return finegrained_sampling_hw_cin(configs, sample_num)
