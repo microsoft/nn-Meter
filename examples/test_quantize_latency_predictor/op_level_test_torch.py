@@ -157,8 +157,10 @@ def op_level_test_dwconv(predictor_name):
         [56, 144, 7, 2], [112, 96, 5, 2], [14, 448, 5, 2], [14, 336, 3, 1], [112, 64, 5, 2], [28, 240, 5, 2], [14, 336, 3, 2],
         [28, 120, 3, 2], [112, 48, 7, 2], [14, 672, 7, 1], [112, 64, 7, 2], [112, 96, 7, 2]
     ]
-    for i, config in enumerate(configs):
-        hwin, cin, k, strides = config
+    # for i, config in enumerate(configs):
+    for i, cin in enumerate(range(630, 650)):
+        # hwin, cin, k, strides = config
+        hwin, cin, k, strides = 7, cin, 7, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -167,15 +169,17 @@ def op_level_test_dwconv(predictor_name):
             "STRIDES": strides
         }
         input_shape = [cin, hwin, hwin]
-        model = HswishBlock(config_in).get_model()
+        model = DwConvBnRelu(config_in).get_model()
         real = profile_model(model, input_shape)
         pred = predictor.predict([get_feature("dwconv-bn-relu", config_in)])[0]
         reals.append(real)
         preds.append(pred)
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for item in zip(reals, preds):
-        print(item)
+    for cin, res in zip(range(630, 650), reals):
+        print(f"cin: {cin}; profiled results: {res}")
+    # for item in zip(reals, preds):
+    #     print(item)
     print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
@@ -184,8 +188,7 @@ def op_level_test_se(predictor_name):
         predictor = pickle.load(f)
     # se
     from nas_models.blocks.torch.mobilenetv3_block import SE
-    from nn_meter.builder.nn_generator.torch_networks.blocks import SEBlock
-
+    
     reals, preds = [], []
     configs = [
         [28, 72], [28, 160], [14, 320], [14, 672], [14, 448], [14, 336], 
@@ -219,14 +222,14 @@ if __name__ == '__main__':
     # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
 
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_origin.pkl")
-    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
+    op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
     
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_original.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
 
-    op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
-    op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
-    op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
+    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
+    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
+    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
     
