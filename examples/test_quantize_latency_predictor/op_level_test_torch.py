@@ -178,6 +178,8 @@ def op_level_test_dwconv(predictor_name):
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     for cin, res in zip(range(630, 650), reals):
         print(f"cin: {cin}; profiled results: {res}")
+    # for item in zip(reals, preds):
+    #     print(item)
     print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
