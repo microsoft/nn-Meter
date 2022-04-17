@@ -1,5 +1,3 @@
-from curses import KEY_SAVE
-import logging
 import os
 import json
 import time
@@ -26,7 +24,7 @@ predictor_name = "onnxruntime_int8"
 predictor = load_latency_predictor(predictor_name)
 
 
-def profile_and_predict(model, input_shape, mark=""):
+def profile_and_predict(model, input_shape, mark = "", model_pred = None):
     # print("\n")
     # print(model)
     # input_shape example [3, 224, 224]
@@ -41,9 +39,12 @@ def profile_and_predict(model, input_shape, mark=""):
             opset_version=12,
             do_constant_folding=True,
         )
-    res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]])    
-    pred_lat = predictor.predict(model, "torch", input_shape=tuple([1] + input_shape), apply_nni=False) # in unit of ms
-    print(f"[{mark}]: ", "profiled: ", res["latency"].avg, "predicted: ", pred_lat)
+    res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]])
+    if model_pred != None:
+        pred_lat = predictor.predict(model_pred, "torch", input_shape=tuple([1] + input_shape), apply_nni=False) # in unit of ms
+    else:
+        pred_lat = predictor.predict(model, "torch", input_shape=tuple([1] + input_shape), apply_nni=False) # in unit of ms
+    # print(f"[{mark}]: ", "profiled: ", res["latency"].avg, "predicted: ", pred_lat)
     input_shape = list(model(get_inputs_by_shapes([[*input_shape]], 1)).shape)[1:]
     return res["latency"].avg, pred_lat
 
@@ -106,6 +107,7 @@ def get_torch_blocks(sample_str):
     blocks.append(logits)
     return blocks
 
+
 def get_block_result(sample_str):
     real_collection, pred_collection = [], []
     input_shape = [3, 224, 224]
@@ -117,279 +119,60 @@ def get_block_result(sample_str):
     return sum(real_collection), sum(pred_collection)
 
 
-sample_strs = [
-    "ks33575373355333733735_e36436643443366644444_d34224",
-	"ks35557755553357557577_e34444634446634344346_d32422",
-	"ks35573553777537353577_e66663643664464634434_d34434",
-	"ks35575755357375333535_e34666346446634666633_d33243",
-	"ks35733755577537357533_e43646344343444466666_d44433",
-	"ks37757555775335335773_e64343634434466646363_d43234",
-	"ks37773735737755577555_e44643443334363446366_d32423",
-	"ks53553373573735557757_e34636464334363443346_d42324",
-	"ks53555333377537333333_e33633333633343636334_d32432",
-	"ks55553557735733337735_e36464663366646633664_d22224",
-	"ks55555733737375537357_e34644636646344434364_d24323",
-	"ks55573357337355575377_e33343463434364663346_d22422",
-	"ks55737375555373577575_e36446363464646643466_d23242",
-	"ks55753555755337375337_e66344643364433434463_d34343",
-	"ks57335333733333533377_e33346433336463334364_d43234",
-	"ks57337553533753375775_e44663363644434663633_d33233",
-	"ks57375737773337373753_e33364336363434633364_d22332",
-	"ks57557335355733777337_e63444464363664336346_d23344",
-	"ks57733337777753577735_e63646443644334363433_d24234",
-	"ks73733375355333755335_e33344646466636636466_d23434",
-	"ks75337773755575777735_e36364334333636463364_d32433",
-	"ks75355577775533333577_e33463434364443336334_d32433",
-	"ks75373355357337757553_e43436636646446446663_d34342",
-	"ks75577553557535557753_e46434336343336466343_d32342",
-	"ks77333575553355355757_e44663344344363346444_d24423",
-	"ks77533353535353555375_e43344646446663636433_d43243",
-	"ks77533573753375577735_e64334433446646446333_d43422",
-	"ks77575333733335375335_e44364434346443664444_d44322",
-	"ks77773333355577337577_e33336464633644643333_d43434",
-	"ks77773533335735575575_e66466646643433364334_d24243"
-]
-model_res, blocks_res = [], []
-pred_res = []
-for sample_str in sample_strs:
-    real, pred = get_model_result(sample_str)
-    real_collection, pred_collection = get_block_result(sample_str)
-    # print(pred_collection, pred)
-    assert int(pred) == int(pred_collection)
-    model_res.append(real)
-    blocks_res.append(real_collection)
-    pred_res.append(pred)
+def model_level_test():
+    sample_strs = [
+        "ks33575373355333733735_e36436643443366644444_d34224",
+        "ks35557755553357557577_e34444634446634344346_d32422",
+        "ks35573553777537353577_e66663643664464634434_d34434",
+        "ks35575755357375333535_e34666346446634666633_d33243",
+        "ks35733755577537357533_e43646344343444466666_d44433",
+        "ks37757555775335335773_e64343634434466646363_d43234",
+        "ks37773735737755577555_e44643443334363446366_d32423",
+        "ks53553373573735557757_e34636464334363443346_d42324",
+        "ks53555333377537333333_e33633333633343636334_d32432",
+        "ks55553557735733337735_e36464663366646633664_d22224",
+        "ks55555733737375537357_e34644636646344434364_d24323",
+        "ks55573357337355575377_e33343463434364663346_d22422",
+        "ks55737375555373577575_e36446363464646643466_d23242",
+        "ks55753555755337375337_e66344643364433434463_d34343",
+        "ks57335333733333533377_e33346433336463334364_d43234",
+        "ks57337553533753375775_e44663363644434663633_d33233",
+        "ks57375737773337373753_e33364336363434633364_d22332",
+        "ks57557335355733777337_e63444464363664336346_d23344",
+        "ks57733337777753577735_e63646443644334363433_d24234",
+        "ks73733375355333755335_e33344646466636636466_d23434",
+        "ks75337773755575777735_e36364334333636463364_d32433",
+        "ks75355577775533333577_e33463434364443336334_d32433",
+        "ks75373355357337757553_e43436636646446446663_d34342",
+        "ks75577553557535557753_e46434336343336466343_d32342",
+        "ks77333575553355355757_e44663344344363346444_d24423",
+        "ks77533353535353555375_e43344646446663636433_d43243",
+        "ks77533573753375577735_e64334433446646446333_d43422",
+        "ks77575333733335375335_e44364434346443664444_d44322",
+        "ks77773333355577337577_e33336464633644643333_d43434",
+        "ks77773533335735575575_e66466646643433364334_d24243"
+    ]
+    model_res, blocks_res = [], []
+    pred_res = []
+    for sample_str in sample_strs:
+        real, pred = get_model_result(sample_str)
+        real_collection, pred_collection = get_block_result(sample_str)
+        # print(pred_collection, pred)
+        assert int(pred) == int(pred_collection)
+        model_res.append(real)
+        blocks_res.append(real_collection)
+        pred_res.append(pred)
 
-print(model_res)
-print(blocks_res)
-print(pred_res)
+    print(model_res)
+    print(blocks_res)
+    print(pred_res)
 
-from nn_meter.dataset.bench_dataset import latency_metrics
-# [12.249987502582371, 10.697516263462603, 15.283254371024668, 12.977135782130063, 15.040200399234891, 16.805960782803595, 12.333641056902707, 12.11845989804715, 10.843409495428205, 9.86639161594212, 10.824401904828846, 8.921326529234648, 12.164815440773964, 16.722270911559463, 13.340506758540869, 11.978719434700906, 10.842160694301128, 13.073826101608574, 13.135424223728478, 13.751582726836205, 12.951741521246731, 11.028801458887756, 14.39663636032492, 12.55843972787261, 12.064272919669747, 13.979026176966727, 14.876921479590237, 13.215321684256196, 19.26913076546043, 12.96588427387178]
-# [13.174293381161988, 12.25960579700768, 17.13364808820188, 14.944951985962689, 17.91127840988338, 17.945631546899676, 13.884303728118539, 13.503874726593494, 12.722029406577349, 11.452783001586795, 12.793498081155121, 10.536506134085357, 14.052079082466662, 16.62240343634039, 14.206458372063935, 14.229186330921948, 12.51209313981235, 14.730160813778639, 13.773103589192033, 14.5341558707878, 14.315508562140167, 12.821959354914725, 16.43644588533789, 14.975599735043943, 13.641426763497293, 16.015005614608526, 16.31128814537078, 15.228850464336574, 18.268028628081083, 15.642286906950176]
-# (1.7215729352537374, 11.978833812405412, 0.11829990383432135, 0.06666666666666667, 0.3, 0.8)
-print(latency_metrics(model_res, blocks_res))
-
-
-
-# ## ------------- op level
-# from nn_meter.builder.nn_generator.torch_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
-
-# # conv-bn-relu
-# reals, preds = [], []
-# configs = [
-#     [224, 3, 16, 3, 2], 
-#     [112, 16, 16, 1, 1], 
-#     [112, 16, 96, 1, 1], 
-#     [56, 96, 24, 1, 1], 
-#     [56, 24, 144, 1, 1], 
-#     [56, 144, 24, 1, 1], 
-#     [56, 24, 72, 1, 1], 
-#     [28, 72, 40, 1, 1], 
-#     [28, 40, 160, 1, 1], 
-#     [28, 160, 40, 1, 1], 
-#     [28, 40, 120, 1, 1], 
-#     [14, 120, 80, 1, 1], 
-#     [14, 80, 480, 1, 1], 
-#     [14, 480, 80, 1, 1], 
-#     [14, 80, 240, 1, 1], 
-#     [14, 240, 80, 1, 1], 
-#     [14, 80, 320, 1, 1], 
-#     [14, 320, 112, 1, 1], 
-#     [14, 112, 672, 1, 1], 
-#     [14, 672, 112, 1, 1], 
-#     [14, 112, 448, 1, 1], 
-#     [14, 448, 112, 1, 1], 
-#     [14, 112, 336, 1, 1], 
-#     [14, 336, 112, 1, 1], 
-#     [14, 112, 672, 1, 1], 
-#     [7, 672, 160, 1, 1], 
-#     [7, 160, 640, 1, 1], 
-#     [7, 640, 160, 1, 1], 
-#     [7, 160, 480, 1, 1], 
-#     [7, 480, 160, 1, 1], 
-#     [7, 160, 960, 1, 1], 
-#     [1, 960, 1280, 1, 1]
-# ]
-# for i, config in enumerate(configs):
-#     hwin, cin, cout, k, strides = config
-#     config_in = {
-#         "HW": hwin,
-#         "CIN": cin,
-#         "COUT": cin,
-#         "KERNEL_SIZE": k,
-#         "STRIDES": strides
-#     }
-#     input_shape = [cin, hwin, hwin]
-#     model = ConvBnRelu(config_in).get_model()
-#     try:
-#         real, pred = profile_and_predict(model, input_shape, mark=str(i))
-#         reals.append(real)
-#         preds.append(pred)
-#     except:
-#         print("wrong!!", config)
-        
-# rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-# for item in zip(preds, reals):
-#     print(item)
-# print(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
+    from nn_meter.dataset.bench_dataset import latency_metrics
+    # [12.249987502582371, 10.697516263462603, 15.283254371024668, 12.977135782130063, 15.040200399234891, 16.805960782803595, 12.333641056902707, 12.11845989804715, 10.843409495428205, 9.86639161594212, 10.824401904828846, 8.921326529234648, 12.164815440773964, 16.722270911559463, 13.340506758540869, 11.978719434700906, 10.842160694301128, 13.073826101608574, 13.135424223728478, 13.751582726836205, 12.951741521246731, 11.028801458887756, 14.39663636032492, 12.55843972787261, 12.064272919669747, 13.979026176966727, 14.876921479590237, 13.215321684256196, 19.26913076546043, 12.96588427387178]
+    # [13.174293381161988, 12.25960579700768, 17.13364808820188, 14.944951985962689, 17.91127840988338, 17.945631546899676, 13.884303728118539, 13.503874726593494, 12.722029406577349, 11.452783001586795, 12.793498081155121, 10.536506134085357, 14.052079082466662, 16.62240343634039, 14.206458372063935, 14.229186330921948, 12.51209313981235, 14.730160813778639, 13.773103589192033, 14.5341558707878, 14.315508562140167, 12.821959354914725, 16.43644588533789, 14.975599735043943, 13.641426763497293, 16.015005614608526, 16.31128814537078, 15.228850464336574, 18.268028628081083, 15.642286906950176]
+    # (1.7215729352537374, 11.978833812405412, 0.11829990383432135, 0.06666666666666667, 0.3, 0.8)
+    print(latency_metrics(model_res, blocks_res))
 
 
-# # hswish
-# class HSwish(nn.Module):
-    
-#     def __init__(self):
-#         super().__init__()
-#         self.relu6 = nn.ReLU(6)
-
-#     def forward(self, x):
-#         return x * self.relu6(x + 3.) * (1. / 6.)
-
-
-# reals, preds = [], []
-# configs = [
-#     [112, 16],
-#     [28, 120],
-#     [14, 120],
-#     [14, 480],
-#     [14, 480],
-#     [14, 240],
-#     [14, 240],
-#     [14, 320],
-#     [14, 320],
-#     [14, 672],
-#     [14, 672],
-#     [14, 448],
-#     [14, 448],
-#     [14, 336],
-#     [14, 336],
-#     [14, 672],
-#     [7, 672],
-#     [7, 640],
-#     [7, 640],
-#     [7, 480],
-#     [7, 480],
-#     [7, 960],
-#     [1, 1280],
-# ]
-
-# for i, config in enumerate(configs):
-#     hwin, cin = config
-#     config_in = {
-#         "HW": hwin,
-#         "CIN": cin
-#     }
-#     input_shape = [cin, hwin, hwin]
-#     model = HSwish()
-#     # try:
-#     real, pred = profile_and_predict(model, input_shape, mark='')
-#     reals.append(real)
-#     preds.append(pred)
-#     # except:
-#         # print("wrong!!", config)
-        
-# rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-# for item in zip(preds, reals):
-#     print(item)
-# print(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
-
-
-
-# # dwconv-bn-relu
-# reals, preds = [], []
-# configs = [
-#     [112, 16, 16, 3, 1],
-#     [112, 96, 96, 5, 2],
-#     [56, 144, 144, 5, 1],
-#     [56, 72, 72, 5, 2],
-#     [28, 160, 160, 7, 1],
-#     [28, 120, 120, 7, 2],
-#     [14, 480, 480, 5, 1],
-#     [14, 240, 240, 7, 1],
-#     [14, 320, 320, 5, 1],
-#     [14, 672, 672, 5, 1],
-#     [14, 448, 448, 7, 1],
-#     [14, 336, 336, 3, 1],
-#     [14, 672, 672, 5, 2],
-#     [7, 640, 640, 7, 1],
-#     [7, 480, 480, 5, 1]
-# ]
-# for i, config in enumerate(configs):
-#     hwin, cin, cout, k, strides = config
-#     config_in = {
-#         "HW": hwin,
-#         "CIN": cin,
-#         "COUT": cin,
-#         "KERNEL_SIZE": k,
-#         "STRIDES": strides
-#     }
-#     input_shape = [cin, hwin, hwin]
-#     model = DwConvBnRelu(config_in).get_model()
-#     try:
-#         real, pred = profile_and_predict(model, input_shape, mark='')
-#         reals.append(real)
-#         preds.append(pred)
-#     except:
-#         print("wrong!!", config)
-
-# rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-# for item in zip(preds, reals):
-#     print(item)
-# print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
-
-
-
-# # se
-# from modules.blocks.torch.mobilenetv3_block import SE
-
-# reals, preds = [], []
-# configs = [
-#     [28, 72],
-# 	[28, 160],
-# 	[14, 320], 
-# 	[14, 672], 
-# 	[14, 448], 
-# 	[14, 336], 
-# 	[7, 672],
-# 	[7, 640],
-# 	[7, 480]
-# ]
-# for i, config in enumerate(configs):
-#     hwin, cin = config
-#     config_in = {
-#         "HW": hwin,
-#         "CIN": cin
-#     }
-#     input_shape = [cin, hwin, hwin]
-#     model = SE(cin)
-#     try:
-#         real, pred = profile_and_predict(model, input_shape, mark='')
-#         reals.append(real)
-#         preds.append(pred)
-#     except:
-#         print("wrong!!", config)
-        
-# rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(preds, reals)
-# for item in zip(preds, reals):
-#     print(item)
-# print(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc5: {acc5}, acc10: {acc10}, acc15: {acc15}")
-
-
-# # class HSwish(nn.Module):
-    
-# #     def __init__(self):
-# #         super().__init__()
-# #         self.relu6 = nn.ReLU(6)
-
-# #     def forward(self, x):
-# #         return x * self.relu6(x + 3.) * (1. / 6.)
-
-
-# # model = HSwish()
-
-# # pred_lat = predictor.predict(model, "torch", input_shape=(1, 3, 224, 224), apply_nni=False) # in unit of ms
-
-# # from modules.blocks.torch.mobilenetv3_block import SE
-# # model = SE(64)
-# # profile_and_predict(model, [64, 112, 112], mark="")
-
+if __name__ == '__main__':
+    model_level_test()
