@@ -64,7 +64,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     
     # dump the predictor model
     import pickle
-    pred_save_path = os.path.join(save_path, "predictors", f"{kernel_type}.pkl")
+    pred_save_path = os.path.join(save_path, "predictors", f"{kernel_type}_{mark}.pkl")
     with open(pred_save_path, 'wb') as fp:
         pickle.dump(predictor, fp)
     logging.keyinfo(f"Saved the predictor for {kernel_type} in path {pred_save_path}.")
