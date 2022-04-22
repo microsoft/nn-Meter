@@ -164,15 +164,15 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
         labs_dict = labs_path[kernel_type] if kernel_type in labs_path else labs_path
 
     paths, features, labs = [], [], []
-    for id in labs_dict.keys():
+    for idx in labs_dict.keys():
         try:
-            path = cfgs_dict[id]["model"]
-            configs = cfgs_dict[id]["config"]
+            path = cfgs_dict[idx]["model"]
+            configs = cfgs_dict[idx]["config"]
             feature = feature_parser.get_feature_by_config(configs)
             if predict_label == "latency":
-                label = labs_dict[id]["latency"].avg
+                label = labs_dict[idx]["latency"].avg
             else:
-                label = labs_dict[id][predict_label]
+                label = labs_dict[idx][predict_label]
             if label != 0.0:
                 paths.append(os.path.basename(path))
                 features.append(feature)

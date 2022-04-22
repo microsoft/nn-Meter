@@ -41,7 +41,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
     # convert models
     count = 0
     for _, modules in models.items():
-        for id, model in modules.items():
+        for idx, model in modules.items():
             if broken_point_mode and 'converted_model' in model:
                 continue
             try:
@@ -49,7 +49,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
                 converted_model = backend.convert_model(model_path, model_save_path, model['shapes'])
                 model['converted_model'] = converted_model
             except Exception as e:
-                open(os.path.join(info_save_path, "convert_error.log"), 'a').write(f"{id}: {e}\n")
+                open(os.path.join(info_save_path, "convert_error.log"), 'a').write(f"{idx}: {e}\n")
 
             # save information to json file for per 50 models
             count += 1
@@ -104,7 +104,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
     save_name = save_name or "profiled_results.json"
     logging.info("Profiling ...")
     for _, modules in models.items():
-        for id, model in modules.items():
+        for idx, model in modules.items():
             if have_converted: # the models have been converted for the backend
                 try:
                     model_path = model['converted_model']
@@ -114,7 +114,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     time.sleep(0.2)
                     count += 1
                 except Exception as e:
-                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(f"{id}: {e}\n")
+                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(f"{idx}: {e}\n")
             else: # the models have not been converted
                 try:
                     model_path = model['model']
@@ -124,7 +124,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     time.sleep(0.2)
                     count += 1
                 except Exception as e:
-                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(f"{id}: {e}\n")
+                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(f"{idx}: {e}\n")
 
             # save information to json file for per 50 models
             if count > 0 and count % 50 == 0:
