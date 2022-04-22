@@ -47,6 +47,7 @@ def get_feature(kernel_type, config_dict):
         "dwconv-bn-relu": ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
         "se": ["HW", "CIN"],
         "hswish": ["HW", "CIN"],
+        "avgpool": ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"]
     }
     if "COUT" not in config_dict and "COUT" in needed_config[kernel_type]:
         config_dict["COUT"] = config_dict["CIN"]
@@ -77,8 +78,10 @@ def op_level_test_conv(predictor_name):
         [14, 240, 80, 1, 1], [7, 672, 160, 1, 1], [7, 960, 160, 1, 1], [112, 16, 64, 1, 1], [56, 64, 24, 1, 1], [56, 72, 24, 1, 1], 
         [14, 120, 80, 1, 1], [14, 320, 112, 1, 1], [14, 112, 336, 1, 1], [14, 336, 112, 1, 1], [7, 336, 160, 1, 1]
     ]
-    for i, config in enumerate(configs):
-        hwin, cin, cout, k, strides = config
+    # for i, config in enumerate(configs):
+    for i, cout in enumerate(range(600, 681)):
+        # hwin, cin, cout, k, strides = config
+        hwin, cin, cout, k, strides = 56, 640, cout, 1, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -86,16 +89,20 @@ def op_level_test_conv(predictor_name):
             "KERNEL_SIZE": k,
             "STRIDES": strides
         }
+        # print(config_in)
         input_shape = [cin, hwin, hwin]
         model = ConvBnRelu(config_in).get_model()
         real = profile_model(model, input_shape)
         pred = predictor.predict([get_feature("conv-bn-relu", config_in)])[0]
         reals.append(real)
         preds.append(pred)
+        print(config_in, real, pred)
 
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for item in zip(reals, preds):
-        print(item)
+    # for item in zip(reals, preds):
+    #     print(item)
+    for cin, res, pred in zip(range(600, 681), reals, preds):
+        print(f"{cin};{res}; {pred}")
     print(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
@@ -158,7 +165,7 @@ def op_level_test_dwconv(predictor_name):
         [28, 120, 3, 2], [112, 48, 7, 2], [14, 672, 7, 1], [112, 64, 7, 2], [112, 96, 7, 2]
     ]
     # for i, config in enumerate(configs):
-    for i, cin in enumerate(range(630, 650)):
+    for i, cin in enumerate(range(600, 681)):
         # hwin, cin, k, strides = config
         hwin, cin, k, strides = 7, cin, 7, 1
         config_in = {
@@ -176,10 +183,10 @@ def op_level_test_dwconv(predictor_name):
         preds.append(pred)
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for cin, res in zip(range(630, 650), reals):
-        print(f"cin: {cin}; profiled results: {res}")
+    for cin, res, pred in zip(range(600, 681), reals, preds):
+        print(f"{cin}; {res}; {pred}")
     # for item in zip(reals, preds):
-    #     print(item)
+        # print(item)
     print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
@@ -214,6 +221,37 @@ def op_level_test_se(predictor_name):
         print(item)
     print(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
+
+def op_level_test_avgpool(predictor_name):
+    with open(predictor_name, "rb") as f:
+        predictor = pickle.load(f)
+    
+    reals, preds = [], []
+    configs = [
+        [56, 64, 1, 1], [56, 256, 2, 2], [28, 512, 2, 2], [14, 816, 2, 2]
+    ]
+    for i, config in enumerate(configs):
+        hwin, cin, ks, s = config
+        config_in = {
+            "HW": hwin,
+            "CIN": cin,
+            "COUT": cin,
+            "KERNEL_SIZE": ks,
+            "POOL_STRIDES": s
+        }
+        input_shape = [cin, hwin, hwin]
+        model = nn.AvgPool2d(kernel_size=ks, stride=s, padding=0, ceil_mode=True)
+        real = profile_model(model, input_shape)
+        pred = predictor.predict([get_feature("avgpool", config_in)])[0]
+        reals.append(real)
+        preds.append(pred)
+            
+    rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
+    for item in zip(reals, preds):
+        print(item)
+    print(f"[Avgpool] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+
+
 if __name__ == '__main__':
     
     # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_origin.pkl")
@@ -222,8 +260,10 @@ if __name__ == '__main__':
     # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
 
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_origin.pkl")
-    op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
+    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
+    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1.pkl")
+    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")
     
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_original.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
@@ -232,4 +272,5 @@ if __name__ == '__main__':
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
-    
+
+    op_level_test_avgpool("/sdc/jiahang/working/ort_mobilenetv3_workspace/predictor/avgpool.pkl")

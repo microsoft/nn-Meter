@@ -66,10 +66,11 @@ def build_act(act: str):
 
 # implementation in nn-meter
 class SE(tf.keras.layers.Layer):
-    def __init__(self, num_channels):
+    def __init__(self, num_channels, se_ratio=0.25):
         super().__init__()
+        mid_channels = make_divisible(num_channels * se_ratio)
         self.conv1 = tf.keras.layers.Conv2D(
-            filters=num_channels // 4,
+            filters=mid_channels,
             kernel_size=[1, 1],
             strides=[1, 1],
             padding="same",
