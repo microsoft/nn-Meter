@@ -121,8 +121,8 @@ class BConv(BasicBlock):
             self.down_sample = _Identity()
         else:
             self.down_sample = tf.keras.Sequential([
-                layers.AveragePooling2D(pool_size=strides, strides=strides, padding='same'),
-                layers.Conv2D(cout, kernel_size=1, strides=1, padding='same', use_bias=False),
+                # layers.AveragePooling2D(pool_size=strides, strides=strides, padding='same'),
+                layers.Conv2D(cout, kernel_size=1, strides=strides, padding='same', use_bias=False),
                 layers.BatchNormalization()
             ])
 
