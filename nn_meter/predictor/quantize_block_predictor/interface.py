@@ -24,21 +24,21 @@ class BlockLatencyPredictor:
         '''
         if name == "mobilenetv1":
             return name
-        elif name.startwish("mobilenet"):
-            type_list = []
+        elif name.startswith("mobilenet"):
+            type_list = [name]
             use_res_connect = stride == 1 and cin == cout
             type_list.append("res" if use_res_connect else "nores" )
             type_list.append("se" if use_se else "nose" )
             type_list.append(activation)
             return "_".join(type_list)
         elif name == "resnet":
-            type_list = []
+            type_list = ["resnet"]
             use_downsample = stride > 1 or cin != cout
             type_list.append("ds" if use_downsample else "nods" )
             type_list.append(activation)
             return "_".join(type_list)
         elif name == "first_conv":
-            return name
+            return f'{name}_{activation}'
         elif name == "logits_block":
             return name
 
@@ -56,14 +56,17 @@ class BlockLatencyPredictor:
         use_se (Boolean)
         '''
         type = self.get_type(name, cin, cout, stride, activation, use_se)
+        print("### --- ", type)
         from nn_meter.predictor.prediction.utils import get_kernel_name
         dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
         py = 0
         for kernel in dicts:
             kernelname = get_kernel_name(kernel)
-            if kernelname in self.predictors:
-                pred = self.predictors[kernelname]
+            if kernelname in self.predictor.kernel_predictors:
+                
+                pred = self.predictor.kernel_predictors[kernelname]
                 pys = pred.predict(dicts[kernel]) # in unit of ms
                 if len(pys) != 0:
                     py += sum(pys)
+                print(kernelname, dicts[kernel], pys)
         return py
