@@ -14,13 +14,14 @@ from nas_models.common import make_divisible
 
 workspace = "/data1/jiahang/working/pixel4_mobilenetv3_workspace"
 builder_config.init(workspace)
-backend = connect_backend(backend_name='tflite_cpu_int8')
+backend = connect_backend(backend_name='tflite_cpu')
 
 
 output_path = "/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor"
 output_name = os.path.join(output_path, "MobilenetV3_test")
-# predictor_name = "tflite27_cpu_int8"
-# predictor = load_latency_predictor(predictor_name)
+predictor_name = "tflite27_cpu_int8"
+# predictor_name = "cortexA76cpu_tflite21"
+predictor = load_latency_predictor(predictor_name)
 
 
 def profile_and_predict(model, input_shape, name="se"):
@@ -252,8 +253,10 @@ def op_level_test_conv(predictor_name):
         # resnet
         
     ]
-    for i, config in enumerate(configs):
-        hwin, cin, cout, k, strides = config
+    # for i, config in enumerate(configs):
+    for i, cout in enumerate(range(600, 681)):
+        # hwin, cin, cout, k, strides = config
+        hwin, cin, cout, k, strides = 56, 640, cout, 1, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -269,10 +272,13 @@ def op_level_test_conv(predictor_name):
         preds.append(pred)
 
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for item in zip(reals, preds):
-        print(item)
-    print(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
-
+    # for item in zip(reals, preds):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f'{item}\n')
+    # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
+    for cin, res in zip(range(600, 681), reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv_cinrange.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv_cinrange.txt", "a").write(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
+    
 
 def op_level_test_dwconv(predictor_name):
     with open(predictor_name, "rb") as f:
@@ -293,8 +299,10 @@ def op_level_test_dwconv(predictor_name):
         [56, 144, 7, 2], [112, 96, 5, 2], [14, 448, 5, 2], [14, 336, 3, 1], [112, 64, 5, 2], [28, 240, 5, 2], [14, 336, 3, 2],
         [28, 120, 3, 2], [112, 48, 7, 2], [14, 672, 7, 1], [112, 64, 7, 2], [112, 96, 7, 2]
     ]
-    for i, config in enumerate(configs):
-        hwin, cin, k, strides = config
+    # for i, config in enumerate(configs):
+    for i, cin in enumerate(range(600, 681)):
+        # hwin, cin, k, strides = config
+        hwin, cin, k, strides = 112, cin, 3, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -310,9 +318,12 @@ def op_level_test_dwconv(predictor_name):
         preds.append(pred)
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for item in zip(reals, preds):
-        print(item)
-    print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+    for cin, res in zip(range(600, 681), reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv_cinrange.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv_cinrange.txt", "a").write(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
+    # for item in zip(reals, preds):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f'{item}\n')
+    # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
 
 
 def op_level_test_hswish(predictor_name):
@@ -326,8 +337,10 @@ def op_level_test_hswish(predictor_name):
         [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960], [1, 1280],
     ]
 
-    for i, config in enumerate(configs):
-        hwin, cin = config
+    # for i, config in enumerate(configs):
+    for i, cin in enumerate(range(600, 681)):
+        # hwin, cin = config
+        hwin, cin = 14, cin
         config_in = {
             "HW": hwin,
             "CIN": cin
@@ -340,9 +353,11 @@ def op_level_test_hswish(predictor_name):
         preds.append(pred)
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for item in zip(reals, preds):
-        print(item)
-    print(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+    for cin, res in zip(range(600, 681), reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    # for item in zip(reals, preds):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f'{item}')
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
 def op_level_test_se(predictor_name):
@@ -357,8 +372,10 @@ def op_level_test_se(predictor_name):
         [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
         [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960]
     ]
-    for i, config in enumerate(configs):
-        hwin, cin = config
+    # for i, config in enumerate(configs):
+    for cin in range(600, 681):
+        # hwin, cin = config
+        hwin, cin = 14, cin
         config_in = {
             "HW": hwin,
             "CIN": cin
@@ -371,25 +388,29 @@ def op_level_test_se(predictor_name):
         preds.append(pred)
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for item in zip(reals, preds):
-        print(item)
-    print(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+    for cin, res in zip(range(600, 681), reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    # for item in zip(reals, preds):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f'{item}')
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 if __name__ == '__main__':
     
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_original.pkl")
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa.pkl")
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
-
-    op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_original.pkl")
-    op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
-    op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
+    # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_filt8.pkl")
+    
+    # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_original.pkl")
+    # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
+    # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
+    # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_filt8.pkl")
     
     # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_prior.pkl")
-    # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_tf1.pkl")
-    # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
+    op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
+    # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
 
-    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
-    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
-    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
+    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_prior.pkl")
+    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
+    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
     

@@ -115,8 +115,8 @@ class BConv(BasicBlock):
             self.down_sample = nn.Identity()
         else:
             self.down_sample = nn.Sequential(
-                nn.AvgPool2d(kernel_size=strides, stride=strides, padding=0, ceil_mode=True),
-                nn.Conv2d(cin, cout, kernel_size=1, stride=1, padding=0, bias=False),
+                # nn.AvgPool2d(kernel_size=strides, stride=strides, padding=0, ceil_mode=True),
+                nn.Conv2d(cin, cout, kernel_size=1, stride=strides, padding=0, bias=False),
                 nn.BatchNorm2d(cout)
             )
 
