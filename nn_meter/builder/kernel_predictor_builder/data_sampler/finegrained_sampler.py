@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import random
+from .prior_distribution_sampler import make_divisible
 
 
 def sample_in_range(mind, maxd, sample_num):
@@ -18,8 +19,8 @@ def sample_in_range(mind, maxd, sample_num):
 def sample_cin_cout(cin, cout, sample_num): 
     '''fine-grained sample #sample_num data in the cin and cout dimensions, respectively
     '''
-    cins = sample_in_range(int(cin * 0.5), int(cin * 1.2), sample_num)
-    couts = sample_in_range(int(cout * 0.5), int(cout * 1.2), sample_num)
+    cins = sample_in_range(int(cin * 0.5), int(cin * 1.5), sample_num)
+    couts = sample_in_range(int(cout * 0.5), int(cout * 1.5), sample_num)
     l = min(len(cins), len(couts)) # align the length of cins and couts
     cins, couts = cins[:l], couts[:l]
     return cins, couts
@@ -45,6 +46,27 @@ def finegrained_sampling_conv(cfgs, count):
     return ncfgs
 
 
+def finegrained_sampling_conv(cfgs, count):
+    ''' 
+    Sampling configs for conv kernels
+    Returned params include: (hw, cin, cout, kernel_size, strides)
+    '''
+    ncfgs = []
+    for cfg in cfgs:
+        cins, couts = sample_cin_cout(cfg['CIN'], cfg['COUT'], count)
+        for cin, cout in zip(cins, couts):
+            c = {
+                'HW': cfg['HW'],
+                'CIN': make_divisible(cin),
+                'COUT': make_divisible(cout),
+                'KERNEL_SIZE': cfg['KERNEL_SIZE'],
+                'STRIDES': cfg['STRIDES'],
+            }
+            if c not in ncfgs:
+                ncfgs.append(c)
+    return ncfgs
+
+
 def finegrained_sampling_dwconv(cfgs, count):
     ''' 
     Sampling configs for dwconv kernels
@@ -61,6 +83,26 @@ def finegrained_sampling_dwconv(cfgs, count):
                 'STRIDES': cfg['STRIDES'],
             }
             ncfgs.append(c)
+    return ncfgs
+
+
+def finegrained_sampling_dwconv_ofa(cfgs, count):
+    ''' 
+    Sampling configs for dwconv kernels
+    Returned params include: (hw, cin, kernel_size, strides)
+    '''
+    ncfgs = []
+    for cfg in cfgs:
+        cins = sample_in_range(int(cfg['CIN'] * 0.5), int(cfg['CIN'] * 1.5), count)
+        for cin in cins:
+            c = {
+                'HW': cfg['HW'],
+                'CIN': make_divisible(cin),
+                'KERNEL_SIZE': cfg['KERNEL_SIZE'],
+                'STRIDES': cfg['STRIDES'],
+            }
+            if c not in ncfgs:
+                ncfgs.append(c)
     return ncfgs
 
 
@@ -113,6 +155,23 @@ def finegrained_sampling_hw_cin(cfgs, count):
                 'HW': cfg['HW']
             }
             ncfgs.append(c)
+    return ncfgs
+
+
+def finegrained_sampling_hw_cin_ofa(cfgs, count):
+    ''' sampling configs for kernels with hw and cin parameter
+    Returned params include: (hw, cin)
+    '''
+    ncfgs = []
+    for cfg in cfgs:
+        cins = sample_in_range(int(cfg['CIN'] * 0.5), int(cfg['CIN'] * 1.5), count)
+        for cin in cins:
+            c = {
+                'CIN': make_divisible(cin),
+                'HW': cfg['HW']
+            }
+            if c not in ncfgs:
+                ncfgs.append(c)
     return ncfgs
 
 

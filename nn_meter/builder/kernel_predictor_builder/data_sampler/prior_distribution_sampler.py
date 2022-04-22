@@ -53,6 +53,7 @@ def data_validation(data, cdata):
 
 
 def make_divisible(v):
+    if v == 3: return v
     new_v = max(8, int(v + 8 / 2) // 8 * 8)
     if new_v < 0.9 * v:
         new_v += 8
@@ -113,7 +114,6 @@ def sampling_conv_ofa(count):
 
     # 50% of sampled data are from prior distribution
     count1 = int(count * 0.5)
-    count1 = count
     new_hws = sample_based_on_distribution(hws, count1)
     new_kernel_sizes = sample_based_on_distribution(kernel_sizes, count1)
     new_strides = sample_based_on_distribution(strides, count1)
@@ -127,54 +127,55 @@ def sampling_conv_ofa(count):
     random.shuffle(new_strides)
     random.shuffle(new_kernel_sizes)
 
-    # # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
-    # count2 = count - count1
-    # count2_0 = count2 // 4 # hw is fixed to 224 and cin is fixed to 3
-    # count2_1 = count2 // 4
-    # count2_2 = count2 // 4
-    # count2_3 = count2 - count2_0 - count2_1 - count2_2
-    # # count2_0: hw is fixed to 224 and cin is fixed to 3
-    # new_hws.extend([224 for _ in range(count2_0)]) # frequent settings
-    # new_kernel_sizes.extend(list(map(int, np.random.choice([3, 5, 7], size=count2_0, replace=True)))) # frequent settings
-    # new_strides.extend(list(map(int, np.random.choice([1, 2], size=count2_0, replace=True)))) # frequent settings
-    # cins_extend0 = [3 for _ in range(count2_0)]
-    # cout_extend0 = [make_divisible(3 * (np.random.rand() * 3 + 3))] * count2_0
-    # new_cins.extend(cins_extend0)
-    # new_couts.extend(cout_extend0)
+    # since conv is the largest and most-challenging kernel, we add some frequently used configuration values
+    count2 = count - count1
+    count2_0 = count2 // 4 # hw is fixed to 224 and cin is fixed to 3
+    count2_1 = count2 // 4
+    count2_2 = count2 // 4
+    count2_3 = count2 - count2_0 - count2_1 - count2_2
+    # count2_0: hw is fixed to 224 and cin is fixed to 3
+    new_hws.extend([224 for _ in range(count2_0)]) # frequent settings
+    new_kernel_sizes.extend(list(map(int, np.random.choice([3, 5, 7], size=count2_0, replace=True)))) # frequent settings
+    new_strides.extend(list(map(int, np.random.choice([1, 2], size=count2_0, replace=True)))) # frequent settings
+    cins_extend0 = [3 for _ in range(count2_0)]
+    cout_extend0 = [make_divisible(3 * (np.random.rand() * 3 + 3))] * count2_0
+    new_cins.extend(cins_extend0)
+    new_couts.extend(cout_extend0)
 
-    # # count2_1: input channel: cin; output channel: cin * expand_ratio; kernel_size: 1; strides: 1
-    # new_hws.extend(list(map(int, np.random.choice(hw_candidate, size=(count2 - count2_0), replace=True)))) # frequent settings
-    # new_kernel_sizes.extend([1] * (count2_1 + count2_2)) # frequent settings
-    # new_strides.extend([1] * (count2_1 + count2_2)) # frequent settings
-    # cins_extend1 = list(map(int, np.random.choice(cin_candidate, size=count2_1, replace=True)))
-    # cout_extend1 = [make_divisible(cin * (np.random.rand() * 3 + 3)) for cin in cins_extend1] # cout = cin * expand_ratio
-    # new_cins.extend(cins_extend1)
-    # new_couts.extend(cout_extend1)
+    # count2_1: input channel: cin; output channel: cin * expand_ratio; kernel_size: 1; strides: 1
+    new_hws.extend(list(map(int, np.random.choice(hw_candidate, size=(count2 - count2_0), replace=True)))) # frequent settings
+    new_kernel_sizes.extend([1] * (count2_1 + count2_2)) # frequent settings
+    new_strides.extend([1] * (count2_1 + count2_2)) # frequent settings
+    cins_extend1 = list(map(int, np.random.choice(cin_candidate, size=count2_1, replace=True)))
+    cout_extend1 = [make_divisible(cin * (np.random.rand() * 3 + 3)) for cin in cins_extend1] # cout = cin * expand_ratio
+    new_cins.extend(cins_extend1)
+    new_couts.extend(cout_extend1)
 
-    # # count2_2: input channel: cin; output channel: cin / expand_ratio; kernel_size: 1; strides: 1
-    # cins_extend2 = list(map(int, np.random.choice(cin_candidate, size=count2_2, replace=True)))
-    # cout_extend2 = [make_divisible(cin / (np.random.rand() * 3 + 3)) for cin in cins_extend2] # cout = cin * expand_ratio
-    # new_cins.extend(cins_extend2)
-    # new_couts.extend(cout_extend2)
+    # count2_2: input channel: cin; output channel: cin / expand_ratio; kernel_size: 1; strides: 1
+    cins_extend2 = list(map(int, np.random.choice(cin_candidate, size=count2_2, replace=True)))
+    cout_extend2 = [make_divisible(cin / (np.random.rand() * 3 + 3)) for cin in cins_extend2] # cout = cin * expand_ratio
+    new_cins.extend(cins_extend2)
+    new_couts.extend(cout_extend2)
 
-    # # count2_3: input channel: cin * expand_ratio; output channel: cin * expand_ratio
-    # new_kernel_sizes.extend(list(map(int, np.random.choice([3, 5, 7], size=count2_3, replace=True)))) # frequent settings
-    # new_strides.extend(list(map(int, np.random.choice([1, 2], size=count2_3, replace=True)))) # frequent settings
-    # c_extend3 = [make_divisible(cin / (np.random.rand() * 3 + 3)) for cin in 
-    #                 list(map(int, np.random.choice(cin_candidate, size=count2_3, replace=True)))]
-    # new_cins.extend(c_extend3)
-    # new_couts.extend(c_extend3)
+    # count2_3: input channel: cin * expand_ratio; output channel: cin * expand_ratio
+    new_kernel_sizes.extend(list(map(int, np.random.choice([3, 5, 7], size=count2_3, replace=True)))) # frequent settings
+    new_strides.extend(list(map(int, np.random.choice([1, 2], size=count2_3, replace=True)))) # frequent settings
+    c_extend3 = [make_divisible(cin / (np.random.rand() * 3 + 3)) for cin in 
+                    list(map(int, np.random.choice(cin_candidate, size=count2_3, replace=True)))]
+    new_cins.extend(c_extend3)
+    new_couts.extend(c_extend3)
 
     ncfgs = []
     for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
         c = {
             'HW': hw,
-            'CIN': cin,
-            'COUT': cout,
+            'CIN': make_divisible(cin),
+            'COUT': make_divisible(cout),
             'KERNEL_SIZE': kernel_size,
             'STRIDES': stride,
         }
-        ncfgs.append(c)
+        if c not in ncfgs:
+            ncfgs.append(c)
     return ncfgs
 
 
@@ -282,14 +283,15 @@ def sampling_dwconv_ofa(count):
 
     ncfgs = []
     for hw, cin, kernel_size, stride in zip(new_hws, new_cins, new_kernel_sizes, new_strides):
-        print(hw, cin, kernel_size, stride)
+        # print(hw, cin, kernel_size, stride)
         c = {
             'HW': hw,
-            'CIN': cin,
+            'CIN': make_divisible(cin),
             'KERNEL_SIZE': kernel_size,
             'STRIDES': stride,
         }
-        ncfgs.append(c)
+        if c not in ncfgs:
+            ncfgs.append(c)
     return ncfgs
 
 
@@ -387,9 +389,10 @@ def sampling_hw_cin_ofa(count):
     for hw, cin in zip(new_hws, new_cins):
         c = {
             'HW': hw,
-            'CIN': cin,
+            'CIN': make_divisible(cin),
         }
-        ncfgs.append(c)
+        if c not in ncfgs:
+            ncfgs.append(c)
     return ncfgs
 
 
