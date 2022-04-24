@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import random
-from .prior_distribution_sampler import make_divisible
+from nn_meter.builder.utils import make_divisible
 
 
 def sample_in_range(mind, maxd, sample_num):
