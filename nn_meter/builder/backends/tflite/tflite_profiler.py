@@ -65,6 +65,10 @@ class TFLiteProfiler(BaseProfiler):
                     os.system(f"adb -s {self._serial} shell rm {remote_graph_path}")
                 else:
                     os.system(f"adb shell rm {remote_graph_path}")
+                os.remove(graph_path)
+
+        # node = parse_res(res)
+        # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/profile_res.txt", 'a').write(node)  
 
         return res
 

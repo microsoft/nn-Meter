@@ -240,14 +240,14 @@ sample_strs = [
 model_res, blocks_res = [], []
 pred_res = []
 for sample_str in sample_strs:
-    # real, pred = get_model_result(sample_str)
+    real, pred = get_model_result(sample_str)
     real_collection, pred_collection = get_block_result(sample_str)
-    # print(pred_collection, pred)
-    # assert int(pred) == int(pred_collection)
-    # model_res.append(real)
-    # blocks_res.append(real_collection)
-    # pred_res.append(pred)
-    # break
+    print(pred_collection, pred)
+    assert int(pred) == int(pred_collection)
+    model_res.append(real)
+    blocks_res.append(real_collection)
+    pred_res.append(pred)
+    break
 # print(model_res)
 # print(blocks_res)
 # print(pred_res)
