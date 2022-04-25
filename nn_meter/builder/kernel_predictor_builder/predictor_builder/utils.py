@@ -47,3 +47,23 @@ def get_flops_params(kernel_type, config):
     elif "fc" in kernel_type:
         cin, cout = config["CIN"], config["COUT"]
         return get_fc_flop_params(cin, cout)
+
+
+def collect_kernel_data(kernel_data, predict_label):
+    config, label = kernel_data
+    if isinstance(config, list):
+        config = collect_data(config)
+    if isinstance(label, list):
+        label = collect_data(label)
+        if predict_label == 'latency':
+            from nn_meter.builder.backend_meta.utils import read_profiled_results
+            label = read_profiled_results(label)
+    return (config, label)
+
+
+def collect_data(file_list):
+    from ...utils import merge_info
+    data = file_list.pop(0)
+    for file in file_list:
+        data = merge_info(new_info=file, prev_info=data)
+    return data

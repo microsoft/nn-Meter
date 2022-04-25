@@ -108,7 +108,7 @@ class AvgPool(BaseOperator):
 
 #------------------------ other modules ------------------------#
 
-class SE(BaseOperator):
+class SETF1(BaseOperator):
     def get_model(self):
         class SE(keras.layers.Layer):
             def __init__(self, input_shape):
@@ -140,6 +140,30 @@ class SE(BaseOperator):
                 x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
                 return x * inputs
         return SE(self.input_shape)
+
+
+class SE(BaseOperator):
+    def get_model(self):
+        from nn_meter.builder.utils import make_divisible
+        class SE(keras.layers.Layer):
+            def __init__(self, num_channels, se_ratio=0.25):
+                super().__init__()
+                self.pool = keras.layers.GlobalAveragePooling2D()
+                self.squeeze = keras.layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
+                self.relu = keras.layers.ReLU()
+                self.excite = keras.layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
+                self.relu6 = keras.layers.ReLU(6)
+
+            def call(self, x):
+                x0 = x
+                x = self.pool(x)
+                x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
+                x = self.squeeze(x)
+                x = self.relu(x)
+                x = self.excite(x)
+                x = self.relu6(x + 3.) * (1. / 6.)
+                return x * x0
+        return SE(self.input_shape[-1])
 
 
 class FC(BaseOperator):
@@ -181,7 +205,7 @@ class HswishTF1(BaseOperator):
 
 
 class Hswish(BaseOperator):
-    # the hard-swish op from tensorflow v1
+    # the hard-swish op from tensorflow v2
     def get_model(self):
         def func(inputs):
             relu6 = tf.keras.layers.ReLU(6)

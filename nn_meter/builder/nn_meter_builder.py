@@ -5,8 +5,7 @@ import json
 import time
 import logging
 from . import builder_config
-from .utils import save_profiled_results
-from nn_meter.builder.utils import merge_info
+from .utils import save_profiled_results, merge_info
 from nn_meter.builder.backends import connect_backend
 logging = logging.getLogger("nn-Meter")
 
@@ -203,6 +202,20 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
         logging.keyinfo(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
     return predictor, kernel_data
+
+
+def finegrained_predictor_for_kernel(kernel_type, kernel_data, backend = None, finegrained_sample_num = 20, error_threshold = 0.1, mark = '', save_path = None, predict_label = "latency"):
+    from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data
+    
+    _, _, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend = backend, error_threshold = error_threshold, mark = mark, save_path = save_path, predict_label = predict_label)
+    new_kernel_data = sample_and_profile_kernel_data(kernel_type, finegrained_sample_num, backend,
+                                                     sampling_mode = 'finegrained', configs=error_configs, mark=mark)
+
+    # merge finegrained data with previous data and build new regression model
+    kernel_data = merge_info(new_info=new_kernel_data, prev_info=kernel_data)
+    _, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold, mark=mark,
+                                                      save_path=save_path, predict_label=predict_label)
+    logging.keyinfo(f'{mark}: acc10 {acc10}, error_configs number: {len(error_configs)}')
 
 
 def build_latency_predictor(backend):

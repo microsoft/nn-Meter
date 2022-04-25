@@ -3,6 +3,7 @@
 import random
 import numpy as np
 from .prior_config_lib.utils import *
+from nn_meter.builder.utils import make_divisible
 
 _conv_hw_candidate = [
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20,
@@ -50,14 +51,6 @@ def data_validation(data, cdata):
     cda = [list(d).index(min(d)) for d in newlist]
     redata = [cdata[x] for x in cda]
     return redata
-
-
-def make_divisible(v):
-    if v == 3: return v
-    new_v = max(8, int(v + 8 / 2) // 8 * 8)
-    if new_v < 0.9 * v:
-        new_v += 8
-    return new_v
 
 
 def sampling_conv(count):

@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import logging
 from sklearn.model_selection import train_test_split
-from .utils import latency_metrics
+from .utils import collect_kernel_data, latency_metrics
 from .predictor_lib import init_predictor
 from .extract_feature import get_feature_parser, get_data_by_profiled_results
 logging = logging.getLogger("nn-Meter")
@@ -34,6 +34,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     feature_parser = get_feature_parser(kernel_type)
     os.makedirs(os.path.join(save_path, "collection"), exist_ok=True)
     os.makedirs(os.path.join(save_path, "predictors"), exist_ok=True)
+    kernel_data = collect_kernel_data(kernel_data, predict_label)
     data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
                                         save_path=os.path.join(save_path, "collection", f'Data_{kernel_type}_{mark}.csv'),
                                         predict_label=predict_label)
