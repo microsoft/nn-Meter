@@ -253,10 +253,12 @@ def op_level_test_conv(predictor_name):
         # resnet
         
     ]
-    for i, config in enumerate(configs):
+    # for i, config in enumerate(configs):
     # for i, cout in enumerate(range(600, 681)):
-        hwin, cin, cout, k, strides = config
+    for i, ks in enumerate([1, 3, 5, 7]):
+        # hwin, cin, cout, k, strides = config
         # hwin, cin, cout, k, strides = 56, 640, cout, 1, 1
+        hwin, cin, cout, k, strides = 14, 320, 320, ks, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -274,10 +276,11 @@ def op_level_test_conv(predictor_name):
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     # for item in zip(reals, preds):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f'{item}\n')
-    # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
-    for cin, res in zip(range(600, 681), reals):
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv_cinrange.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
-    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv_cinrange.txt", "a").write(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
+    # for cin, res in zip(range(600, 681), reals):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    for ks, res in zip([1, 3, 5, 7], reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"ks: {ks}; profiled results: {res}\n")
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
     
 
 def op_level_test_dwconv(predictor_name):
@@ -308,10 +311,12 @@ def op_level_test_dwconv(predictor_name):
                     1.25432, 0.264163, 0.0251118, 0.0358999, 1.79139, 1.13197, 2.25581, 3.38345]
     assert len(configs) == len(real_latency)
 
-    for i, config in enumerate(configs):
+    # for i, config in enumerate(configs):
     # for i, cin in enumerate(range(600, 681)):
-        hwin, cin, k, strides = config
+    for i, ks in enumerate([1, 3, 5, 7]):
+        # hwin, cin, k, strides = config
         # hwin, cin, k, strides = 112, cin, 3, 1
+        hwin, cin, k, strides = 56, 32, ks, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -329,10 +334,11 @@ def op_level_test_dwconv(predictor_name):
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     # for cin, res in zip(range(600, 681), reals):
-    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv_cinrange.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
-    # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv_cinrange.txt", "a").write(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
-    for item in zip(reals, preds):
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f'{item}\n')
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    # for item in zip(reals, preds):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f'{item}\n')
+    for ks, res in zip([1, 3, 5, 7], reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"ks: {ks}; profiled results: {res}\n")
     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
 
 

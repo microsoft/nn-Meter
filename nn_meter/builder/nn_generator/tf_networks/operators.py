@@ -145,7 +145,7 @@ class SETF1(BaseOperator):
 class SE(BaseOperator):
     def get_model(self):
         from nn_meter.builder.utils import make_divisible
-        class SE(tf.keras.Layer):
+        class SE(keras.layers.Layer):
             def __init__(self, num_channels, se_ratio=0.25):
                 super().__init__()
                 self.pool = keras.layers.GlobalAveragePooling2D()
