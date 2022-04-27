@@ -432,9 +432,10 @@ def sampling_hw_cin_even_ofa(count):
     for hw, cin in zip(new_hws, new_cins):
         c = {
             'HW': hw,
-            'CIN': cin + 1 if cin % 2 else cin,
+            'CIN': make_divisible(cin + 1 if cin % 2 else cin),
         }
-        ncfgs.append(c)
+        if c not in ncfgs:
+            ncfgs.append(c)
     return ncfgs
 
 
