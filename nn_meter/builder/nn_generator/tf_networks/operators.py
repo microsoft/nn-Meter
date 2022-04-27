@@ -152,7 +152,7 @@ class SE(BaseOperator):
                 self.squeeze = keras.layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
                 self.relu = keras.layers.ReLU()
                 self.excite = keras.layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
-                self.relu6 = keras.layers.ReLU(6)
+                self.hswish = Hswish().get_model()
 
             def call(self, x):
                 x0 = x
@@ -161,7 +161,7 @@ class SE(BaseOperator):
                 x = self.squeeze(x)
                 x = self.relu(x)
                 x = self.excite(x)
-                x = self.relu6(x + 3.) * (1. / 6.)
+                x = self.hswish(x)
                 return x * x0
         return SE(self.input_shape[-1])
 

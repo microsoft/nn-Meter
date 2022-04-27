@@ -103,24 +103,29 @@ class AvgPool(BaseOperator):
 
 class SE(BaseOperator):
     def get_model(self):
+        from nn_meter.builder.utils import make_divisible
         class SE(nn.Module):
-            def __init__(self, input_shape):
+            def __init__(self, num_channels, se_ratio=0.25):
                 super().__init__()
-                cin = input_shape[0]
-                self.avgpool = nn.AdaptiveAvgPool2d([1, 1])
-                self.conv1 = nn.Conv2d(cin, cin // 4, kernel_size=1, stride=1, padding=0)
-                self.conv2 = nn.Conv2d(cin // 4, cin, kernel_size=1, stride=1, padding=0)
+                mid_channels = make_divisible(num_channels * se_ratio)
+                self.squeeze = nn.Conv2d(num_channels, mid_channels, kernel_size=1, padding=0)
                 self.relu = nn.ReLU()
+                self.excite = nn.Conv2d(mid_channels, num_channels, kernel_size=1, padding=0)
                 self.hswish = nn.Hardswish()
 
-            def forward(self, inputs):
-                x = self.avgpool(inputs)
-                x = self.conv1(x)
+            def _scale(self, x):
+                x = x.mean(3, keepdim=True).mean(2, keepdim=True)
+                x = self.squeeze(x)
                 x = self.relu(x)
-                x = self.conv2(x)
+                x = self.excite(x)
                 x = self.hswish(x)
-                return x * inputs
-        return SE(self.input_shape)
+                return x
+
+            def forward(self, x):
+                scale = self._scale(x)
+                return scale * x
+        return SE(self.input_shape[0])
+
 
 class FC(BaseOperator):
     def get_model(self):
