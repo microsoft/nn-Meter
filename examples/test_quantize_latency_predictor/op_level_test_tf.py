@@ -11,17 +11,18 @@ from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import ge
 
 from nas_models.blocks.tf.mobilenetv3_block import HSigmoid
 from nas_models.common import make_divisible
+from op_code_tf import SE_NNMETER, SE_OFA, SE_xudong, HSwish_NNMETER, HSwish_OFA, HSwishBlock_xudong
 
 workspace = "/data1/jiahang/working/pixel4_mobilenetv3_workspace"
 builder_config.init(workspace)
-backend = connect_backend(backend_name='tflite_cpu')
-
+backend_name='tflite_cpu_int8'
+backend = connect_backend(backend_name)
 
 output_path = "/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor"
 output_name = os.path.join(output_path, "MobilenetV3_test")
 predictor_name = "tflite27_cpu_int8"
 # predictor_name = "cortexA76cpu_tflite21"
-predictor = load_latency_predictor(predictor_name)
+# predictor = load_latency_predictor(predictor_name)
 
 
 def profile_and_predict(model, input_shape, name="se"):
@@ -44,84 +45,16 @@ def profile_model(model, input_shape):
     # print("\n")
     # print(model)
     model(get_inputs_by_shapes([[*input_shape]]))
+    # import pdb; pdb.set_trace()
     tf.keras.models.save_model(model, output_name)
-
-    res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]])
+    if backend_name == 'tflite_cpu_int8':
+        res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]])
+    else:
+        res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]],
+                                     close_xnnpack=True)
 
     return res["latency"].avg
 
-
-class HSwish_NNMETER(tf.keras.Model):
-    
-    def __init__(self):
-        super().__init__()
-
-    def call(self, x):
-        return tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
-
-
-class HSwish_OFA(tf.keras.Model):
-    
-    def __init__(self):
-        super().__init__()
-        self.relu6 = layers.ReLU(6)
-
-    def call(self, x):
-        return x * self.relu6(x + 3.) * (1. / 6.)
-
-
-class SE_OFA(tf.keras.Model):
-
-    def __init__(self, num_channels, se_ratio=0.25):
-        super().__init__()
-        self.pool = layers.GlobalAveragePooling2D()
-        self.squeeze = layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
-        self.relu = layers.ReLU()
-        self.excite = layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
-        self.hsigmoid = HSigmoid()
-
-    def call(self, x):
-        x0 = x
-        x = self.pool(x)
-        x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
-        x = self.squeeze(x)
-        x = self.relu(x)
-        x = self.excite(x)
-        x = self.hsigmoid(x)
-        return x * x0
-    
-
-class SE_NNMETER(tf.keras.Model):
-    def __init__(self, cin, hw):
-        super().__init__()
-        self.cin = cin
-        self.hw = hw
-        self.conv1 = tf.keras.layers.Conv2D(
-            filters=cin // 4,
-            kernel_size=[1, 1],
-            strides=[1, 1],
-            padding="same",
-        )
-        self.conv2 = tf.keras.layers.Conv2D(
-            filters=cin,
-            kernel_size=[1, 1],
-            strides=[1, 1],
-            padding="same",
-        )
-
-    def call(self, inputs):
-        # hw = inputs.shape[1]
-        x = tf.nn.avg_pool(
-            inputs,
-            ksize=[1, self.hw, self.hw, 1],
-            strides=[1, 1, 1, 1],
-            padding="VALID",
-        )
-        x = self.conv1(x)
-        x = tf.nn.relu(x)
-        x = self.conv2(x)
-        x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
-        return x * inputs
 
 def compare_op_hswish():
     configs = [
@@ -255,10 +188,17 @@ def op_level_test_conv(predictor_name):
     ]
     # for i, config in enumerate(configs):
     # for i, cout in enumerate(range(600, 681)):
-    for i, ks in enumerate([1, 3, 5, 7]):
+    # for i, ks in enumerate([1, 3, 5, 7]):
+    for i, c in enumerate([16, 32, 48, 64, 96, 128, 160, 240, 320, 480, 560]):
         # hwin, cin, cout, k, strides = config
-        # hwin, cin, cout, k, strides = 56, 640, cout, 1, 1
-        hwin, cin, cout, k, strides = 14, 320, 320, ks, 1
+        
+        # hwin, cin, cout, k, strides = 28, 640, cout, 3, 1
+        
+        # hwin, cin, cout, k, strides = 14, 320, 320, ks, 1
+        # hwin, cin, cout, k, strides = 56, 32, 32, ks, 1
+        # hwin, cin, cout, k, strides = 56, 96, 96, ks, 1
+        
+        hwin, cin, cout, k, strides = 56, c, c, 1, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -276,11 +216,17 @@ def op_level_test_conv(predictor_name):
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     # for item in zip(reals, preds):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f'{item}\n')
+    
     # for cin, res in zip(range(600, 681), reals):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
-    for ks, res in zip([1, 3, 5, 7], reals):
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"ks: {ks}; profiled results: {res}\n")
-    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
+    
+    # # for ks, res in zip([1, 3, 5, 7], reals):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"ks: {ks}; profiled results: {res}\n")
+    
+    for c, res in zip([16, 32, 48, 64, 96, 128, 160, 240, 320, 480, 560], reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"{c}, {res}\n")
+    
+    # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_conv.txt", "a").write(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
     
 
 def op_level_test_dwconv(predictor_name):
@@ -315,8 +261,10 @@ def op_level_test_dwconv(predictor_name):
     # for i, cin in enumerate(range(600, 681)):
     for i, ks in enumerate([1, 3, 5, 7]):
         # hwin, cin, k, strides = config
-        # hwin, cin, k, strides = 112, cin, 3, 1
-        hwin, cin, k, strides = 56, 32, ks, 1
+        # hwin, cin, k, strides = 28, cin, 3, 1
+        # hwin, cin, k, strides = 14, 320, ks, 1
+        # hwin, cin, k, strides = 56, 32, ks, 1
+        hwin, cin, k, strides = 56, 96, ks, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -324,10 +272,10 @@ def op_level_test_dwconv(predictor_name):
             "KERNEL_SIZE": k,
             "STRIDES": strides
         }
-        # input_shape = [hwin, hwin, cin]
-        # model = DwConvBnRelu(config_in).get_model()
-        # real = profile_model(model, input_shape)
-        real = real_latency[i]
+        input_shape = [hwin, hwin, cin]
+        model = DwConvBnRelu(config_in).get_model()
+        real = profile_model(model, input_shape)
+        # real = real_latency[i]
         pred = predictor.predict([get_feature("dwconv-bn-relu", config_in)])[0]
         reals.append(real)
         preds.append(pred)
@@ -399,41 +347,58 @@ def op_level_test_se(predictor_name):
                     0.186018, 0.0807595, 0.0745344, 0.074871, 0.051839199999999995, 0.0515206, 0.13823
     ]
     assert len(configs) == len(real_latency)
-    for i, config in enumerate(configs):
-    # for cin in range(600, 681):
-        hwin, cin = config
-        # hwin, cin = 14, cin
+    # for i, config in enumerate(configs):
+    for cin in range(600, 681):
+        # hwin, cin = config
+        hwin, cin = 14, cin
         config_in = {
             "HW": hwin,
             "CIN": cin
         }
-        # input_shape = [hwin, hwin, cin]
-        # model = SEBlock(config_in).get_model()
-        # real = profile_model(model, input_shape)
-        real = real_latency[i]
+        input_shape = [hwin, hwin, cin]
+        # model = SE_xudong(cin)
+        model = SEBlock(config_in).get_model()
+        real = profile_model(model, input_shape)
+        # real = real_latency[i]
+        # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"cin: {cin}; {real}, {real_fp32}\n")
         pred = predictor.predict([get_feature("se", config_in)])[0]
         reals.append(real)
         preds.append(pred)
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    # for cin, res in zip(range(600, 681), reals):
-    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
-    for item in zip(reals, preds):
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f'{item}\n')
+    for cin, res in zip(range(600, 681), reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    # for item in zip(reals, preds):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f'{item}\n')
     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
 
+
+def op_level_test_mobilenetv3_large():
+    from tf_keras_mobilenetv3 import MobileNetV3Large
+    
+    # from tensorflow.keras.applications import MobileNetV3Large
+    model = MobileNetV3Large(input_shape=(224, 224, 3), weights=None)
+    input_shape = [224, 224, 3]
+    real = profile_model(model, input_shape)
+    print(real)
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_mobilenetv3large.txt", "a").write(f"{real}\n")
+
+    # model = tf.keras.applications.MobilenetV3Large()
+    
+    
+    
 if __name__ == '__main__':
     
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_original.pkl")
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa.pkl")
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
-    # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_filt8.pkl")
+    op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_filt8.pkl")
     
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_original.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_filt8.pkl")
-    op_level_test_dwconv('/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained_filt8.pkl')
+    # op_level_test_dwconv('/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained_filt8.pkl')
     
     # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_prior.pkl")
     # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
@@ -444,3 +409,5 @@ if __name__ == '__main__':
     # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
     # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
     # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_filt8.pkl")
+    
+    # op_level_test_mobilenetv3_large()
