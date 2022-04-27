@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.quantization import fuse_modules
 
-from .mobilenetv3_block import SE, MBConv, FirstConv, Logits, FeatureMix, FinalExpand
+from .mobilenetv3_block import SE_for_run as SE, MBConv, FirstConv, Logits, FeatureMix, FinalExpand
 
 
 class QSE(SE):

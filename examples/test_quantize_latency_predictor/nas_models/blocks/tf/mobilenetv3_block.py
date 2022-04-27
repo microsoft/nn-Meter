@@ -52,7 +52,7 @@ class SE(tf.keras.Model):
         self.squeeze = layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
         self.relu = layers.ReLU()
         self.excite = layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
-        self.hsigmoid = HSigmoid()
+        self.hswish = HSwish()
 
     def call(self, x):
         x0 = x
@@ -61,7 +61,7 @@ class SE(tf.keras.Model):
         x = self.squeeze(x)
         x = self.relu(x)
         x = self.excite(x)
-        x = self.hsigmoid(x)
+        x = self.hswish(x)
         return x * x0
 
 # # implementation in nn-meter
