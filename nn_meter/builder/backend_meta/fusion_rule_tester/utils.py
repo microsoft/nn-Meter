@@ -30,7 +30,8 @@ __BUILTIN_OPERATORS__ = {
     "flatten": "Flatten",
     "split": "Split",
     "mhpe": "MultiHeadPositionalEmbedding",
-    "dropout": "Dropout"
+    "dropout": "Dropout",
+    "matmul": "Matmul"
 }
 
 __user_config_folder__ = os.path.expanduser('~/.nn_meter/config')
@@ -76,15 +77,15 @@ def generate_model_for_testcase(op1, op2, input_shape, config):
 
     op1_model = SingleOpModel(layer1)
     op1_shapes = [input_shape] * (1 + op1_is_two_inputs)
-    op1_model(get_inputs_by_shapes(op1_shapes))
+    op1_model(get_inputs_by_shapes(op1_shapes, batch_size=config["BATCH_SIZE"]))
 
     op2_model = SingleOpModel(layer2)
     op2_shapes = [op1_output_shape] * (1 + op2_is_two_inputs)
-    op2_model(get_inputs_by_shapes(op2_shapes))
+    op2_model(get_inputs_by_shapes(op2_shapes, batch_size=config["BATCH_SIZE"]))
 
     block_model = TwoOpModel(layer1, layer2, op1_is_two_inputs, op2_is_two_inputs)
     block_shapes = [input_shape] * (1 + op1_is_two_inputs) + [op1_output_shape] * op2_is_two_inputs
-    block_model(get_inputs_by_shapes(block_shapes))
+    block_model(get_inputs_by_shapes(block_shapes, batch_size=config["BATCH_SIZE"]))
 
     return op1_model, op2_model, block_model, op1_shapes, op2_shapes, block_shapes
 
