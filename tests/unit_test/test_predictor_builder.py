@@ -9,7 +9,7 @@ builder_config.init("/path/to/workspace/") # initialize builder config with work
 
 # build latency predictor for kernel
 from nn_meter.builder import build_predictor_for_kernel
-kernel_type = "conv_bn_relu"
+kernel_type = "conv-bn-relu"
 backend = "tflite_cpu"
 
 predictor, data = build_predictor_for_kernel(

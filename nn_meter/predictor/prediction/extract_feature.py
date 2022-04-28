@@ -51,6 +51,7 @@ def get_predict_features(config):
             inputh = item["inputh"]
         if op in ["channelshuffle", "split"]:
             [b, inputh, inputw, cin] = item["input_tensors"][0]
+
         if "conv" in op:
             flops, params = get_flops_params(op, inputh, cin, cout, ks, s)
             features = [inputh, cin, cout, ks, s, flops / 2e6, params / 1e6]
@@ -62,7 +63,7 @@ def get_predict_features(config):
         elif "pool" in op and "global" not in op:
             features = [inputh, cin, cout, ks, s]
         elif "global-pool" in op or "global-avgpool" in op or "gap" in op:
-            inputh = 1
+            inputh = item["inputh"] if hasattr(item, "inputh") else 1
             cin = item["cin"]
             features = [inputh, cin]
         elif "channelshuffle" in op:
@@ -90,7 +91,10 @@ def get_predict_features(config):
             if "inputh" in item:
                 inputh = item["inputh"]
             else:
-                inputh = item["input_tensors"][0][1]
+                if len(item["input_tensors"][0]) == 2:
+                    inputh = item["input_tensors"][0][0]
+                else:
+                    inputh = item["input_tensors"][0][1]
             cin = item["cin"]
             features = [inputh, cin]
         elif op in ["bn", "relu", "bn-relu"]:

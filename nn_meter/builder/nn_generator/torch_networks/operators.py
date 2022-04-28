@@ -108,8 +108,8 @@ class SE(BaseOperator):
                 super().__init__()
                 cin = input_shape[0]
                 self.avgpool = nn.AdaptiveAvgPool2d([1, 1])
-                self.conv1 = nn.Conv2d(cin, cin // 4, kernel_size=1, stride=1, padding='same')
-                self.conv2 = nn.Conv2d(cin // 4, cin, kernel_size=1, stride=1, padding='same')
+                self.conv1 = nn.Conv2d(cin, cin // 4, kernel_size=1, stride=1, padding=0)
+                self.conv2 = nn.Conv2d(cin // 4, cin, kernel_size=1, stride=1, padding=0)
                 self.relu = nn.ReLU()
                 self.hswish = nn.Hardswish()
 
@@ -174,7 +174,7 @@ class Reshape(BaseOperator):
 class Add(BaseOperator):
     def get_model(self):
         def func(inputs):
-            return torch.add(inputs, inputs)
+            return torch.add(inputs[0], inputs[1])
         return func
 
     def get_output_shape(self):

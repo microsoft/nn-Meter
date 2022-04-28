@@ -94,7 +94,7 @@ def finegrained_sampling_pooling(cfgs, count):
                 'HW': cfg['HW'],
                 'CIN': cin,
                 'KERNEL_SIZE': cfg['KERNEL_SIZE'],
-                'STRIDES': cfg['STRIDES'],
+                'STRIDES': cfg['POOL_STRIDES'],
             }
             ncfgs.append(c)
     return ncfgs
@@ -116,8 +116,8 @@ def finegrained_sampling_hw_cin(cfgs, count):
     return ncfgs
 
 
-def finegrained_sampling_hw_cin_odd(cfgs, count):
-    ''' sampling configs for kernels with hw and cin (only odd values) parameter, in case for split / se / channelshuffle
+def finegrained_sampling_hw_cin_even(cfgs, count):
+    ''' sampling configs for kernels with hw and cin (only even values) parameter, in case for split / se / channelshuffle
     Returned params include: (hw, cin)
     '''
     ncfgs = []

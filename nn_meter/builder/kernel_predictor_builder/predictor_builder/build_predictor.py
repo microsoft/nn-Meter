@@ -6,7 +6,7 @@ import logging
 from sklearn.model_selection import train_test_split
 from .utils import latency_metrics
 from .predictor_lib import init_predictor
-from .extract_features import get_feature_parser, get_data_by_profiled_results
+from .extract_feature import get_feature_parser, get_data_by_profiled_results
 logging = logging.getLogger("nn-Meter")
 
 
@@ -32,7 +32,11 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     predict_label (str): the predicting label to build kernel predictor
     """
     feature_parser = get_feature_parser(kernel_type)
-    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data, save_path=os.path.join(save_path, f'Data_{kernel_type}_{mark}.csv'), predict_label=predict_label)
+    os.makedirs(os.path.join(save_path, "collection"), exist_ok=True)
+    os.makedirs(os.path.join(save_path, "predictors"), exist_ok=True)
+    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
+                                        save_path=os.path.join(save_path, "collection", f'Data_{kernel_type}_{mark}.csv'),
+                                        predict_label=predict_label)
 
     # get data for regression
     X, Y = data
@@ -54,15 +58,16 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     test_res["True"] = testy
     test_res["Pred"] = predicts
     test_res["Error"] = pred_error_list
-    test_res.to_csv(os.path.join(save_path, f"TestResult_{kernel_type}_{mark}.csv"), index=False)
-    logging.info(f"All test data and predicted results are stored in path {os.path.join(save_path, f'TestResult_{kernel_type}_{mark}.csv')}")
+    res_save_path = os.path.join(save_path, "collection", f"TestResult_{kernel_type}_{mark}.csv")
+    test_res.to_csv(res_save_path, index=False)
+    logging.info(f"All test data and predicted results are stored in path {res_save_path}")
     
     # dump the predictor model
     import pickle
-    save_path = os.path.join(save_path, f"Predictor_{kernel_type}_{mark}.pkl")
-    with open(save_path, 'wb') as fp:
+    pred_save_path = os.path.join(save_path, "predictors", f"{kernel_type}_{mark}.pkl")
+    with open(pred_save_path, 'wb') as fp:
         pickle.dump(predictor, fp)
-    logging.keyinfo(f"Saved the predictor for {kernel_type} in path {save_path}.")
+    logging.keyinfo(f"Saved the predictor for {kernel_type} in path {pred_save_path}.")
 
     # locate large error data
     error_configs = []

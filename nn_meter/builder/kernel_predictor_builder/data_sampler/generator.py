@@ -6,7 +6,7 @@ import random
 import string
 import logging
 from nn_meter.builder import builder_config
-from nn_meter.builder.utils import merge_prev_info
+from nn_meter.builder.utils import merge_info
 from .utils import get_sampler_for_kernel, generate_model_for_kernel
 logging = logging.getLogger("nn-Meter")
 
@@ -15,8 +15,8 @@ class KernelGenerator:
     def __init__(self, kernel_type, sample_num, mark = ""):
         self.kernel_type = kernel_type
         self.sample_num = sample_num
-        self.ws_path = builder_config.get('MODEL_DIR', 'predbuild')
-        self.case_save_path = os.path.join(self.ws_path, 'models')
+        self.workspace_path = builder_config.get('WORKSPACE', 'predbuild')
+        self.case_save_path = os.path.join(self.workspace_path, 'models')
         self.kernel_info = {kernel_type: {}}
         self.kernels = self.kernel_info[self.kernel_type]
         self.implement = builder_config.get('IMPLEMENT', 'predbuild')
@@ -90,9 +90,9 @@ def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = '
     kernels_info = generator.run(sampling_mode=sampling_mode, configs=configs)
 
     # save information to json file in incrementally mode
-    ws_mode_path = builder_config.get('MODEL_DIR', "predbuild")
-    info_save_path = os.path.join(ws_mode_path, "results", f"{kernel_type}_{mark}.json")
-    new_kernels_info = merge_prev_info(new_info=kernels_info, info_save_path=info_save_path)
+    workspace_path = builder_config.get('WORKSPACE', "predbuild")
+    info_save_path = os.path.join(workspace_path, "results", f"{kernel_type}_{mark}.json")
+    new_kernels_info = merge_info(new_info=kernels_info, info_save_path=info_save_path)
     os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
     with open(info_save_path, 'w') as fp:
         json.dump(new_kernels_info, fp, indent=4)

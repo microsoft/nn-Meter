@@ -41,7 +41,7 @@ class PoolingSampler(BaseConfigSampler):
         return sampling_pooling(sample_num)
 
     def finegrained_config_sampling(self, configs, sample_num):
-        return finegrained_sampling_pooling(sample_num, fix_ks=3, fix_stride=1)
+        return finegrained_sampling_pooling(configs, sample_num)
 
 
 class FCSampler(BaseConfigSampler):
@@ -63,13 +63,13 @@ class ConcatSampler(BaseConfigSampler):
         return finegrained_sampling_concats(configs, sample_num)
 
 
-class CinOddSampler(BaseConfigSampler):
+class CinEvenSampler(BaseConfigSampler):
 
     def prior_config_sampling(self, sample_num):
-        return sampling_hw_cin_odd(sample_num)
+        return sampling_hw_cin_even(sample_num)
 
     def finegrained_config_sampling(self, configs, sample_num):
-        return finegrained_sampling_hw_cin_odd(configs, sample_num)
+        return finegrained_sampling_hw_cin_even(configs, sample_num)
 
 
 class GlobalAvgPoolSampler(BaseConfigSampler):
