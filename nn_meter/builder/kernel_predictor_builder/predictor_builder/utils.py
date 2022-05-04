@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from sklearn.metrics import mean_squared_error
 
@@ -64,6 +65,8 @@ def collect_kernel_data(kernel_data, predict_label):
 def collect_data(file_list):
     from ...utils import merge_info
     data = file_list.pop(0)
+    with open(data, 'r') as fp:
+        data = json.load(fp)
     for file in file_list:
         data = merge_info(new_info=file, prev_info=data)
     return data
