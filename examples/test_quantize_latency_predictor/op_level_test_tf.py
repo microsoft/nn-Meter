@@ -15,7 +15,7 @@ from op_code_tf import SE_NNMETER, SE_OFA, SE_xudong, HSwish_NNMETER, HSwish_OFA
 
 workspace = "/data1/jiahang/working/pixel4_mobilenetv3_workspace"
 builder_config.init(workspace)
-backend_name='tflite_cpu_int8'
+backend_name='tflite_cpu'
 backend = connect_backend(backend_name)
 
 output_path = "/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor"
@@ -257,14 +257,14 @@ def op_level_test_dwconv(predictor_name):
                     1.25432, 0.264163, 0.0251118, 0.0358999, 1.79139, 1.13197, 2.25581, 3.38345]
     assert len(configs) == len(real_latency)
 
-    # for i, config in enumerate(configs):
+    for i, config in enumerate(configs):
     # for i, cin in enumerate(range(600, 681)):
-    for i, ks in enumerate([1, 3, 5, 7]):
-        # hwin, cin, k, strides = config
+    # for i, ks in enumerate([1, 3, 5, 7]):
+        hwin, cin, k, strides = config
         # hwin, cin, k, strides = 28, cin, 3, 1
         # hwin, cin, k, strides = 14, 320, ks, 1
         # hwin, cin, k, strides = 56, 32, ks, 1
-        hwin, cin, k, strides = 56, 96, ks, 1
+        # hwin, cin, k, strides = 56, 96, ks, 1
         config_in = {
             "HW": hwin,
             "CIN": cin,
@@ -279,32 +279,33 @@ def op_level_test_dwconv(predictor_name):
         pred = predictor.predict([get_feature("dwconv-bn-relu", config_in)])[0]
         reals.append(real)
         preds.append(pred)
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"{real}, {pred}\n")
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     # for cin, res in zip(range(600, 681), reals):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
     # for item in zip(reals, preds):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f'{item}\n')
-    for ks, res in zip([1, 3, 5, 7], reals):
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"ks: {ks}; profiled results: {res}\n")
+    # for ks, res in zip([1, 3, 5, 7], reals):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"ks: {ks}; profiled results: {res}\n")
     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
 
 
 def op_level_test_hswish(predictor_name):
     with open(predictor_name, "rb") as f:
         predictor = pickle.load(f)
-
+    from nn_meter.builder.nn_generator.tf_networks.blocks import HswishBlock
     reals, preds = [], []
     configs = [
-        [112, 16], [28, 120], [14, 120], [14, 480], [14, 480], [14, 240], [14, 240], [14, 320],
-        [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
-        [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960], [1, 1280],
+        [112, 16], [28, 120], [14, 120], [14, 480], [14, 480], [14, 240], [14, 320],
+        [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
+        [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960], [1, 1280]
     ]
-    real_latency = [0.128782, 0.0591809, 0.015116300000000001, 0.0602787, 0.0594359, 0.030281600000000002,
-                    0.0294835, 0.0393665, 0.0397524, 0.0826915, 0.0845971, 0.0551774, 0.0550148, 0.0414161,
-                    0.0412727, 0.08282500000000001, 0.0209465, 0.019829, 0.019747499999999998, 0.014869199999999999,
-                    0.014901999999999999, 0.0295921, 0.000959823]
-    assert len(configs) == len(real_latency)
+    # real_latency = [0.128782, 0.0591809, 0.015116300000000001, 0.0602787, 0.0594359, 0.030281600000000002,
+    #                 0.0294835, 0.0393665, 0.0397524, 0.0826915, 0.0845971, 0.0551774, 0.0550148, 0.0414161,
+    #                 0.0412727, 0.08282500000000001, 0.0209465, 0.019829, 0.019747499999999998, 0.014869199999999999,
+    #                 0.014901999999999999, 0.0295921, 0.000959823]
+    # assert len(configs) == len(real_latency)
 
     for i, config in enumerate(configs):
     # for i, cin in enumerate(range(600, 681)):
@@ -314,21 +315,36 @@ def op_level_test_hswish(predictor_name):
             "HW": hwin,
             "CIN": cin
         }
-        # input_shape = [hwin, hwin, cin]
-        # model = HSwish_OFA()
-        # real = profile_model(model, input_shape)
-        real = real_latency[i]
+        input_shape = [hwin, hwin, cin]
+        model = HswishBlock(config_in).get_model()
+        real = profile_model(model, input_shape)
+        # real = real_latency[i]
         pred = predictor.predict([get_feature("hswish", config_in)])[0]
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f'{hwin}, {cin}, {real}, {pred}\n')
         reals.append(real)
         preds.append(pred)
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     # for cin, res in zip(range(600, 681), reals):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
-    for item in zip(reals, preds):
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f'{item}\n')
+    # for item in zip(reals, preds):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f'{item}\n')
     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
 
+def test_profile_hswish():
+    hwin, cin = 96, 1984
+    config_in = {
+        "HW": hwin,
+        "CIN": cin
+    }
+    input_shape = [hwin, hwin, cin]
+    model = HswishBlock(config_in).get_model()
+    model(get_inputs_by_shapes([[*input_shape]]))
+    tf.keras.models.save_model(model, output_name)
+
+    res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]])
+    print(res["latency"].avg)
+ 
 
 def op_level_test_se(predictor_name):
     with open(predictor_name, "rb") as f:
@@ -341,16 +357,16 @@ def op_level_test_se(predictor_name):
         [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
         [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960]
     ]
-    real_latency = [0.105464, 0.142179, 0.083235, 0.186923, 0.119378, 0.0866421, 0.0801339, 0.0744534, 0.051884900000000005,
-                    0.276539, 0.151357, 0.039004800000000006, 0.127612, 0.127489, 0.061883400000000005, 0.0606852, 0.0819179,
-                    0.0816348, 0.18641999999999997, 0.18621100000000002, 0.118002, 0.117377, 0.08627889999999999, 0.0866098,
-                    0.186018, 0.0807595, 0.0745344, 0.074871, 0.051839199999999995, 0.0515206, 0.13823
-    ]
-    assert len(configs) == len(real_latency)
-    # for i, config in enumerate(configs):
-    for cin in range(600, 681):
-        # hwin, cin = config
-        hwin, cin = 14, cin
+    # real_latency = [0.105464, 0.142179, 0.083235, 0.186923, 0.119378, 0.0866421, 0.0801339, 0.0744534, 0.051884900000000005,
+    #                 0.276539, 0.151357, 0.039004800000000006, 0.127612, 0.127489, 0.061883400000000005, 0.0606852, 0.0819179,
+    #                 0.0816348, 0.18641999999999997, 0.18621100000000002, 0.118002, 0.117377, 0.08627889999999999, 0.0866098,
+    #                 0.186018, 0.0807595, 0.0745344, 0.074871, 0.051839199999999995, 0.0515206, 0.13823
+    # ]
+    # assert len(configs) == len(real_latency)
+    for i, config in enumerate(configs):
+    # for cin in range(600, 681):
+        hwin, cin = config
+        # hwin, cin = 14, cin
         config_in = {
             "HW": hwin,
             "CIN": cin
@@ -360,14 +376,14 @@ def op_level_test_se(predictor_name):
         model = SEBlock(config_in).get_model()
         real = profile_model(model, input_shape)
         # real = real_latency[i]
-        # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"cin: {cin}; {real}, {real_fp32}\n")
         pred = predictor.predict([get_feature("se", config_in)])[0]
         reals.append(real)
         preds.append(pred)
-            
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"{real}, {pred}\n")
+
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    for cin, res in zip(range(600, 681), reals):
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    # for cin, res in zip(range(600, 681), reals):
+    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
     # for item in zip(reals, preds):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f'{item}\n')
     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
@@ -385,6 +401,71 @@ def op_level_test_mobilenetv3_large():
 
     # model = tf.keras.applications.MobilenetV3Large()
     
+
+def op_level_test_cascade_mbv1():
+    from op_code_tf import res_block, seq_block
+    i = 3
+    configs = [
+        # 112x112x16->56x56x32
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 32, i, 1, 32, 32, i, 2]],
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 16, i, 1, 16, 32, i, 2]],
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 32, i, 2, 32, 32, i, 1]],
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 16, i, 2, 16, 32, i, 1]],
+
+        # 56x56x32->56x56x32
+        ['56x56x32->56x56x32', 'res_connected', 'ks{i}', [56, 32, 32, i, 1]],
+        ['56x56x32->56x56x32', 'sequential', 'ks{i}', [56, 32, 32, i, 1, 32, 32, i, 1]],
+        
+        # 56x56x32->28x28x64
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 64, i, 1, 64, 64, i, 2]],
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 32, i, 1, 32, 64, i, 2]],
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 64, i, 2, 64, 64, i, 1]],
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 32, i, 2, 32, 64, i, 1]],
+
+        # 28x28x64->28x28x64
+        ['28x28x64->28x28x64', 'res_connected', 'ks{i}', [28, 64, 64, i, 1]],
+        ['28x28x64->28x28x64', 'sequential', 'ks{i}', [28, 64, 64, i, 1, 64, 64, i, 1]],
+        
+        # 28x28x64->14x14x128
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 64, i, 1, 64, 128, i, 2]],
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 128, i, 1, 128, 128, i, 2]],
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 64, i, 2, 64, 128, i, 1]],
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 128, i, 2, 128, 128, i, 1]],
+
+        # 14x14x128->14x14x128
+        ['14x14x128->14x14x128', 'res_connected', 'ks{i}', [14, 128, 128, i, 1]],
+        ['14x14x128->14x14x128', 'sequential', 'ks{i}', [14, 128, 128, i, 1, 128, 128, i, 1]],
+        
+        # 14x14x128->7x7x256
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 128, i, 1, 128, 256, i, 2]],
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 256, i, 1, 256, 256, i, 2]],
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 128, i, 2, 128, 256, i, 1]],
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 256, i, 2, 256, 256, i, 1]],
+
+        # 7x7x256->7x7x256
+        ['7x7x256->7x7x256', 'res_connected', 'ks{i}', [7, 256, 256, i, 1]],
+        ['7x7x256->7x7x256', 'sequential', 'ks{i}', [7, 256, 256, i, 1, 256, 256, i, 1]],
+        
+    ]    
+    
+    for i, config in enumerate(configs):
+        name, block, ks, param = config
+        if block == 'res_connected':
+            for ks_v in [3, 5]:
+                hwin, cin, cout, ks, s = param
+                input_shape = [hwin, hwin, cin]
+                model = res_block(hwin, cin, cout, ks_v, s)
+                real = profile_model(model, input_shape)
+                open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_mbv1.txt", "a").write(f'{backend_name}, {name}, {block}, ks{ks_v}, cin_{cin}_cout_{cout}, {real}\n')
+        else:
+            for ks_v in [3, 5]:
+                hwin, cin1, cout1, ks1, s1, cin2, cout2, ks2, s2 = param
+                
+                input_shape = [hwin, hwin, cin1]
+                model = seq_block(hwin, cin1, cout1, ks_v, s1, cin2, cout2, ks_v, s2)
+                real = profile_model(model, input_shape)
+                open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_mbv1.txt", "a").write(f'{backend_name}, {name}, {block}, ks{ks_v}, cin1_{cin1}_cout1_{cout1}_s1_{s1}_cin2_{cin2}_cout2_{cout2}_s2_{s2}, {real}\n')
+        # break
     
     
 if __name__ == '__main__':
@@ -392,22 +473,19 @@ if __name__ == '__main__':
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_original.pkl")
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa.pkl")
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
-    op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_filt8.pkl")
+    # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_filt8.pkl")
     
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_original.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_filt8.pkl")
-    # op_level_test_dwconv('/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained_filt8.pkl')
+    # op_level_test_dwconv('/data1/jiahang/working/pixel4_mobilenetv3_workspace/predictor/dwconv-bn-relu.pkl')
     
-    # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_prior.pkl")
-    # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
-    # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
-    # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_ofa_filt8.pkl")
-
-    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_prior.pkl")
-    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
-    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
+    # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_fg1_filt8.pkl")
+    # test_profile_hswish()
+    
     # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_filt8.pkl")
     
     # op_level_test_mobilenetv3_large()
+    
+    op_level_test_cascade_mbv1()

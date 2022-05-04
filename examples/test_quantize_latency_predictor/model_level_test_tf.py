@@ -256,4 +256,6 @@ def model_level_test_mobilenetv3():
 
 
 if __name__ == '__main__':
-    model_level_test_mobilenetv3()
+    # model_level_test_mobilenetv3()
+    sample_str = "ks33575373355333733735_e36436643443366644444_d34224"
+    get_model_result(sample_str)

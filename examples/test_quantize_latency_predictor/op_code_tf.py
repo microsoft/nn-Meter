@@ -108,3 +108,40 @@ class SE_NNMETER(tf.keras.Model):
         x = self.conv2(x)
         x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
         return x * inputs
+
+
+
+
+
+# test cascade of two mobilenetv1 blocks
+import sys
+
+from nas_models.blocks.tf.mobilenetv3_block import MBConv
+# MBConv(hwin=56, cin=32, cout=32, kernel_size=5, expand_ratio=1, strides=1, act='relu', se=None, name='mbconv')
+
+def seq_block(hw, cin1, cout1, ks1, s1, cin2, cout2, ks2, s2):
+    hw2 = hw // s1
+    class SeqBlock(tf.keras.Model):
+        def __init__(self):
+            super().__init__()
+            self.mb1 = MBConv(hw, cin1, cout1, kernel_size=ks1, expand_ratio=1, strides=s1, act='relu', se=False, name='mbconv')
+            self.mb2 = MBConv(hw2, cin2, cout2, kernel_size=ks2, expand_ratio=1, strides=s2, act='relu', se=False, name='mbconv')
+        def call(self, inputs):
+            x = self.mb1(inputs)
+            x = self.mb2(x)
+            return x
+    return SeqBlock()
+    
+def res_block(hw, cin, cout, ks, s):
+    class ResBlock(tf.keras.Model):
+        def __init__(self):
+            super().__init__()
+            self.mb1 = MBConv(hw, cin, cout, ks, expand_ratio=1, strides=s, act='relu', se=False, name='mbconv')
+            self.mb2 = MBConv(hw, cin, cout, ks, expand_ratio=1, strides=s, act='relu', se=False, name='mbconv')
+            
+        def call(self, inputs):
+            x = self.mb1(inputs)
+            x = self.mb2(x)
+            return inputs + x
+    return ResBlock()
+
