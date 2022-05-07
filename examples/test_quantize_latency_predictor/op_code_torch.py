@@ -37,3 +37,32 @@ class SE_xudong(nn.Module):
     def forward(self, x: torch.Tensor):
         scale = self._scale(x)
         return scale * x
+
+
+# test cascade of two mobilenetv1 blocks
+import sys
+import torch
+from torch import nn
+sys.path.append("/data/v-xudongwang/benchmark_tools/experiments/D0323_evolve_space")
+from modules.modeling.blocks.mobilenets_block import MobileNetV1Block
+
+def seq_block(cin1, cout1, ks1, s1, cin2, cout2, ks2, s2):
+    block = nn.Sequential(
+        MobileNetV1Block(cin1, cout1, ks1, s1),
+        MobileNetV1Block(cin2, cout2, ks2, s2)
+    )
+    return block
+    
+def res_block(cin, cout, ks, s):
+    class ResBlock(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.mb1 = MobileNetV1Block(cin, cout, ks, s)
+            self.mb2 = MobileNetV1Block(cin, cout, ks, s)
+            
+        def forward(self, inputs):
+            x = self.mb1(inputs)
+            x = self.mb2(x)
+            return inputs + x
+    return ResBlock()
+
