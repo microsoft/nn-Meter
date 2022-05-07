@@ -12,9 +12,9 @@ from nn_meter.builder.nn_generator.torch_networks.utils import get_inputs_by_sha
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
 from nas_models.networks.torch.mobilenetv3 import MobileNetV3Net
-from nas_models.blocks.torch.mobilenetv3_block import SE
+# from nas_models.blocks.torch.mobilenetv3_block import SE
 from nas_models.common import make_divisible
-from op_code_torch import SE_xudong, Hswish
+# from op_code_torch import SE_xudong, Hswish
 
 output_path = "/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor"
 output_name = os.path.join(output_path, "test.onnx")
@@ -23,9 +23,10 @@ workspace = "/sdc/jiahang/working/ort_mobilenetv3_workspace"
 builder_config.init(workspace)
 
 
-def profile_model(model, input_shape):
+def profile_model(model, input_shape, backend=None):
     # print("\n")
     # print(model)
+    # print(model(get_inputs_by_shapes([[*input_shape]], 1)).shape)
     torch.onnx.export(
             model,
             get_inputs_by_shapes([[*input_shape]], 1),
@@ -37,6 +38,7 @@ def profile_model(model, input_shape):
             opset_version=12,
             do_constant_folding=True,
         )
+    # exit()
     res = backend.profile_model_file(output_name, output_path, input_shape=[[*input_shape]])
  
     return res["latency"].avg
@@ -79,14 +81,14 @@ def op_level_test_conv(predictor_name):
         [14, 120, 80, 1, 1], [14, 320, 112, 1, 1], [14, 112, 336, 1, 1], [14, 336, 112, 1, 1], [7, 336, 160, 1, 1]
     ]
     
-    # configs in MobilenetV3Large
-    configs = [
-        [224, 3, 16, 3, 2], [112, 16, 16, 1, 1], [112, 16, 64, 1, 1], [56, 64, 24, 1, 1], [56, 24, 72, 1, 1], [56, 72, 24, 1, 1], [56, 24, 72, 1, 1],
-        [28, 72, 40, 1, 1], [28, 40, 120, 1, 1], [28, 120, 40, 1, 1], [28, 40, 120, 1, 1], [28, 120, 40, 1, 1], [28, 40, 240, 1, 1], [14, 240, 80, 1, 1], 
-        [14, 80, 200, 1, 1], [14, 200, 80, 1, 1], [14, 80, 184, 1, 1], [14, 184, 80, 1, 1], [14, 80, 184, 1, 1], [14, 184, 80, 1, 1], [14, 80, 480, 1, 1],
-        [14, 480, 112, 1, 1], [14, 112, 672, 1, 1], [14, 672, 112, 1, 1], [14, 112, 672, 1, 1], [7, 672, 160, 1, 1], [7, 160, 960, 1, 1], [7, 960, 160, 1, 1],
-        [7, 160, 960, 1, 1], [7, 960, 160, 1, 1], [7, 160, 960, 1, 1]
-    ]
+    # # configs in MobilenetV3Large
+    # configs = [
+    #     [224, 3, 16, 3, 2], [112, 16, 16, 1, 1], [112, 16, 64, 1, 1], [56, 64, 24, 1, 1], [56, 24, 72, 1, 1], [56, 72, 24, 1, 1], [56, 24, 72, 1, 1],
+    #     [28, 72, 40, 1, 1], [28, 40, 120, 1, 1], [28, 120, 40, 1, 1], [28, 40, 120, 1, 1], [28, 120, 40, 1, 1], [28, 40, 240, 1, 1], [14, 240, 80, 1, 1], 
+    #     [14, 80, 200, 1, 1], [14, 200, 80, 1, 1], [14, 80, 184, 1, 1], [14, 184, 80, 1, 1], [14, 80, 184, 1, 1], [14, 184, 80, 1, 1], [14, 80, 480, 1, 1],
+    #     [14, 480, 112, 1, 1], [14, 112, 672, 1, 1], [14, 672, 112, 1, 1], [14, 112, 672, 1, 1], [7, 672, 160, 1, 1], [7, 160, 960, 1, 1], [7, 960, 160, 1, 1],
+    #     [7, 160, 960, 1, 1], [7, 960, 160, 1, 1], [7, 160, 960, 1, 1]
+    # ]
     for i, config in enumerate(configs):
     # for i, cout in enumerate(range(600, 681)):
     # for i, ks in enumerate([1, 3, 5, 7]):
@@ -115,14 +117,14 @@ def op_level_test_conv(predictor_name):
         pred = predictor.predict([get_feature("conv-bn-relu", config_in)])[0]
         reals.append(real)
         preds.append(pred)
-        # print(config_in, real)
+        print(real, pred)
         # break
 
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     
-    print(backend_name, "Conv")
-    for item in zip(reals, preds):
-        print(item[0])
+    # print(backend_name, "Conv")
+    # for item in zip(reals, preds):
+    #     print(item[0])
     
     # for cin, res in zip(range(600, 681), reals):
     #     print(f"{cin}; {res}")
@@ -133,7 +135,28 @@ def op_level_test_conv(predictor_name):
     # for c, res in zip([16, 32, 48, 64, 96, 128, 160, 240, 320, 480, 560], reals):
     #     print(f"{c}, {res}")
     
-    # print(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+    print(f"[Conv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+
+
+def op_level_test_conv_group():
+    for i, ks in enumerate([1, 3, 5, 7]):
+        for group in [1, 16, 32, 64, 128, 640]:
+            # hwin, cin, cout, k, strides = 56, 96, 96, ks, 1
+            hwin, cin, cout, k, strides = 14, 640, 640, ks, 1
+            
+            config_in = {
+                "HW": hwin,
+                "CIN": cin,
+                "COUT": cout,
+                "KERNEL_SIZE": k,
+                "STRIDES": strides,
+                "GROUPS": group
+            }
+            # print(config_in)
+            input_shape = [cin, hwin, hwin]
+            model = ConvBnRelu(config_in).get_model()
+            real = profile_model(model, input_shape)
+            print(f'{ks}, {group}, {real}')
 
 
 def op_level_test_hswish(predictor_name):
@@ -156,12 +179,12 @@ def op_level_test_hswish(predictor_name):
         [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960], [1, 1280],
     ]
 
-    # configs in MobilenetV3Large
-    configs = [
-        [112, 16], [28, 240], [14, 240], [14, 200], [14, 200], [14, 184], [14, 184], [14, 184],
-        [14, 184], [14, 480], [14, 480], [14, 672], [14, 672], [14, 672], [7, 672], [7, 960], [7, 960],
-        [7, 960], [7, 960], [7, 960], [1, 1280]
-    ]
+    # # configs in MobilenetV3Large
+    # configs = [
+    #     [112, 16], [28, 240], [14, 240], [14, 200], [14, 200], [14, 184], [14, 184], [14, 184],
+    #     [14, 184], [14, 480], [14, 480], [14, 672], [14, 672], [14, 672], [7, 672], [7, 960], [7, 960],
+    #     [7, 960], [7, 960], [7, 960], [1, 1280]
+    # ]
     for i, config in enumerate(configs):
         hwin, cin = config
         config_in = {
@@ -174,13 +197,14 @@ def op_level_test_hswish(predictor_name):
         pred = predictor.predict([get_feature("hswish", config_in)])[0]
         reals.append(real)
         preds.append(pred)
+        print(real, pred)
         # break
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    print(backend_name, "Hswish")
-    for item in zip(reals, preds):
-        print(item[0])
-    # print(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+    # print(backend_name, "Hswish")
+    # for item in zip(reals, preds):
+    #     print(item[0])
+    print(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
 def op_level_test_dwconv(predictor_name):
@@ -202,16 +226,16 @@ def op_level_test_dwconv(predictor_name):
         [56, 144, 7, 2], [112, 96, 5, 2], [14, 448, 5, 2], [14, 336, 3, 1], [112, 64, 5, 2], [28, 240, 5, 2], [14, 336, 3, 2],
         [28, 120, 3, 2], [112, 48, 7, 2], [14, 672, 7, 1], [112, 64, 7, 2], [112, 96, 7, 2]
     ]
-    # configs in MobilenetV3Large
-    configs = [
-        [112, 16, 16, 3, 1], [112, 64, 64, 3, 2], [56, 72, 72, 3, 1], [56, 72, 72, 5, 2], [28, 120, 120, 5, 1], [28, 120, 120, 5, 1],
-        [28, 240, 240, 3, 2], [14, 200, 200, 3, 1], [14, 184, 184, 3, 1], [14, 184, 184, 3, 1], [14, 480, 480, 3, 1], [14, 672, 672, 3, 1],
-        [14, 672, 672, 5, 2], [7, 960, 960, 5, 1], [7, 960, 960, 5, 1]
-    ]
+    # # configs in MobilenetV3Large
+    # configs = [
+    #     [112, 16, 16, 3, 1], [112, 64, 64, 3, 2], [56, 72, 72, 3, 1], [56, 72, 72, 5, 2], [28, 120, 120, 5, 1], [28, 120, 120, 5, 1],
+    #     [28, 240, 240, 3, 2], [14, 200, 200, 3, 1], [14, 184, 184, 3, 1], [14, 184, 184, 3, 1], [14, 480, 480, 3, 1], [14, 672, 672, 3, 1],
+    #     [14, 672, 672, 5, 2], [7, 960, 960, 5, 1], [7, 960, 960, 5, 1]
+    # ]
     for i, config in enumerate(configs):
     # for i, cin in enumerate(range(600, 681)):
     # for i, ks in enumerate([1, 3, 5, 7]):
-        hwin, cin, cout, k, strides = config
+        hwin, cin, k, strides = config
         # hwin, cin, k, strides = 28, cin, 3, 1
         # hwin, cin, k, strides = 14, 320, ks, 1
         # hwin, cin, k, strides = 56, 32, ks, 1
@@ -229,22 +253,24 @@ def op_level_test_dwconv(predictor_name):
         pred = predictor.predict([get_feature("dwconv-bn-relu", config_in)])[0]
         reals.append(real)
         preds.append(pred)
+        print(real, pred)
         # break
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    print(backend_name, "Dwconv")
+    # print(backend_name, "Dwconv")
     # for cin, res in zip(range(600, 681), reals):
     #     print(f"{cin}; {res}")
-    for item in zip(reals, preds):
-        print(item[0])
+    # for item in zip(reals, preds):
+    #     print(item[0])
     # for ks, res in zip([1, 3, 5, 7], reals):
     #     print(f"{ks}; {res}")
-    # print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+    print(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
 
 def op_level_test_se(predictor_name):
-    from op_code_torch import SE_xudong
+    # from op_code_torch import SE_xudong
+    from nn_meter.builder.nn_generator.torch_networks.blocks import SEBlock
     with open(predictor_name, "rb") as f:
         predictor = pickle.load(f)
 
@@ -255,10 +281,10 @@ def op_level_test_se(predictor_name):
         [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
         [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960]
     ]
-    # configs in MobilenetV3Large
-    configs = [
-        [28, 72], [28, 120], [28, 120], [14, 480], [14, 672], [7, 672], [7, 960], [7, 960]
-    ]
+    # # configs in MobilenetV3Large
+    # configs = [
+    #     [28, 72], [28, 120], [28, 120], [14, 480], [14, 672], [7, 672], [7, 960], [7, 960]
+    # ]
     # for i, cin in enumerate(range(600, 681)):
     for i, config in enumerate(configs):
         # hwin, cin = 14, cin
@@ -268,7 +294,7 @@ def op_level_test_se(predictor_name):
             "CIN": cin
         }
         input_shape = [cin, hwin, hwin]
-        model = SE_xudong(cin)
+        model = SEBlock(config_in).get_model()
         real = profile_model(model, input_shape)
         pred = predictor.predict([get_feature("se", config_in)])[0]
         reals.append(real)
@@ -278,10 +304,10 @@ def op_level_test_se(predictor_name):
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     print(backend_name, "SE")
     for item in zip(reals, preds):
-        print(item[0])
+        print(item)
     # for cin, res in zip(range(600, 681), reals):
     #     print(f"{cin}; {res}")
-    # print(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
+    print(f"[SE] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
 
 def op_level_test_avgpool(predictor_name):
@@ -335,43 +361,109 @@ def op_level_test_mobilenetv3_large():
     # model = tf.keras.applications.MobilenetV3Large()
     
 
-if __name__ == '__main__':
+def op_level_test_cascade_mbv1():
+    from op_code_torch import res_block, seq_block
+    i = 3
+    configs = [
+        # 112x112x16->56x56x32
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 32, i, 1, 32, 32, i, 2]],
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 16, i, 1, 16, 32, i, 2]],
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 32, i, 2, 32, 32, i, 1]],
+        ['112x112x16->56x56x32', 'sequential', 'ks{i}', [112, 16, 16, i, 2, 16, 32, i, 1]],
+
+        # 56x56x32->56x56x32
+        ['56x56x32->56x56x32', 'res_connected', 'ks{i}', [56, 32, 32, i, 1]],
+        ['56x56x32->56x56x32', 'sequential', 'ks{i}', [56, 32, 32, i, 1, 32, 32, i, 1]],
+        
+        # 56x56x32->28x28x64
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 64, i, 1, 64, 64, i, 2]],
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 32, i, 1, 32, 64, i, 2]],
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 64, i, 2, 64, 64, i, 1]],
+        ['56x56x32->28x28x64', 'sequential', 'ks{i}', [56, 32, 32, i, 2, 32, 64, i, 1]],
+
+        # 28x28x64->28x28x64
+        ['28x28x64->28x28x64', 'res_connected', 'ks{i}', [28, 64, 64, i, 1]],
+        ['28x28x64->28x28x64', 'sequential', 'ks{i}', [28, 64, 64, i, 1, 64, 64, i, 1]],
+        
+        # 28x28x64->14x14x128
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 64, i, 1, 64, 128, i, 2]],
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 128, i, 1, 128, 128, i, 2]],
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 64, i, 2, 64, 128, i, 1]],
+        ['28x28x64->14x14x128', 'sequential', 'ks{i}', [28, 64, 128, i, 2, 128, 128, i, 1]],
+
+        # 14x14x128->14x14x128
+        ['14x14x128->14x14x128', 'res_connected', 'ks{i}', [14, 128, 128, i, 1]],
+        ['14x14x128->14x14x128', 'sequential', 'ks{i}', [14, 128, 128, i, 1, 128, 128, i, 1]],
+        
+        # 14x14x128->7x7x256
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 128, i, 1, 128, 256, i, 2]],
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 256, i, 1, 256, 256, i, 2]],
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 128, i, 2, 128, 256, i, 1]],
+        ['14x14x128->7x7x256', 'sequential', 'ks{i}', [14, 128, 256, i, 2, 256, 256, i, 1]],
+
+        # 7x7x256->7x7x256
+        ['7x7x256->7x7x256', 'res_connected', 'ks{i}', [7, 256, 256, i, 1]],
+        ['7x7x256->7x7x256', 'sequential', 'ks{i}', [7, 256, 256, i, 1, 256, 256, i, 1]],
+        
+    ]    
     
-    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_origin.pkl")
-    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_prior2.pkl")
-    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa.pkl")
-    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
+    for i, config in enumerate(configs):
+        name, block, ks, param = config
+        if block == 'res_connected':
+            for ks_v in [3, 5]:
+                hwin, cin, cout, ks, s = param
+                input_shape = [cin, hwin, hwin]
+                model = res_block(cin, cout, ks_v, s)
+                real = profile_model(model, input_shape)
+                print(f'{backend_name}, {name}, {block}, ks{ks_v}, cin_{cin}_cout_{cout}, {real}')
+        else:
+            for ks_v in [3, 5]:
+                hwin, cin1, cout1, ks1, s1, cin2, cout2, ks2, s2 = param
+                
+                input_shape = [cin1, hwin, hwin]
+                model = seq_block(cin1, cout1, ks_v, s1, cin2, cout2, ks_v, s2)
+                real = profile_model(model, input_shape)
+                print(f'{backend_name}, {name}, {block}, ks{ks_v}, cin1_{cin1}_cout1_{cout1}_s1_{s1}_cin2_{cin2}_cout2_{cout2}_s2_{s2}, {real}')
+
+
+    
+if __name__ == '__main__':
+    backend_name = 'ort_cpu_int8'
+    backend = connect_backend(backend_name)
+    
+    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu.pkl")
+    # op_level_test_conv_group()
 
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_origin.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")
-    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_filt8_add.pkl")
+    op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_refined16.pkl")
     
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_original.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
-    # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
-
+    # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish.pkl")
+    # op_level_test_hswish("/sdc/jiahang/working/ort_mobilenetv3_workspace/predictor/hswish.pkl")
+    
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
-    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa_only.pkl")
+    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se.pkl")
+    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se.pkl")
 
     # op_level_test_avgpool("/sdc/jiahang/working/ort_mobilenetv3_workspace/predictor/avgpool.pkl")
     # op_level_test_mobilenetv3_large()
     
-    backend_name = 'ort_cpu_int8'
-    backend = connect_backend(backend_name)
-    op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
-    op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")    
-    op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
-    op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
+    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
+    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")    
+    # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
+    # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
+
+    # backend_name = 'ort_cpu'
+    # backend = connect_backend(backend_name)
+    # op_level_test_cascade_mbv1()
     
     
-    backend_name = 'ort_cpu'
-    backend = connect_backend(backend_name)
-    op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
-    op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")    
-    op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa_only.pkl")
-    op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
-    
+    # backend_name = 'ort_cpu_int8'
+    # backend = connect_backend(backend_name)
+    # op_level_test_cascade_mbv1()

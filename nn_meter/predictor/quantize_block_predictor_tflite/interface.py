@@ -10,6 +10,7 @@ class BlockLatencyPredictor:
         
     def get_type(self, name, cin, cout, stride, activation, use_se):
         '''
+        for onnx model
         [mobilenet block] #17:   
         # mobilenetv1
         # mobilenetv2_[res/nores]_[se/nose]_[relu/hswish]

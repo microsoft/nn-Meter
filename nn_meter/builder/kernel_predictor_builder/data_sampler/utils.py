@@ -74,6 +74,9 @@ def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorf
     elif kernel_type in __BUILTIN_KERNELS__:
         kernel_name = __BUILTIN_KERNELS__[kernel_type][0]
         kernel_module = blocks
+    else:
+        raise NotImplementedError(f'Kernel type {kernel_type} not exists.')
+
 
     # get kernel class and create kernel instance by needed_config
     kernel_class = getattr(kernel_module, kernel_name)(config, batch_size)
