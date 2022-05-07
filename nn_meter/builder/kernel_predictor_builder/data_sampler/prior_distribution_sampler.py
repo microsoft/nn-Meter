@@ -412,6 +412,35 @@ def sampling_hw_cin_even(count):
     return ncfgs
 
 
+def sampling_resnet_se(count):
+    ''' sampling configs for kernels with mid_channel specified
+    '''
+    hws, cins, _, _, _ = read_conv_zoo()
+    new_cins = sample_based_on_distribution(cins, count)
+
+    count1 = int(count * 0.8)
+    new_hws = sample_based_on_distribution(hws,count1)
+    new_hws = data_validation(new_hws, _conv_hw_candidate)
+    new_hws.extend([112] * int((count - count1) * 0.4) + [56] * int((count - count1) * 0.4) + [28] * int((count - count1) * 0.2))
+    random.shuffle(new_hws)
+    
+    filename = os.path.join("/data/jiahang/working/nn-Meter/nn_meter/builder/kernel_predictor_builder/data_sampler/prior_config_lib/resnet_se.csv")
+    se_df = pd.read_csv(filename)
+    cins = se_df["cin"]
+    couts = se_df["cout"]
+    exp = se_df["exp"]
+
+    ncfgs = []
+    for hw, cin, cout, exp in zip(new_hws, cins, couts, exp):
+        c = {
+            'HW': hw,
+            'CIN': make_divisible(cout * exp),
+            'CMID': make_divisible(cin // 4)
+        }
+        ncfgs.append(c)
+    return ncfgs
+
+
 def sampling_hw_cin_even_ofa(count):
     ''' sampling configs for kernels with hw and cin (only even values) parameter, in case for split / se / channelshuffle
     Returned params include: (hw, cin)

@@ -101,6 +101,42 @@ class AvgPool(BaseOperator):
 
 #------------------------ other modules ------------------------#
 
+class ResnetSE(BaseOperator):
+    def get_model(self):
+        from nn_meter.builder.utils import make_divisible
+        class QSE4Resnet(nn.Module):
+            '''se ratio in regnet is defined with respect to the input width of this block instead of hidden width'''
+            REDUCTION = 4
+
+            def __init__(self, in_channels, mid_channels) -> None:
+                super().__init__()
+
+                self.in_channels = in_channels
+                self.mid_channels = mid_channels
+
+                self.fc = nn.Sequential(
+                    nn.Conv2d(in_channels, mid_channels, 1, 1, 0, bias=True),
+                    nn.ReLU(inplace=True),
+                    nn.Conv2d(mid_channels, in_channels, 1, 1, 0, bias=True),
+                    nn.Hardsigmoid(inplace=True),
+                )
+
+            def _scale(self, x):
+                y = x.mean([2, 3], keepdim=True)
+                y = self.fc(y)
+                return y
+
+            def forward(self, x):
+                scale = self._scale(x)
+                return x * scale
+
+            @staticmethod
+            def get_mid_channels(cin: int):
+                return make_divisible(cin // QSE4Resnet.REDUCTION)
+
+        return QSE4Resnet(self.config["CIN"], self.config["CMID"])
+
+
 class SE(BaseOperator):
     def get_model(self):
         from nn_meter.builder.utils import make_divisible

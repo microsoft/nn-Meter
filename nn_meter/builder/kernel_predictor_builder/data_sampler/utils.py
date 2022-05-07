@@ -42,6 +42,7 @@ __BUILTIN_KERNELS__ = {
     "relu": ["ReluBlock", "HwCinSampler"],
     "addrelu": ["AddRelu", "HwCinSampler"],
     "add": ["AddBlock", "HwCinSampler"],
+    "resnet-se": ["ResnetSEBlock", "ResnetSESampler"]
 }
 
 

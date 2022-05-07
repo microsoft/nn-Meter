@@ -93,3 +93,12 @@ class HwCinSampler(BaseConfigSampler):
     
     def finegrained_config_sampling(self, configs, sample_num):
         return finegrained_sampling_hw_cin_ofa(configs, sample_num)
+
+
+class ResnetSESampler(BaseConfigSampler):
+
+    def prior_config_sampling(self, sample_num):
+        return sampling_resnet_se(sample_num)
+    
+    def finegrained_config_sampling(self, configs, sample_num):
+        return None
