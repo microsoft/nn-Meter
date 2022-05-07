@@ -37,6 +37,7 @@ feature_for_kernel = {
     "split":                ["HW", "CIN"],
     "channelshuffle":       ["HW", "CIN"],
     "se":                   ["HW", "CIN"],
+    "resnet-se":            ["HW", "CIN", "CMID"],
     "global-avgpool":       ["HW", "CIN"],
     "bnrelu":               ["HW", "CIN"],
     "bn":                   ["HW", "CIN"],
@@ -174,8 +175,8 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
             else:
                 label = labs_dict[id][predict_label]
             if label != 0.0 and label < 200.0:
-                if (len(feature) == 7 and (feature[1] % 8 == 0 or feature[1] == 3) and feature[2] % 8 == 0) or \
-                    (len(feature) == 2 and feature[1] % 8 == 0):
+                # if (len(feature) == 7 and (feature[1] % 8 == 0 or feature[1] == 3) and feature[2] % 8 == 0) or \
+                #     (len(feature) == 2 and feature[1] % 8 == 0):
                     paths.append(os.path.basename(path))
                     features.append(feature)
                     labs.append(label)

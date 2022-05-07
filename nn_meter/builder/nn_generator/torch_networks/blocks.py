@@ -661,6 +661,27 @@ class SEBlock(TorchBlock):
 
         return Model(self.se_op)
 
+class ResnetSEBlock(TorchBlock):
+    def __init__(self, config, batch_size = 1):
+        self.config = config
+        self.input_shape = [config["CIN"], config["HW"], config["HW"]]
+        self.input_tensor_shape = [self.input_shape]
+        self.batch_size = batch_size
+
+        se_op = ResnetSE(self.input_shape, config)
+        self.se_op = se_op.get_model()
+
+    def get_model(self):
+        class Model(nn.Module):
+            def __init__(self, se_op):
+                super().__init__()
+                self.se = se_op
+
+            def forward(self, inputs):
+                return self.se(inputs)
+
+        return Model(self.se_op)
+
 
 class GlobalAvgPoolBlock(TorchBlock):
     def __init__(self, config, batch_size = 1):

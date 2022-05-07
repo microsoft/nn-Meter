@@ -11,9 +11,10 @@ def convert_nodes(graph):
     new_graph = copy.deepcopy(graph)
 
     for _, node in new_graph.items():
-        type = node["attr"]["type"]
+        type = node["attr"]["type"] if "type" in node["attr"] else "Unknown"
         new_type = OP_ALIAS.get(type, type)
-        attr = node["attr"]["attr"]
+        attr = node["attr"]["attr"] if "attr" in node["attr"] else {}
+        node["attr"]["attr"] = attr
 
         if "kernel_shape" in attr:
             attr["ks"] = attr["kernel_shape"]

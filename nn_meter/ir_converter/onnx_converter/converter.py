@@ -22,6 +22,12 @@ class OnnxConverter:
                 "inputs": [],
                 "outputs": [],
             }
+        # # search graph and find squeeze
+        # for node in inferred_model.graph.node:
+        #     if "Squeeze" in node.name:
+        #         for output_name in node.output:
+        #             # put the tensor shape back to graph
+        #             self.tensors[output_name][]
 
         for node in self.graph.node:
             for input_name in node.input:
