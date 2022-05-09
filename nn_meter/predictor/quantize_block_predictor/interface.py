@@ -10,19 +10,17 @@ class BlockLatencyPredictor:
         
     def get_type(self, name, cin, cout, stride, activation):
         '''
-        for ONNX model
-        [mobilenet block] #10:   
+        [search candidate block]:
+        # MobileNetV1Block
+        # MobileNetV2Block_[res/nores]_[relu/hswish]
+        # MobileNetV3Block_[res/nores]_[relu/hswish]
         # MobileNetV1DualBlock_[ds/nods]
         # MobileNetV2ResBlock_[res/forceres]_[relu/hswish] always without se
         # MobileNetV3ResBlock_[res/forceres]_[relu/hswish] always with se
-
-        [resnet block] #4
         # ResNetBlock_[ds/nods]_[relu/hswish]
-        
-        [resnet se block] #4
         # ResNetSEBlock_[ds/nods]_[relu/hswish]
-        
-        [simple block] #5
+
+        [simple block]
         # FirstConvBlock_[relu/hswish]
         # FinalExpandBlock_[relu/hswish]
         # FeatureMixBlock_[relu/hswish]
@@ -30,13 +28,18 @@ class BlockLatencyPredictor:
         '''
         if activation == 'relu6':
             activation = 'relu'
+        if name == "MobileNetV1Block" or name == "LogitsBlock":
+            return name
         if name == "MobileNetV1DualBlock":
             if cin != cout or stride == 2: return f'{name}_ds'
             else: return f'{name}_nods'
         elif name.startswith("MobileNet"):
             type_list = [name]
             use_res_connect = stride == 1 and cin == cout
-            type_list.append("res" if use_res_connect else "forceres" )
+            if "ResBlock" in name:
+                type_list.append("res" if use_res_connect else "forceres")
+            else:
+                type_list.append("res" if use_res_connect else "nores")
             type_list.append(activation)
             return "_".join(type_list)
         elif name == "ResNetBlock" or name == "ResNetSEBlock":
@@ -45,9 +48,7 @@ class BlockLatencyPredictor:
             type_list.append("ds" if use_downsample else "nods" )
             type_list.append(activation)
             return "_".join(type_list)
-        elif name == "LogitsBlock":
-            return name
-        else:
+        else: # FirstConvBlock, FinalExpandBlock, FeatureMixBlock
             return f'{name}_{activation}'
 
     def get_latency(self, name, hw, cin, cout, kernel_size, expand_ratio, 
