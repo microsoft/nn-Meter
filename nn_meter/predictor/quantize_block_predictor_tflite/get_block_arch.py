@@ -1,43 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+from nn_meter.builder.utils import make_divisible
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_conv_flop_params, get_dwconv_flop_params, get_fc_flop_params
-
-
-def make_divisible(v, divisor=8, min_val=None):
-    if min_val is None:
-        min_val = divisor
-    new_v = max(min_val, int(v + divisor / 2) // divisor * divisor)
-    # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
-        new_v += divisor
-    return new_v
-
-
-def add_flops_param(res):
-    for kernel in res:
-        if kernel == 'conv-bn-relu':
-            for item in res[kernel]:
-                hw, cin, cout, kernel_size, stride = item
-                flops, params = get_conv_flop_params(hw, cin, cout, kernel_size, stride)
-                flops /= 2e6
-                params /= 1e6
-                item.extend([flops, params])
-        elif kernel == 'dwconv-bn-relu':
-            for item in res[kernel]:
-                hw, _, cout, kernel_size, stride = item
-                flops, params = get_dwconv_flop_params(hw, cout, kernel_size, stride)
-                flops /= 2e6
-                params /= 1e6
-                item.extend([flops, params])
-        elif kernel == 'fc':
-            for item in res[kernel]:
-                cin, cout = item
-                flops, params = get_fc_flop_params(cin, cout)
-                flops /= 2e6
-                params /= 1e6
-                item.extend([flops, params])
-    return res
-                
 
 
 def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stride):

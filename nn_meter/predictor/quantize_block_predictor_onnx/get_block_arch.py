@@ -1,16 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+from nn_meter.builder.utils import make_divisible
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_conv_flop_params, get_dwconv_flop_params, get_fc_flop_params
-
-
-def make_divisible(v, divisor=8, min_val=None):
-    if min_val is None:
-        min_val = divisor
-    new_v = max(min_val, int(v + divisor / 2) // divisor * divisor)
-    # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
-        new_v += divisor
-    return new_v
 
 
 def add_flops_param(res):
@@ -120,7 +111,7 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
             ]
         }
     
-    # DynamicResNetBlock
+    # ResNetBlock
     elif block == "ResNetBlock_ds_relu":
         '''
         get_block_arch_by_name("ResNetBlock_ds_relu", 224, 3, 16, 3, 3, 2)
@@ -227,8 +218,8 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
                 [hw, cout, cout]
             ]
         }
-    
-    # DynamicResNetSEBlock
+
+    # ResNetSEBlock
     elif block == "ResNetSEBlock_ds_relu":
         feature_size = make_divisible(cout * expand_ratio)
         res = {
@@ -339,7 +330,7 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
         }
     
     
-    # DynamicMobileNetV1DualBlock
+    # MobileNetV1DualBlock
     elif block == "MobileNetV1DualBlock_ds":
         '''
         ############ dwconv-bn-relu 0.8327714910331794
@@ -384,7 +375,7 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
             ]
         }
 
-    # DynamicMobileNetV2ResBlock & DynamicMobileNetV3ResBlock
+    # MobileNetV2ResBlock & MobileNetV3ResBlock
     elif block == "MobileNetV3ResBlock_res_relu":
         '''
         ## -------- conv-bn-relu 156.15345097560976
@@ -608,7 +599,7 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
                 [hw // stride, cout, cout]
             ]
         }
-    
+
     res = add_flops_param(res)
-    print(res)
+    # print(res)
     return res

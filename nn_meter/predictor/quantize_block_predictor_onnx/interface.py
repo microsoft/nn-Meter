@@ -63,7 +63,7 @@ class BlockLatencyPredictor:
         activation: choose from ["relu", "hswish"]
         '''
         type = self.get_type(name, cin, cout, stride, activation)
-        print(type)
+        # print(type)
         if type == 'LogitsBlock':
             return 0.16795800000000005
         from nn_meter.predictor.prediction.utils import get_kernel_name
