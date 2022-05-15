@@ -8,45 +8,53 @@ class BlockLatencyPredictor:
         self.predictor_name = predictor_name
         self.predictor = load_latency_predictor(predictor_name)
         
-    def get_type(self, name, cin, cout, stride, activation, use_se):
+    def get_type(self, name, cin, cout, stride, activation):
         '''
-        for onnx model
-        [mobilenet block] #17:   
-        # mobilenetv1
-        # mobilenetv2_[res/nores]_[se/nose]_[relu/hswish]
-        # mobilenetv3_[res/nores]_[se/nose]_[relu/hswish]
+        [search candidate block]:
+        # MobileNetV1Block
+        # MobileNetV2Block_[res/nores]_[relu/hswish]
+        # MobileNetV3Block_[res/nores]_[relu/hswish]
+        # MobileNetV1DualBlock_[ds/nods]
+        # MobileNetV2ResBlock_[res/forceres]_[relu/hswish] always without se
+        # MobileNetV3ResBlock_[res/forceres]_[relu/hswish] always with se
+        # ResNetBlock_[ds/nods]_[relu/hswish]
+        # ResNetSEBlock_[ds/nods]_[relu/hswish]
 
-        [resnet block] #4
-        # resnet_[ds/nods]_[relu/hswish]
-        
-        [simple block] #3
-        # first_conv_[relu/hswish]
-        # logits_block
+        [simple block]
+        # FirstConvBlock_[relu/hswish]
+        # FinalExpandBlock_[relu/hswish]
+        # FeatureMixBlock_[relu/hswish]
+        # LogitsBlock
         '''
-        if name == "mobilenetv1":
+        if activation == 'relu6':
+            activation = 'relu'
+        if name == "MobileNetV1Block" or name == "LogitsBlock":
             return name
-        elif name.startswith("mobilenet"):
+        if name == "MobileNetV1DualBlock":
+            if cin != cout or stride == 2: return f'{name}_ds'
+            else: return f'{name}_nods'
+        elif name.startswith("MobileNet"):
             type_list = [name]
             use_res_connect = stride == 1 and cin == cout
-            type_list.append("res" if use_res_connect else "nores" )
-            type_list.append("se" if use_se else "nose" )
+            if "ResBlock" in name:
+                type_list.append("res" if use_res_connect else "forceres")
+            else:
+                type_list.append("res" if use_res_connect else "nores")
             type_list.append(activation)
             return "_".join(type_list)
-        elif name == "resnet":
-            type_list = ["resnet"]
+        elif name == "ResNetBlock" or name == "ResNetSEBlock":
+            type_list = [name]
             use_downsample = stride > 1 or cin != cout
             type_list.append("ds" if use_downsample else "nods" )
             type_list.append(activation)
             return "_".join(type_list)
-        elif name == "first_conv":
+        else: # FirstConvBlock, FinalExpandBlock, FeatureMixBlock
             return f'{name}_{activation}'
-        elif name == "logits_block":
-            return name
 
     def get_latency(self, name, hw, cin, cout, kernel_size, expand_ratio, 
-                    stride, activation, use_se):
+                    stride, activation):
         '''
-        name: choose from ["mobilenetv1", "mobilenetv2", "mobilenetv3", "resnet", "first_conv", "logits_block"]
+        name:
         hw (int)
         cin (int)
         cout (int)
@@ -54,9 +62,11 @@ class BlockLatencyPredictor:
         expand_ratio (float)
         stride (int)
         activation: choose from ["relu", "hswish"]
-        use_se (Boolean)
         '''
-        type = self.get_type(name, cin, cout, stride, activation, use_se)
+        type = self.get_type(name, cin, cout, stride, activation)
+        # print(type)
+        if type == 'LogitsBlock':
+            return 0.16795800000000005
         from nn_meter.predictor.prediction.utils import get_kernel_name
         dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
         py = 0
