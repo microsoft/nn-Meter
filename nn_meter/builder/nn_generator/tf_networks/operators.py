@@ -212,6 +212,14 @@ class Hswish(BaseOperator):
             return inputs * relu6(inputs + 3.) * (1. / 6.)
         return func
 
+
+class Swish(BaseOperator):
+    # the swish op from tensorflow v2
+    def get_model(self):
+        def func(inputs):
+            return tf.keras.activations.swish(inputs)
+        return func
+
 #---------------------- basic operation ----------------------#
 
 class Reshape(BaseOperator):
