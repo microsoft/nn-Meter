@@ -825,6 +825,18 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
             ]
         }
 
+    elif block.startswith("ResNetBugBlock_nods"):
+        res = {
+        }
+        
+    elif block.startswith("ResNetBugBlock_ds"):
+        feature_size = make_divisible(cout * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, cout, 1, stride], 
+            ],
+        }
+        
     res = add_flops_param(res)
     # print(res)
     return res
