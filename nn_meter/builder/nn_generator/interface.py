@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 class BaseOperator:
-    def __init__(self, input_shape, config = None):
+    def __init__(self, input_shape = None, config = None):
         ''' base class for operator.
         
         @params

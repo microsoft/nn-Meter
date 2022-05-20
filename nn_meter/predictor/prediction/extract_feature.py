@@ -71,6 +71,7 @@ def get_predict_features(config):
         elif "split" in op:
             features = [inputh, cin]
         elif "se" in op or "SE" in op:
+            # TODO: check the parsed shape for se block
             inputh = item["input_tensors"][-1][-2]
             cin = item["input_tensors"][-1][-1]
             features = [inputh, cin]
