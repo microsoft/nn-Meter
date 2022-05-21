@@ -91,7 +91,7 @@ class BlockLatencyPredictor:
         py = 0
         for args in block_list:
             key = f"{args['name']}_{args['hw']}_{args['cin']}_{args['cout']}_{args['kernel_size']}_" \
-                "{args['expand_ratio']}_{args['stride']}_{args['activation']}"
+                f"{args['expand_ratio']}_{args['stride']}_{args['activation']}"
             py += self.predictor[key]
         return py
 
