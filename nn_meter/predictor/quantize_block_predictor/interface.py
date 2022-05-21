@@ -1,11 +1,20 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+from collections import defaultdict
 from .get_block_arch import get_block_arch_by_name
 from .. import load_latency_predictor
 
 class BlockLatencyPredictor:
     def __init__(self, predictor_name):
         self.predictor_name = predictor_name
+
+        # declare all existing ops in the predictor
+        basic_ops = ["conv-bn-relu", "dwconv-bn-relu", "hswish", "gap", "fc", "add-relu", "add", "se"]
+        if predictor_name.startswith("tflite"):
+            self.ops = basic_ops
+        elif predictor_name.startswith("onnx"):
+            self.ops = basic_ops + ["resnet-se"]
+
         if self.predictor_name == "onnx_lut":
             import os, json
             base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -60,10 +69,10 @@ class BlockLatencyPredictor:
             return f'{name}_{activation}'
 
 
-    def get_latency(self, name, hw, cin, cout, kernel_size, expand_ratio, 
-                    stride, activation):
+    def get_latency(self, block_list):
         '''
-        name:
+        each items in block_list (list of dict):
+        name (str)
         hw (int)
         cin (int)
         cout (int)
@@ -73,33 +82,45 @@ class BlockLatencyPredictor:
         activation: choose from ["relu", "hswish"]
         '''
         if self.predictor_name == "onnx_lut":
-            return self.get_latency_by_lut(name, hw, cin, cout, kernel_size, expand_ratio, stride, activation)
+            return self.get_latency_by_lut(block_list)
         else:
-            return self.get_latency_by_predictor(name, hw, cin, cout, kernel_size, expand_ratio, stride, activation)
+            return self.get_latency_by_predictor(block_list)
 
 
-    def get_latency_by_lut(self, name, hw, cin, cout, kernel_size, expand_ratio, 
-                    stride, activation):
-        key = f"{name}_{hw}_{cin}_{cout}_{kernel_size}_{expand_ratio}_{stride}_{activation}"
-        return self.predictor[key]
+    def get_latency_by_lut(self, block_list):
+        py = 0
+        for args in block_list:
+            key = f"{args['name']}_{args['hw']}_{args['cin']}_{args['cout']}_{args['kernel_size']}_" \
+                "{args['expand_ratio']}_{args['stride']}_{args['activation']}"
+            py += self.predictor[key]
+        return py
 
 
-    def get_latency_by_predictor(self, name, hw, cin, cout, kernel_size, expand_ratio, 
+    def get_single_block_arch(self, name, hw, cin, cout, kernel_size, expand_ratio, 
                     stride, activation):
         type = self.get_type(name, cin, cout, stride, activation)
-
-        # there is only one configs for LogitsBlock, and the predictor has low accuracy for this block    
-        if self.predictor_name == "onnxruntime_int8" and type == 'LogitsBlock':
-            return 0.16795800000000005
-
-        from nn_meter.predictor.prediction.utils import get_kernel_name
         dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
+        return dicts
+
+
+    def get_latency_by_predictor(self, block_list):
+        from nn_meter.predictor.prediction.utils import get_kernel_name
+
+        # merge dicts
+        ops_config = {k: [] for k in self.ops}
+        for args in block_list:
+            single_block = self.get_single_block_arch(**args)
+            for k, v in single_block.items():
+                ops_config[k].extend(v)
+
         py = 0
-        for kernel in dicts:
+        for kernel in ops_config:
+            if ops_config[kernel] == []:
+                continue
             kernelname = get_kernel_name(kernel)
             if kernelname in self.predictor.kernel_predictors:
                 pred = self.predictor.kernel_predictors[kernelname]
-                pys = pred.predict(dicts[kernel]) # in unit of ms
+                pys = pred.predict(ops_config[kernel]) # in unit of ms
                 if len(pys) != 0:
                     py += sum(pys)
         return py
