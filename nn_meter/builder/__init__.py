@@ -6,5 +6,6 @@ from .nn_meter_builder import (
     profile_models,
     build_predictor_for_kernel,
     build_latency_predictor,
-    finegrained_predictor_for_kernel
+    build_initial_predictor_by_data,
+    build_adaptive_predictor_by_data
 )

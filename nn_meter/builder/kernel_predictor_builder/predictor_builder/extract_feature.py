@@ -143,7 +143,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
         }
         if labs_path == None, it means latency (or other label) information are also included in cfgs_path.
 
-    save_path (str): the path to save the feature and latency information
+    save_path (str): the path to save the feature and latency information. If save_path is None, the data will not be saved.
 
     predict_label (str): the predicting label to build kernel predictor
     '''

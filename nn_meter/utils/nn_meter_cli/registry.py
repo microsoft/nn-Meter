@@ -30,7 +30,7 @@ def register_module(module_type, meta_file):
     # check necessary feature and run test script
     # for backend, check if there exits the default config file:
     if module_type == "backends":
-        if not os.path.isfile(meta_data["defaultConfigFile"]):
+        if meta_data["defaultConfigFile"] != None and not os.path.isfile(meta_data["defaultConfigFile"]):
             raise ValueError(f"The default config file {meta_data['defaultConfigFile']} does not exist")
     elif module_type == "kernels":
         import_module(meta_data["package_location"], meta_data["sampler_module"], meta_data["sampler_name"])

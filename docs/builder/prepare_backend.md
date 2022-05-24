@@ -33,12 +33,10 @@ Follow [Android Guide](https://developer.android.com/studio) to install adb on y
 
 The easiest way is to directly download Android Studio from [this page](https://developer.android.com/studio). After installing it, you will find adb at path `$HOME/Android/Sdk/platform-tools/`.
 
-
 #### 2. Get TFLite Benchmark Model
 The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released two modified version of `benchmark_model` based on `tensorflow==2.1` and `tensorflow==2.7`, respectively. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/releases/tag/v2.0-data).
 
 NOTE: On a same hardware, the different versions of `benchmark_model` can result in different inference latency for a same model. We recommend users compile and build the `benchmark_model` for latest version. Users could follow [Official Guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
-
 
 #### 3. Setup Benckmark Tool on Device
 
@@ -53,7 +51,7 @@ adb shell chmod +x /data/local/tmp/benchmark_model
 
 ### OpenVINO VPU Guide
 
-Follow [OpenVINO Installation Guide](https://docs.openvinotoolkit.org/latest/installation_guides.html) to install openvino on your host.
+Follow [OpenVINO Installation Guide](https://docs.openvinotoolkit.org/latest/installation_guides.html) to install OpenVINO on your host.
 
 
 ## <span id="prepare-configuration-file"> Prepare Configuration File </span>
@@ -63,9 +61,9 @@ When connecting to backend, a series of configs should be manually defined by us
 Specifically, for Android CPU or GPU backends, the required parameters include:
 
 - `REMOTE_MODEL_DIR`: path to the folder (on mobile device) where temporary models will be copied to.
-- `KERNEL_PATH`: path (on mobile device) where the kernel implementations will be dumped.
 - `BENCHMARK_MODEL_PATH`: path (on android device) where the binary file `benchmark_model` is deployed.
 - `DEVICE_SERIAL`: if there are multiple adb devices connected to your host, you need to provide the corresponding serial id. Set to `''` if there is only one device connected to your host.
+- `KERNEL_PATH`: path (on mobile device) where the kernel implementations will be dumped.
 
 For VPU backends with OpenVINO, the required parameters include:
 
@@ -75,7 +73,7 @@ For VPU backends with OpenVINO, the required parameters include:
 - `DEVICE_SERIAL`: serial id of the device
 - `DATA_TYPE`: data type of the model (e.g., fp16, fp32)
 
-When the configuration edits are done, users should initialize the workspace in `builder_config` module before connecting the backend:
+When completing setting the configuration by editting `<workspace-path>/configs/backend_config.yaml`, users should initialize the workspace in `builder_config` module before connecting the backend:
 
 ```python
 from nn_meter.builder import builder_config
@@ -87,7 +85,6 @@ builder_config.init(
 ```
 
 Note: after executing ``builder_config.init``, the config are loaded permanently. If users want to update a config, it's required to repeat this initialization process again.
-
 
 ## Connect to Backend
 We recommend users run the following command to test the connection with your backend:
@@ -106,7 +103,7 @@ To apply the backend for model inference and profiling, nn-Meter provides an int
 
 ```python
 # initialize workspace in code
-workspace_path = "/path/to/workspace/" 
+workspace_path = "/path/to/workspace/"
 from nn_meter.builder import builder_config
 builder_config.init(workspace_path)
 
@@ -115,6 +112,7 @@ from nn_meter.builder.backends import connect_backend
 backend = connect_backend(backend_name='tflite_cpu')
 ...
 ```
+
 Users can follow [this example](../../examples/nn-meter_builder_with_tflite.ipynb) to get more details about our API.
 
 
@@ -122,7 +120,7 @@ Users can follow [this example](../../examples/nn-meter_builder_with_tflite.ipyn
 
 ## Prepare Customized Backend Class
 
-nn-Meter provides API for users to customize their own backend. Here we firstly describe the implementation of `BaseBackend`. We define the base of all backend in `nn_meter.builder.backend.BaseBackend` as follows:
+nn-Meter provides API for users to customize their own backend. Here we firstly describe the implementation of `BaseBackend`. We define the base of all backend in `nn_meter.builder.backends.BaseBackend` as follows:
 
 - `profiler_class`: a subclass inherit form `nn_meter.builder.backend.BaseProfiler` to specify the running command of the backend. A profiler contains commands to push the model to mobile device, run the model on the mobile device, get stdout from the mobile device, and related operations. In the implementation of a profiler, an interface of ``Profiler.profile()`` is required. Users need to modify this **at the most time**.
 
@@ -148,7 +146,7 @@ nn-Meter provides API for users to customize their own backend. Here we firstly 
 Here is an example of how to create a new backend class:
 
 ```python
-from nn_meter.builder.backend import BaseBackend, BaseParser, BaseProfiler
+from nn_meter.builder.backends import BaseBackend, BaseParser, BaseProfiler
 
 class MyParser(BaseParser): ...
 class MyProfiler(BaseProfiler): ...
@@ -162,13 +160,15 @@ Besides these customized backends, nn-Meter also provide TFLite backend (`nn_met
 
 Here is an example that firstly inherits `TFLiteBackend` and then creates a backend named `my_tflite`:
 
-```python
-from nn_meter.builder.backend import TFLiteBackend, TFLiteProfiler, BaseParser
+```diff
+from nn_meter.builder.backends import TFLiteBackend, TFLiteProfiler, BaseParser
 
 class MyParser(BaseParser): ...
-class MyProfiler(TFLiteProfiler): ...
+- class MyProfiler(BaseProfiler): ...
++ class MyProfiler(TFLiteProfiler): ...
 
-class MyTFLiteBackend(TFLiteBackend):
+- class MyBackend(BaseBackend):
++ class MyTFLiteBackend(TFLiteBackend):
     parser_class = MyParser
     profiler_class = MyProfiler
 ```
@@ -223,7 +223,7 @@ Create a yaml file with following keys as meta file:
 
 - `class_name`: the backend class name, in this example is `MyBackend`.
 
-- `defaultConfigFile`: the absolute path of the default configuration file. 
+- `defaultConfigFile`: the absolute path of the default configuration file. If there is no need to structure configuration file, `defaultConfigFile` could be set as empty.
 
 Following is an example of the yaml file:
 
@@ -232,7 +232,7 @@ builtin_name: my_backend
 package_location: /home/{USERNAME}/working/customized_backend
 class_module: backend
 class_name: MyBackend
-defaultConfigFile: /home/{USERNAME}/working/customized_backend/default_config.yaml
+defaultConfigFile:
 ```
 
 ### Step 3: Register Customized Backend into nn-Meter
@@ -242,7 +242,9 @@ Run the following command to register customized backend into nn-Meter:
 ``` bash
 nn-meter register --backend path/to/meta/file
 ```
+
 If the registration success, nn-Meter will show:
+
 ``` text
 (nn-Meter) Successfully register backend my_backend.
 ```
@@ -250,6 +252,7 @@ If the registration success, nn-Meter will show:
 nn-Meter will test whether the module can be imported during the registration process. If the registration process is not successful, please check the package according to the error information.
 
 After the backend registration, users can check all backends by running:
+
 ``` bash
 nn-meter --list-backends
 ```
@@ -274,7 +277,7 @@ nn-meter create --customized-workspace <workspace-path> --backend my_backend
 (nn-Meter) Workspace <workspace-path> for customized platform has been created. Users can edit experiment config in <workspace-path>/configs/.
 ```
 
-Users could edit experiment configuration file in `<workspace-path>/configs/backend_config.yaml`, and test the connection to the registered backend by running:
+Users could edit experiment configuration file in `<workspace-path>/configs/backend_config.yaml` (if any), and test the connection to the registered backend by running:
 
 ``` bash
 nn-meter connect --backend my_backend --workspace <workspace-path>
@@ -290,7 +293,7 @@ If the backend is successfully registered, users are supposed to access to the c
 ``` python
 # initialize builder config with workspace
 from nn_meter.builder import builder_config
-builder_config.init(workspace_path="...") # the path of workspace
+builder_config.init(workspace_path="/path/to/workspace/") # the path of workspace
 
 # connect to backend
 from nn_meter.builder.backends import connect_backend

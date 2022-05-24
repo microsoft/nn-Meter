@@ -94,6 +94,8 @@ class BaseTestCase:
 
 def generate_testcases():
     """generate testcases and save the testcase models and testcase json file in the workspace
+    Users could edit the configurations of testcases in <workspace-path>/configs/ruletest_config.yaml.
+    The config will take effect after the the config file is saved and closed.
     """
     from nn_meter.builder import builder_config
     config = builder_config.get_module('ruletest')
