@@ -96,7 +96,7 @@ profiled_results = profile_models(backend, models, mode='predbuild', have_conver
                                   save_name=f"profiled_{kernel_type}.json")
 ```
 
-Note: for kernels related to conv and dwconv, our experiment results have shown that all kernels containing one conv layer or one dwconv layer have almost the same latency results. Thus in nn-Meter, all kernels containing one conv or dwconv layer shares the same kernel predictor.
+Note: for kernels related to `conv` or `dwconv`, our experiment results have shown that all kernels containing one `conv` layer have almost the same latency results, as `conv` layer has dominant latency. For example, `conv-bn-relu` has almost the same latency as `conv-block`. Same observation was found for `dwconv` related kernels. Therefore in nn-Meter, all `conv` related kernels shares the same kernel predictor, so does `dwconv` related kernels.
 
 ## Step 3: Initialize Kernel Latency Predictor
 
@@ -412,6 +412,8 @@ Create a yaml file with following keys as meta file:
 
 - `builtin_name`: builtin name used in nn-Meter configuration file to call the customized kernel, such as `"mykernel"`.
 
+- `implement`: the implementation type of the customized kernel, chosen from ["tensorflow", "torch"].
+
 - `package_location`: the absolute path of the package folder.
 
 - `class_module`: the module of the kernel class, in this example is `kernel_script`, representing `kernel_script.py`.
@@ -430,6 +432,7 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: mykernel
+implement: tensorflow
 package_location: /home/{USERNAME}/working/kernel_package
 class_module: kernel_script
 class_name: MyKernel
@@ -438,6 +441,8 @@ sampler_name: MySampler
 parser_module: feature_parser
 parser_name: MyParser
 ```
+
+Note: Different with registering [operator and test case](./test_fusion_rules.md#build-customized-test-cases), the registration of customized kernel doesn't support the same name with different implementation (i.e., tensorflow or torch). This is because except the kernel class, there are also parts of config sampler and feature parser to define a customized kernel, which could have a difference between different implementation. If you want to register the same kernel with different implementation, you should set different builtin names to distinguish them, such as "mykernel_tf" and "mykernel_torch".
 
 ### Step 3: Register Customized Kernel into nn-Meter
 

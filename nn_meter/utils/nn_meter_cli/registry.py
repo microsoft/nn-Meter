@@ -35,11 +35,15 @@ def register_module(module_type, meta_file):
     elif module_type == "kernels":
         import_module(meta_data["package_location"], meta_data["sampler_module"], meta_data["sampler_name"])
         import_module(meta_data["package_location"], meta_data["parser_module"], meta_data["parser_name"])
+    elif module_type == "operators" or module_type == "testcases":
+        implement = meta_data.pop("implement")
+        meta_data = {implement: meta_data}
 
     prev_info = {}
     if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__)):
         with open(os.path.join(__user_config_folder__, __registry_cfg_filename__), 'r') as fp:
             prev_info = yaml.load(fp, yaml.FullLoader)
+
     if module_type in prev_info:
         prev_info[module_type][builtin_name] = meta_data
     else:

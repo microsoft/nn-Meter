@@ -43,8 +43,8 @@ if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__
 def get_operator_by_name(operator_name, input_shape, config = None, implement = None):
     """ get operator information by builtin name
     """
-    if operator_name in __REG_OPERATORS__:
-        operator_info = __REG_OPERATORS__[operator_name]
+    if operator_name in __REG_OPERATORS__ and implement in __REG_OPERATORS__[operator_name]:
+        operator_info = __REG_OPERATORS__[operator_name][implement]
         sys.path.append(operator_info["package_location"])
         operator_module_name = operator_info["class_name"]
         operator_module = importlib.import_module(operator_info["class_module"])
@@ -55,6 +55,8 @@ def get_operator_by_name(operator_name, input_shape, config = None, implement = 
             from nn_meter.builder.nn_generator.tf_networks import operators
         elif implement == 'torch':
             from nn_meter.builder.nn_generator.torch_networks import operators
+        else:
+            raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
         operator_module = operators
 
     else:
@@ -69,7 +71,14 @@ def get_operator_by_name(operator_name, input_shape, config = None, implement = 
 
 
 def get_special_testcases_by_name(testcase, implement=None):
-    if testcase in __BUILTIN_TESTCASES__:
+    if testcase in __REG_TESTCASES__ and implement in __REG_TESTCASES__[testcase]:
+        testcase_info = __REG_TESTCASES__[testcase][implement]
+        sys.path.append(testcase_info["package_location"])
+        testcase_module_name = testcase_info["class_name"]
+        testcase_module = importlib.import_module(testcase_info["class_module"])
+        return getattr(testcase_module, testcase_module_name)
+
+    elif testcase in __BUILTIN_TESTCASES__:
         assert implement != None
         if implement == 'tensorflow':
             from .build_tf_models import MultipleOutNodes
@@ -77,16 +86,11 @@ def get_special_testcases_by_name(testcase, implement=None):
         elif implement == 'torch':
             from .build_torch_models import MultipleOutNodes
             return MultipleOutNodes
+        else:
+            raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
+
     else:
-        try:
-            testcase_info = __REG_TESTCASES__[testcase]
-            sys.path.append(testcase_info["package_location"])
-            testcase_module_name = testcase_info["class_name"]
-            testcase_module = importlib.import_module(testcase_info["class_module"])
-            testcase_cls = getattr(testcase_module, testcase_module_name)
-            return testcase_cls
-        except:
-            raise KeyError(f'Unsupported test case: {testcase}.')
+        raise ValueError(f"Unsupported operator name: {testcase}. Please register the operator first.")
 
 
 def generate_models_for_testcase(op1, op2, input_shape, config, implement):
