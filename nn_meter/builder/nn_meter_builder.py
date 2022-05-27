@@ -176,7 +176,8 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
     finegrained_sample_num (int, optional): the data size for adaptive sampling. For each data with error higher than 
         error_threshold, #finegrained_sample_num data will be generated based the the large error data. Defaults to 10.
 
-    iteration (int, optional): the iteration for adaptive sampler. Defaults to 5.
+    iteration (int, optional): the iteration for sampling and training. Initial sampling is regarded as iteration 1,
+        thus `iteration == 2` means one iteration for adaptive sampling. Defaults to 5.
 
     error_threshold (float, optional): the threshold of large error. Defaults to 0.2.
 
@@ -185,6 +186,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
     """
     from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data
     workspace_path = builder_config.get('WORKSPACE', 'predbuild')
+    mark = mark if mark == "" else "_" + mark
 
     # init predictor builder with prior data sampler
     kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num, backend, sampling_mode='prior', mark=f'prior{mark}')
@@ -209,7 +211,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
 
 def build_initial_predictor_by_data(kernel_type, backend = None, init_sample_num = 20, error_threshold = 0.1, mark = '', predict_label = "latency"):
-    return build_predictor_for_kernel(kernel_type, backend, init_sample_num=init_sample_num, iteration=1, error_threshold=error_threshold, predict_label=predict_label, mark=f'prior{mark}')
+    return build_predictor_for_kernel(kernel_type, backend, init_sample_num=init_sample_num, iteration=1, error_threshold=error_threshold, predict_label=predict_label, mark=f'{mark}')
 
 
 def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, finegrained_sample_num = 20, error_threshold = 0.1, mark = '', predict_label = "latency"):
@@ -224,6 +226,7 @@ def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, f
                                                      sampling_mode='finegrained', configs=error_configs, mark=mark)
 
     # merge finegrained data with previous data and build new regression model
+    mark = mark if mark == "" else "_" + mark
     kernel_data = merge_info(new_info=new_kernel_data, prev_info=collect_kernel_data(kernel_data))
     predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold,
                                                               mark=f'finegrained{mark}', save_path=save_path, predict_label=predict_label)

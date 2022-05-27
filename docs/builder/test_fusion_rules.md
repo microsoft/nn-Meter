@@ -435,7 +435,7 @@ nn-meter --list-operators
 (nn-Meter) [Operator] concat
 (nn-Meter) [Operator] flatten
 (nn-Meter) [Operator] split
-(nn-Meter) [Operator] * op1
+(nn-Meter) [Operator] * op1 (tensorflow)
 ```
 
 Note: the package of customized operator must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
@@ -458,13 +458,13 @@ Note: if the input to customized operator should be 1 dimension tensor, users ne
 
 ### Manage the Registered Operator
 
-Users could unregister the operator by calling its name in command:
+Users could unregister the operator by calling its name and its implementation in command:
 
 ``` bash
-nn-meter unregister --operator op1
+nn-meter unregister --operator op1 tensorflow
 ```
 ``` text
-(nn-Meter) Successfully unregister op1.
+(nn-Meter) Successfully unregister op1 (tensorflow).
 ```
 
 After unregister the operator, "op1" will be removed from the backend list.
@@ -563,7 +563,6 @@ class MyTestCase(BaseTestCase):
         x = keras.layers.Relu()([x, input_layer])
 
         return keras.models.Model(input_layer, x), [self.input_shape]
-
 ```
 
 ### Step 2: Create a Package for the Customized Test Case
@@ -582,7 +581,7 @@ The interface of customized test case class are stored in `./customized_testcase
 
 Create a yaml file with following keys as meta file:
 
-- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized test case, such as `"MyTC"`.
+- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized test case, such as `"MyTestCase"`.
 
 - `implement`: the implementation type of the customized test case, chosen from ["tensorflow", "torch"].
 
@@ -599,7 +598,7 @@ builtin_name: MyTC
 implement: tensorflow
 package_location: /home/{USERNAME}/working/customized_testcase
 class_module: testcase_script
-class_name: MyTC
+class_name: MyTestCase
 ```
 
 ### Step 4: Register Customized Test Case into nn-Meter
@@ -633,13 +632,13 @@ Note: if the truth of this fusion rule depends on truth of other rules, the test
 
 ### Manage the Registered Operator
 
-Users could unregister the test case by calling its name in command:
+Users could unregister the test case by calling its name and its implementation in command:
 
 ``` bash
-nn-meter unregister --testcase MyTC
+nn-meter unregister --testcase MyTC tensorflow
 ```
 ``` text
-(nn-Meter) Successfully unregister MyTC.
+(nn-Meter) Successfully unregister MyTC (tensorflow).
 ```
 
 ## Use Customized Rules when Splitting

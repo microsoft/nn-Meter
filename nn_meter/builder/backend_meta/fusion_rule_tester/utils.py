@@ -169,8 +169,10 @@ def save_model(model, model_path, implement):
 
 
 def list_operators():
-    return __BUILTIN_OPERATORS__ + ["* " + item for item in list(__REG_OPERATORS__.keys())]
+    return list(__BUILTIN_OPERATORS__.keys()) + \
+        [f"* {key} ({', '.join(list(info.keys()))})" for key, info in __REG_OPERATORS__.items()]
 
 
 def list_testcases():
-    return __BUILTIN_TESTCASES__ + ["* " + item for item in list(__REG_TESTCASES__.keys())]
+    return list(__BUILTIN_TESTCASES__) + \
+        [f"* {key} ({', '.join(list(info.keys()))})" for key, info in __REG_TESTCASES__.items()]
