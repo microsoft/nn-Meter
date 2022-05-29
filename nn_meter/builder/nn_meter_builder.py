@@ -39,8 +39,8 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
 
     # convert models
     count = 0
-    for _, modules in models.items():
-        for id, model in modules.items():
+    for module in models.values():
+        for id, model in module.items():
             if broken_point_mode and 'converted_model' in model:
                 continue
             try:
@@ -70,7 +70,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
 
 
 def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
-                   have_converted = False, log_frequency = 50, **kwargs):
+                   have_converted = False, log_frequency = 50, broken_point_mode = False, **kwargs):
     """ run models with given backend and return latency of testcase models
 
     @params:
@@ -83,13 +83,16 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
 
     metrics (list): required metrics to report. We only support latency for metric by now.
 
-    save_name (str): the save name to store profiled results. The whole path should be "<workspace>/<mode-folder>/results/<save-name>"
+    save_name (str): the save name to store profiled results. The whole path should be `<workspace>/<mode-folder>/results/<save-name>`
 
     have_converted (boolean): if the model have been converted to the needed format by backend, the model will not be converted
         before profiling. The model path of `model['converted_model']` will be profiled on device directly. The conversion of
         model could be done by appling `nn_meter.builder.convert_models`
 
-    **kwargs: arguments for profiler
+    broken_point_mode (boolean): broken_point_mode will check file in `<workspace>/<mode-folder>/results/<save-name>` (if the file exists)
+        and skip all models already have attributes "latency"
+
+    **kwargs: arguments for profiler, such as `taskset` and `close_xnnpack` in TFLite profiler
     """
     if isinstance(models, str):
         with open(models, 'r') as fp:
@@ -101,13 +104,28 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
     info_save_path = os.path.join(workspace_path, "results")
     os.makedirs(info_save_path, exist_ok=True)
 
+    # in broken point model, if the output file `<workspace>/<mode-folder>/results/<save-name>` exists,
+    # load the existing latency and skip these model in profiling
+    if broken_point_mode and os.path.isfile(os.path.join(info_save_path, save_name)):
+        from nn_meter.builder.backend_meta.utils import read_profiled_results
+        with open(os.path.join(info_save_path, save_name), 'r') as fp:
+            profiled_models = read_profiled_results(json.load(fp))
+        for module_key, module in models.items():
+            if module_key not in profiled_models:
+                continue
+            for id, model in module.items():
+                if id in profiled_models[module_key]:
+                    model.update(profiled_models[module_key][id])
+
     # profile models and get metric results
     count = 0
     detail = builder_config.get('DETAIL', mode)
     save_name = save_name or "profiled_results.json"
     logging.info("Profiling ...")
-    for _, modules in models.items():
-        for id, model in modules.items():
+    for module in models.values():
+        for id, model in module.items():
+            if broken_point_mode and 'latency' in model and model['latency'].avg != 0:
+                continue
             if have_converted: # the models have been converted for the backend
                 try:
                     model_path = model['converted_model']
