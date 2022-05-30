@@ -58,22 +58,26 @@ if os.path.isfile(os.path.join(__user_config_folder__, __registry_cfg_filename__
 def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorflow', batch_size=1):
     """ get the nn model for predictor build.
     """
-    if implement == 'tensorflow':
-        from nn_meter.builder.nn_generator.tf_networks import blocks
-    elif implement == 'torch':
-        from nn_meter.builder.nn_generator.torch_networks import blocks
-    else:
-        raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
-
     # get kernel class information
     if kernel_type in __REG_KERNELS__:
         kernel_info = __REG_KERNELS__[kernel_type]
+        assert kernel_info["implement"] == implement
         sys.path.append(kernel_info["package_location"])
         kernel_name = kernel_info["class_name"]
         kernel_module = importlib.import_module(kernel_info["class_module"])
+
     elif kernel_type in __BUILTIN_KERNELS__:
         kernel_name = __BUILTIN_KERNELS__[kernel_type][0]
+        if implement == 'tensorflow':
+            from nn_meter.builder.nn_generator.tf_networks import blocks
+        elif implement == 'torch':
+            from nn_meter.builder.nn_generator.torch_networks import blocks
+        else:
+            raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
         kernel_module = blocks
+
+    else:
+        raise ValueError(f"Unsupported kernel type: {kernel_type}. Please register the kernel first.")
 
     # get kernel class and create kernel instance by needed_config
     kernel_class = getattr(kernel_module, kernel_name)(config, batch_size)

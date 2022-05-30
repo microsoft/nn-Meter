@@ -18,6 +18,10 @@ __BUILTIN_BACKENDS__ = {
     "openvino_vpu": {
         "class_module": "nn_meter.builder.backends.openvino",
         "class_name": "OpenVINOVPUBackend"
+    },
+    "debug_backend": {
+        "class_module": "nn_meter.builder.backends.interface",
+        "class_name": "DebugBackend"
     }
 }
 
@@ -150,6 +154,22 @@ class BaseParser:
         """
         pass
 
+class DebugBackend(BaseBackend):
+    """ For debug use when there is no backend available. All latency value are randomly generated.
+    """
+    
+    def profile(self, converted_model, metrics = ['latency'], input_shape = None, **kwargs):
+        import random
+        from nn_meter.builder.backend_meta.utils import Latency, ProfiledResults
+        latency = Latency(random.randrange(0, 10000) / 100, random.randrange(0, 1000) / 1000) 
+        return ProfiledResults({'latency': latency}).get(metrics)
+
+    def test_connection(self):
+        """ check the status of backend interface connection.
+        """
+        import logging
+        logging.info("hello backend !")
+
 
 def connect_backend(backend_name):
     """ 
@@ -158,10 +178,10 @@ def connect_backend(backend_name):
     Available backend and corresponding configs: 
     - For backend based on TFLite platform: {
         'REMOTE_MODEL_DIR': path to the folder (on mobile device) where temporary models will be copied to.
-        'KERNEL_PATH': path (on mobile device) where the kernel implementations will be dumped.
         'BENCHMARK_MODEL_PATH': path (on android device) where the binary file `benchmark_model` is deployed.
         'DEVICE_SERIAL': if there are multiple adb devices connected to your host, you need to provide the \\
                          corresponding serial id. Set to '' if there is only one device connected to your host.
+        'KERNEL_PATH': path (on mobile device) where the kernel implementations will be dumped.
     }
     - For backend based on OpenVINO platform: {
         'OPENVINO_ENV': path to openvino virtualenv (./docs/requirements/openvino_requirements.txt is provided)
@@ -174,7 +194,7 @@ def connect_backend(backend_name):
     The config can be declared and modified after create a workspace. Users could follow guidance from ./docs/builder/backend.md
     
     @params:
-    backend: name of backend or backend class (subclass instance of `BaseBackend`). 
+    backend_name: name of backend (subclass instance of `BaseBackend`). 
     """
     if backend_name in __REG_BACKENDS__:
         backend_info = __REG_BACKENDS__[backend_name]
@@ -196,4 +216,6 @@ def connect_backend(backend_name):
 
 
 def list_backends():
+    """ list all backends supported by nn-Meter, including builtin backends and registered backends
+    """
     return list(__BUILTIN_BACKENDS__.keys()) + ["* " + item for item in list(__REG_BACKENDS__.keys())]

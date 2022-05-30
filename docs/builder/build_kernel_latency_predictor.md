@@ -8,7 +8,9 @@ The first step is sampling configuration values from the prior distribution, whi
 
 ## Step 2: Generate and Profile Kernel Model by Configs
 
-The second step is generating and profiling kernel model by configurations. Currently, the kernel blocks and corresponding configurations supported by nn-Meter include:
+The second step is generating and profiling kernel model by configurations. nn-Meter supports both implementation of Tensorflow and PyTorch kernels. Users could switch the kernel implementation between Tensorflow and PyTorch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use Tensorflow implementation and `"tflite_cpu"` backend as an example.
+
+Currently, the kernel blocks and corresponding configurations supported by nn-Meter include:
 
 (conv related kernels)
 
@@ -21,7 +23,7 @@ The second step is generating and profiling kernel model by configurations. Curr
 - `"conv-block"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 - `"conv-bn-hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 
-(dwconv related kernels)
+(dwconv related kernels, where config "CIN" will always be the same as "COUT")
 - `"dwconv-bn"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 - `"dwconv-relu"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 - `"dwconv-relu6"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
@@ -31,7 +33,6 @@ The second step is generating and profiling kernel model by configurations. Curr
 - `"dwconv-bn-hswish"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `STRIDES`
 
 (other kernels)
-
 - `"maxpool"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `POOL_STRIDES`
 - `"avgpool"`: `HW`, `CIN`, `COUT`, `KERNEL_SIZE`, `POOL_STRIDES`
 - `"fc"`: `CIN`, `COUT`
@@ -44,9 +45,8 @@ The second step is generating and profiling kernel model by configurations. Curr
 - `"bn"`: `HW`, `CIN`
 - `"hswish"`: `HW`, `CIN`
 - `"relu"`: `HW`, `CIN`
-- `"addrelu"`: `HW`, `CIN`
-- `"add"`: `HW`, `CIN`
-
+- `"addrelu"`: `HW`, `CIN`, `CIN`
+- `"add"`: `HW`, `CIN`, `CIN`
 
 The first and second step are implemented by `nn_meter.builder.nn_meter_builder.sample_and_profile_kernel_data`. Here is an example:
 
@@ -61,11 +61,13 @@ sample_num = 10
 backend = "tflite_cpu"
 mark = "test"
 
-kernel_data = sample_and_profile_kernel_data(kernel_type, init_sample_num = sample_num,
+kernel_data = sample_and_profile_kernel_data(kernel_type, sample_num=sample_num,
                                              backend=backend, sampling_mode='prior', mark=mark)
 ```
 
 The generated models are saved in `<workspace-path>/predictor_build/models`, and the configuration information and profiled results are dumped in json file to `<workspace-path>/predictor_build/results/<kernel_type>.json` and `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`.
+
+Note: sometimes the number of sampling kernel data is smaller than the value of `sample_num`. It is natural since nn-Meter will remove duplicates sample when generating kernel data.
 
 The method `sample_and_profile_kernel_data` is composed by three main steps, `generate_config_sample`, `convert_models`, and `profile_models`. Here is an example as a decomposition of `sample_and_profile_kernel_data`. Users could choose the decomposed interfaces if needed.
 
@@ -76,7 +78,7 @@ from nn_meter.builder import builder_config, convert_models, profile_models
 workspace = "/path/to/workspace/"
 builder_config.init(workspace)
 
-backend = connect_backend(backend_name="tflite-cpu")
+backend = connect_backend(backend_name="tflite_cpu")
 
 kernel_type = "conv-bn-relu"
 sample_num = 10
@@ -94,7 +96,7 @@ profiled_results = profile_models(backend, models, mode='predbuild', have_conver
                                   save_name=f"profiled_{kernel_type}.json")
 ```
 
-Note: for kernels related to conv and dwconv, our experiment results have shown that all kernels containing one conv layer or one dwconv layer have almost the same latency results. Thus in nn-Meter, all kernels containing one conv or dwconv layer shares the same kernel predictor.
+Note: for kernels related to `conv` or `dwconv`, our experiment results have shown that all kernels containing one `conv` layer have almost the same latency results, as `conv` layer has dominant latency. For example, `conv-bn-relu` has almost the same latency as `conv-block`. Same observation was found for `dwconv` related kernels. Therefore in nn-Meter, all `conv` related kernels shares the same kernel predictor, so does `dwconv` related kernels.
 
 ## Step 3: Initialize Kernel Latency Predictor
 
@@ -133,42 +135,71 @@ After feature extraction, nn-Meter build the predictor by method `build_predicto
 
 The output of `build_predictor_by_data` includes the predictor class, $\pm 10\%$ accuracy and training data items with larger error than `error_threshold`. The large error data are used for the next step.
 
+nn-Meter also provides an API named `nn_meter.builder.build_initial_predictor_by_data` to integrate above three steps. Here is an example:
+
+```python
+from nn_meter.builder import builder_config
+from nn_meter.builder.backends import connect_backend
+from nn_meter.builder import build_initial_predictor_by_data
+workspace = "/path/to/workspace/"
+builder_config.init(workspace)
+
+backend = connect_backend(backend_name="tflite_cpu")
+kernel_type = "conv-bn-relu"
+backend = "tflite_cpu"
+error_threshold = 0.1
+
+predictor, data = build_initial_predictor_by_data(
+    kernel_type, backend, init_sample_num=10, error_threshold=error_threshold
+)
+```
+
 ## Step 4: Adaptive Data Sampling
 
-In the paper of nn-Meter, we have observe that the configuration of kernel size (KERNEL_SIZE), height and width (HW), input channel (CIN), and output channel (COUT) show the noe-linearity pattern on our measured devices. Instead, HW and COUT exhibit the staircase pattern, in which Conv with two different HW/COUT may have the same latency. These non-linearities reflect the complexities in hardware optimizations.
+In the paper of nn-Meter, we have observe that the configuration of kernel size (`KERNEL_SIZE`), height and width (`HW`), input channel (`CIN`), and output channel (`COUT`) show the non-linearity pattern on our measured devices. Instead, `HW` and `COUT` exhibit the staircase pattern, in which Conv with two different `HW` / `COUT` may have the same latency. These non-linearities reflect the complexities in hardware optimizations.
 
 Therefore, main idea to improve the predictor performance is to sample the most beneficial data from the kernel configuration space. It covers 1) the configuration range in CNN design, and 2) hardware-crucial configurations that reflect the hardware optimizaitons and can significantly impact the prediction accuracy.
 
 We propose adaptive data sampling to generate fine-grained channel number sampling for data with large prediction errors. For each data, we fix all the other dimensions except the channel number $C_0$. we random sample $M$ data from $[0.4 \times C_0, 1.2 \times C_0]$. For example, for Conv with (HW=56, KERNEL_SIZE=3, STRIDES=1, CIN=24, COUT=64), we fix the HW, KERNEL_SIZE, STRIDES dimension, and sample $M$ new CIN, COUT from $[9, 28]$ and $[25, 76]$, respectively. The fine-grained sampling number is represented by parameter `finegrained_sample_num`.
 
-The iterative process continues until the predictor accuracy meets user's requirements. In this part, we conduct the following steps:
+The iterative process continues until the predictor accuracy meets user's requirements. In this part, we conduct the following steps for adaptive data sampling:
 
 * Build a regression model by current sampled data;
-* Locate data points in testset with large prediction error (prediction error >`large_error_threshold`, default=0.1);
+* Locate data points in testset with large prediction error (prediction error > `large_error_threshold`, default=0.1);
 * For each data point, we perform fine-grained data sampling to generate random data around the large error data;
 * Collect fine-grained sampled data with previous data to build new predictor;
 * Conduct next iteration.
 
 Here is an example for adaptive data sampling:
+
 ```python
-from nn_meter.builder.utils import merge_info
+from nn_meter.builder import builder_config
+from nn_meter.builder.backends import connect_backend
+from nn_meter.builder import build_adaptive_predictor_by_data
+workspace = "/data1/jiahang/working/release2test/"
+builder_config.init(workspace)
 
-finegrained_sample_num = 10
+backend = connect_backend(backend_name="tflite_cpu")
+kernel_type = "conv-bn-relu"
+backend = "tflite_cpu"
+error_threshold = 0.1
 
-for i in range(1, 5):
-    # finegrained sampling and profiling for large error data
-    new_kernel_data = sample_and_profile_kernel_data(kernel_type, finegrained_sample_num, backend,
-                                                     sampling_mode = 'finegrained', configs=error_configs, mark=f'finegrained{i}')
+predictor, data = build_adaptive_predictor_by_data(
+    kernel_type, data, backend, finegrained_sample_num=5
+)
+```
+In the method `build_adaptive_predictor_by_data`, the parameter `data` indicates all training and testing data for current predictor training. The value of `data` could either be an instance of Dict generated by `build_initial_predictor_by_data` or `build_adaptive_predictor_by_data`, or be a instance of Tuple such as:
 
-    # merge finegrained data with previous data and build new regression model
-    kernel_data = merge_info(new_info=new_kernel_data, prev_info=kernel_data)
-    _, acc10, error_configs = build_predictor_by_data(kernel_type,
-                                                      kernel_data,
-                                                      backend,
-                                                      error_threshold=error_threshold,
-                                                      mark='finegrained{i}',
-                                                      save_path=os.path.join(workspace, "results"))
-    print(f'Iteration {i}: acc10 {acc10}, error_configs number: {len(error_configs)}')
+```python
+config_json_file = [
+    f'{workspace}/predictor_build/results/{kernel_type}_prior.json',
+    f'{workspace}/predictor_build/results/{kernel_type}_finegrained1.json',
+    f'{workspace}/predictor_build/results/{kernel_type}_finegrained2.json'
+]
+latency_json_file = [
+    f'{workspace}/predictor_build/results/profiled_{kernel_type}.json'
+]
+kernel_data = (config_json_file, latency_json_file)
 ```
 
 ## End-to-end Demo
@@ -187,13 +218,13 @@ kernel_type = "conv-bn-relu"
 backend = "tflite_cpu"
 
 predictor, data = build_predictor_for_kernel(
-    kernel_type, backend, init_sample_num = 1000, finegrained_sample_num = 10, iteration = 5, error_threshold = 0.1
+    kernel_type, backend, init_sample_num=1000, finegrained_sample_num=10, iteration=5, error_threshold = 0.1
 )
 ```
 
 In the experiment of nn-Meter, we set `init_sample_num` as 1000, `finegrained_sample_num` as 10, `iteration` as 5, and `error_threshold` as 0.1.
 
-nn-Meter also provided a end-to-end method for users to build a series of general latency predictors, named `nn_meter.builder.build_latency_predictor()`. This method will build predictors for all kernels in `<workspace-path>/configs/predictorbuild_config.yaml` according to their corresponding parameters. The parameters includes `INIT_SAMPLE_NUM`, `FINEGRAINED_SAMPLE_NUM`, `ITERATION`, and `ERROR_THRESHOLD`. Here is an example:
+nn-Meter also provided a end-to-end method for users to build a series of general latency predictors, named `nn_meter.builder.build_latency_predictor`. This method will build predictors for all kernels in `<workspace-path>/configs/predictorbuild_config.yaml` according to their corresponding parameters. The parameters includes `INIT_SAMPLE_NUM`, `FINEGRAINED_SAMPLE_NUM`, `ITERATION`, and `ERROR_THRESHOLD`. Here is an example:
 
 ``` python
 # initialize builder config with workspace
@@ -214,7 +245,7 @@ If users want to add new kernels to profile latency and build predictor, here ar
 
 ### Step 1: Prepare the Customized Kernel Class
 
-nn-Meter provide API for users to customize their own kernel block. In nn-Meter, each kernel is implemented by inheriting a base class named `nn_meter.builder.nn_generator.BaseBlock`. The kernel block has a input parameter `config` to feed configuration params for the kernel. There are two attributes should be claimed, including `input_shape` and `input_tensor_shape`, as well as one method named `get_model()`. nn-Meter support both tensorflow and torch implementation for the kernel model. Users could switch the kernel implementation between tensorflow and torch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use tensorflow implementation as an example. 
+nn-Meter provide API for users to customize their own kernel block. In nn-Meter, each kernel is implemented by inheriting a base class named `nn_meter.builder.nn_generator.BaseBlock`. The kernel block has a input parameter `config` to feed configuration params for the kernel. There are two attributes should be claimed, including `input_shape` and `input_tensor_shape`, as well as one method named `get_model()`. nn-Meter support both Tensorflow and PyTorch implementation for the kernel model. Users could switch the kernel implementation between Tensorflow and PyTorch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use Tensorflow implementation as an example.
 
 - `input_shape` defines the dimension of one model input shape without batch size. Generally, when the input shape is 3D, `input_shape` should be`[config["HW"], config["HW"], config["CIN"]]`, and when the input shape is 1D, `input_shape` should be`[config["CIN"]]`. 
 
@@ -274,7 +305,7 @@ from nn_meter.builder.kernel_predictor_builder import BaseConfigSampler
 
 class MySampler(BaseConfigSampler):
     ''' This sampler is for Conv related sampler. In `prior_config_sampling` method, all configs are sampled based on existing conv model. In
-    `finegrained_config_sampling` method, only cin and cout are sampled around the configs in parameter `configs`.
+    `finegrained_config_sampling` method, only CIN and COUT are sampled around the configs in parameter `configs`.
     '''
 
     def prior_config_sampling(self, sample_num):
@@ -283,7 +314,9 @@ class MySampler(BaseConfigSampler):
         new_couts = ...
         new_kernel_sizes = ...
         new_strides = ...
-        for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
+        ncfgs = []
+        for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts,
+                                                      new_kernel_sizes, new_strides):
             c = {
                 'HW': hw,
                 'CIN': cin,
@@ -341,7 +374,7 @@ class MyParser(BaseFeatureParser):
         feature = [config_dict[data] for data in self.needed_config]
         hw, cin, cout, kernel_size, stride = config_dict["HW"], config_dict["CIN"], config_dict["COUT"], \
             config_dict["KERNEL_SIZE"], config_dict["STRIDES"]
-        param = cout * (kernel_size * kernel_size + 1)
+        param = cout * (kernel_size * kernel_size * cin + 1)
         flop = 2 * hw / stride * hw / stride * param
 
         flop /= 2e6
@@ -379,6 +412,8 @@ Create a yaml file with following keys as meta file:
 
 - `builtin_name`: builtin name used in nn-Meter configuration file to call the customized kernel, such as `"mykernel"`.
 
+- `implement`: the implementation type of the customized kernel, chosen from ["tensorflow", "torch"].
+
 - `package_location`: the absolute path of the package folder.
 
 - `class_module`: the module of the kernel class, in this example is `kernel_script`, representing `kernel_script.py`.
@@ -397,7 +432,8 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: mykernel
-package_location: /home/{USERNAME}/working/tftest/kernel_package
+implement: tensorflow
+package_location: /home/{USERNAME}/working/kernel_package
 class_module: kernel_script
 class_name: MyKernel
 sampler_module: config_sampler
@@ -406,6 +442,8 @@ parser_module: feature_parser
 parser_name: MyParser
 ```
 
+Note: Different with registering [operator and test case](./test_fusion_rules.md#build-customized-test-cases), the registration of customized kernel doesn't support the same name with different implementation (i.e., tensorflow or torch). This is because except the kernel class, there are also parts of config sampler and feature parser to define a customized kernel, which could have a difference between different implementation. If you want to register the same kernel with different implementation, you should set different builtin names to distinguish them, such as "mykernel_tf" and "mykernel_torch".
+
 ### Step 3: Register Customized Kernel into nn-Meter
 
 Run the following command to register customized kernel into nn-Meter:
@@ -413,7 +451,9 @@ Run the following command to register customized kernel into nn-Meter:
 ``` bash
 nn-meter register --kernel path/to/meta/file
 ```
+
 If the registration success, nn-Meter will show:
+
 ``` text
 (nn-Meter) Successfully register kernel: mykernel
 ```
@@ -491,4 +531,3 @@ nn-meter unregister --kernel mykernel
 ```
 
 After unregister the kernel, "mykernel" will be removed from the backend list.
-

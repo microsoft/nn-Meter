@@ -1,21 +1,22 @@
+DETAIL: TRUE
+IMPLEMENT: tensorflow
 HW: 28
-CIN: 16
+CIN: 64
 SHAPE_1D: 428
-COUT: 256
+COUT: 128
 KERNEL_SIZE: 3
 PADDING: 'same'
 STRIDES: 1
 POOL_STRIDES: 2
 EMP_ALPHA: 0.5
-DETAIL: FALSE
 BASIC_TESTCASES:
   - add_add
   - add_avgpool
   - add_concat
   - add_conv
   - add_convtrans
-  - add_fc
   - add_dwconv
+  - add_fc
   - add_relu
   - add_reshape
   - avgpool_add
@@ -26,17 +27,19 @@ BASIC_TESTCASES:
   - avgpool_dwconv
   - avgpool_relu
   - avgpool_reshape
+  - bn_relu
   - concat_add
   - concat_avgpool
   - concat_concat
   - concat_conv
   - concat_convtrans
-  - concat_fc
   - concat_dwconv
+  - concat_fc
   - concat_relu
   - concat_reshape
   - conv_add
   - conv_avgpool
+  - conv_bn
   - conv_concat
   - conv_conv
   - conv_convtrans
@@ -53,25 +56,27 @@ BASIC_TESTCASES:
   - convtrans_dwconv
   - convtrans_relu
   - convtrans_reshape
-  - fc_add
-  - fc_concat
-  - fc_fc
-  - fc_relu
   - dwconv_add
   - dwconv_avgpool
+  - dwconv_bn
   - dwconv_concat
   - dwconv_conv
   - dwconv_convtrans
   - dwconv_dwconv
   - dwconv_relu
   - dwconv_reshape
+  - fc_add
+  - fc_concat
+  - fc_fc
+  - fc_relu
+  - fc_reshape
   - relu_add
   - relu_avgpool
   - relu_concat
   - relu_conv
   - relu_convtrans
-  - relu_fc
   - relu_dwconv
+  - relu_fc
   - relu_relu
   - relu_reshape
   - reshape_add
@@ -80,6 +85,7 @@ BASIC_TESTCASES:
   - reshape_conv
   - reshape_convtrans
   - reshape_dwconv
+  - reshape_fc
   - reshape_relu
   - reshape_reshape
   - se_relu
