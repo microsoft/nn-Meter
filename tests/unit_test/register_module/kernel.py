@@ -1,5 +1,5 @@
 import tensorflow.keras as keras
-from nn_meter.builder.nn_generator import BaseBlock
+from nn_meter.builder.modules import BaseBlock
 from nn_meter.builder.kernel_predictor_builder import BaseFeatureParser, BaseConfigSampler
 
 

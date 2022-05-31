@@ -19,9 +19,9 @@ if __name__ == '__main__':
         "CIN3": 12,
         "CIN4": 12
     }
-    from nn_meter.builder.nn_generator.tf_networks import blocks
+    from nn_meter.builder.modules.tf_networks import blocks
     for kernel in kernels:
         getattr(blocks, kernel)(config).test_block()
-    from nn_meter.builder.nn_generator.torch_networks import blocks
+    from nn_meter.builder.modules.torch_networks import blocks
     for kernel in kernels:
         getattr(blocks, kernel)(config).test_block()
