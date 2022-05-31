@@ -1,5 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 import argparse
-import numpy as np
 import tensorflow as tf
 from .ops import *
 

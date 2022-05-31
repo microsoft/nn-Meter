@@ -1,4 +1,5 @@
-
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 from .alexnet import AlexNet
 from .mobilenetv1 import MobileNetV1
 from .mobilenetv2 import MobileNetV2
