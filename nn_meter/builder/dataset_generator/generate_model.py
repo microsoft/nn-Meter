@@ -1,12 +1,11 @@
-
-from .sampler import *
-from .block_utils import *
-import random
-import tensorflow as tf
-from nn_meter.builder.nn_generator.tf_networks.models import *
-
 import yaml
 import json
+import random
+import tensorflow as tf
+from .tf_networks.models import *
+from .tf_networks.utils import save_to_models
+from ..nn_generator.tf_networks.utils import get_inputs_by_shapes
+
 
 MODELZOO = {
     'alexnet':lambda input_tensor, cfg, version, flag: AlexNet(input_tensor, cfg, version, flag), 
@@ -25,17 +24,16 @@ MODELZOO = {
 
 
 class generation:
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, config, savepath,):
+        self.savepath = savepath
         self.log = {}
-        with open(args.config, "r") as f:
+        with open(config, "r") as f:
             self.cfg = yaml.load(f, Loader = yaml.FullLoader)
    
     def add_to_log(self):
-        filename = self.args.savepath + "/"+self.cfg['model_family']+'-log.json'
-        #if os.path.isfile(filename) == False:
+        filename = self.savepath + "/" + self.cfg['model_family'] + '-log.json'
+
         self.f = open(filename, 'w')
-        
         self.f.write(json.dumps(self.log))
         self.f.flush()
         
@@ -54,19 +52,20 @@ class generation:
             for vs in versions:
                 count_index = 0
                 random.seed(100)
-                tf.reset_default_graph()
-                input_tensor = generate_input_tensor( [[1, h, w, c]])[0]
+                # tf.reset_default_graph()
+                
+                input_tensor = get_inputs_by_shapes([[h, w, c]])
                 model = MODELZOO[self.cfg['model_family']](input_tensor, self.cfg, vs, False)
                 modelname = self.cfg['model_family']
                 
                 if vs:
                     modelname += str(vs)
                 
-                print(model.sconfig)
+                # print(model.sconfig)
 
                 if not model.sconfig in sconfigs:
                     sconfigs.append(model.sconfig)
-                    _ = save_to_models(self.args.savepath, [input_tensor], [model.out], modelname, str(count_index))
+                    save_to_models(self.savepath, [input_tensor], [model.out], modelname, str(count_index))
                     self.log[modelname+"_"+str(count_index)] = model.config
                     self.add_to_log()
 
@@ -74,18 +73,19 @@ class generation:
 
                 while count_index < sample_count:
                     tf.reset_default_graph()
-                    input_tensor = generate_input_tensor( [[1, h, w, c]])[0]
+                    input_tensor = get_inputs_by_shapes([[h, w, c]])[0]
                     model = MODELZOO[self.cfg['model_family']](input_tensor, self.cfg, vs, True)
-                    print(modelname, count_index)
-                    print(model.sconfig)
+                    # print(modelname, count_index)
+                    # print(model.sconfig)
                     if not model.sconfig in sconfigs:
                         sconfigs.append(model.sconfig)
 
-                        savemodelpath, tfpath, pbpath, inputnames, outputnames = save_to_models(self.args.savepath, [input_tensor], [model.out], modelname, str(count_index))
-                        self.log[modelname+"_"+str(count_index)] = model.config
+                        save_to_models(self.savepath, [input_tensor], [model.out], modelname, str(count_index))
+                        self.log[modelname+"_" + str(count_index)] = model.config
                         self.add_to_log()
                     
                     count_index += 1
-                for mid in self.log:
-                    for layer in self.log[mid]:
-                        print(mid, layer, self.log[mid][layer])
+                # for mid in self.log:
+                #     for layer in self.log[mid]:
+                #         print(mid, layer, self.log[mid][layer])
+

@@ -1,6 +1,28 @@
 import tensorflow as tf 
 from .ops import  *
-from .utils import * 
+from ..utils import * 
+
+
+def fire_block(input, squeezecin, cout, kernelsize, name = '', istraining = False, is_slice = False, log = False):
+    (h1, w1) = input.shape.as_list()[1:3]
+    in_features = int(input.get_shape()[3])
+
+    x = conv2d(input, squeezecin, 1, stride = 1, opname = name + '.1')
+    x1 = activation(x, activation = 'relu', opname = name + '.1')
+    x = conv2d(x1, cout, 1, stride = 1, opname = name + '.2')
+    x2 = activation(x, activation = 'relu', opname = name + '.2')
+    x = conv2d(x1, cout, kernelsize, stride = 1, opname = name + '.3')
+    x3 = activation(x, activation = 'relu', opname = name + '.3')
+    x = tf.concat([x2, x3], axis = 3)
+
+    logs = {}
+    if log:
+        logs[name + '.1'] = add_to_log('conv-relu', in_features, squeezecin, 1, 1, h1, w1)
+        logs[name + '.2'] = add_to_log('conv-relu', squeezecin, cout, 1, 1, h1, w1)
+        logs[name + '.3'] = add_to_log('conv-relu', squeezecin, cout, kernelsize, 1, h1, w1)
+        logs[name + '.4'] = add_ele_to_log('concat', [x2.shape.as_list()[1:4], x3.shape.as_list()[1:4]])
+    return x, logs
+
 
 class SqueezeNet(object):
     def __init__(self, x, cfg, version = None, sample = False):  ## change channel number, kernel size

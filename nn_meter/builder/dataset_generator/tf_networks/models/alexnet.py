@@ -1,6 +1,6 @@
 import tensorflow as tf 
 from .ops import  *
-from .utils import * 
+from ..utils import * 
 
 class AlexNet(object):
     def __init__(self, x, cfg, version = None, sample = False):  ## change channel number, kernel size
@@ -41,14 +41,12 @@ class AlexNet(object):
         self.config[layername]['inputh'] = inputh
         self.config[layername]['inputw'] = inputw 
 
-
     def build(self):
         x = conv2d(self.input, self.ncs[0], self.nks[0], opname = 'conv1', stride = 4, padding = 'VALID') #def conv2d(_input, out_features, kernel_size, opname = '', stride = 1, padding = 'SAME', param_initializer = None):
         x = activation(x, 'relu', opname = 'conv1.relu')
         self.add_to_log('conv-relu', 3, self.ncs[0], self.nks[0], 4, 'layer1', self.input.shape.as_list()[1], self.input.shape.as_list()[2])
 
         (h, w) = x.shape.as_list()[1:3]
-
         x = max_pooling(x, 3, 2, opname = 'conv1')
         self.add_to_log('max-pool', self.ncs[0], self.ncs[0], 3, 2, 'layer2', h, w)  ## bug: input size error
 
@@ -58,17 +56,14 @@ class AlexNet(object):
 
         (h, w) = x.shape.as_list()[1:3]
         x = max_pooling(x, 3, 2, padding = 'VALID', opname = 'conv2')
-        #print(x.shape)
         self.add_to_log('max-pool', self.ncs[1], self.ncs[1], 3, 2, 'layer4', h, w)
 
         x = conv2d(x, self.ncs[2], self.nks[2], opname = 'conv3', padding = 'SAME')
         x = activation(x, 'relu', opname = 'conv3.relu')
-        #print(x.shape)
         self.add_to_log('conv-relu', self.ncs[1], self.ncs[2], self.nks[2], 1, 'layer5', x.shape.as_list()[1], x.shape.as_list()[2])
 
         x = conv2d(x, self.ncs[3], self.nks[3], opname = 'conv4', padding = 'SAME')
         x = activation(x, 'relu', opname = 'conv4.relu')
-        #print(x.shape)
         self.add_to_log('conv-relu', self.ncs[2], self.ncs[3], self.nks[3], 1, 'layer6', x.shape.as_list()[1], x.shape.as_list()[2])
 
         x = conv2d(x, self.ncs[4], self.nks[4], opname = 'conv5', padding = 'SAME')
@@ -93,6 +88,5 @@ class AlexNet(object):
         self.add_to_log('fc-relu', self.ncs[5], self.ncs[6], None, None, 'layer11', None, None)
         x = fc_layer(x, self.num_classes, opname = 'fc3')
         self.add_to_log('fc', self.ncs[5], self.num_classes, None, None, 'layer12', None, None)
-        #print(x.shape)
 
         return x

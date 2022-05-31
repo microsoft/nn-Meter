@@ -1,6 +1,77 @@
 import tensorflow as tf 
 from .ops import  *
-from .utils import  *
+from ..utils import  *
+
+
+def res_basic_block(input, kernelsize, oup, stride, name = '', istraining = False, log = False):
+    logs = {}
+    (h1, w1) = input.shape.as_list()[1:3]
+    in_features = int(input.get_shape()[3])
+
+    x = conv2d(input, oup, kernelsize, stride = stride, opname = name + '.1')
+    x = batch_norm(x, istraining, opname = name + '.1')
+    x = activation(x, activation = 'relu', opname = name + '.1')
+
+    (h2, w2) = x.shape.as_list()[1:3]
+    x = conv2d(x, oup, kernelsize, stride = 1, opname = name + '.2')
+    x2 = batch_norm(x, istraining, opname = name + '.2')
+
+    if stride != 1 or oup != in_features:
+        x = conv2d(input, oup, 1, stride = stride, opname = name + '.0')
+        x1 = batch_norm(x, istraining, opname = name + '.0')
+    else:
+        x1 = input
+
+    x = x2 + x1
+    x = activation(x, activation = 'relu', opname = name + '.4')
+
+    if log:
+        logs[name + '.1'] = add_to_log('conv-bn-relu', in_features, oup, kernelsize, stride, h1, w1)
+        logs[name + '.2'] = add_to_log('conv-bn-relu', oup, oup, kernelsize, 1, h2, w2)
+        if stride != 1 or oup != in_features:
+             logs[name + '.0'] = add_to_log('conv-bn', in_features, oup, 1, stride, h1, w1)
+        logs[name + '.4'] = add_ele_to_log('add', [x1.shape.as_list()[1:4], x2.shape.as_list()[1:4]])
+        logs[name + '.5'] = add_to_log('relu', oup, oup, None, None, h2, w2)
+    return x, logs
+
+
+def res_bottleneck(input, kernelsize, midp, stride, exp = 4, name = '', istraining = False, log = False):
+    logs = {}
+    (h1, w1) = input.shape.as_list()[1:3]
+    in_features = int(input.get_shape()[3])
+
+    x = conv2d(input, midp, 1, stride = 1, opname = name + '.1')
+    x = batch_norm(x, istraining, opname = name + '.1')
+    x = activation(x, activation = 'relu', opname = name + '.1')
+
+    x = conv2d(x, midp, kernelsize, stride = stride, opname = name + '.2')
+    x = batch_norm(x, istraining, opname = name + '.2')
+    x = activation(x, activation = 'relu', opname = name + '.2')
+
+    (h2, w2) = x.shape.as_list()[1:3]
+    x = conv2d(x, midp * exp, 1, stride = 1, opname = name + '.3')
+    x2 = batch_norm(x, istraining, opname = name + '.3')
+
+    if stride != 1 or midp * exp != in_features:
+        x = conv2d(input, midp * exp, 1, stride = stride, opname = name + '.0')
+        x1 = batch_norm(x, istraining, opname = name + '.0')
+    else:
+        x1 = input 
+
+    x = x2 + x1
+    x = activation(x, activation = 'relu', opname = name + '.4')
+
+    logs = {}
+    if log:
+        logs[name + '.1'] = add_to_log('conv-bn-relu', in_features, midp, 1, 1, h1, w1)
+        logs[name + '.2'] = add_to_log('conv-bn-relu', midp, midp, kernelsize, stride, h1, w1)
+        logs[name + '.3'] = add_to_log('conv-bn', midp, midp * exp, 1, 1, h2, w2)
+        if stride != 1 or midp * exp != in_features:
+             logs[name + '.0'] = add_to_log('conv-bn', in_features, midp * exp, 1, stride, h1, w1)
+        logs[name + '.4'] = add_ele_to_log('add', [x1.shape.as_list()[1:4], x2.shape.as_list()[1:4]])
+        logs[name + '.5'] = add_to_log('relu', midp * exp, midp * exp, None, None, h2, w2)
+
+    return x, logs
 
 
 class ResNetV1(object):

@@ -1,6 +1,74 @@
 import tensorflow as tf 
 from .ops import  *
-from .utils import  *
+from ..utils import  *
+
+def shufflev2_unit(input, kernelsize, inp, oup, stride, mid_cscale = 1, name = '', istraining = False, is_slice = False, log = False):
+    (h1, w1, c1) = input.shape.as_list()[1:]
+    oup_inc = oup // 2
+    base_mid_c = oup_inc 
+    mid_c = int(base_mid_c * mid_cscale)
+    logs = {}
+
+    if stride == 1: 
+        out1, out2 = tf.split(input, num_or_size_splits = 2, axis = 3)
+        (h2, w2) = out1.shape.as_list()[1:3]
+        x = conv2d(out1, mid_c, 1, stride = 1, opname = name + '.1_2')
+        x = batch_norm(x, istraining, opname = name + '.1_2')
+        x = activation(x, activation = 'relu', opname = name + '.1_2')
+
+        (h3, w3) = x.shape.as_list()[1:3]
+        x = depthwise_conv2d(x, kernelsize, stride, opname = name + '.2_2')
+        x = batch_norm(x, istraining, opname = name + '.2_2')
+
+        (h4, w4) = x.shape.as_list()[1:3]
+        x = conv2d(x, oup_inc, 1, stride = 1, opname = name + '.3_2')
+        x = batch_norm(x, istraining, opname = name + '.3_2')
+        x1 = activation(x, activation = 'relu', opname = name + '.3_2')
+        out = tf.concat([x1, out2], axis = 3)
+
+        if log:
+            logs[name + '.1'] = add_to_log('split', c1, oup_inc, None, None, h1, w1)
+            logs[name + '.2.1'] = add_to_log('conv-bn-relu', oup_inc, mid_c, 1, 1, h2, w2)
+            logs[name + '.2.2'] = add_to_log('dwconv-bn', mid_c, mid_c, kernelsize, stride, h3, w3)
+            logs[name + '.2.3'] = add_to_log('conv-bn-relu', mid_c, oup_inc, 1, 1, h4, w4)
+            logs[name + '.3'] = add_ele_to_log('concat', [x1.shape.as_list()[1:4], out2.shape.as_list()[1:4]])
+            logs[name + '.4'] = add_ele_to_log('channel_shuffle', [out.shape.as_list()[1:4]])
+        return channel_shuffle(out, 2, is_slice), logs
+    else:
+         (h1, w1) = input.shape.as_list()[1:3]
+         x = depthwise_conv2d(input, kernelsize, stride = stride, opname = name + '.1_1')
+         x = batch_norm(x, istraining, opname = name + '.1_1')
+
+         (h2, w2) = x.shape.as_list()[1:3]
+         x = conv2d(x, oup_inc, 1, stride = 1, opname = name + '.2_1')
+         x = batch_norm(x, istraining, opname = name + '.2_1')
+         x1 = activation(x, activation = 'relu', opname = name + '.2_1')
+
+         x = conv2d(input, mid_c, 1, stride = 1, opname = name + '.1_2')
+         x = batch_norm(x, istraining, opname = name + '.1_2')
+         x = activation(x, activation = 'relu', opname = name + '.1_2')
+
+         (h3, w3) = x.shape.as_list()[1:3]
+         x = depthwise_conv2d(x, kernelsize, stride, opname = name + '.2_2')
+         x = batch_norm(x, istraining, opname = name + '.2_2')
+
+         (h4, w4) = x.shape.as_list()[1:3]
+         x = conv2d(x, oup_inc, 1, stride = 1, opname = name + '.3_2')
+         x = batch_norm(x, istraining, opname = name + '.3_2')
+         x2 = activation(x, activation = 'relu', opname = name + '.3_2')
+         out = tf.concat([x1, x2], axis = 3)
+
+         if log:
+            logs[name + '.1.1'] = add_to_log('dwconv-bn-relu', c1, c1, kernelsize, stride, h1, w1)
+            logs[name + '.1.2'] = add_to_log('conv-bn-relu', c1, oup_inc, 1, 1, h2, w2)
+            logs[name + '.2.1'] = add_to_log('conv-bn-relu', c1, mid_c, 1, 1, h1, w1)
+            logs[name + '.2.2'] = add_to_log('dwconv-bn-relu', mid_c, mid_c, kernelsize, stride, h3, w3)
+            logs[name + '.2.3'] = add_to_log('conv-bn-relu', mid_c, oup_inc, 1, 1, h4, w4)
+            logs[name + '.3'] = add_ele_to_log('concat', [x1.shape.as_list()[1:4], x2.shape.as_list()[1:4]])
+            logs[name + '.4'] = add_ele_to_log('channel_shuffle', [out.shape.as_list()[1:4]])
+
+         return channel_shuffle(out, 2, is_slice), logs
+
 
 class ShuffleNetV2:
     def __init__(self, x, cfg, version = None, sample = False, enable_out = False):  ## change channel number, kernel size
@@ -83,7 +151,7 @@ class ShuffleNetV2:
                 else:
                     c_current = self.ncs[layercount-1]
 
-                (h, w) = x.shape.as_list()[1: 3]
+                (h, w) = x.shape.as_list()[1:3]
                 x, log = shufflev2_unit(x, self.nks[layercount - 2], int(x.get_shape()[3]), c_current, sr,
                                         self.mcs[layercount-2], name = 'layer' + str(layercount), log = True)
                 self.config.update(log)

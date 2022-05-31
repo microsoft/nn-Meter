@@ -1,6 +1,7 @@
 import tensorflow as tf
 from .ops import  *
-from .utils import  *
+from ..utils import  *
+
 class MobileNetV1(object):
     def __init__(self, x, cfg, version = None, sample = False):  ## change channel number, kernel size
         self.input = x
@@ -8,11 +9,11 @@ class MobileNetV1(object):
         
         self.bcs = [32, 64, 128, 128, 256, 256, 512, 512, 512, 512, 512, 512, 1024, 1024]
         self.bks = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-        #print(cfg['sample_space'])
+        # print(cfg['sample_space'])
         self.cs = get_sampling_channels(cfg['sample_space']['channel']['start'], cfg['sample_space']['channel']['end'], cfg['sample_space']['channel']['step'], len(self.bcs))
         self.ks = get_sampling_ks(cfg['sample_space']['kernelsize'], len(self.bks))
-        #print(self.cs)
-        #print(self.ks)
+        # print(self.cs)
+        # print(self.ks)
         self.config = {}
         if sample == True:
 
@@ -40,13 +41,10 @@ class MobileNetV1(object):
         self.config[layername]['inputh'] = inputh
         self.config[layername]['inputw'] = inputw
 
-
     def build(self):
         x = conv2d(self.input, self.ncs[0], self.nks[0], opname = 'conv1', stride = 2, padding = 'SAME') #def conv2d(_input, out_features, kernel_size, opname = '', stride = 1, padding = 'SAME', param_initializer = None):
         x = batch_norm(x, opname = 'conv1.bn')
         x = activation(x, 'relu', opname = 'conv1.relu')
-        #print(x.shape)
-
         self.add_to_log('conv-bn-relu', 3, self.ncs[0], self.nks[0], 2, 'layer1', self.input.shape.as_list()[1], self.input.shape.as_list()[2])
 
         r = [1, 2, 2, 6, 2]
@@ -66,7 +64,7 @@ class MobileNetV1(object):
                 x = depthwise_conv2d(x, self.nks[layercount-2], sr, opname = 'dwconv' + str(layercount) + '.1')
                 x = batch_norm(x, opname = 'dwconv' + str(layercount) + '.1.bn')
                 x = activation(x, 'relu', opname = 'dwconv' + str(layercount) + '.1.relu')
-                #print(layercount, x.shape)
+                # print(layercount, x.shape)
                 self.add_to_log('dwconv-bn-relu', self.ncs[layercount-2], self.ncs[layercount-2], self.nks[layercount-2], sr, 'layer' + str(layercount) + '.1', h, w)
 
                 (h, w) = x.shape.as_list()[1:3]
@@ -74,7 +72,7 @@ class MobileNetV1(object):
                 x = batch_norm(x, opname = 'conv' + str(layercount) + '.2.bn')
                 x = activation(x, 'relu', opname = 'conv' + str(layercount) + '.2.relu')
                 self.add_to_log('conv-bn-relu', self.ncs[layercount-2], self.ncs[layercount-1], 1, 1, 'layer' + str(layercount) + '.2', h, w)
-               # print(layercount, x.shape)
+                # print(layercount, x.shape)
                 layercount  += 1
 
         x = tf.reduce_mean(x, axis = [1, 2], keep_dims = True)
@@ -84,6 +82,6 @@ class MobileNetV1(object):
 
         x = fc_layer(x, self.num_classes, opname = 'fc3')
         self.add_to_log('fc', self.ncs[layercount-2], self.num_classes, None, None, 'layer' + str(layercount + 2), None, None)
-        #print(x.shape)
+        # print(x.shape)
 
         return x

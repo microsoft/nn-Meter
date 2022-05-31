@@ -1,6 +1,6 @@
 import tensorflow as tf 
 from .ops import  *
-from .utils import * 
+from ..utils import * 
 import numpy as np
 cfgs = {
     11: [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'], 
