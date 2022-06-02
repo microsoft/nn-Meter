@@ -66,7 +66,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
 
 
 def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
-                   have_converted = False, **kwargs):
+                   have_converted = False, log_frequency = 50, **kwargs):
     """ run models with given backend and return latency of testcase models
 
     @params:
@@ -126,7 +126,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     open(os.path.join(info_save_path, "profile_error.log"), 'a').write(f"{id}: {e}\n")
 
             # save information to json file for per 50 models
-            if count > 0 and count % 50 == 0:
+            if count > 0 and count % log_frequency == 0:
                 save_profiled_results(models, os.path.join(info_save_path, save_name), detail, metrics)
                 logging.keyinfo(f"{count} model complete. Still profiling... Save the intermediate results to {os.path.join(info_save_path, save_name)}.")
 

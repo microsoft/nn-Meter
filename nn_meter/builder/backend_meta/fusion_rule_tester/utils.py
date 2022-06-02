@@ -20,6 +20,7 @@ __BUILTIN_OPERATORS__ = {
     "relu6": "Relu6",
     "sigmoid": "Sigmoid",
     "hswish": "Hswish",
+    "swish": "Swish",
     "reshape": "Reshape",
     "add": "Add",
     "concat": "Concat",
