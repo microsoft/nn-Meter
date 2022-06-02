@@ -85,7 +85,7 @@ class BaseTestCase:
         self.kernel_size = config['KERNEL_SIZE']
         self.cout = config['COUT']
         self.padding = config['PADDING']
-        self.workspace_path = os.path.join(config['WORKSPACE'], 'models')
+        self.workspace_path = os.path.join(config['WORKSPACE'], 'testcases')
         os.makedirs(self.workspace_path, exist_ok=True)
 
     def _model_block(self):

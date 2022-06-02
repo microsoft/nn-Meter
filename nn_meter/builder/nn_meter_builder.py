@@ -32,7 +32,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
         save_name = "converted_results.json"
 
     workspace_path = builder_config.get('WORKSPACE', mode)
-    model_save_path = os.path.join(workspace_path, 'models')
+    model_save_path = os.path.join(workspace_path, 'testcases' if mode == 'ruletest' else 'kernels')
     os.makedirs(model_save_path, exist_ok=True)
     info_save_path = os.path.join(workspace_path, "results")
     os.makedirs(info_save_path, exist_ok=True)
@@ -99,7 +99,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
             models = json.load(fp)
 
     workspace_path = builder_config.get('WORKSPACE', mode)
-    model_save_path = os.path.join(workspace_path, 'models')
+    model_save_path = os.path.join(workspace_path, 'testcases' if mode == 'ruletest' else 'kernels')
     os.makedirs(model_save_path, exist_ok=True)
     info_save_path = os.path.join(workspace_path, "results")
     os.makedirs(info_save_path, exist_ok=True)

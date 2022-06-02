@@ -147,6 +147,7 @@ def save_model(model, model_path, implement):
         model['model'](get_tensor_by_shapes(model['shapes']))
         keras.models.save_model(model['model'], model_path)
         return model_path
+
     elif implement == 'torch':
         import torch
         from nn_meter.builder.modules.torch_networks.utils import get_inputs_by_shapes
