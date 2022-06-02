@@ -3,6 +3,8 @@
 import argparse
 import tensorflow as tf
 from .ops import *
+tf.compat.v1.disable_eager_execution()
+
 
 def str2structure(xstr):
     nodestrs = xstr.split('+')
@@ -163,20 +165,23 @@ if __name__ == '__main__':
     x = batch_norm(x)
     x = tf.nn.relu(x)
 
-    x = tf.reduce_mean(x, axis = [1, 2], keep_dims = True)
+    x = tf.reduce_mean(x, axis = [1, 2], keepdims = True)
     x = flatten(x)
     x = fc_layer(x, args.num_of_classes)
 
     output_tensor = x
+    
+    model = keras.Model(input_tensor, output_tensor)
+    model.save("/data1/jiahang/working/pixel4_int8_workspace/code/test.h5")
 
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
+    # sess = tf.compat.v1.Session()
+    # sess.run(tf.compat.v1.global_variables_initializer())
 
-    if args.generate_tflite_file_name !=  '':
-        converter = tf.lite.TFLiteConverter.from_session(sess, input_tensors = [input_tensor], output_tensors = [output_tensor])
-        tflite_model = converter.convert()
-        open(args.generate_tflite_file_name, 'wb').write(tflite_model)
+    # if args.generate_tflite_file_name !=  '':
+    #     converter = tf.lite.TFLiteConverter.from_session(sess, input_tensors = [input_tensor], output_tensors = [output_tensor])
+    #     tflite_model = converter.convert()
+    #     open(args.generate_tflite_file_name, 'wb').write(tflite_model)
 
-    output_graph_def = tf.graph_util.convert_variables_to_constants(sess, tf.get_default_graph().as_graph_def(), [output_tensor.op.name])
-    with tf.gfile.GFile(args.output_file_name, "wb") as f:
-        f.write(output_graph_def.SerializeToString())
+    # output_graph_def = tf.graph_util.convert_variables_to_constants(sess, tf.get_default_graph().as_graph_def(), [output_tensor.op.name])
+    # with tf.gfile.GFile(args.output_file_name, "wb") as f:
+    #     f.write(output_graph_def.SerializeToString())
