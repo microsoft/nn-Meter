@@ -231,11 +231,13 @@ def nn_meter_cli():
     module_type.add_argument(
         "--operator",
         type=str,
+        nargs='+',
         help="name of the registered operator"
     )
     module_type.add_argument(
         "--testcase",
         type=str,
+        nargs='+',
         help="name of the registered testcase"
     )
     module_type.add_argument(

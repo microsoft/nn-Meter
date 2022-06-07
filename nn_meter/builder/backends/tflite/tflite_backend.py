@@ -17,10 +17,10 @@ class TFLiteBackend(BaseBackend):
         """
         super().update_configs()
         self.profiler_kwargs.update({
-            'dst_kernel_path': self.configs['KERNEL_PATH'],
-            'serial': self.configs['DEVICE_SERIAL'],
+            'dst_graph_path': self.configs['REMOTE_MODEL_DIR'],
             'benchmark_model_path': self.configs['BENCHMARK_MODEL_PATH'],
-            'dst_graph_path': self.configs['REMOTE_MODEL_DIR']
+            'serial': self.configs['DEVICE_SERIAL'],
+            'dst_kernel_path': self.configs['KERNEL_PATH']
         })
 
     def convert_model(self, model_path, save_path, input_shape=None):

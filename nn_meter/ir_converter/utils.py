@@ -118,6 +118,7 @@ def torch_model_to_graph(model, input_shape=(1, 3, 224, 224), apply_nni=False):
     torch = try_import_torch()
     args = torch.randn(*input_shape)
     try:
+        # if the test model has no parameters (such as activation ops), there will be error when calling ``model.parameters``
         if next(model.parameters()).is_cuda:
             args = args.to("cuda")
     except:

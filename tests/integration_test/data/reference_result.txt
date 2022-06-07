@@ -76,8 +76,8 @@ densenet_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 917.2059
 googlenet_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 167.5816
 mnasnet_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 45.8056
 mobilenetv2_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 43.9635
-mobilenetv3large_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 55.177
-mobilenetv3small_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 29.8505
+mobilenetv3large_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 34.9444
+mobilenetv3small_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 11.8422
 resnet18_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 216.1971
 shufflenetv2_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 21.3181
 squeezenet_0.onnx, onnx, cortexA76cpu_tflite21, 1.0, 98.3766
@@ -87,8 +87,8 @@ densenet_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 186.5604
 googlenet_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 32.7581
 mnasnet_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 11.6306
 mobilenetv2_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 9.9207
-mobilenetv3large_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 12.5489
-mobilenetv3small_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 6.7055
+mobilenetv3large_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 9.8718
+mobilenetv3small_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 4.3745
 resnet18_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 39.3235
 shufflenetv2_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 5.4239
 squeezenet_0.onnx, onnx, adreno640gpu_tflite21, 1.0, 18.6742
@@ -98,8 +98,8 @@ densenet_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 193.0796
 googlenet_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 37.9612
 mnasnet_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 11.7263
 mobilenetv2_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 9.9861
-mobilenetv3large_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 12.927
-mobilenetv3small_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 7.0057
+mobilenetv3large_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 10.0312
+mobilenetv3small_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 4.4824
 resnet18_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 49.4287
 shufflenetv2_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 5.5792
 squeezenet_0.onnx, onnx, adreno630gpu_tflite21, 1.0, 21.095
@@ -109,8 +109,8 @@ densenet_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 144.1079
 googlenet_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 17.0897
 mnasnet_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 24.3526
 mobilenetv2_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 22.0187
-mobilenetv3large_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 56.0307
-mobilenetv3small_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 39.1638
+mobilenetv3large_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 36.9072
+mobilenetv3small_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 19.2326
 resnet18_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 21.8861
 shufflenetv2_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 20.8282
 squeezenet_0.onnx, onnx, myriadvpu_openvino2019r2, 1.0, 11.0523

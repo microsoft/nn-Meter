@@ -27,16 +27,25 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
 
     mark (str): the mark for the running results. Defaults to ''.
 
-    save_path (str): the folder to save results file such as feature table and predictor pkl file
+    save_path (str): the folder to save results file such as feature table and predictor pkl file. If save_path is None, the data will not be saved.
     
     predict_label (str): the predicting label to build kernel predictor
     """
     feature_parser = get_feature_parser(kernel_type)
-    os.makedirs(os.path.join(save_path, "collection"), exist_ok=True)
-    os.makedirs(os.path.join(save_path, "predictors"), exist_ok=True)
+    if save_path:
+        os.makedirs(os.path.join(save_path, "collection"), exist_ok=True)
+        os.makedirs(os.path.join(save_path, "predictors"), exist_ok=True)
+        data_save_path = os.path.join(save_path, "collection", f'Data_{kernel_type}_{mark}.csv')
+        res_save_path = os.path.join(save_path, "collection", f"TestResult_{kernel_type}_{mark}.csv")
+        pred_save_path = os.path.join(save_path, "predictors", f"{kernel_type}_{mark}.pkl")
+    else:
+        data_save_path = None
+        res_save_path = None
+        pred_save_path = None
+
     kernel_data = collect_kernel_data(kernel_data, predict_label)
     data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
-                                        save_path=os.path.join(save_path, "collection", f'Data_{kernel_type}_{mark}.csv'),
+                                        save_path=data_save_path,
                                         predict_label=predict_label)
 
     kernel_data2 = collect_kernel_data(
@@ -73,9 +82,9 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
         test_res["True"] = testy
         test_res["Pred"] = predicts
         test_res["Error"] = pred_error_list
-        res_save_path = os.path.join(save_path, "collection", f"TestResult_{kernel_type}_{mark}.csv")
-        test_res.to_csv(res_save_path, index=False)
-        logging.info(f"All test data and predicted results are stored in path {res_save_path}")
+        if res_save_path:
+            test_res.to_csv(res_save_path, index=False)
+            logging.info(f"All test data and predicted results are stored in path {res_save_path}")
 
         # locate large error data
         error_configs = []
@@ -85,10 +94,10 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
                 error_configs.append(error_config)
 
     # dump the predictor model
-    import pickle
-    pred_save_path = os.path.join(save_path, "predictors", f"{kernel_type}_{mark}.pkl")
-    with open(pred_save_path, 'wb') as fp:
-        pickle.dump(predictor, fp)
-    logging.keyinfo(f"Saved the predictor for {kernel_type} in path {pred_save_path}.")
+    if pred_save_path:
+        import pickle
+        with open(pred_save_path, 'wb') as fp:
+            pickle.dump(predictor, fp)
+        logging.keyinfo(f"Saved the predictor for {kernel_type} in path {pred_save_path}.")
 
     return predictor, acc10, error_configs

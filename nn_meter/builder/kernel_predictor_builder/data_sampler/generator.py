@@ -16,7 +16,7 @@ class KernelGenerator:
         self.kernel_type = kernel_type
         self.sample_num = sample_num
         self.workspace_path = builder_config.get('WORKSPACE', 'predbuild')
-        self.case_save_path = os.path.join(self.workspace_path, 'models')
+        self.case_save_path = os.path.join(self.workspace_path, 'kernels')
         self.kernel_info = {kernel_type: {}}
         self.kernels = self.kernel_info[self.kernel_type]
         self.implement = builder_config.get('IMPLEMENT', 'predbuild')
