@@ -39,6 +39,14 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
                                         save_path=os.path.join(save_path, "collection", f'Data_{kernel_type}_{mark}.csv'),
                                         predict_label=predict_label)
 
+    kernel_data2 = collect_kernel_data(
+        (f"/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/{kernel_type}_lut.json",
+         f"/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/profiled_{kernel_type}_lut.json"), predict_label)
+    data2 = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data2,
+                                        save_path=os.path.join(save_path, "collection", f'Data_{kernel_type}_{mark}.csv'),
+                                        predict_label=predict_label)
+    X2, Y2 = data2
+
     acc10, error_configs = None, None
     X, Y = data
     # initialize the regression model based on `RandomForestRegressor`
@@ -48,7 +56,9 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
         predictor.fit(X, Y)
     else:
         # get data for regression
-        trainx, testx, trainy, testy = train_test_split(X, Y, test_size = 0.2, random_state = 10)
+        trainx, testx, trainy, testy = train_test_split(X2, Y2, test_size = 0.2, random_state = 10)
+        # trainx = X
+        # trainy = Y
         logging.info(f"training data size: {len(trainx)}, test data size: {len(testx)}")
 
         # start training
