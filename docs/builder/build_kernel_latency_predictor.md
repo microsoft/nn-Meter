@@ -1,12 +1,40 @@
 # Build Kernel Latency Predictor
 
-## Step1: Config Sampling From Prior Distribution
+## Step1: Prepare Backends and Create Workspace
+
+The first step to build kernel latency predictor is to prepare backends and create workspace. Users could follow guidance [Prepare Backends](./prepare_backend.md) and [Create Workspace](./overview.md#create-workspace) for this step.
+
+After creating the workspace, a yaml file named `predictorbuild_config.yaml` will be placed in `<workspace-path>/configs/`. The predictor build configs includes:
+
+- `DETAIL`: Whether to attach detail information to the json output, such as the shape and configuration information in profiled results. Default value is `FALSE`.
+- `IMPLEMENT`: The code implementation, could be chosen from [`tensorflow`, `torch`].
+- `BATCH_SIZE`: The batch size in kernel profiling. Default value is 1.
+- `KERNELS`: The training parameters for each kernel. By default, nn-Meter set 16 kernels, including "conv-bn-relu", "dwconv-bn-relu", "maxpool", "avgpool", "fc", "concat", "split", "channelshuffle", "se", "global-avgpool", "bnrelu", "bn", "hswish", "relu", "addrelu", "add". For each type of kernel, the parameters includes:
+  - `INIT_SAMPLE_NUM`: the data size for predictor initialization.
+  - `FINEGRAINED_SAMPLE_NUM`: the data size for adaptive sampling. For each data with error higher than error_threshold, number of `FINEGRAINED_SAMPLE_NUM` data will be generated based the the large error data. Defaults to 20.
+  - `ITERATION`: the iteration for sampling and training. Predictor training based on initial sampling is regarded as iteration 1, thus `iteration == 2` means one iteration for adaptive sampling.
+  - `ERROR_THRESHOLD`: the threshold of large error. Defaults to 0.1.
+
+Users could open `<workspace-path>/configs/predictorbuild_config.yaml` and edit the content. After completing configuration, users could initialize workspace in `builder_config` module before building the kernel latency predictor:
+
+```python
+from nn_meter.builder import builder_config
+
+# initialize builder config with workspace
+builder_config.init(
+    workspace_path="path/to/workspace/folder"
+) # change the text to required platform type and workspace path
+```
+
+Note: after running ``builder_config.init``, the config are loaded already. If users want to update config, after the updated config file is saved and closed, the config will take effect after reload config space by running ``builder_config.init`` again.
+
+## Step2: Config Sampling From Prior Distribution
 
 To learn the relationship between configurations and latency, we need to generate a training set (i.e., variously configured kernels and the latencies) for regression. While it's unfeasible to sample and measure all the configurations for all kernels, a direct method is random sampling.
 
 The first step is sampling configuration values from the prior distribution, which is inferred from the existing models. Based on our kernel model, there are generally 6 configuration values, including height and width (`"HW"`), input channel (`"CIN"`), output channel (`"COUT"`), kernel size (`"KERNEL_SIZE"`), strides (`"STRIDES"`), and kernel size for pooling layer (`"POOL_STRIDES"`). We sampling the configuration based on the prior distribution and adapt the value to common valid values. That is, height and weight are verified to value from `[1, 3, 7, 14, 28, 56, 112, 224]`, kernel size to `[1, 3, 5, 7]`, strides to `[1, 2, 4]`, and kernel size for pooling layer to `[2, 3]`. We stored the prior knowledge of existing models as csv files in `nn_meter/builder/kernel_predictor_builder/data_sampler/prior_config_lib/`.
 
-## Step 2: Generate and Profile Kernel Model by Configs
+## Step 3: Generate and Profile Kernel Model by Configs
 
 The second step is generating and profiling kernel model by configurations. nn-Meter supports both implementation of Tensorflow and PyTorch kernels. Users could switch the kernel implementation between Tensorflow and PyTorch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use Tensorflow implementation and `"tflite_cpu"` backend as an example.
 
@@ -65,7 +93,7 @@ kernel_data = sample_and_profile_kernel_data(kernel_type, sample_num=sample_num,
                                              backend=backend, sampling_mode='prior', mark=mark)
 ```
 
-The generated models are saved in `<workspace-path>/predictor_build/models`, and the configuration information and profiled results are dumped in json file to `<workspace-path>/predictor_build/results/<kernel_type>.json` and `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`.
+The generated models are saved in `<workspace-path>/predictor_build/kernels`, and the configuration information and profiled results are dumped in json file to `<workspace-path>/predictor_build/results/<kernel_type>.json` and `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`.
 
 Note: sometimes the number of sampling kernel data is smaller than the value of `sample_num`. It is natural since nn-Meter will remove duplicates sample when generating kernel data.
 
@@ -98,7 +126,7 @@ profiled_results = profile_models(backend, models, mode='predbuild', have_conver
 
 Note: for kernels related to `conv` or `dwconv`, our experiment results have shown that all kernels containing one `conv` layer have almost the same latency results, as `conv` layer has dominant latency. For example, `conv-bn-relu` has almost the same latency as `conv-block`. Same observation was found for `dwconv` related kernels. Therefore in nn-Meter, all `conv` related kernels shares the same kernel predictor, so does `dwconv` related kernels.
 
-## Step 3: Initialize Kernel Latency Predictor
+## Step 4: Initialize Kernel Latency Predictor
 
 After preparing the training data, we construct a random forest regression model as the kernel latency predictor. Here is an example:
 
@@ -154,7 +182,7 @@ predictor, data = build_initial_predictor_by_data(
 )
 ```
 
-## Step 4: Adaptive Data Sampling
+## Step 5: Adaptive Data Sampling
 
 In the paper of nn-Meter, we have observe that the configuration of kernel size (`KERNEL_SIZE`), height and width (`HW`), input channel (`CIN`), and output channel (`COUT`) show the non-linearity pattern on our measured devices. Instead, `HW` and `COUT` exhibit the staircase pattern, in which Conv with two different `HW` / `COUT` may have the same latency. These non-linearities reflect the complexities in hardware optimizations.
 
@@ -185,10 +213,10 @@ backend = "tflite_cpu"
 error_threshold = 0.1
 
 predictor, data = build_adaptive_predictor_by_data(
-    kernel_type, data, backend, finegrained_sample_num=5
+    kernel_type, kernel_data, backend, finegrained_sample_num=5
 )
 ```
-In the method `build_adaptive_predictor_by_data`, the parameter `data` indicates all training and testing data for current predictor training. The value of `data` could either be an instance of Dict generated by `build_initial_predictor_by_data` or `build_adaptive_predictor_by_data`, or be a instance of Tuple such as:
+In the method `build_adaptive_predictor_by_data`, the parameter `kernel_data` indicates all training and testing data for current predictor training. The value of `kernel_data` could either be an instance of Dict generated by `build_initial_predictor_by_data` or `build_adaptive_predictor_by_data`, or be a instance of Tuple such as:
 
 ```python
 config_json_file = [
@@ -237,7 +265,108 @@ from nn_meter.builder import build_latency_predictor
 build_latency_predictor(backend="tflite_cpu")
 ```
 
-# Build predictor for customized kernel
+# Kernel Data Format
+
+## Structure of Kernel Data
+
+In the process to build kernel latency predictor, a series of kernel data will be sampled, generated, and profiled to build the training dataset. One piece of complete kernel data consists of two parts, the configuration information and the profiled results (in default is the latency value). The configuration information and profiled results are dumped in json file to `<workspace-path>/predictor_build/results/<kernel_type>_<mark>.json` and `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`， respectively. In each data piece, `"model"` points to its directory to the path of this kernels' `Keras` model, `"shapes"` indicates the input shape of the tensor to test, and `"latency"` reports the profiled results after running `profile_models`. The ids of kernel data are randomly generated and consists of 6 capital letters.
+
+This is a json dump of the configuration information of generated kernels, which we call it config json file:
+
+```json
+"conv-bn-relu": {
+    "YB2F4N": {
+        "model": "<workspace-path>/predictor_build/kernels/conv-bn-relu_prior_YB2F4N",
+        "shapes": [
+            [
+                13,
+                13,
+                212
+            ]
+        ],
+        "config": {
+            "HW": 13,
+            "CIN": 212,
+            "COUT": 176,
+            "KERNEL_SIZE": 1,
+            "STRIDES": 1
+        }
+    }
+}
+```
+
+After running and profiling the kernels, the `"latency"` attribute appears in `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`, which we call it latency json file:
+
+```json
+"conv-bn-relu": {
+    "YB2F4N": {
+        "latency": "37.53 +- 0.314"
+    }
+}
+```
+Note: If the parameter `DETAIL` is `TRUE` in `<workspace-path>/configs/predictorbuild_config.yaml`, the configuration information will also be dumped in `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`.
+
+Config json file and latency json file formed the training data of kernel latency predictor. The kernel data should be defined as follows:
+
+```python
+config_json_file = [
+    f'{workspace}/predictor_build/results/{kernel_type}_prior.json',
+    f'{workspace}/predictor_build/results/{kernel_type}_finegrained1.json',
+    f'{workspace}/predictor_build/results/{kernel_type}_finegrained2.json'
+]
+latency_json_file = [
+    f'{workspace}/predictor_build/results/profiled_{kernel_type}.json'
+]
+kernel_data = (config_json_file, latency_json_file)
+```
+
+and called as follows:
+```python
+# build initial latency predictor by kernel_data
+predictor, acc10, error_configs = build_predictor_by_data(
+    kernel_type, kernel_data, backend, error_threshold=error_threshold, mark="prior",
+    save_path=os.path.join(workspace, "predictor_build", "results")
+)
+```
+or:
+```python
+# build adaptive latency predictor by kernel_data
+predictor, data = build_adaptive_predictor_by_data(
+    kernel_type, kernel_data, backend, finegrained_sample_num=5
+)
+```
+
+## Convert Kernel Data to CSV
+
+nn-Meter provides method to convert kernel data json files to CSV. Here is an example:
+
+```python
+from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import collect_kernel_data
+from nn_meter.builder.kernel_predictor_builder.predictor_builder.extract_feature import get_feature_parser, get_data_by_profiled_results
+
+kernel_type = 'conv-bn-relu'
+
+# define kernel data
+config_json_file = [
+    f'{workspace}/predictor_build/results/{kernel_type}_prior.json',
+    f'{workspace}/predictor_build/results/{kernel_type}_finegrained1.json',
+    f'{workspace}/predictor_build/results/{kernel_type}_finegrained2.json'
+]
+latency_json_file = [
+    f'{workspace}/predictor_build/results/profiled_{kernel_type}.json'
+]
+kernel_data = (config_json_file, latency_json_file)
+
+# read kernel data and extract features
+kernel_data = collect_kernel_data(kernel_data)
+feature_parser = get_feature_parser(kernel_type) # define the feature to extract
+
+data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
+                                    save_path="path/to/csv/test.csv")
+```
+
+
+# Build Predictor for Customized Kernel
 
 If users want to add new kernels to profile latency and build predictor, here are several steps to prepare and register new kernels.
 

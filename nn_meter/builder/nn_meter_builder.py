@@ -192,12 +192,12 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
     init_sample_num (int, optional): the data size for predictor initialization. Defaults to 1000.
     
     finegrained_sample_num (int, optional): the data size for adaptive sampling. For each data with error higher than 
-        error_threshold, #finegrained_sample_num data will be generated based the the large error data. Defaults to 10.
+        error_threshold, number of `finegrained_sample_num` data will be generated based the the large error data. Defaults to 10.
 
-    iteration (int, optional): the iteration for sampling and training. Initial sampling is regarded as iteration 1,
-        thus `iteration == 2` means one iteration for adaptive sampling. Defaults to 5.
+    iteration (int, optional): the iteration for sampling and training. Predictor training based on initial sampling is regarded as
+    iteration 1, thus `iteration == 2` means one iteration for adaptive sampling. Defaults to 5.
 
-    error_threshold (float, optional): the threshold of large error. Defaults to 0.2.
+    error_threshold (float, optional): the threshold of large error. Defaults to 0.1.
 
     predict_label (str): the predicting label to build kernel predictor. Defaults to "latency"
  
