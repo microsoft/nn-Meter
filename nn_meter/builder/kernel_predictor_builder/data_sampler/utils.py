@@ -76,9 +76,6 @@ def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorf
         else:
             raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
         kernel_module = blocks
-    else:
-        raise NotImplementedError(f'Kernel type {kernel_type} not exists.')
-
 
     else:
         raise ValueError(f"Unsupported kernel type: {kernel_type}. Please register the kernel first.")
