@@ -200,7 +200,8 @@ class HswishTF1(BaseOperator):
     # the hard-swish op from tensorflow v1
     def get_model(self):
         def func(inputs):
-            return tf.nn.relu6(tf.math.add(inputs, 3)) * 0.16667
+            relu6 = tf.keras.layers.ReLU(6)
+            return inputs * relu6(inputs + 3.) * (1. / 6.)
         return func
 
 

@@ -41,7 +41,7 @@ class TFLiteProfiler(BaseProfiler):
         if self._serial:
             device = client.device(self._serial)
         else:
-            device = client.devices()[0]  
+            device = client.devices()[0]
 
         if not preserve:
             device.push(graph_path, remote_graph_path)
@@ -63,9 +63,9 @@ class TFLiteProfiler(BaseProfiler):
             if clean:
                 if self._serial:
                     os.system(f"adb -s {self._serial} shell rm {remote_graph_path}")
+                    os.remove(graph_path)
                 else:
                     os.system(f"adb shell rm {remote_graph_path}")
-                os.remove(graph_path)
 
         # node = parse_res(res)
         # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/profile_res.txt", 'a').write(node)  
