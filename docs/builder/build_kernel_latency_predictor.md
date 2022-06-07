@@ -38,11 +38,6 @@ The first step is sampling configuration values from the prior distribution, whi
 
 The second step is generating and profiling kernel model by configurations. nn-Meter supports both implementation of Tensorflow and PyTorch kernels. Users could switch the kernel implementation between Tensorflow and PyTorch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use Tensorflow implementation and `"tflite_cpu"` backend as an example.
 
-<<<<<<< HEAD
-=======
-The second step is generating and profiling kernel model by configurations. nn-Meter supports both implementation of Tensorflow and PyTorch kernels. Users could switch the kernel implementation between Tensorflow and PyTorch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use Tensorflow implementation and `"tflite_cpu"` backend as an example.
-
->>>>>>> main
 Currently, the kernel blocks and corresponding configurations supported by nn-Meter include:
 
 (conv related kernels)
