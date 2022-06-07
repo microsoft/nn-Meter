@@ -40,19 +40,26 @@ class KernelGenerator:
         for id, value in self.kernels.items():
             model_path = os.path.join(self.case_save_path, ("_".join([kernel_type, self.mark, id]) + self.model_suffix))
             kernel_cfg = value['config']
-            try:
-                _, input_tensor_shape, config = generate_model_for_kernel(
-                    kernel_type, kernel_cfg, save_path=model_path,
-                    implement=self.implement, batch_size=self.batch_size
-                )
-                self.kernels[id] = {
-                    'model': model_path,
-                    'shapes': input_tensor_shape,
-                    'config': config
-                }
-            except:
-                pass
-        
+            # try:
+            _, input_tensor_shape, config = generate_model_for_kernel(
+                kernel_type, kernel_cfg, save_path=model_path,
+                implement=self.implement, batch_size=self.batch_size
+            )
+            self.kernels[id] = {
+                'model': model_path,
+                'shapes': input_tensor_shape,
+                'config': config
+            }
+            # except:
+                # pass
+        # save information to json file in incrementally mode
+        info_save_path = os.path.join(self.workspace_path, "results", f"{kernel_type}_{self.mark}.json")
+        new_kernels_info = merge_info(new_info=self.kernel_info, info_save_path=info_save_path)
+        os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
+        with open(info_save_path, 'w') as fp:
+            json.dump(new_kernels_info, fp, indent=4)
+        logging.keyinfo(f"Save the kernel model information to {info_save_path}")
+
     def run(self, sampling_mode = 'prior', configs = None):
         """ sample N configurations for target kernel, generate tensorflow keras model files.
 
@@ -88,14 +95,5 @@ def generate_config_sample(kernel_type, sample_num, mark = '', sampling_mode = '
     """
     generator = KernelGenerator(kernel_type, sample_num, mark=mark)
     kernels_info = generator.run(sampling_mode=sampling_mode, configs=configs)
-
-    # save information to json file in incrementally mode
-    workspace_path = builder_config.get('WORKSPACE', "predbuild")
-    info_save_path = os.path.join(workspace_path, "results", f"{kernel_type}_{mark}.json")
-    new_kernels_info = merge_info(new_info=kernels_info, info_save_path=info_save_path)
-    os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
-    with open(info_save_path, 'w') as fp:
-        json.dump(new_kernels_info, fp, indent=4)
-    logging.keyinfo(f"Save the kernel model information to {info_save_path}")
 
     return kernels_info
