@@ -47,11 +47,11 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
                 model_path = model['model']
                 converted_model = backend.convert_model(model_path, model_save_path, model['shapes'])
                 model['converted_model'] = converted_model
+                count += 1
             except Exception as e:
                 open(os.path.join(info_save_path, "convert_error.log"), 'a').write(f"{id}: {e}\n")
 
             # save information to json file for per 50 models
-            count += 1
             if count % 50 == 0:
                 with open(os.path.join(info_save_path, save_name), 'w') as fp:
                     json.dump(models, fp, indent=4)
