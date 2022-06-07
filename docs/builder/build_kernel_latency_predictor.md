@@ -38,6 +38,11 @@ The first step is sampling configuration values from the prior distribution, whi
 
 The second step is generating and profiling kernel model by configurations. nn-Meter supports both implementation of Tensorflow and PyTorch kernels. Users could switch the kernel implementation between Tensorflow and PyTorch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use Tensorflow implementation and `"tflite_cpu"` backend as an example.
 
+<<<<<<< HEAD
+=======
+The second step is generating and profiling kernel model by configurations. nn-Meter supports both implementation of Tensorflow and PyTorch kernels. Users could switch the kernel implementation between Tensorflow and PyTorch by editing configuration `IMPLEMENT` in `<workspace-path>/configs/predictorbuild_config.yaml`. Here we use Tensorflow implementation and `"tflite_cpu"` backend as an example.
+
+>>>>>>> main
 Currently, the kernel blocks and corresponding configurations supported by nn-Meter include:
 
 (conv related kernels)
@@ -94,6 +99,8 @@ kernel_data = sample_and_profile_kernel_data(kernel_type, sample_num=sample_num,
 ```
 
 The generated models are saved in `<workspace-path>/predictor_build/kernels`, and the configuration information and profiled results are dumped in json file to `<workspace-path>/predictor_build/results/<kernel_type>.json` and `<workspace-path>/predictor_build/results/profiled_<kernel_type>.json`.
+
+Note: sometimes the number of sampling kernel data is smaller than the value of `sample_num`. It is natural since nn-Meter will remove duplicates sample when generating kernel data.
 
 Note: sometimes the number of sampling kernel data is smaller than the value of `sample_num`. It is natural since nn-Meter will remove duplicates sample when generating kernel data.
 
