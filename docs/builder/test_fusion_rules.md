@@ -301,11 +301,7 @@ The first example is Conv2d operator. The operator simply applying APIs from `te
 
 ``` python
 import tensorflow.keras as keras
-<<<<<<< HEAD
 from nn_meter.builder.modules import BaseOperator
-=======
-from nn_meter.builder.nn_generator import BaseOperator
->>>>>>> main
 
 class Conv(BaseOperator):
     def get_model(self):

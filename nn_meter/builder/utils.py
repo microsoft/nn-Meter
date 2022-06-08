@@ -52,3 +52,13 @@ def save_profiled_results(models, save_path, detail, metrics = ["latency"]):
     from .backend_meta.utils import dump_profiled_results
     with open(save_path, 'w') as fp:
         json.dump(dump_profiled_results(new_models, detail=detail, metrics=metrics), fp, indent=4)
+
+
+def make_divisible(v):
+    ''' make sure the value v is divisible by 8, otherwise decrease v
+    '''
+    if v == 3: return v
+    new_v = max(8, int(v + 8 / 2) // 8 * 8)
+    if new_v < 0.9 * v:
+        new_v += 8
+    return new_v
