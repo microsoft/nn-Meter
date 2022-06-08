@@ -148,7 +148,7 @@ class SE(BaseOperator):
         class SE(keras.layers.Layer):
             def __init__(self, num_channels, se_ratio=0.25):
                 super().__init__()
-                self.pool = keras.layers.GlobalAveragePooling2D()
+                self.pool = keras.layers.GlobalAveragePooling2D(keepdim=True)
                 self.squeeze = keras.layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
                 self.relu = keras.layers.ReLU()
                 self.excite = keras.layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
@@ -157,7 +157,7 @@ class SE(BaseOperator):
             def call(self, x):
                 x0 = x
                 x = self.pool(x)
-                x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
+                # x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
                 x = self.squeeze(x)
                 x = self.relu(x)
                 x = self.excite(x)

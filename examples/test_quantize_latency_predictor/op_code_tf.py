@@ -60,7 +60,7 @@ class SE_xudong(tf.keras.Model):
     def __init__(self, num_channels, se_ratio=0.25):
         super().__init__()
         # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f'{num_channels}, {make_divisible(num_channels * se_ratio)}\n')
-        self.pool = layers.GlobalAveragePooling2D()
+        self.pool = layers.GlobalAveragePooling2D(keepdims=True)
         self.squeeze = layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
         self.relu = layers.ReLU()
         self.excite = layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
@@ -69,7 +69,7 @@ class SE_xudong(tf.keras.Model):
     def call(self, x):
         x0 = x
         x = self.pool(x)
-        x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
+        # x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
         x = self.squeeze(x)
         x = self.relu(x)
         x = self.excite(x)
