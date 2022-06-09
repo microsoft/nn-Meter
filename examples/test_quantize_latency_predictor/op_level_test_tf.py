@@ -5,7 +5,7 @@ from tensorflow.keras import layers
 from nn_meter.predictor import load_latency_predictor
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder import builder_config
-from nn_meter.builder.nn_generator.tf_networks.utils import get_inputs_by_shapes
+from nn_meter.builder.modules.tf_networks.utils import get_inputs_by_shapes
 from nn_meter.predictor.prediction.utils import latency_metrics_acc20 as latency_metrics
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
@@ -15,7 +15,7 @@ from op_code_tf import SE_NNMETER, SE_OFA, SE_xudong, HSwish_NNMETER, HSwish_OFA
 
 workspace = "/data1/jiahang/working/pixel4_mobilenetv3_workspace"
 builder_config.init(workspace)
-backend_name='tflite_cpu'
+backend_name='tflite_cpu_int8'
 backend = connect_backend(backend_name)
 
 output_path = "/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor"
@@ -165,7 +165,7 @@ def get_feature(kernel_type, config_dict):
     return feature
 
 ## ------------- op level
-from nn_meter.builder.nn_generator.tf_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
+from nn_meter.builder.modules.tf_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
 
 def op_level_test_conv(predictor_name):
     # conv-bn-relu
@@ -363,10 +363,10 @@ def op_level_test_se(predictor_name):
     #                 0.186018, 0.0807595, 0.0745344, 0.074871, 0.051839199999999995, 0.0515206, 0.13823
     # ]
     # assert len(configs) == len(real_latency)
-    for i, config in enumerate(configs):
-    # for cin in range(600, 681):
-        hwin, cin = config
-        # hwin, cin = 14, cin
+    # for i, config in enumerate(configs):
+    for cin in range(600, 681):
+        # hwin, cin = config
+        hwin, cin = 14, cin
         config_in = {
             "HW": hwin,
             "CIN": cin
@@ -379,7 +379,7 @@ def op_level_test_se(predictor_name):
         pred = predictor.predict([get_feature("se", config_in)])[0]
         reals.append(real)
         preds.append(pred)
-        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"{real}, {pred}\n")
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_se.txt", "a").write(f"{cin}, {real}\n")
 
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
     # for cin, res in zip(range(600, 681), reals):
@@ -484,8 +484,8 @@ if __name__ == '__main__':
     # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_fg1_filt8.pkl")
     # test_profile_hswish()
     
-    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_filt8.pkl")
+    op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_filt8.pkl")
     
     # op_level_test_mobilenetv3_large()
     
-    op_level_test_cascade_mbv1()
+    # op_level_test_cascade_mbv1()
