@@ -285,7 +285,7 @@ If users want to add new operators into basic test cases, here are several steps
 
 ### Step 1: Prepare the Customized Operator Class
 
-nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by inheriting a base class named `nn_meter.builder.modules.BaseOperator`. The class has two input parameters, i.e., `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. There are following methods in this base class:
+nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by inheriting a base class named `nn_meter.builder.nn_modules.BaseOperator`. The class has two input parameters, i.e., `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. There are following methods in this base class:
 
 - `get_model`: Return the model function of the operator. Users need to modify this **all the time**.
 
