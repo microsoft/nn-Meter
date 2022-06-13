@@ -59,6 +59,9 @@ def conv2d_no_bias(inputs, filters, kernel_size, strides=1, padding="VALID", use
     """ Typical Conv2D with `use_bias` default as `False` and fixed padding """
     pad = max(kernel_size) // 2 if isinstance(kernel_size, (list, tuple)) else kernel_size // 2
     if padding.upper() == "SAME" and pad != 0:
+        open("/data1/jiahang/working/pixel6_fp32_workspace/nn-Meter/examples/test_transformer/blocks_list.txt", "a").write(
+            ["zeropadding", inputs.shape[1], inputs.shape[3], pad]
+        )
         inputs = keras.layers.ZeroPadding2D(padding=pad, name=name and name + "pad")(inputs)
 
     groups = max(1, groups)

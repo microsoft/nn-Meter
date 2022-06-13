@@ -1,4 +1,4 @@
-from .operators import *
+from nn_meter.builder.nn_generator.tf_networks.operators import *
 
 def scaled_dot_product_attention(qq, kk, vv, key_dim, attn_ratio, output_dim):
     # qq, kk, vv: [batch, num_heads, blocks, key_dim]
@@ -71,7 +71,7 @@ def mhsa_with_multi_head_position_windows_layer_norm(inputs, output_dim, num_hea
     
     qkv_dim = int(2 * embed_dim + embed_dim_v) # 384
     qkv = FC(qkv_dim, use_bias=False)(inputs) # [4, 49, 128] -> [4, 49, 384]
-    qkv = Hswish(qkv) # [4, 49, 384] -> [4, 49, 384]
+    # qkv = Hswish(qkv) # [4, 49, 384] -> [4, 49, 384]
     qkv = Reshape((-1, ww, num_heads, int(qkv_dim//num_heads)))(qkv) # [4, 49, 384] -> [4, 49, 4, 96]
     qkv = Transpose(perm=[0, 2, 1, 3])(qkv) # [4, 49, 4, 96] -> [4, 4, 49, 96]
     qq, kk, vv = Split([key_dim, key_dim, v_dim])(qkv) # [4, 4, 49, 96] -> [[4, 4, 49, 32], [4, 4, 49, 32], [4, 4, 49, 32]]
