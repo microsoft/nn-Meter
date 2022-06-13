@@ -301,7 +301,7 @@ The first example is Conv2d operator. The operator simply applying APIs from `te
 
 ``` python
 import tensorflow.keras as keras
-from nn_meter.builder.modules import BaseOperator
+from nn_meter.builder.nn_modules import BaseOperator
 
 class Conv(BaseOperator):
     def get_model(self):
@@ -363,7 +363,7 @@ nn-Meter requires users to gather all code of operator in a package with a fixed
 The interface of customized operator class are stored in `./customized_operator/operator_script.py`. In this demo, the content of `operator_script.py` includes:
 
 ``` python
-from nn_meter.builder.modules import BaseOperator
+from nn_meter.builder.nn_modules import BaseOperator
 from tensorflow import keras
 
 def Op1(BaseOperator):
