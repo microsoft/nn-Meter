@@ -108,48 +108,13 @@ class AvgPool(BaseOperator):
 
 #------------------------ other modules ------------------------#
 
-class SETF1(BaseOperator):
-    def get_model(self):
-        class SE(keras.layers.Layer):
-            def __init__(self, input_shape):
-                super().__init__()
-                self.in_shape = input_shape
-                self.conv1 = keras.layers.Conv2D(
-                    filters=self.in_shape[-1] // 4,
-                    kernel_size=[1, 1],
-                    strides=[1, 1],
-                    padding="same",
-                )
-                self.conv2 = keras.layers.Conv2D(
-                    filters=self.in_shape[-1],
-                    kernel_size=[1, 1],
-                    strides=[1, 1],
-                    padding="same",
-                )
-
-            def call(self, inputs):
-                x = tf.nn.avg_pool(
-                    inputs,
-                    ksize=[1] + self.in_shape[0:2] + [1],
-                    strides=[1, 1, 1, 1],
-                    padding="VALID",
-                )
-                x = self.conv1(x)
-                x = tf.nn.relu(x)
-                x = self.conv2(x)
-                x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
-                return x * inputs
-        return SE(self.input_shape)
-
-
 class SE(BaseOperator):
     def get_model(self):
-        from nn_meter.builder.utils import make_divisible
         class SE(keras.layers.Layer):
             def __init__(self, num_channels, se_ratio=0.25):
                 super().__init__()
                 self.pool = keras.layers.GlobalAveragePooling2D(keepdims=True)
-                self.squeeze = keras.layers.Conv2D(filters=make_divisible(num_channels * se_ratio), kernel_size=1, padding='same')
+                self.squeeze = keras.layers.Conv2D(filters=int(num_channels * se_ratio), kernel_size=1, padding='same')
                 self.relu = keras.layers.ReLU()
                 self.excite = keras.layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
                 self.hswish = Hswish().get_model()
@@ -157,7 +122,6 @@ class SE(BaseOperator):
             def call(self, x):
                 x0 = x
                 x = self.pool(x)
-                # x = tf.reshape(x, [-1, 1, 1, x.shape[-1]])
                 x = self.squeeze(x)
                 x = self.relu(x)
                 x = self.excite(x)
@@ -196,29 +160,11 @@ class Sigmoid(BaseOperator):
         return func
 
 
-class HswishTF1(BaseOperator):
-    # the hard-swish op from tensorflow v1
-    def get_model(self):
-        def func(inputs):
-            relu6 = tf.keras.layers.ReLU(6)
-            return inputs * relu6(inputs + 3.) * (1. / 6.)
-        return func
-
-
 class Hswish(BaseOperator):
-    # the hard-swish op from tensorflow v2
     def get_model(self):
         def func(inputs):
             relu6 = tf.keras.layers.ReLU(6)
             return inputs * relu6(inputs + 3.) * (1. / 6.)
-        return func
-
-
-class Swish(BaseOperator):
-    # the swish op from tensorflow v2
-    def get_model(self):
-        def func(inputs):
-            return tf.keras.activations.swish(inputs)
         return func
 
 #---------------------- basic operation ----------------------#
