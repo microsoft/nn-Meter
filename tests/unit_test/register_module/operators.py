@@ -1,5 +1,5 @@
 import tensorflow.keras as keras
-from nn_meter.builder.nn_generator import BaseOperator
+from nn_meter.builder.nn_modules import BaseOperator
 
 class MyOp(BaseOperator):
     def get_model(self):

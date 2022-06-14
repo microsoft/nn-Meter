@@ -69,9 +69,9 @@ def generate_model_for_kernel(kernel_type, config, save_path, implement='tensorf
     elif kernel_type in __BUILTIN_KERNELS__:
         kernel_name = __BUILTIN_KERNELS__[kernel_type][0]
         if implement == 'tensorflow':
-            from nn_meter.builder.nn_generator.tf_networks import blocks
+            from nn_meter.builder.nn_modules.tf_networks import blocks
         elif implement == 'torch':
-            from nn_meter.builder.nn_generator.torch_networks import blocks
+            from nn_meter.builder.nn_modules.torch_networks import blocks
         else:
             raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
         kernel_module = blocks
