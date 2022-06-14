@@ -147,14 +147,13 @@ class FC(BaseOperator):
 
 class MultiHeadPositionalEmbedding(BaseOperator):
     def get_model(self):
-        class Layer(keras.layers.Layer):
+        class MultiHeadPositionalEmbedding(keras.layers.Layer):
             def __init__(self, **kwargs):
-                super().__init__(**kwargs)
+                super(MultiHeadPositionalEmbedding, self).__init__(**kwargs)
 
             def build(self, input_shape, **kwargs):
-                print(input_shape)
                 _, num_heads, qq_blocks, kk_blocks = input_shape
-                self.bb = self.add_weight(shape=(kk_blocks, num_heads), initializer="zeros", trainable=True)
+                self.bb = self.add_weight(name="positional_embedding", shape=(kk_blocks, num_heads), initializer="zeros", trainable=True)
                 strides = int(tf.math.ceil(tf.math.sqrt(float(kk_blocks / qq_blocks))))
                 q_blocks_h = q_blocks_w = int(tf.math.sqrt(float(qq_blocks)))
                 k_blocks_h = k_blocks_w = int(tf.math.sqrt(float(kk_blocks)))
@@ -168,7 +167,7 @@ class MultiHeadPositionalEmbedding(BaseOperator):
                 self.bb_pos = tf.stack([ii[:, 0] + ii[:, 1] * k_blocks_h for ii in cc])
                 # print(f">>>> {self.bb_pos.shape = }")    # self.bb_pos.shape = (16, 49)
 
-                super().build(input_shape)
+                super(MultiHeadPositionalEmbedding, self).build(input_shape)
 
             def call(self, inputs, **kwargs):
                 pos_bias = tf.gather(self.bb, self.bb_pos)
@@ -187,7 +186,7 @@ class MultiHeadPositionalEmbedding(BaseOperator):
                 tt = tf.reshape(tt, (self.bb.shape))  # [target_hh * target_ww, num_heads]
                 self.bb.assign(tt)
 
-        return Layer()
+        return MultiHeadPositionalEmbedding()
 
 
 #-------------------- activation function --------------------#
@@ -244,9 +243,9 @@ class Reshape(BaseOperator):
                 def func(inputs):
                     return tf.reshape(inputs, [1] + self.output_shape)
         else:
-            self.output_shape = self.config["SHAPE_TO"]
             def func(inputs):
-                return tf.reshape(inputs, [1] + self.output_shape)
+                return tf.reshape(inputs, self.config["SHAPE_TO"]) # config["SHAPE_TO"] contains the dimension of batch
+            self.output_shape = self.config["SHAPE_TO"][1:] # remove the dimension of batch
         return func
 
     def get_output_shape(self):
@@ -321,7 +320,10 @@ class Matmul(BaseOperator):
         return func
 
     def get_output_shape(self):
-        return super().get_output_shape() #TODO
+        return [4, 49, 49]
+    
+    def get_is_two_inputs(self):
+        return True
 
 
 class Transpose(BaseOperator):

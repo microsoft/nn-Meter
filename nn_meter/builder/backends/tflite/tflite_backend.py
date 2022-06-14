@@ -30,10 +30,14 @@ class TFLiteBackend(BaseBackend):
         model_name = get_filename_without_ext(model_path)
         model = tf.keras.models.load_model(model_path)
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        converter.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS, # enable TensorFlow Lite ops.
+            tf.lite.OpsSet.SELECT_TF_OPS # enable TensorFlow ops.
+        ]
         tflite_model = converter.convert()
         converted_model = os.path.join(save_path, model_name + '.tflite')
         open(converted_model, 'wb').write(tflite_model)
-        shutil.rmtree(model_path)
+        # shutil.rmtree(model_path)
         return converted_model
 
     def test_connection(self):
