@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import os, json
-from collections import defaultdict
-from .. import load_latency_predictor
 
 class BlockLatencyPredictor:
     def __init__(self, predictor_name = "mobile_lut"):
@@ -14,6 +12,12 @@ class BlockLatencyPredictor:
     def get_latency(self, block_config):
         py = 0
         act = "hard_swish"
+
+        # first_block
+        hw = block_config["input_image_resolution"]
+        py += self.predictor[f"conv_{hw}_3_16_1_2_{act}_3"]
+
+        # layer_choice blocks
         for key, config in block_config.items():
             name = key.split("_")[-1]
             hwin = config['input_feature_map_size']
@@ -35,11 +39,13 @@ class BlockLatencyPredictor:
                     exp = config['mlp_ratio'][i]
                     v = config['v_scale'][i]
                     py += self.predictor[f"{name}_{hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}"]
+
         return py
 
 
     def get_single_block_arch(self, name, hw, cin, cout, kernel_size, expand_ratio, 
                     stride, activation):
+        raise NotImplementedError # does not support latency predictor now
         type = self.get_type(name, cin, cout, stride, activation)
         dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
         return dicts
