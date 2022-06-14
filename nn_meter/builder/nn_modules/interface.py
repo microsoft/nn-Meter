@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 class BaseOperator:
-    def __init__(self, input_shape, config = None):
+    def __init__(self, input_shape = None, config = None):
         ''' base class for operator.
         
         @params
@@ -42,7 +42,7 @@ class BaseBlock:
             torch model), and when the input shape is 1D, `input_shape` should be`[config["CIN"]]`.
 
         - input_tensor_shape: a list defining all model inputs. In basic situation, `input_tensor_shape` should be `[input_shape]` if the kernel
-            only has one input. If the kernel has more than one input, such as `add_relu` kernel, `input_tensor_shape` is `[input_shape, input_shape]`.
+            only has one input. If the kernel has more than one input, such as `addrelu` kernel, `input_tensor_shape` is `[input_shape, input_shape]`.
 
         - batch_size: the required batch size of the input data
         '''

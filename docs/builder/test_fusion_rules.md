@@ -8,6 +8,8 @@ The first step to run fusion rule tester is to prepare backends and create works
 
 After creating the workspace, a yaml file named `ruletest_config.yaml` will be placed in `<workspace-path>/configs/`. The fusion rule test configs includes:
 
+- `DETAIL`: Whether to attach detail information to the json output, such as the shape information in profiled results, and the latency results of each test case in detected fusion rules. Default value is `FALSE`.
+- `IMPLEMENT`: The code implementation, could be chosen from [`tensorflow`, `torch`].
 - `HW`: Default input shape of all test cases except those requiring 1d tensor input. Default value is `28`.
 - `CIN`: Default input channel of all test cases. Default value is `16`.
 - `SHAPE_1D`: Default input shape of all testcases that need 1d tensor input. E.g., fully connected layer. Default value is `428`.
@@ -17,7 +19,6 @@ After creating the workspace, a yaml file named `ruletest_config.yaml` will be p
 - `STRIDES`: Default strides size. Default value is `1`.
 - `POOL_STRIDES`: Default strides size for pooling operator. Default value is `2`.
 - `EPS_ALPHA`: The empirical coefficient as a threshold in formula of [step 4](#step-4-detect-fusion-rule) to decide whether two ops can be fused for test cases of BasicFusion. Default value is `0.5`.
-- `DETAIL`: Whether to attach detail information to the json output, such as the shape information in profiled results, and the latency results of each test case in detected fusion rules. Default value is `FALSE`.
 - `BASIC_TESTCASES`: the test cases list to test. Generally, there are three types of test cases. Basic test cases detect the fusion rule of single inbound and outbound operators pairs. 
 - `OTHER_TESTCASES`: in this list, `'MON'` detects the fusion rules about multiple outbounds connection. Besides, users can add name of customized test cases after test cases registration. For more details refer to the introduction of [Test Cases](#test-cases) and [Build Customized Test Cases](#build-customized-test-cases).
 - `LAYERS_1D`: the list of layer name for 1d tensor input. If the input to this layer must be 1 dimension tensor, users need add it here.
@@ -39,7 +40,7 @@ Note: after running ``builder_config.init``, the config are loaded already. If u
 
 ## Step 2. Create Test Cases
 
-Following configuration from `<workspace-path>/configs/ruletest_config.yaml`, the test cases can be created by running:
+Following configuration from `<workspace-path>/configs/ruletest_config.yaml`, all test cases in `BASIC_TESTCASES` can be created by running:
 
 ```python
 from nn_meter.builder.backend_meta.fusion_rule_tester import generate_testcases
@@ -63,7 +64,8 @@ backend = connect_backend(backend_name='tflite_cpu')
 from nn_meter.builder import profile_models
 profiled_results = profile_models(backend, origin_testcases, mode='ruletest')
 ```
-`backend` refers to the name of concrete device to execute the model. Currently we provide three devoce instance, i.e., CPU backend, GPU backend with TFLite platform, and VPU backend with OpenVINO platform. Refer to [backend guidance](./prepare_backend.md) for how to setup the device and get connection to the backend. To use the customized backend, users can follow the [customize backend guidance](./prepare_backend.md#build_customized_backend).
+
+where `backend_name` refers to the name of concrete device to execute the model. Currently we provide three device instances, i.e., CPU backend, GPU backend with TFLite platform, and VPU backend with OpenVINO platform. Refer to [backend guidance](./prepare_backend.md) for how to setup the device and get connection to the backend. To use the customized backend, users can follow the [customize backend guidance](./prepare_backend.md#build_customized_backend).
 
 The profiled test cases dictionary will be saved in `<workspace-path>/fusion_rule_test/results/profiled_results.json`.
 
@@ -107,7 +109,7 @@ Here is an end-to-end demo for the progress for the fusion rule testing:
 
 ```python
 from nn_meter.builder import profile_models, builder_config
-builder_config.init("path/to/workspace/folder") # initialize builder config with workspace
+builder_config.init("/path/to/workspace/") # initialize builder config with workspace
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder.backend_meta.fusion_rule_tester import generate_testcases, detect_fusion_rule
 
@@ -124,19 +126,19 @@ profiled_results = profile_models(backend, origin_testcases, mode='ruletest')
 detected_results = detect_fusion_rule(profiled_results)
 ```
 
-Three are three main steps, including 1) generate testcase, 2) profile models, and 3) detect fusion rule. For each step, the output will be dumped to `<workspace-path>/fusion_rule_test/results/`. Both the testcases instance and path string to the dumped testcases file are acceptable for the next step.
+Three are three main steps, including 1) generate testcase, 2) profile models, and 3) detect fusion rule. For each step, the output will be dumped to `<workspace-path>/fusion_rule_test/results/`. Both the test cases instance and path string to the dumped testcases file are acceptable for the next step.
 
 Note: it's optional to use a backend. What `profile_models` do is collecting latency results of each testcases, so you can use your own tools to measure the latency. Refer to implementation of `profile_models` for how to fill back the latency.
 
 # <span id="test-cases"> Test Cases </span>
 
-Testcases are a series of models created by nn-Meter. These models will be profiled to get latency. By analyzing the latency results, we are able to detect the fusion rules on the device. Finally, the detected fusion rules will be used to direct the process of kernel detection.
+Test cases are a series of models created by nn-Meter. These models will be profiled to get latency. By analyzing the latency results, we are able to detect the fusion rules on the device. Finally, the detected fusion rules will be used to direct the process of kernel detection.
 
 In this section, we will explain how our test case classes are implemented and how to customized your own test cases.
 
 ## Test Cases Design
 
-Our test case design is driven by two features of a CNN model which impact the fusion rules, i.e., operator type and operator connection 
+Our test case design is driven by two features of a CNN model which impact the fusion rules, i.e., operator type and operator connection.
 
 ### <span id="basic-test-cases"> Basic Test Cases </span>
 
@@ -244,7 +246,7 @@ Each test case consists of several test models to profile. Generally, for basic 
 }
 ```
 
-In this instance, `dwconv_relu` is the name of a test case. There are three models called `dwconv`, `relu` and `block`. For each model, the `"model"` indicates the path to where the model is saved. In the name of model, `"BF"` indicates the test case belong to a basic fusion test case, `"dwconv_relu"` indicates the name of the test case, and the last clause (`"dwconv"`, `"relu"`, or `"block"`) indicates the model name in that test case. `"shapes"` indicates the list of the its input tensor shape (`[H, W, C]`). For example, here `[[28, 28, 16]]` means this model has only one input, and the shape is `(28, 28, 16)`.
+In this instance, `dwconv_relu` is the name of a test case. There are three models called `dwconv`, `relu` and `block`. For each model, the `"model"` indicates the path to where the model is saved. In the name of model, `"BF"` indicates the test case belong to a basic fusion test case, `"dwconv_relu"` indicates the name of the test case, and the last clause (`"dwconv"`, `"relu"`, or `"block"`) indicates the model name in that test case. `"shapes"` indicates the list of the its input tensor shape (`[H, W, C]` for tensorflow models, `[C, H, W]` for torch models). For example, here `[[28, 28, 16]]` means this model has only one input, and the shape is `(28, 28, 16)`.
 
 # Apply Fusion Rules for Kernel Detection
 
@@ -254,44 +256,27 @@ The fusion rules json file will be a part of the customized predictor. Users cou
 
 # <span id="build-customized-test-cases"> Build Customized Test Cases </span>
 
-## Build Basic Test cases
+## Build Customized Basic Test cases
 
 Currently, nn-Meter support the following ops:
 
 - `'conv'`
-
 - `'dwconv'`
-
 - `'convtrans'`
-
 - `'bn'`
-
 - `'maxpool'`
-
 - `'avgpool'`
-
 - `'globalavgpool'`
-
 - `'se'`
-
 - `'fc'`
-
 - `'relu'`
-
 - `'relu6'`
-
 - `'sigmoid'`
-
 - `'hswish'`
-
 - `'reshape'`
-
 - `'add'`
-
 - `'concat'`
-
 - `'flatten'`
-
 - `'split'`
 
 Refer to [basic test cases](#basic-test-cases) for more details of supporting ops. To apply existing ops, users could directly declare the op name and ops connection in `'BASIC_TESTCASES'` from `<workspace-path>/configs/ruletest_config.yaml` to generate their own test cases.
@@ -300,7 +285,7 @@ If users want to add new operators into basic test cases, here are several steps
 
 ### Step 1: Prepare the Customized Operator Class
 
-nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by inheriting a base class named `nn_meter.builder.nn_generator.BaseOperator`. The class has two input parameters, including `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. There are following methods in this base class:
+nn-Meter provide API for users to customize their own operator. In nn-Meter, each operator is implemented by inheriting a base class named `nn_meter.builder.nn_modules.BaseOperator`. The class has two input parameters, i.e., `input_shape` and `config`. `input_shape` is a list showing the dimension of the input tensor (the batch dimension should not be included), and `config` can be used to feed configuration params for the operator. There are following methods in this base class:
 
 - `get_model`: Return the model function of the operator. Users need to modify this **all the time**.
 
@@ -315,6 +300,9 @@ We provide the implementation of three builtin operators for example:
 The first example is Conv2d operator. The operator simply applying APIs from `tensorflow.keras.layers` to build the model function. Also, users could build a class inheriting `tensorflow.keras.layers.Layer` for customized usage:
 
 ``` python
+import tensorflow.keras as keras
+from nn_meter.builder.nn_modules import BaseOperator
+
 class Conv(BaseOperator):
     def get_model(self):
         cout = self.input_shape[2] if "COUT" not in self.config else self.config["COUT"]
@@ -332,7 +320,7 @@ class Conv(BaseOperator):
         return [output_h, output_w, cout]
 ```
 
-The second example is Sigmoid operator. The opertor build a model function by applying `tensorflow.nn`:
+The second example is Sigmoid operator. The opertor build a model function by applying `tf.nn`:
 
 ``` python
 class Sigmoid(BaseOperator):
@@ -375,7 +363,7 @@ nn-Meter requires users to gather all code of operator in a package with a fixed
 The interface of customized operator class are stored in `./customized_operator/operator_script.py`. In this demo, the content of `operator_script.py` includes:
 
 ``` python
-from nn_meter.builder.nn_generator import BaseOperator
+from nn_meter.builder.nn_modules import BaseOperator
 from tensorflow import keras
 
 def Op1(BaseOperator):
@@ -383,13 +371,15 @@ def Op1(BaseOperator):
         return ...
 ```
 
-Note: The folder could contain more than one operators, but the registration should be done one by one.
+Note: The folder could contain more than one operators, but the registration of different operators should be done one by one following `nn-meter register --operator ...`.
 
 ### Step 3: Prepare Meta File
 
 Create a yaml file with following keys as meta file:
 
 - `builtin_name`: builtin name used in nn-Meter configuration file to call the customized operator, such as `"op1"`. Note that there should not have any "\_" in the `buildinName`, as any "\_" will be regarded as the connection of different operators in test cases generation.
+
+- `implement`: the implementation type of the customized operator, chosen from ["tensorflow", "torch"].
 
 - `package_location`: the absolute path of the package folder.
 
@@ -401,7 +391,8 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: op1
-package_location: /home/USERNAME/working/customized_operator
+implement: tensorflow
+package_location: /home/{USERNAME}/working/customized_operator
 class_module: operator_script
 class_name: Op1
 ```
@@ -444,7 +435,7 @@ nn-meter --list-operators
 (nn-Meter) [Operator] concat
 (nn-Meter) [Operator] flatten
 (nn-Meter) [Operator] split
-(nn-Meter) [Operator] * op1
+(nn-Meter) [Operator] * op1 (tensorflow)
 ```
 
 Note: the package of customized operator must be retained in a fixed path as registered one. Otherwise may cause error when calling the registered module.
@@ -467,13 +458,13 @@ Note: if the input to customized operator should be 1 dimension tensor, users ne
 
 ### Manage the Registered Operator
 
-Users could unregister the operator by calling its name in command:
+Users could unregister the operator by calling its name and its implementation in command:
 
 ``` bash
-nn-meter unregister --operator op1
+nn-meter unregister --operator op1 tensorflow
 ```
 ``` text
-(nn-Meter) Successfully unregister op1.
+(nn-Meter) Successfully unregister op1 (tensorflow).
 ```
 
 After unregister the operator, "op1" will be removed from the backend list.
@@ -572,7 +563,6 @@ class MyTestCase(BaseTestCase):
         x = keras.layers.Relu()([x, input_layer])
 
         return keras.models.Model(input_layer, x), [self.input_shape]
-
 ```
 
 ### Step 2: Create a Package for the Customized Test Case
@@ -591,7 +581,9 @@ The interface of customized test case class are stored in `./customized_testcase
 
 Create a yaml file with following keys as meta file:
 
-- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized test case, such as `"MyTC"`.
+- `builtin_name`: builtin name used in nn-Meter configuration file to call the customized test case, such as `"MyTestCase"`.
+
+- `implement`: the implementation type of the customized test case, chosen from ["tensorflow", "torch"].
 
 - `package_location`: the absolute path of the package folder.
 
@@ -603,9 +595,10 @@ Following is an example of the yaml file:
 
 ```yaml
 builtin_name: MyTC
-package_location: /home/USERNAME/working/customized_testcase
+implement: tensorflow
+package_location: /home/{USERNAME}/working/customized_testcase
 class_module: testcase_script
-class_name: MyTC
+class_name: MyTestCase
 ```
 
 ### Step 4: Register Customized Test Case into nn-Meter
@@ -639,13 +632,13 @@ Note: if the truth of this fusion rule depends on truth of other rules, the test
 
 ### Manage the Registered Operator
 
-Users could unregister the test case by calling its name in command:
+Users could unregister the test case by calling its name and its implementation in command:
 
 ``` bash
-nn-meter unregister --testcase MyTC
+nn-meter unregister --testcase MyTC tensorflow
 ```
 ``` text
-(nn-Meter) Successfully unregister MyTC.
+(nn-Meter) Successfully unregister MyTC (tensorflow).
 ```
 
 ## Use Customized Rules when Splitting

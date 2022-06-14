@@ -5,7 +5,7 @@ from packaging import version
 logging = logging.getLogger("nn-Meter")
 
 
-def try_import_onnx(require_version = ["1.9.0"]):
+def try_import_onnx(require_version = ["1.10.0", "1.9.0"]):
     if isinstance(require_version, str):
         require_version = [require_version]
     try:
@@ -17,7 +17,7 @@ def try_import_onnx(require_version = ["1.9.0"]):
         logging.error(f'You have not install the onnx package, please install onnx=={require_version[0]} and try again.')
 
 
-def try_import_torch(require_version = ["1.9.0", "1.7.1"]):
+def try_import_torch(require_version = ["1.10.0", "1.9.0", "1.7.1"]):
     if isinstance(require_version, str):
         require_version = [require_version]
     try:
@@ -29,7 +29,7 @@ def try_import_torch(require_version = ["1.9.0", "1.7.1"]):
         logging.error(f'You have not install the torch package, please install torch=={require_version[0]} and try again.')
 
 
-def try_import_tensorflow(require_version = ["2.6.0", "1.15.0"]):
+def try_import_tensorflow(require_version = ["2.7.0", "2.6.0"]):
     if isinstance(require_version, str):
         require_version = [require_version]
     try:
@@ -41,7 +41,7 @@ def try_import_tensorflow(require_version = ["2.6.0", "1.15.0"]):
         logging.error(f'You have not install the tensorflow package, please install tensorflow=={require_version[0]} and try again.')
 
 
-def try_import_nni(require_version = ["2.5", "2.4"]):
+def try_import_nni(require_version = ["2.7", "2.6", "2.5", "2.4"]):
     if isinstance(require_version, str):
         require_version = [require_version]
     try:

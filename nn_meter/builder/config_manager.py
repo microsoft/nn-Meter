@@ -17,7 +17,7 @@ def copy_to_workspace(backend_type, workspace_path, backendConfigFile = None):
     os.makedirs(os.path.join(workspace_path, 'configs'), exist_ok=True)
 
     # backend config
-    if backend_type == 'customized':
+    if backend_type == 'customized' and backendConfigFile:
         copyfile(backendConfigFile, os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
     else:
         if backend_type == 'tflite':
@@ -45,15 +45,19 @@ def load_config_file(workspace_path):
     ruletest_filepath = os.path.join(workspace_path, "configs", 'ruletest_config.yaml')
     predictorbuild_filepath = os.path.join(workspace_path, "configs", 'predictorbuild_config.yaml')
     try:
-        with open(backend_filepath) as fp:
-            backend = yaml.load(fp, yaml.FullLoader)
+        try:
+            with open(backend_filepath) as fp:
+                backend = yaml.load(fp, yaml.FullLoader)
+        except: # In customized backend, sometimes there is no backend config file, skip loading config for this case
+            backend = None
         with open(ruletest_filepath) as fp:
             ruletest = yaml.load(fp, yaml.FullLoader)
         with open(predictorbuild_filepath) as fp:
             predictorbuild = yaml.load(fp, yaml.FullLoader)
         return backend, ruletest, predictorbuild
     except:
-        raise FileNotFoundError(f"config file in {workspace_path} not found, created")
+        raise FileNotFoundError(f"config file in {workspace_path} not found, please create the workspace first." \
+                                "Docs: https://github.com/microsoft/nn-Meter/blob/main/docs/builder/overview.md#-create-workspace-")
 
 
 class ConfigData:
@@ -78,8 +82,8 @@ class ConfigData:
         try:
             return self._global_settings[module]
         except:
-            raise ValueError(f"Could not find {module} in builder config. \
-                Please run `builder_config.init('path/to/workspace')` first.")
+            raise ValueError(f"Module [{module}] from config file not found, please create the workspace first. " \
+                "Docs: https://github.com/microsoft/nn-Meter/blob/main/docs/builder/overview.md#-create-workspace-")
 
     def get_settings(self):
         return self._global_settings
@@ -95,7 +99,7 @@ class ConfigManager(ConfigData):
         self.set_module(backend, 'backend')
         self.set_module(ruletest, 'ruletest')
         self.set_module(predbuild, 'predbuild')
-        self.set('MODEL_DIR', os.path.join(self.workspace_path, "fusion_rule_test"), 'ruletest')
-        self.set('MODEL_DIR', os.path.join(self.workspace_path, "predictor_build"), 'predbuild')
+        self.set('WORKSPACE', os.path.join(self.workspace_path, "fusion_rule_test"), 'ruletest')
+        self.set('WORKSPACE', os.path.join(self.workspace_path, "predictor_build"), 'predbuild')
 
 builder_config = ConfigManager()

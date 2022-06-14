@@ -115,36 +115,24 @@ class AvgPool(BaseOperator):
 
 class SE(BaseOperator):
     def get_model(self):
-        class Layer(keras.layers.Layer):
-            def __init__(self, input_shape):
+        class SE(keras.layers.Layer):
+            def __init__(self, num_channels, se_ratio=0.25):
                 super().__init__()
-                self.in_shape = input_shape
-                self.conv1 = keras.layers.Conv2D(
-                    filters=self.in_shape[-1] // 4,
-                    kernel_size=[1, 1],
-                    strides=[1, 1],
-                    padding="same",
-                )
-                self.conv2 = keras.layers.Conv2D(
-                    filters=self.in_shape[-1],
-                    kernel_size=[1, 1],
-                    strides=[1, 1],
-                    padding="same",
-                )
+                self.pool = keras.layers.GlobalAveragePooling2D(keepdims=True)
+                self.squeeze = keras.layers.Conv2D(filters=int(num_channels * se_ratio), kernel_size=1, padding='same')
+                self.relu = keras.layers.ReLU()
+                self.excite = keras.layers.Conv2D(filters=num_channels, kernel_size=1, padding='same')
+                self.hswish = Hswish().get_model()
 
-            def call(self, inputs):
-                x = tf.nn.avg_pool(
-                    inputs,
-                    ksize=[1] + self.in_shape[0:2] + [1],
-                    strides=[1, 1, 1, 1],
-                    padding="VALID",
-                )
-                x = self.conv1(x)
-                x = tf.nn.relu(x)
-                x = self.conv2(x)
-                x = tf.nn.relu6(tf.math.add(x, 3)) * 0.16667
-                return x * inputs
-        return Layer(self.input_shape)
+            def call(self, x):
+                x0 = x
+                x = self.pool(x)
+                x = self.squeeze(x)
+                x = self.relu(x)
+                x = self.excite(x)
+                x = self.hswish(x)
+                return x * x0
+        return SE(self.input_shape[-1])
 
 
 class FC(BaseOperator):
@@ -231,7 +219,8 @@ class Softmax(BaseOperator):
 class Hswish(BaseOperator):
     def get_model(self):
         def func(inputs):
-            return tf.nn.relu6(tf.math.add(inputs, 3)) * 0.16667
+            relu6 = tf.keras.layers.ReLU(6)
+            return inputs * relu6(inputs + 3.) * (1. / 6.)
         return func
 
 
