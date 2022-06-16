@@ -32,7 +32,7 @@ class BlockLatencyPredictor:
         # first_block
         hw = block_config[0]
         py += self.predictor[f"conv_{hw}_3_16_1_2_{act}_3"]
-        print(f"conv_{hw}_3_16_1_2_{act}_3")
+        # print(f"conv_{hw}_3_16_1_2_{act}_3")
         hw = hw // 2
         stage_cout = 16
 
@@ -58,7 +58,7 @@ class BlockLatencyPredictor:
 
                     # predict by lut
                     py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}"]
-                    print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}")
+                    # print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}")
 
             elif name == "transformer":
                 for i in range(block_config[3][stage_idx]):
@@ -73,7 +73,7 @@ class BlockLatencyPredictor:
 
                     # predict by lut
                     py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}"]
-                    print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}")
+                    # print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}")
 
         assert conv_count == len(block_config[5])
         assert trans_count == len(block_config[6])
