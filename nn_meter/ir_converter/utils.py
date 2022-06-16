@@ -117,8 +117,12 @@ def nni_model_to_graph(model):
 def torch_model_to_graph(model, input_shape=(1, 3, 224, 224), apply_nni=False):
     torch = try_import_torch()
     args = torch.randn(*input_shape)
-    if next(model.parameters()).is_cuda:
-        args = args.to("cuda")
+    try:
+        # if the test model has no parameters (such as activation ops), there will be error when calling ``model.parameters``
+        if next(model.parameters()).is_cuda:
+            args = args.to("cuda")
+    except:
+        pass
     if apply_nni: 
         # apply NNI-based torch converter, which requires nni>=2.4 installation and should use nn interface from NNI 
         # `import nni.retiarii.nn.pytorch as nn` to define the PyTorch modules.

@@ -17,7 +17,7 @@ The current supported hardware and inference frameworks:
 
 - Those who want to get the DNN inference latency on mobile and edge devices with **no deployment efforts on real devices**.
 - Those who want to run **hardware-aware NAS with [NNI](https://github.com/microsoft/nni)**.
-- Those who want to **build latency predictors for their own devices**.
+- Those who want to **build latency predictors for their own devices** ([Documents](https://github.com/microsoft/nn-Meter/blob/main/docs/builder/overview.md) of nn-Meter builder).
 - Those who want to use the 26k latency [benchmark dataset](https://github.com/microsoft/nn-Meter/releases/download/v1.0-data/datasets.zip).
 
 # Installation
@@ -176,6 +176,17 @@ Users could view the information all built-in predictors by `list_latency_predic
 
 Users could get a nn-Meter IR graph by applying `model_file_to_graph` and `model_to_graph` by calling the model name or model object and specify the model type. The supporting model types of `model_file_to_graph` include "onnx", "pb", "torch", "nnmeter-ir" and "nni-ir", while the supporting model types of `model_to_graph` include "onnx", "torch" and "nni-ir".
 
+## nn-Meter Builder
+
+nn-Meter builder is an open source tool for users to build latency predictor on their own devices. There are three main parts in nn-Meter builder:
+
+**backend**: the module of connecting backends;
+
+**backend_meta**: the meta tools related to backend. Here we provide the fusion rule tester to detect fusion rules for users' backend;
+
+**kernel_predictor_builder**: the tool to build different kernel latency predictors.
+
+Users could get access to nn-Meter builder by calling `nn_meter.builder`. For more details to use nn-Meter builder, please check the document of [nn-Meter builder](https://github.com/microsoft/nn-Meter/blob/main/docs/builder/overview.md).
 
 ## Hardware-aware NAS by nn-Meter and NNI
 

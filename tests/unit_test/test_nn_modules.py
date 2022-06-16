@@ -7,8 +7,8 @@ kernels = ["ConvBnRelu", "ConvBnRelu6", "ConvBn", "ConvRelu", "ConvRelu6", "Conv
 
 if __name__ == '__main__':
     config = {
-        "HW": 28,
-        "CIN": 16,
+        "HW": 1,
+        "CIN": 144,
         "COUT": 32,
         "KERNEL_SIZE": 1, 
         "STRIDES": 1,
@@ -19,6 +19,12 @@ if __name__ == '__main__':
         "CIN3": 12,
         "CIN4": 12
     }
-    from nn_meter.builder.nn_generator.tf_networks import blocks
+    from nn_meter.builder.nn_modules.tf_networks import blocks
+    for kernel in kernels:
+        getattr(blocks, kernel)(config).test_block()
+    from nn_meter.builder.nn_modules.torch_networks import blocks
+    for kernel in kernels:
+        getattr(blocks, kernel)(config).test_block()
+    from nn_meter.builder.nn_modules.torch_networks import blocks
     for kernel in kernels:
         getattr(blocks, kernel)(config).test_block()
