@@ -52,9 +52,9 @@ def get_operator_by_name(operator_name, input_shape, config = None, implement = 
     elif operator_name in __BUILTIN_OPERATORS__:
         operator_module_name = __BUILTIN_OPERATORS__[operator_name]
         if implement == 'tensorflow':
-            from nn_meter.builder.nn_generator.tf_networks import operators
+            from nn_meter.builder.nn_modules.tf_networks import operators
         elif implement == 'torch':
-            from nn_meter.builder.nn_generator.torch_networks import operators
+            from nn_meter.builder.nn_modules.torch_networks import operators
         else:
             raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
         operator_module = operators
@@ -96,10 +96,10 @@ def get_special_testcases_by_name(testcase, implement=None):
 def generate_models_for_testcase(op1, op2, input_shape, config, implement):
     if implement == 'tensorflow':
         from .build_tf_models import SingleOpModel, TwoOpModel
-        from nn_meter.builder.nn_generator.tf_networks.utils import get_inputs_by_shapes
+        from nn_meter.builder.nn_modules.tf_networks.utils import get_inputs_by_shapes
     elif implement == 'torch':
         from .build_torch_models import SingleOpModel, TwoOpModel
-        from nn_meter.builder.nn_generator.torch_networks.utils import get_inputs_by_shapes
+        from nn_meter.builder.nn_modules.torch_networks.utils import get_inputs_by_shapes
     else:
         raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
 
@@ -124,10 +124,10 @@ def generate_models_for_testcase(op1, op2, input_shape, config, implement):
 def generate_single_model(op, input_shape, config, implement):
     if implement == 'tensorflow':
         from .build_tf_models import SingleOpModel
-        from nn_meter.builder.nn_generator.tf_networks.utils import get_inputs_by_shapes
+        from nn_meter.builder.nn_modules.tf_networks.utils import get_inputs_by_shapes
     elif implement == 'torch':
         from .build_torch_models import SingleOpModel
-        from nn_meter.builder.nn_generator.torch_networks.utils import get_inputs_by_shapes
+        from nn_meter.builder.nn_modules.torch_networks.utils import get_inputs_by_shapes
     else:
         raise NotImplementedError('You must choose one implementation of kernel from "tensorflow" or "pytorch"')
 
@@ -143,13 +143,14 @@ def generate_single_model(op, input_shape, config, implement):
 def save_model(model, model_path, implement):
     if implement == 'tensorflow':
         from tensorflow import keras
-        from nn_meter.builder.nn_generator.tf_networks.utils import get_tensor_by_shapes
+        from nn_meter.builder.nn_modules.tf_networks.utils import get_tensor_by_shapes
         model['model'](get_tensor_by_shapes(model['shapes']))
         keras.models.save_model(model['model'], model_path)
         return model_path
+
     elif implement == 'torch':
         import torch
-        from nn_meter.builder.nn_generator.torch_networks.utils import get_inputs_by_shapes
+        from nn_meter.builder.nn_modules.torch_networks.utils import get_inputs_by_shapes
         torch.onnx.export(
             model['model'],
             get_inputs_by_shapes(model['shapes']),

@@ -32,13 +32,15 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
         save_name = "converted_results.json"
 
     workspace_path = builder_config.get('WORKSPACE', mode)
-    model_save_path = os.path.join(workspace_path, 'models')
+    model_save_path = os.path.join(workspace_path, 'testcases' if mode == 'ruletest' else 'kernels')
     os.makedirs(model_save_path, exist_ok=True)
-    info_save_path = os.path.join(workspace_path, "results")
-    os.makedirs(info_save_path, exist_ok=True)
+    res_save_path = os.path.join(workspace_path, "results")
+    os.makedirs(res_save_path, exist_ok=True)
 
     # convert models
     count = 0
+    info_save_path = os.path.join(res_save_path, save_name)
+    error_save_path = os.path.join(res_save_path, "convert_error.log")
     for module in models.values():
         for id, model in module.items():
             if broken_point_mode and 'converted_model' in model:
@@ -47,25 +49,22 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
                 model_path = model['model']
                 converted_model = backend.convert_model(model_path, model_save_path, model['shapes'])
                 model['converted_model'] = converted_model
+                count += 1
             except Exception as e:
-                open(os.path.join(info_save_path, "convert_error.log"), 'a').write(f"{id}: {e}\n")
+                open(error_save_path, 'a').write(f"{id}: {e}\n")
 
             # save information to json file for per 50 models
-            count += 1
             if count % 50 == 0:
-                with open(os.path.join(info_save_path, save_name), 'w') as fp:
+                with open(info_save_path, 'w') as fp:
                     json.dump(models, fp, indent=4)
-                logging.keyinfo(f"{count} models complete. Still converting... Save the intermediate results to {os.path.join(info_save_path, save_name)}.")
-
-    with open(os.path.join(info_save_path, save_name), 'w') as fp:
-        json.dump(models, fp, indent=4)
-    logging.keyinfo(f"Complete convert all {count} models. Save the intermediate results to {os.path.join(info_save_path, save_name)}.")
+                logging.keyinfo(f"{count} models complete. Still converting... Save the intermediate results to {info_save_path} ")
 
     # save information to json file
-    with open(os.path.join(info_save_path, save_name), 'w') as fp:
+    with open(info_save_path, 'w') as fp:
         json.dump(models, fp, indent=4)
-    logging.keyinfo(f"Save the converted models information to {os.path.join(info_save_path, save_name)}")
-    
+    logging.keyinfo(f"Complete converting all {count} models. Save the results to {info_save_path} " \
+                    f"Failed information are saved in {error_save_path} (if any)")
+
     return models
 
 
@@ -99,16 +98,17 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
             models = json.load(fp)
 
     workspace_path = builder_config.get('WORKSPACE', mode)
-    model_save_path = os.path.join(workspace_path, 'models')
+    model_save_path = os.path.join(workspace_path, 'testcases' if mode == 'ruletest' else 'kernels')
     os.makedirs(model_save_path, exist_ok=True)
-    info_save_path = os.path.join(workspace_path, "results")
-    os.makedirs(info_save_path, exist_ok=True)
+    res_save_path = os.path.join(workspace_path, "results")
+    os.makedirs(res_save_path, exist_ok=True)
+    info_save_path = os.path.join(res_save_path, save_name)
 
     # in broken point model, if the output file `<workspace>/<mode-folder>/results/<save-name>` exists,
     # load the existing latency and skip these model in profiling
-    if broken_point_mode and os.path.isfile(os.path.join(info_save_path, save_name)):
+    if broken_point_mode and os.path.isfile(info_save_path):
         from nn_meter.builder.backend_meta.utils import read_profiled_results
-        with open(os.path.join(info_save_path, save_name), 'r') as fp:
+        with open(info_save_path, 'r') as fp:
             profiled_models = read_profiled_results(json.load(fp))
         for module_key, module in models.items():
             if module_key not in profiled_models:
@@ -118,7 +118,8 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     model.update(profiled_models[module_key][id])
 
     # profile models and get metric results
-    count = 0
+    count = 0    
+    error_save_path = os.path.join(res_save_path, "profile_error.log")
     detail = builder_config.get('DETAIL', mode)
     save_name = save_name or "profiled_results.json"
     logging.info("Profiling ...")
@@ -135,7 +136,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     time.sleep(0.2)
                     count += 1
                 except Exception as e:
-                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(f"{id}: {e}\n")
+                    open(error_save_path, 'a').write(f"{id}: {e}\n")
             else: # the models have not been converted
                 try:
                     model_path = model['model']
@@ -145,16 +146,17 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                     time.sleep(0.2)
                     count += 1
                 except Exception as e:
-                    open(os.path.join(info_save_path, "profile_error.log"), 'a').write(f"{id}: {e}\n")
+                    open(error_save_path, 'a').write(f"{id}: {e}\n")
 
             # save information to json file for per 50 models
             if count > 0 and count % log_frequency == 0:
-                save_profiled_results(models, os.path.join(info_save_path, save_name), detail, metrics)
-                logging.keyinfo(f"{count} models complete. Still profiling... Save the intermediate results to {os.path.join(info_save_path, save_name)}.")
+                save_profiled_results(models, info_save_path, detail, metrics)
+                logging.keyinfo(f"{count} models complete. Still profiling... Save the intermediate results to {info_save_path} ")
 
     # save information to json file
-    save_profiled_results(models, os.path.join(info_save_path, save_name), detail, metrics)    
-    logging.keyinfo(f"All {count} models profiling complete. Save all success profiled results to {os.path.join(info_save_path, save_name)}.")
+    save_profiled_results(models, info_save_path, detail, metrics)    
+    logging.keyinfo(f"All {count} models profiling complete. Save all success profiled results to {info_save_path} " \
+                    f"Failed information are saved in {error_save_path} (if any)")
 
     return models
 
@@ -192,12 +194,12 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
     init_sample_num (int, optional): the data size for predictor initialization. Defaults to 1000.
     
     finegrained_sample_num (int, optional): the data size for adaptive sampling. For each data with error higher than 
-        error_threshold, #finegrained_sample_num data will be generated based the the large error data. Defaults to 10.
+        error_threshold, number of `finegrained_sample_num` data will be generated based the the large error data. Defaults to 10.
 
-    iteration (int, optional): the iteration for sampling and training. Initial sampling is regarded as iteration 1,
-        thus `iteration == 2` means one iteration for adaptive sampling. Defaults to 5.
+    iteration (int, optional): the iteration for sampling and training. Predictor training based on initial sampling is regarded as
+    iteration 1, thus `iteration == 2` means one iteration for adaptive sampling. Defaults to 5.
 
-    error_threshold (float, optional): the threshold of large error. Defaults to 0.2.
+    error_threshold (float, optional): the threshold of large error. Defaults to 0.1.
 
     predict_label (str): the predicting label to build kernel predictor. Defaults to "latency"
  
