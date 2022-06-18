@@ -44,44 +44,12 @@ OPS = {
   'skip_connect' : lambda x, out_channel, stride, opname: skip(x, out_channel, -1, stride, opname = opname)
 }
 
-if __name__ == '__main__': 
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-            '-i', 
-            '--input_arch_string', 
-            type = str, 
-            required = True)
-    parser.add_argument(
-            '-o', 
-            '--output_file_name', 
-            type = str, 
-            required = True)
-    parser.add_argument(
-            '-t', 
-            '--generate_tflite_file_name', 
-            default = '', 
-            type = str)
-    parser.add_argument(
-            '-c', 
-            '--input_channel', 
-            default = 16, 
-            type = int)
-    parser.add_argument(
-            '-l', 
-            '--num_of_layers', 
-            default = 5, 
-            type = int)
-    parser.add_argument(
-            '-n', 
-            '--num_of_classes', 
-            default = 10, 
-            type = int)
-    args = parser.parse_args()  
+def nasbench201(input_arch_string, output_file_name, input_channel=16, num_of_layers=5, num_of_classes = 10):
     
-    block_structure = str2structure(args.input_arch_string)
+    block_structure = str2structure(input_arch_string)
 
-    C = args.input_channel
-    N = args.num_of_layers
+    C = input_channel
+    N = num_of_layers
 
     layer_channels   = [C    ] * N + [C*2 ] + [C*2  ] * N + [C*4 ] + [C*4  ] * N    
     layer_reductions = [False] * N + [True] + [False] * N + [True] + [False] * N
@@ -89,7 +57,7 @@ if __name__ == '__main__':
     # Input
     input_tensor = keras.Input(shape=[32, 32, 3], batch_size=1)
     # Stem
-    x = convbnrelu(input_tensor, args.input_channel, 3, 1, relu = False, opname = 'stem')
+    x = convbnrelu(input_tensor, input_channel, 3, 1, relu = False, opname = 'stem')
     # Blocks
     for index, (out_channel, stride) in enumerate(zip(layer_channels, layer_reductions)):
         if stride:
@@ -167,12 +135,12 @@ if __name__ == '__main__':
 
     x = tf.reduce_mean(x, axis = [1, 2], keepdims = True)
     x = flatten(x)
-    x = fc_layer(x, args.num_of_classes)
+    x = fc_layer(x, num_of_classes)
 
     output_tensor = x
     
     model = keras.Model(input_tensor, output_tensor)
-    model.save("/data1/jiahang/working/pixel4_int8_workspace/code/test.h5")
+    model.save(output_file_name)
 
     # sess = tf.compat.v1.Session()
     # sess.run(tf.compat.v1.global_variables_initializer())
