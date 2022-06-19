@@ -3,10 +3,10 @@
 import os, json
 
 class BlockLatencyPredictor:
-    def __init__(self, predictor_name = "mobile_lut"):
+    def __init__(self, predictor_name = "pixel6_lut"):
         self.predictor_name = predictor_name
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        with open(os.path.join(base_dir, "mobile_lut.json"), 'r') as fp:
+        with open(os.path.join(base_dir, f"{predictor_name}.json"), 'r') as fp:
             self.predictor = json.load(fp)
 
     def get_latency(self, block_config):
