@@ -20,7 +20,8 @@ class TorchBlock(BaseBlock):
         input_data = get_inputs_by_shapes(self.input_tensor_shape, self.batch_size)
         model = self.get_model()
         model.eval()
-        output_data = model(input_data)
+        model(input_data)
+        logging.keyinfo("Testing block is success!")
 
     def save_model(self, save_path):
         model = self.get_model()
