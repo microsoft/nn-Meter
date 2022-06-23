@@ -37,28 +37,33 @@ class KernelGenerator:
         """
         kernel_type = self.kernel_type
         logging.info(f"building kernel for {kernel_type}...")
+        count = 0
+        error_save_path = os.path.join(self.workspace_path, 'results', 'generate_error.log')
         for id, value in self.kernels.items():
             model_path = os.path.join(self.case_save_path, ("_".join([kernel_type, self.mark, id]) + self.model_suffix))
             kernel_cfg = value['config']
-            # try:
-            _, input_tensor_shape, config = generate_model_for_kernel(
-                kernel_type, kernel_cfg, save_path=model_path,
-                implement=self.implement, batch_size=self.batch_size
-            )
-            self.kernels[id] = {
-                'model': model_path,
-                'shapes': input_tensor_shape,
-                'config': config
-            }
-            # except:
-                # pass
+            try:
+                _, input_tensor_shape, config = generate_model_for_kernel(
+                    kernel_type, kernel_cfg, save_path=model_path,
+                    implement=self.implement, batch_size=self.batch_size
+                )
+                self.kernels[id] = {
+                    'model': model_path,
+                    'shapes': input_tensor_shape,
+                    'config': config
+                }
+                count += 1
+            except Exception as e:
+                open(os.path.join(self.workspace_path, "results", "generate_error.log"), 'a').write(f"{id}: {e}\n")
+
         # save information to json file in incrementally mode
         info_save_path = os.path.join(self.workspace_path, "results", f"{kernel_type}_{self.mark}.json")
         new_kernels_info = merge_info(new_info=self.kernel_info, info_save_path=info_save_path)
         os.makedirs(os.path.dirname(info_save_path), exist_ok=True)
         with open(info_save_path, 'w') as fp:
             json.dump(new_kernels_info, fp, indent=4)
-        logging.keyinfo(f"Save the kernel model information to {info_save_path}")
+        logging.keyinfo(f"Generate {len(self.kernels)} kernels and save info to {info_save_path} " \
+                        f"Failed information are saved in {error_save_path} (if any).")
 
     def run(self, sampling_mode = 'prior', configs = None):
         """ sample N configurations for target kernel, generate tensorflow keras model files.

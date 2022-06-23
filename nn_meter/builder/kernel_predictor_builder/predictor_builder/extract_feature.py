@@ -42,6 +42,7 @@ feature_for_kernel = {
     "bnrelu":               ["HW", "CIN"],
     "bn":                   ["HW", "CIN"],
     "hswish":               ["HW", "CIN"],
+    "swish":                ["HW", "CIN"],
     "relu":                 ["HW", "CIN"],
     # In "addrelu" block and "add" block, the second feature "CIN" will always be the same as
     # the third feature
