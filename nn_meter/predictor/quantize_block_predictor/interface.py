@@ -11,7 +11,7 @@ class BlockLatencyPredictor:
         # declare all existing ops in the predictor
         basic_ops = ["conv-bn-relu", "dwconv-bn-relu", "hswish", "gap", "fc", "add-relu", "add", "se"]
         if predictor_name.startswith("tflite"):
-            self.ops = basic_ops
+            self.ops = basic_ops + ["swish"]
         elif predictor_name.startswith("onnx"):
             self.ops = basic_ops + ["resnet-se"]
 
@@ -32,7 +32,8 @@ class BlockLatencyPredictor:
         # MobileNetV3Block_[res/nores]_[relu/hswish]
         # MobileNetV1DualBlock_[ds/nods]
         # MobileNetV2ResBlock_[res/forceres]_[relu/hswish] always without se
-        # MobileNetV3ResBlock_[res/forceres]_[relu/hswish] always with se
+        # MobileNetV3ResBlock_[res/forceres]_[relu/swish] always with se
+        # FusedMBConvSEResBlock_[res/forceres]_[relu/hswish] always with se
         # ResNetBlock_[ds/nods]_[relu/hswish]
         # ResNetSEBlock_[ds/nods]_[relu/hswish]
         # ResNetBugBlock_[ds/nods]
@@ -50,7 +51,7 @@ class BlockLatencyPredictor:
         if name == "MobileNetV1DualBlock":
             if cin != cout or stride == 2: return f'{name}_ds'
             else: return f'{name}_nods'
-        elif name.startswith("MobileNet"):
+        elif name.startswith("MobileNet") or name.startswith('FusedMBConv'):
             type_list = [name]
             use_res_connect = stride == 1 and cin == cout
             if "ResBlock" in name:
@@ -99,6 +100,7 @@ class BlockLatencyPredictor:
     def get_single_block_arch(self, name, hw, cin, cout, kernel_size, expand_ratio, 
                     stride, activation):
         type = self.get_type(name, cin, cout, stride, activation)
+        # print(type)
         dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
         return dicts
 
@@ -123,4 +125,5 @@ class BlockLatencyPredictor:
                 pys = pred.predict(ops_config[kernel]) # in unit of ms
                 if len(pys) != 0:
                     py += sum(pys)
+                # print(kernelname, sum(pys))
         return py

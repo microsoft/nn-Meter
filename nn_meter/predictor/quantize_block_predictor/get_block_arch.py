@@ -429,7 +429,186 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
                 [hw // stride, cout, cout]
             ]
         }
+
+    elif block == "MobileNetV3ResBlock_res_swish":
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw, feature_size, cin, 1, 1]
+            ],
+            'swish': [
+                [hw, feature_size],
+                [hw, feature_size]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, kernel_size, stride]
+            ],
+            'se': [
+                [hw, feature_size]
+            ],
+            'add': [
+                [hw, cout, cout]
+            ]
+        }
+
+    elif block =="MobileNetV3ResBlock_forceres_swish":
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw // stride, feature_size, cout, 1, 1],
+                [hw, cin, cout, 1, stride]
+            ],
+            'swish': [
+                [hw, feature_size],
+                [hw // stride, feature_size]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, kernel_size, stride]
+            ],
+            'se': [
+                [hw // stride, feature_size]
+            ],
+            'add': [
+                [hw // stride, cout, cout]
+            ]
+        }
+
+    elif block == "MobileNetV3ResBlock_res_swish":
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw, feature_size, cin, 1, 1]
+            ],
+            'swish': [
+                [hw, feature_size],
+                [hw, feature_size]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, kernel_size, stride]
+            ],
+            'se': [
+                [hw, feature_size]
+            ],
+            'add': [
+                [hw, cout, cout]
+            ]
+        }
+
+    elif block == "MobileNetV3ResBlock_forceres_swish":
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw // stride, feature_size, cout, 1, 1],
+                [hw, cin, cout, 1, stride]
+            ],
+            'swish': [
+                [hw, feature_size],
+                [hw // stride, feature_size]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, kernel_size, stride]
+            ],
+            'se': [
+                [hw // stride, feature_size]
+            ],
+            'add': [
+                [hw // stride, cout, cout]
+            ]
+        }
+
+    elif block == 'FusedMBConvSEResBlock_res_swish':
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, kernel_size, stride],
+                [hw // stride, feature_size, cout, 1, 1],
+            ],
+            'swish': [
+                [hw // stride, feature_size]
+            ],
+            'se': [ 
+                [hw // stride, feature_size]
+            ],
+            'add': [
+                [hw // stride, cout, cout]
+            ]
+        }
+
+    elif block == 'FusedMBConvSEResBlock_forceres_swish':
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, kernel_size, stride],
+                [hw // stride, feature_size, cout, 1, 1],
+                [hw, cin, cout, 1, stride]
+            ],
+            'swish': [
+                [hw // stride, feature_size]
+            ],
+            'se': [ 
+                [hw // stride, feature_size]
+            ],
+            'add': [
+                [hw // stride, cout, cout]
+            ]
+        }
+
+    elif block == "MobileNetV3K3ResBlock_res_swish":
+
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw, feature_size, cin, 1, 1]
+            ],
+            'swish': [
+                [hw, feature_size],
+                [hw, feature_size]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, 3, stride]
+            ],
+            'se': [
+                [hw, feature_size]
+            ],
+            'add': [
+                [hw, cout, cout]
+            ]
+        }
+        num_dwconv = {3:1, 5:2, 7:3}[kernel_size]
+        for _ in range(num_dwconv - 1):
+            res['dwconv-bn-relu'].append([hw // stride, feature_size, feature_size, 3, 1])
         
+    elif block == "MobileNetV3K3ResBlock_forceres_swish":
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw // stride, feature_size, cout, 1, 1],
+                [hw, cin, cout, 1, stride]
+            ],
+            'swish': [
+                [hw, feature_size],
+                [hw // stride, feature_size]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, 3, stride]
+            ],
+            'se': [
+                [hw // stride, feature_size]
+            ],
+            'add': [
+                [hw // stride, cout, cout]
+            ]
+        }
+        num_dwconv = {3:1, 5:2, 7:3}[kernel_size]
+        for _ in range(num_dwconv - 1):
+            res['dwconv-bn-relu'].append([hw // stride, feature_size, feature_size, 3, 1])
+
     elif block == "MobileNetV2ResBlock_res_relu":
         '''
         ############ conv-bn-relu 30.729888468749948
