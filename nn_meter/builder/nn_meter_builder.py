@@ -68,7 +68,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
     return models
 
 
-def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
+def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = "profiled_results.json",
                    have_converted = False, log_frequency = 50, broken_point_mode = False, **kwargs):
     """ run models with given backend and return latency of testcase models
 
