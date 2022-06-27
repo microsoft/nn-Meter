@@ -244,7 +244,7 @@ predictor, data = build_predictor_for_kernel(
 )
 ```
 
-In the experiment of nn-Meter, we set `init_sample_num` as 1000, `finegrained_sample_num` as 10, `iteration` as 5, and `error_threshold` as 0.1.
+In the experiment of nn-Meter, we set default `init_sample_num` as 1000, `finegrained_sample_num` as 10, `iteration` as 5, and `error_threshold` as 0.1.
 
 nn-Meter also provided a end-to-end method for users to build a series of general latency predictors, named `nn_meter.builder.build_latency_predictor`. This method will build predictors for all kernels in `<workspace-path>/configs/predictorbuild_config.yaml` according to their corresponding parameters. The parameters includes `INIT_SAMPLE_NUM`, `FINEGRAINED_SAMPLE_NUM`, `ITERATION`, and `ERROR_THRESHOLD`. Here is an example:
 
