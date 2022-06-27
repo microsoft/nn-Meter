@@ -25,6 +25,3 @@ if __name__ == '__main__':
     from nn_meter.builder.nn_modules.torch_networks import blocks
     for kernel in kernels:
         getattr(blocks, kernel)(config).test_block()
-    from nn_meter.builder.nn_modules.torch_networks import blocks
-    for kernel in kernels:
-        getattr(blocks, kernel)(config).test_block()
