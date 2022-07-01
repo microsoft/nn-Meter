@@ -28,6 +28,8 @@ Currently nn-Meter has been tested on Linux and Windows system. Windows 10, Ubun
 pip install nn-meter
 ```
 
+`nn-meter==2.0` has been released now.
+
 If you want to try latest code, please install nn-Meter from source code. First git clone nn-Meter package to local:
 
 ```Bash
