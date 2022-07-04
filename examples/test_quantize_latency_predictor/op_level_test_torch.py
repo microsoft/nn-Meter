@@ -8,7 +8,7 @@ from nn_meter.predictor.prediction.utils import latency_metrics_acc20 as latency
 from nn_meter.builder.backends import connect_backend
 from nn_meter.predictor import load_latency_predictor
 from nn_meter.builder import builder_config
-from nn_meter.builder.nn_generator.torch_networks.utils import get_inputs_by_shapes
+from nn_meter.builder.nn_modules.torch_networks.utils import get_inputs_by_shapes
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
 from nas_models.networks.torch.mobilenetv3 import MobileNetV3Net
@@ -62,7 +62,7 @@ def get_feature(kernel_type, config_dict):
     return feature
 
 ## ------------- op level
-from nn_meter.builder.nn_generator.torch_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
+from nn_meter.builder.nn_modules.torch_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
 
 def op_level_test_conv(predictor_name):
     # conv-bn-relu
@@ -206,6 +206,38 @@ def op_level_test_hswish(predictor_name):
     #     print(item[0])
     print(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
+
+def op_level_test_swish():
+    # # swish
+    class SwishForParse(nn.Module):
+        
+        def __init__(self):
+            super().__init__()
+            # self.swish = nn.SiLU()
+
+        def forward(self, x):
+            return x * torch.sigmoid(x)
+            # return self.swish(x)
+
+    # configs in MobilenetV3Large
+    # configs = [
+    #     [112, 16], [28, 240], [14, 240], [14, 200], [14, 200], [14, 184], [14, 184], [14, 184],
+    #     [14, 184], [14, 480], [14, 480], [14, 672], [14, 672], [14, 672], [7, 672], [7, 960], [7, 960],
+    #     [7, 960], [7, 960], [1, 1280]
+    # ]
+    configs = [[112, 16]
+            #    , [56, 40], [28, 80], [14, 160], [7, 320]
+               ]
+    for i, config in enumerate(configs):
+        hwin, cin = config
+        config_in = {
+            "HW": hwin,
+            "CIN": cin
+        }
+        input_shape = [cin, hwin, hwin]
+        model = SwishForParse()
+        real = profile_model(model, input_shape, backend=backend)
+        print(real)
 
 def op_level_test_dwconv(predictor_name):
     with open(predictor_name, "rb") as f:
@@ -439,7 +471,7 @@ if __name__ == '__main__':
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")
-    op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_refined16.pkl")
+    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_refined16.pkl")
     
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_original.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
@@ -462,7 +494,7 @@ if __name__ == '__main__':
     # backend_name = 'ort_cpu'
     # backend = connect_backend(backend_name)
     # op_level_test_cascade_mbv1()
-    
+    op_level_test_swish()
     
     # backend_name = 'ort_cpu_int8'
     # backend = connect_backend(backend_name)

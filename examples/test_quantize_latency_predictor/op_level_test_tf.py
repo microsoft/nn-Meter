@@ -5,7 +5,7 @@ from tensorflow.keras import layers
 from nn_meter.predictor import load_latency_predictor
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder import builder_config
-from nn_meter.builder.modules.tf_networks.utils import get_inputs_by_shapes
+from nn_meter.builder.nn_modules.tf_networks.utils import get_inputs_by_shapes
 from nn_meter.predictor.prediction.utils import latency_metrics_acc20 as latency_metrics
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
@@ -165,7 +165,7 @@ def get_feature(kernel_type, config_dict):
     return feature
 
 ## ------------- op level
-from nn_meter.builder.modules.tf_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
+from nn_meter.builder.nn_modules.tf_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
 
 def op_level_test_conv(predictor_name):
     # conv-bn-relu
@@ -294,7 +294,7 @@ def op_level_test_dwconv(predictor_name):
 def op_level_test_hswish(predictor_name):
     with open(predictor_name, "rb") as f:
         predictor = pickle.load(f)
-    from nn_meter.builder.nn_generator.tf_networks.blocks import HswishBlock
+    from nn_meter.builder.nn_modules.tf_networks.blocks import HswishBlock
     reals, preds = [], []
     configs = [
         [112, 16], [28, 120], [14, 120], [14, 480], [14, 480], [14, 240], [14, 320],
@@ -330,6 +330,38 @@ def op_level_test_hswish(predictor_name):
     # for item in zip(reals, preds):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f'{item}\n')
     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_hswish.txt", "a").write(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
+
+def op_level_test_swish():
+    # class SwishBlock(BaseBlock):
+    #     def __init__(self):
+    #         super().__init__()
+    #     def call(self, x):
+    #         return tf.keras.activations.swish(x)
+
+    from nn_meter.builder.nn_modules.tf_networks.blocks import SwishBlock
+    reals, preds = [], []
+    configs = [
+        [112,16], [28,240], [14,240], [14,200], [14,200], [14,184],
+        [14,184], [14,184], [14,184], [14,480], [14,480], [14,672], [14,672],
+        [14,672], [7,672], [7,960], [7,960], [7,960], [7,960], [1,1280]
+    ]
+    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_swish.txt", "a").write(f'{backend_name}\n')
+    for i, config in enumerate(configs):
+    # for i, cin in enumerate(range(600, 681)):
+        hwin, cin = config
+        # hwin, cin = 14, cin
+        config_in = {
+            "HW": hwin,
+            "CIN": cin
+        }
+        input_shape = [hwin, hwin, cin]
+        model = SwishBlock(config_in).get_model()
+        real = profile_model(model, input_shape)
+        # real = real_latency[i]
+        
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_swish.txt", "a").write(f'{real}\n')
+        reals.append(real)
+
 
 def test_profile_hswish():
     hwin, cin = 96, 1984
@@ -484,8 +516,8 @@ if __name__ == '__main__':
     # op_level_test_hswish("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/hswish_fg1_filt8.pkl")
     # test_profile_hswish()
     
-    op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_filt8.pkl")
-    
+    # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_filt8.pkl")
+    op_level_test_swish()
     # op_level_test_mobilenetv3_large()
     
     # op_level_test_cascade_mbv1()
