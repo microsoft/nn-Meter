@@ -14,7 +14,7 @@ class BlockLatencyPredictor:
         sample = (
             176, # 0 input res
             (0, 0, 0, 1, 1, 1), # 1 block type
-            (24, 40, 80, 112, 192, 320), # 2 channels
+            (24, 32, 64, 128, 208, 272), # 2 channels
             (2, 3, 2, 2, 3, 4), # 3 depths
             (6, 6, 6, 6, 6, 4, 4), # 4 conv expansion ratio
             (3, 3, 3, 3, 3, 5, 5), # 5 conv kr size
@@ -22,7 +22,8 @@ class BlockLatencyPredictor:
             (14, 14, 24, 24, 24, 40, 40, 40, 40), # 7 trans num heads
             (1, 1, 1, 1, 1, 1, 1, 1, 1), # 8 windows size
             (1, 1, 1, 1, 1, 1, 1, 1, 1), # 9 qk scale
-            (2, 2, 2, 2, 2, 2, 2, 2, 2) # 10 v scale
+            (2, 2, 2, 2, 2, 2, 2, 2, 2), # 10 v scale
+            (False, True, True, False, False, False) # 11 use_se, only works for conv layer
         )
         '''
         py = 0
@@ -46,6 +47,7 @@ class BlockLatencyPredictor:
             hw = stage_hwout
             stage_cin = stage_cout
             stage_cout = block_config[2][stage_idx]
+            stage_usese = block_config[11][stage_idx]
             if name == "conv":
                 for i in range(block_config[3][stage_idx]):
                     s = stage_stride if i == 0 else 1
@@ -54,11 +56,12 @@ class BlockLatencyPredictor:
                     cout = stage_cout
                     exp = block_config[4][conv_count]
                     ks = block_config[5][conv_count]
+                    se = stage_usese
                     conv_count += 1
 
                     # predict by lut
-                    py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}"]
-                    # print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}")
+                    py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{se}"]
+                    # print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{se}")
 
             elif name == "transformer":
                 for i in range(block_config[3][stage_idx]):
