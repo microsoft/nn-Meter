@@ -38,11 +38,11 @@ def get_predict_features(config):
     get prediction features
     """
     mdicts = {}
-    layer = 0
     for item in config:
         logging.info(item)
     for item in config:
         op = item["op"]
+        layer = item["name"]
         if "conv" in op or "maxpool" in op or "avgpool" in op:
             cout = item["cout"]
             cin = item["cin"]
@@ -118,7 +118,6 @@ def get_predict_features(config):
             continue
         mdicts[layer] = {}
         mdicts[layer][op] = features
-        layer += 1
     return mdicts
 
 

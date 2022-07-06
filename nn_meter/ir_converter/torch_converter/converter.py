@@ -128,4 +128,3 @@ class OnnxBasedTorchConverter(OnnxConverter):
 
         assert check, "Simplified ONNX model could not be validated"
         super().__init__(model_simp)
-

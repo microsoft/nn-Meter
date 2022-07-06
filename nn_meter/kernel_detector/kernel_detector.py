@@ -62,7 +62,7 @@ class KernelDetector:
 
         if types:
             type = "-".join(types)
-            name = f"{type}#{self._global_index}"
+            name = f"{';'.join(bb)}#{type}#{self._global_index}"
 
             kernel = {
                 "op": type,

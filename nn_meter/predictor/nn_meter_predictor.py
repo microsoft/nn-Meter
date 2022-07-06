@@ -4,7 +4,7 @@ import os
 import logging
 from packaging import version
 from .utils import load_config_file, loading_to_local, loading_customized_predictor
-from .prediction.predict_by_kernel import nn_predict
+from .prediction.predict_by_kernel import nn_predict, detailed_nn_predict
 from nn_meter.kernel_detector import KernelDetector
 from nn_meter.utils import get_user_data_folder
 from nn_meter.ir_converter import model_file_to_graph, model_to_graph
@@ -76,6 +76,13 @@ class nnMeterPredictor:
         self.fusionrule = fusionrule
         self.kd = KernelDetector(self.fusionrule)
 
+    def load_model(self, model, model_type, input_shape, apply_nni):
+        if isinstance(model, str):
+            graph = model_file_to_graph(model, model_type, input_shape, apply_nni=apply_nni)
+        else:
+            graph = model_to_graph(model, model_type, input_shape=input_shape, apply_nni=apply_nni)
+        return graph
+
     def predict(
         self, model, model_type, input_shape=(1, 3, 224, 224), apply_nni=False
     ):
@@ -102,14 +109,28 @@ class nnMeterPredictor:
             model_type == 'torch'
         """
         logging.info("Start latency prediction ...")
-        if isinstance(model, str):
-            graph = model_file_to_graph(model, model_type, input_shape, apply_nni=apply_nni)
-        else:
-            graph = model_to_graph(model, model_type, input_shape=input_shape, apply_nni=apply_nni)
-        
-        # logging.info(graph)
+        graph = self.load_model(model, model_type, input_shape, apply_nni)
+
+        # kernel detection
         self.kd.load_graph(graph)
 
         py = nn_predict(self.kernel_predictors, self.kd.get_kernels()) # in unit of ms
         logging.info(f"Predict latency: {py} ms")
         return py
+
+    def detailed_predict(
+        self, model, model_type, input_shape=(1, 3, 224, 224), apply_nni=False
+    ):
+        """
+        return the predicted latency in microseconds (ms) and the block-wise latency details
+        @params: same as self.predict()
+        """
+        logging.info("Start latency prediction ...")
+        graph = self.load_model(model, model_type, input_shape, apply_nni)
+
+        # kernel detection
+        self.kd.load_graph(graph)
+
+        py, block_result = detailed_nn_predict(self.kernel_predictors, self.kd.get_kernels()) # in unit of ms
+        logging.info(f"Predict latency: {py} ms")
+        return py, block_result
