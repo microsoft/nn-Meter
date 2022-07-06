@@ -50,9 +50,8 @@ def detailed_predict_model(model, predictors):
     predictors: loaded pkl predictors
     """
     py = 0
-    dicts = {}
+    dicts, layer_map = {}, {}
     layer_idx = 0
-    layer_map = {}
     block_latency = []
     for layer in model:
         kernel = list(model[layer].keys())[0]
@@ -76,23 +75,18 @@ def detailed_predict_model(model, predictors):
                 py += sum(pys)
 
     # merge
-    layer_idx = 0
+    layer_idx, op_idx = 0, 1
     block_result = []
-    op_no = 1
     for layer in model:
         kernelname = list(model[layer].keys())[0]
-        
         rkernelname = get_kernel_name(merge_conv_kernels(kernelname))
+        curr_type, curr_idx = layer_map[layer_idx]
         if rkernelname in predictors:
-            curr_type, curr_idx = layer_map[layer_idx]
             curr_lat = block_latency[curr_type][curr_idx]
-            block_result.append([op_no, rkernelname, model[layer][kernelname], curr_lat, layer.split("#")[0]])
-            op_no += 1
         else:
-            curr_type, curr_idx = layer_map[layer_idx]
-            curr_lat = 0.0
-            block_result.append([op_no, rkernelname, model[layer][kernelname], curr_lat, layer.split("#")[0]])
-            op_no += 1
+            curr_lat = "not applicable"
+        block_result.append([op_idx, rkernelname, model[layer][kernelname], curr_lat, layer.split("#")[0]])
+        op_idx += 1
         layer_idx += 1
 
     return py, block_result
