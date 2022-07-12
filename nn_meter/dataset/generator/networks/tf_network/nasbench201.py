@@ -25,27 +25,28 @@ def sepconv(_input, out_channels, kernel_size, stride = 1, padding = 'SAME', opn
     x = batch_norm(x)
     return x
 
+
 def dualsepconv(_input, out_channels, kernel_size, stride = 1, padding = 'SAME', opname = ''):
-    x = sepconv(_input, out_channels, kernel_size, stride, opname = opname+'.1')
-    x = sepconv(x, out_channels, kernel_size, 1, opname = opname+'.1')
+    x = sepconv(_input, out_channels, kernel_size, stride, opname=opname+'.1')
+    x = sepconv(x, out_channels, kernel_size, 1, opname=opname+'.1')
     return x    
 
 OPS = {
-  'none'         : lambda x, out_channel, stride, opname: zero(x, out_channel, stride, opname = opname), 
-  'avg_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'avg', stride, opname = opname), 
-  'max_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'max', stride, opname = opname), 
-  'nor_conv_7x7' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 7, stride, opname = opname), 
-  'nor_conv_3x3' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 3, stride, opname = opname), 
-  'nor_conv_1x1' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 1, stride, opname = opname), 
-  'dua_sepc_3x3' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 3, stride, opname = opname), 
-  'dua_sepc_5x5' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 5, stride, opname = opname), 
-  'dil_sepc_3x3' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 3, stride, opname = opname), 
-  'dil_sepc_5x5' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 5, stride, opname = opname), 
-  'skip_connect' : lambda x, out_channel, stride, opname: skip(x, out_channel, -1, stride, opname = opname)
+  'none'         : lambda x, out_channel, stride, opname: zero(x, out_channel, stride, opname=opname), 
+  'avg_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'avg', stride, opname=opname), 
+  'max_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'max', stride, opname=opname), 
+  'nor_conv_7x7' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 7, stride, opname=opname), 
+  'nor_conv_3x3' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 3, stride, opname=opname), 
+  'nor_conv_1x1' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 1, stride, opname=opname), 
+  'dua_sepc_3x3' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 3, stride, opname=opname), 
+  'dua_sepc_5x5' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 5, stride, opname=opname), 
+  'dil_sepc_3x3' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 3, stride, opname=opname), 
+  'dil_sepc_5x5' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 5, stride, opname=opname), 
+  'skip_connect' : lambda x, out_channel, stride, opname: skip(x, out_channel, -1, stride, opname=opname)
 }
 
+
 def nasbench201(input_arch_string, output_file_name, input_channel=16, num_of_layers=5, num_of_classes = 10):
-    
     block_structure = str2structure(input_arch_string)
 
     C = input_channel

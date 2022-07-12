@@ -1,0 +1,14 @@
+model_family: resnet
+modelids: [18, 34, 50]
+sample_count: 500
+checkpoint_dir: ./data
+submodule_level: 2
+n_classes: 1000
+input_shape: [3, 224, 224]
+sample_space:
+    channel:
+       start: 0.2
+       end: 1.2
+       step: 0.1
+    kernelsize: [3, 5, 7]
+    es: [2, 4]

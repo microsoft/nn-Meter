@@ -1,90 +1,93 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import tensorflow as tf 
-from .ops import  *
-from ..utils import * 
+import tensorflow as tf
+from .ops import *
+from ..utils import *
 
 cfgs = {
-    11: [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'], 
-    13: [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'], 
-    16: [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'], 
-    19: [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'], 
+    11: [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    13: [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    16: [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
+    19: [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
 
 
 class VGG(object):
-    def __init__(self, x, cfg, version = 11, sample = False):  # change channel number, kernel size
-        self.input = x
+    def __init__(self, input, cfg, version = 11, sample = False):
+        ''' change channel number, kernel size
+        '''
+        self.input = input
         self.num_classes = cfg['n_classes']
+        self.clayers = cfgs[version]
         da = cfgs[version]
         da = list(filter(('M').__ne__, da))
-        self.sconfig = ""
-        
+
+        # fixed block channels and kernel size
         self.bcs = da
-        self.clayers = cfgs[version]
-        self.bcs.append(4096)
-        self.bcs.append(4096)
-        
+        self.bcs.extend([4096, 4096])
         self.bks = [3] * len(da)
+
+        # sampling block channels and kernel size
         self.cs = get_sampling_channels(cfg['sample_space']['channel']['start'], cfg['sample_space']['channel']['end'], cfg['sample_space']['channel']['step'], len(self.bcs))
         self.ks = get_sampling_ks(cfg['sample_space']['kernelsize'], len(self.bks))
 
-        self.config = {}
         if sample == True:
             self.ncs = [int(self.bcs[index] * self.cs[index]) for index in range(len(self.bcs))]
             self.nks = self.ks
         else:
-            self.ncs = self.bcs 
-            self.nks = self.bks 
+            self.ncs = self.bcs
+            self.nks = self.bks
 
+        self.config = {}
         self.sconfig = '_'.join([str(x) for x in self.nks]) + '-' + '_'.join([str(x) for x in self.ncs])
-    
+
+        # build VGG model
         self.out = self.build()
 
     def add_to_log(self, op, cin, cout, ks, stride, layername, inputh, inputw):
-        self.config[layername] = {}
-        self.config[layername]['op'] = op
-        self.config[layername]['cin'] = cin
-        self.config[layername]['cout'] = cout
-        self.config[layername]['ks'] = ks
-        self.config[layername]['stride'] = stride 
-        self.config[layername]['inputh'] = inputh
-        self.config[layername]['inputw'] = inputw 
+        self.config[layername] = {
+            'op': op,
+            'cin': cin,
+            'cout': cout,
+            'ks': ks,
+            'stride': stride,
+            'inputh': inputh,
+            'inputw': inputw
+        }
 
     def build(self):
-        layercount = 1
+        ''' build VGG model according to model config
+        '''
+        layer_count, layer_num = 1, 0
+        curr_channel = 3
         x = self.input
-        layernum = 0
-        lastc = 3
         for v in self.clayers:
+            (h, w) = x.shape.as_list()[1:3]
             if v == 'M':
-                (h, w) = x.shape.as_list()[1:3]
-                x = max_pooling(x, 2, 2, opname = 'max-pool' + str(layercount), padding = 'VALID')
-                self.add_to_log('max-pool', lastc, lastc, 2, 2, 'layer' + str(layercount), h, w)  ## update vgg.json maxpool
+                x = max_pooling(x, 2, 2, opname='max-pool' + str(layer_count), padding='VALID')
+                self.add_to_log('max-pool', curr_channel, curr_channel, 2, 2, 'layer' + str(layer_count), h, w)
             else:
-                (h, w) = x.shape.as_list()[1:3]
-                x = conv2d(x, self.ncs[layernum], self.nks[layernum], opname = 'conv' + str(layercount), stride = 1, padding = 'SAME') #def conv2d(_input, out_features, kernel_size, opname = '', stride = 1, padding = 'SAME', param_initializer = None):
-                x = batch_norm(x, opname = 'conv' + str(layercount) + '.bn')
-                x = activation(x, 'relu', opname = 'conv' + str(layercount) + '.relu')
-                self.add_to_log('conv-bn-relu', lastc, self.ncs[layernum], self.nks[layernum], 1, 'layer' + str(layercount), h, w)
+                x = conv2d(x, self.ncs[layer_num], self.nks[layer_num], opname='conv' + str(layer_count), stride=1, padding='SAME')
+                x = batch_norm(x, opname='conv' + str(layer_count) + '.bn')
+                x = activation(x, 'relu', opname='conv' + str(layer_count) + '.relu')
+                self.add_to_log('conv-bn-relu', curr_channel, self.ncs[layer_num], self.nks[layer_num], 1, 'layer' + str(layer_count), h, w)
+                curr_channel = self.ncs[layer_num]
+                layer_num += 1
+            layer_count += 1
 
-                lastc = self.ncs[layernum]
-                layernum  += 1
-            layercount  += 1
-
-        x = tf.reduce_mean(x, axis = [1, 2], keep_dims = True)
+        x = tf.reduce_mean(x, axis=[1, 2], keepdims=True)
         x = flatten(x)
-        self.add_to_log('global-pool', self.ncs[layernum-1], self.ncs[layernum-1], None, None, 'layer' + str(layercount + 1), 1, 1)
-        
-        x = fc_layer(x, self.ncs[layernum], opname = 'fc1')        
-        x = activation(x, 'relu', opname = 'fc1.relu')
-        self.add_to_log('fc-relu', self.ncs[layernum], self.ncs[layernum], None, None, 'layer' + str(layercount + 2), None, None)
+        self.add_to_log('global-pool', self.ncs[layer_num - 1], self.ncs[layer_num - 1], None, None, 'layer' + str(layer_count + 1), 1, 1)
+       
+        x = fc_layer(x, self.ncs[layer_num], opname='fc1')       
+        x = activation(x, 'relu', opname='fc1.relu')
+        self.add_to_log('fc-relu', self.ncs[layer_num], self.ncs[layer_num], None, None, 'layer' + str(layer_count + 2), None, None)
 
-        x = fc_layer(x, self.ncs[layernum + 1], opname = 'fc2')
+        x = fc_layer(x, self.ncs[layer_num + 1], opname='fc2')
         x = activation(x, 'relu', opname = 'fc2.relu')
-        self.add_to_log('fc-relu', self.ncs[layernum], self.ncs[layernum + 1], None, None, 'layer' + str(layercount + 3), None, None)
+        self.add_to_log('fc-relu', self.ncs[layer_num], self.ncs[layer_num + 1], None, None, 'layer' + str(layer_count + 3), None, None)
 
-        x = fc_layer(x, self.num_classes, opname = 'fc3')
-        self.add_to_log('fc', self.ncs[layernum + 1], self.num_classes, None, None, 'layer' + str(layercount + 4), None, None)
+        x = fc_layer(x, self.num_classes, opname='fc3')
+        self.add_to_log('fc', self.ncs[layer_num + 1], self.num_classes, None, None, 'layer' + str(layer_count + 4), None, None)
 
         return x
