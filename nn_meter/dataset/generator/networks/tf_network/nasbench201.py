@@ -29,19 +29,32 @@ def sepconv(_input, out_channels, kernel_size, stride = 1, padding = 'SAME', opn
 def dualsepconv(_input, out_channels, kernel_size, stride = 1, padding = 'SAME', opname = ''):
     x = sepconv(_input, out_channels, kernel_size, stride, opname=opname+'.1')
     x = sepconv(x, out_channels, kernel_size, 1, opname=opname+'.1')
-    return x    
+    return x
+
+
+def skip(_input, out_channels, identity, stride, opname = ''):
+    tensor_shape = _input.get_shape().as_list()
+    if stride == 1 and tensor_shape[ - 1] == out_channels:
+        return _input
+    else:
+        if stride == 1:
+            x = conv2d(_input, out_channels, 1, stride, opname=opname)
+            x = batch_norm(x, opname=opname)
+            return x
+        else:
+            raise NotImplementedError
 
 OPS = {
-  'none'         : lambda x, out_channel, stride, opname: zero(x, out_channel, stride, opname=opname), 
-  'avg_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'avg', stride, opname=opname), 
-  'max_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'max', stride, opname=opname), 
-  'nor_conv_7x7' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 7, stride, opname=opname), 
-  'nor_conv_3x3' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 3, stride, opname=opname), 
-  'nor_conv_1x1' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 1, stride, opname=opname), 
-  'dua_sepc_3x3' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 3, stride, opname=opname), 
-  'dua_sepc_5x5' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 5, stride, opname=opname), 
-  'dil_sepc_3x3' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 3, stride, opname=opname), 
-  'dil_sepc_5x5' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 5, stride, opname=opname), 
+  'none'         : lambda x, out_channel, stride, opname: zero(x, out_channel, stride, opname=opname),
+  'avg_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'avg', stride, opname=opname),
+  'max_pool_3x3' : lambda x, out_channel, stride, opname: pooling(x, out_channel, 'max', stride, opname=opname),
+  'nor_conv_7x7' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 7, stride, opname=opname),
+  'nor_conv_3x3' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 3, stride, opname=opname),
+  'nor_conv_1x1' : lambda x, out_channel, stride, opname: reluconvbn(x, out_channel, 1, stride, opname=opname),
+  'dua_sepc_3x3' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 3, stride, opname=opname),
+  'dua_sepc_5x5' : lambda x, out_channel, stride, opname: dualsepconv(x, out_channel, 5, stride, opname=opname),
+  'dil_sepc_3x3' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 3, stride, opname=opname),
+  'dil_sepc_5x5' : lambda x, out_channel, stride, opname: sepconv(x, out_channel, 5, stride, opname=opname),
   'skip_connect' : lambda x, out_channel, stride, opname: skip(x, out_channel, -1, stride, opname=opname)
 }
 
@@ -52,7 +65,7 @@ def nasbench201(input_arch_string, output_file_name, input_channel=16, num_of_la
     C = input_channel
     N = num_of_layers
 
-    layer_channels   = [C    ] * N + [C*2 ] + [C*2  ] * N + [C*4 ] + [C*4  ] * N    
+    layer_channels   = [C    ] * N + [C*2 ] + [C*2  ] * N + [C*4 ] + [C*4  ] * N   
     layer_reductions = [False] * N + [True] + [False] * N + [True] + [False] * N
 
     # Input
@@ -74,7 +87,7 @@ def nasbench201(input_arch_string, output_file_name, input_channel=16, num_of_la
             x = convbnrelu(x, out_channel, 3, 1, relu = False, opname = '%d.2' % index)
 
             x = tf.math.add(x, _downsample)
-            
+           
         else:
             collector_nodes = []
             collector_nodes_ops = []
@@ -129,7 +142,7 @@ def nasbench201(input_arch_string, output_file_name, input_channel=16, num_of_la
                 out_nodes = [nodes[-1]]
             print('!!!', nodes)
             x = nodes[-1]
-    
+   
 
     x = batch_norm(x)
     x = tf.nn.relu(x)
@@ -139,7 +152,7 @@ def nasbench201(input_arch_string, output_file_name, input_channel=16, num_of_la
     x = fc_layer(x, num_of_classes)
 
     output_tensor = x
-    
+   
     model = keras.Model(input_tensor, output_tensor)
     model.save(output_file_name)
 
