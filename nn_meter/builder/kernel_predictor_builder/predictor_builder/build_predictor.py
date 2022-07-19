@@ -43,10 +43,19 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
         res_save_path = None
         pred_save_path = None
 
-    kernel_data = collect_kernel_data(kernel_data, predict_label)
-    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
-                                        save_path=data_save_path,
-                                        predict_label=predict_label)
+    if isinstance(kernel_data, str):
+        kernel_feature, kernel_latency = [], []
+        kd_df = pd.read_csv(kernel_data)
+        for i in kd_df.index:
+            kernel_feature.append(kd_df.loc[i].values[1:8])
+            kernel_latency.append(kd_df.loc[i].values[8])
+            # import pdb; pdb.set_trace()
+        data = (kernel_feature, kernel_latency)
+    else:
+        kernel_data = collect_kernel_data(kernel_data, predict_label)
+        data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
+                                            save_path=data_save_path,
+                                            predict_label=predict_label)
 
     # kernel_data2 = collect_kernel_data(
     #     (f"/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/{kernel_type}_lut.json",
