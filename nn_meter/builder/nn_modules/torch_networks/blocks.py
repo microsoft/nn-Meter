@@ -17,12 +17,15 @@ class TorchBlock(BaseBlock):
         self.batch_size = batch_size
 
     def test_block(self):
-        input_data = torch.randn(1, self.config["CIN"], self.config["HW"], self.config["HW"])
-        output_data = self.get_model()(input_data)
-        print("input size:", input_data.shape, "output size: ", output_data.shape)
-    
+        input_data = get_inputs_by_shapes(self.input_tensor_shape, self.batch_size)
+        model = self.get_model()
+        model.eval()
+        model(input_data)
+        logging.keyinfo("Testing block is success!")
+
     def save_model(self, save_path):
         model = self.get_model()
+        model.eval()
         torch.onnx.export(
             model,
             get_inputs_by_shapes(self.input_tensor_shape, self.batch_size),
@@ -34,6 +37,23 @@ class TorchBlock(BaseBlock):
             opset_version=12,
             do_constant_folding=True,
         )
+
+    def build_model(self, ops):
+        ''' convert a list of operators to torch model.
+        '''
+        class Model(nn.Module):
+            def __init__(self, ops):
+                super().__init__()
+                self.layers = nn.Sequential(*ops)
+
+            def forward(self, inputs):
+                x = self.layers(inputs)
+                return x
+
+        return Model(ops)
+
+    def get_model(self):
+        raise NotImplementedError
 
 
 class ConvBnRelu(TorchBlock):
@@ -50,20 +70,7 @@ class ConvBnRelu(TorchBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, bn_op, relu_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-                self.relu = relu_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                x = self.relu(x)
-                return x
-
-        return Model(self.conv_op, self.bn_op, self.relu_op)
+        return self.build_model([self.conv_op, self.bn_op, self.relu_op])
 
 
 class ConvBnRelu6(TorchBlock):
@@ -80,20 +87,7 @@ class ConvBnRelu6(TorchBlock):
         self.relu6_op = relu6_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, bn_op, relu6_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-                self.relu6 = relu6_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                x = self.relu6(x)
-                return x
-
-        return Model(self.conv_op, self.bn_op, self.relu6_op)
+        return self.build_model([self.conv_op, self.bn_op, self.relu6_op])
 
 
 class ConvBn(TorchBlock):
@@ -107,18 +101,7 @@ class ConvBn(TorchBlock):
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, bn_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                return x
-
-        return Model(self.conv_op, self.bn_op)
+        return self.build_model([self.conv_op, self.bn_op])
 
 
 class ConvRelu(TorchBlock):
@@ -132,18 +115,7 @@ class ConvRelu(TorchBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, relu_op):
-                super().__init__()
-                self.conv = conv_op
-                self.relu = relu_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.relu(x)
-                return x
-
-        return Model(self.conv_op, self.relu_op)
+        return self.build_model([self.conv_op, self.relu_op])
 
 
 class ConvRelu6(TorchBlock):
@@ -157,18 +129,7 @@ class ConvRelu6(TorchBlock):
         self.relu6_op = relu6_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, relu6_op):
-                super().__init__()
-                self.conv = conv_op
-                self.relu6 = relu6_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.relu6(x)
-                return x
-
-        return Model(self.conv_op, self.relu6_op)
+        return self.build_model([self.conv_op, self.relu6_op])
 
 
 class ConvHswish(TorchBlock):
@@ -182,18 +143,7 @@ class ConvHswish(TorchBlock):
         self.hswish_op = hswish_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, hswish_op):
-                super().__init__()
-                self.conv = conv_op
-                self.hswish = hswish_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.hswish(x)
-                return x
-
-        return Model(self.conv_op, self.hswish_op)
+        return self.build_model([self.conv_op, self.hswish_op])
 
 
 class ConvBlock(TorchBlock):
@@ -204,15 +154,7 @@ class ConvBlock(TorchBlock):
         self.conv_op = conv_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op):
-                super().__init__()
-                self.conv = conv_op
-
-            def forward(self, inputs):
-                return self.conv(inputs)
-
-        return Model(self.conv_op)
+        return self.build_model([self.conv_op])
 
 
 class ConvBnHswish(TorchBlock):
@@ -229,20 +171,7 @@ class ConvBnHswish(TorchBlock):
         self.hswish_op = hswish_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, bn_op, hswish_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-                self.hswish = hswish_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                x = self.hswish(x)
-                return x
-
-        return Model(self.conv_op, self.bn_op, self.hswish_op)
+        return self.build_model([self.conv_op, self.bn_op, self.hswish_op])
 
 
 class ConvBnReluMaxPool(TorchBlock):
@@ -262,22 +191,7 @@ class ConvBnReluMaxPool(TorchBlock):
         self.maxpool_op = maxpool_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, conv_op, bn_op, relu_op, maxpool_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-                self.relu = relu_op
-                self.maxpool = maxpool_op
-
-            def forward(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                x = self.relu(x)
-                x = self.maxpool(x)
-                return x
-
-        return Model(self.conv_op, self.bn_op, self.relu_op, self.maxpool_op)
+        return self.build_model([self.conv_op, self.bn_op, self.relu_op, self.maxpool_op])
 
 
 class DwConvBn(TorchBlock):
@@ -291,18 +205,7 @@ class DwConvBn(TorchBlock):
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, dwconv_op, bn_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.bn = bn_op      
-
-            def forward(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.bn(x)
-                return x
-
-        return Model(self.dwconv_op, self.bn_op)
+        return self.build_model([self.dwconv_op, self.bn_op])
 
 
 class DwConvRelu(TorchBlock):
@@ -316,18 +219,7 @@ class DwConvRelu(TorchBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, dwconv_op, relu_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.relu = relu_op
-
-            def forward(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.relu(x)
-                return x
-
-        return Model(self.dwconv_op, self.relu_op)
+        return self.build_model([self.dwconv_op, self.relu_op])
 
 
 class DwConvRelu6(TorchBlock):
@@ -341,18 +233,7 @@ class DwConvRelu6(TorchBlock):
         self.relu6_op = relu6_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, dwconv_op, relu6_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.relu6 = relu6_op
-
-            def forward(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.relu6(x)
-                return x
-
-        return Model(self.dwconv_op, self.relu6_op)
+        return self.build_model([self.dwconv_op, self.relu6_op])
 
 
 class DwConvBnRelu(TorchBlock):
@@ -369,20 +250,7 @@ class DwConvBnRelu(TorchBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, dwconv_op, bn_op, relu_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.bn = bn_op
-                self.relu = relu_op
-
-            def forward(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.bn(x)
-                x = self.relu(x)
-                return x
-
-        return Model(self.dwconv_op, self.bn_op, self.relu_op)
+        return self.build_model([self.dwconv_op, self.bn_op, self.relu_op])
 
 
 class DwConvBnRelu6(TorchBlock):
@@ -399,20 +267,7 @@ class DwConvBnRelu6(TorchBlock):
         self.relu6_op = relu6_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, dwconv_op, bn_op, relu6_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.bn = bn_op
-                self.relu6 = relu6_op
-
-            def forward(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.bn(x)
-                x = self.relu6(x)
-                return x
-
-        return Model(self.dwconv_op, self.bn_op, self.relu6_op)
+        return self.build_model([self.dwconv_op, self.bn_op, self.relu6_op])
 
 
 class DwConvBlock(TorchBlock):
@@ -423,15 +278,7 @@ class DwConvBlock(TorchBlock):
         self.dwconv_op = dwconv_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, dwconv_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-
-            def forward(self, inputs):
-                return self.dwconv(inputs)
-
-        return Model(self.dwconv_op)
+        return self.build_model([self.dwconv_op])
 
 
 class ConvBnHswish(TorchBlock):
@@ -448,20 +295,7 @@ class ConvBnHswish(TorchBlock):
         self.hswish_op = hswish_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, dwconv_op, bn_op, hswish_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.bn = bn_op
-                self.hswish = hswish_op
-
-            def forward(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.bn(x)
-                x = self.hswish(x)
-                return x
-
-        return Model(self.dwconv_op, self.bn_op, self.hswish_op)
+        return self.build_model([self.dwconv_op, self.bn_op, self.hswish_op])
 
 
 class MaxPoolBlock(TorchBlock):
@@ -472,15 +306,7 @@ class MaxPoolBlock(TorchBlock):
         self.maxpool_op = maxpool_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, maxpool_op):
-                super().__init__()
-                self.maxpool = maxpool_op
-
-            def forward(self, inputs):
-                return self.maxpool(inputs)
-
-        return Model(self.maxpool_op)
+        return self.build_model([self.maxpool_op])
 
 
 class AvgPoolBlock(TorchBlock):
@@ -491,15 +317,7 @@ class AvgPoolBlock(TorchBlock):
         self.avgpool_op = avgpool_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, avgpool_op):
-                super().__init__()
-                self.avgpool = avgpool_op
-
-            def forward(self, inputs):
-                return self.avgpool(inputs)
-
-        return Model(self.avgpool_op)
+        return self.build_model([self.avgpool_op])
 
 
 class FCBlock(TorchBlock):
@@ -513,15 +331,7 @@ class FCBlock(TorchBlock):
         self.fc_op = fc_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, fc_op):
-                super().__init__()
-                self.fc = fc_op
-
-            def forward(self, inputs):
-                return self.fc(inputs)
-
-        return Model(self.fc_op)
+        return self.build_model([self.fc_op])
 
 
 class ConcatBlock(TorchBlock):
@@ -594,15 +404,7 @@ class SEBlock(TorchBlock):
         self.se_op = se_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, se_op):
-                super().__init__()
-                self.se = se_op
-
-            def forward(self, inputs):
-                return self.se(inputs)
-
-        return Model(self.se_op)
+        return self.build_model([self.se_op])
 
 
 class GlobalAvgPoolBlock(TorchBlock):
@@ -616,15 +418,7 @@ class GlobalAvgPoolBlock(TorchBlock):
         self.globalavgpool_op = globalavgpool_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, globalavgpool_op):
-                super().__init__()
-                self.globalavgpool = globalavgpool_op
-
-            def forward(self, inputs):
-                return self.globalavgpool(inputs)
-
-        return Model(self.globalavgpool_op)
+        return self.build_model([self.globalavgpool_op])
 
 
 class BnRelu(TorchBlock):
@@ -638,18 +432,7 @@ class BnRelu(TorchBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, bn_op, relu_op):
-                super().__init__()
-                self.bn = bn_op
-                self.relu = relu_op
-
-            def forward(self, inputs):
-                x = self.bn(inputs)
-                x = self.relu(x)
-                return x
-
-        return Model(self.bn_op, self.relu_op)
+        return self.build_model([self.bn_op, self.relu_op])
 
 
 class BnBlock(TorchBlock):
@@ -660,15 +443,7 @@ class BnBlock(TorchBlock):
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, bn_op):
-                super().__init__()
-                self.bn = bn_op
-
-            def forward(self, inputs):
-                return self.bn(inputs)
-
-        return Model(self.bn_op)
+        return self.build_model([self.bn_op])
 
 
 class HswishBlock(TorchBlock):
@@ -679,15 +454,7 @@ class HswishBlock(TorchBlock):
         self.hswish_op = hswish_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, hswish_op):
-                super().__init__()
-                self.hswish = hswish_op
-
-            def forward(self, inputs):
-                return self.hswish(inputs)
-
-        return Model(self.hswish_op)
+        return self.build_model([self.hswish_op])
 
 
 class ReluBlock(TorchBlock):
@@ -698,15 +465,7 @@ class ReluBlock(TorchBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(nn.Module):
-            def __init__(self, relu_op):
-                super().__init__()
-                self.relu = relu_op
-
-            def forward(self, inputs):
-                return self.relu(inputs)
-
-        return Model(self.relu_op)
+        return self.build_model([self.relu_op])
 
 
 class AddRelu(TorchBlock):

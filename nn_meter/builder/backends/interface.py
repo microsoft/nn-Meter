@@ -83,7 +83,7 @@ class BaseBackend:
             generated and used
         """
         # convert model and save the converted model to path `converted_model`
-        converted_model = ...
+        converted_model = model_path
         return converted_model
 
     def profile(self, converted_model, metrics = ['latency'], input_shape = None, **kwargs):
