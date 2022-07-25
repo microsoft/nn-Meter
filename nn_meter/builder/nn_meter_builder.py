@@ -68,7 +68,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
     return models
 
 
-def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
+def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = "profiled_results.json",
                    have_converted = False, log_frequency = 50, broken_point_mode = False, **kwargs):
     """ run models with given backend and return latency of testcase models
 
@@ -231,7 +231,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
 
 def build_initial_predictor_by_data(kernel_type, backend = None, init_sample_num = 20, error_threshold = 0.1, mark = '', predict_label = "latency"):
-    return build_predictor_for_kernel(kernel_type, backend, init_sample_num=init_sample_num, iteration=1, error_threshold=error_threshold, predict_label=predict_label, mark=f'{mark}')
+    return build_predictor_for_kernel(kernel_type, backend, init_sample_num=init_sample_num, iteration=1, error_threshold=error_threshold, predict_label=predict_label, mark=mark)
 
 
 def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, finegrained_sample_num = 20, error_threshold = 0.1, mark = '', predict_label = "latency"):
@@ -239,6 +239,7 @@ def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, f
     """
     workspace_path = builder_config.get('WORKSPACE', 'predbuild')
     save_path = os.path.join(workspace_path, "results")
+    mark = 'finegrained' if mark == "" else f"finegrained_{mark}"
 
     from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data, collect_kernel_data
     _, _, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend = backend, error_threshold=error_threshold, save_path=None, predict_label=predict_label)
@@ -246,10 +247,9 @@ def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, f
                                                      sampling_mode='finegrained', configs=error_configs, mark=mark)
 
     # merge finegrained data with previous data and build new regression model
-    mark = mark if mark == "" else "_" + mark
     kernel_data = merge_info(new_info=new_kernel_data, prev_info=collect_kernel_data(kernel_data))
     predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold,
-                                                              mark=f'finegrained{mark}', save_path=save_path, predict_label=predict_label)
+                                                              mark=mark, save_path=save_path, predict_label=predict_label)
     logging.keyinfo(f'{mark}: acc10 {acc10}, error_configs number: {len(error_configs)}')
     return predictor, kernel_data
 

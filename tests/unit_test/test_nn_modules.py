@@ -7,7 +7,7 @@ kernels = ["ConvBnRelu", "ConvBnRelu6", "ConvBn", "ConvRelu", "ConvRelu6", "Conv
 
 if __name__ == '__main__':
     config = {
-        "HW": 1,
+        "HW": 24,
         "CIN": 144,
         "COUT": 32,
         "KERNEL_SIZE": 1, 
@@ -19,9 +19,12 @@ if __name__ == '__main__':
         "CIN3": 12,
         "CIN4": 12
     }
+    # test tersorflow kernels, tensorflow==2.7.0 or 2.6.0 is needed
     from nn_meter.builder.nn_modules.tf_networks import blocks
     for kernel in kernels:
         getattr(blocks, kernel)(config).test_block()
+
+    # test torch kernels, torch==1.10.0 or 1.9.0 is needed
     from nn_meter.builder.nn_modules.torch_networks import blocks
     for kernel in kernels:
         getattr(blocks, kernel)(config).test_block()

@@ -139,7 +139,6 @@ class ResnetSE(BaseOperator):
 
 class SE(BaseOperator):
     def get_model(self):
-        from nn_meter.builder.utils import make_divisible
         class SE(nn.Module):
             def __init__(self, num_channels, se_ratio=0.25):
                 super().__init__()
