@@ -17,5 +17,5 @@ from nn_meter.predictor.transformer_predictor import BlockLatencyPredictor
 predictor = BlockLatencyPredictor("pixel6_lut")
 print(predictor.get_latency(sample))
 
-predictor = BlockLatencyPredictor("pixel4_lut")
-print(predictor.get_latency(sample))
+# predictor = BlockLatencyPredictor("pixel4_lut")
+# print(predictor.get_latency(sample))
