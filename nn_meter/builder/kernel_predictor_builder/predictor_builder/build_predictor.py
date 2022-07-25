@@ -43,26 +43,15 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
         res_save_path = None
         pred_save_path = None
 
-    if isinstance(kernel_data, str):
-        kernel_feature, kernel_latency = [], []
-        kd_df = pd.read_csv(kernel_data)
-        for i in kd_df.index:
-            kernel_feature.append(kd_df.loc[i].values[1:8])
-            kernel_latency.append(kd_df.loc[i].values[8])
-            # import pdb; pdb.set_trace()
-        data = (kernel_feature, kernel_latency)
-    else:
-        kernel_data = collect_kernel_data(kernel_data, predict_label)
-        data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
-                                            save_path=data_save_path,
-                                            predict_label=predict_label)
+    kernel_data = collect_kernel_data(kernel_data, predict_label)
+    data = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data,
+                                        save_path=data_save_path,
+                                        predict_label=predict_label)
 
     # kernel_data2 = collect_kernel_data(
     #     (f"/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/{kernel_type}_lut.json",
     #      f"/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/profiled_{kernel_type}_lut.json"), predict_label)
-    # data2 = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data2,
-    #                                     save_path=os.path.join(save_path, "collection", f'Data_{kernel_type}_{mark}.csv'),
-    #                                     predict_label=predict_label)
+    # data2 = get_data_by_profiled_results(kernel_type, feature_parser, kernel_data2, save_path=None, predict_label=predict_label)
     # X2, Y2 = data2
 
     acc10, error_configs = None, None
@@ -75,9 +64,11 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
     else:
         # get data for regression
         trainx, testx, trainy, testy = train_test_split(X, Y, test_size = 0.2, random_state = 10)
-        # trainx, testx, trainy, testy = train_test_split(X2, Y2, test_size = 0.2, random_state = 10)
+        # trainx, testx, trainy, testy = train_test_split(X2, Y2, test_size = 0.8, random_state = 10)
         # trainx = X
         # trainy = Y
+        # testx = X2
+        # testy = Y2
         logging.info(f"training data size: {len(trainx)}, test data size: {len(testx)}")
 
         # start training
@@ -86,7 +77,7 @@ def build_predictor_by_data(kernel_type, kernel_data, backend = None, error_thre
         pred_error_list = [abs(y1 - y2) / y1 for y1, y2 in zip(testy, predicts)]
         rmse, rmspe, error, acc5, acc10, acc15 = latency_metrics(predicts, testy)
         logging.info(f"rmse: {rmse:.4f}; rmspe: {rmspe:.4f}; error: {error:.4f}; 5% accuracy: {acc5:.4f}; 10% accuracy: {acc10:.4f}; 15% accuracy: {acc15:.4f}.")
-        
+
         # dump the test set with predicts to csv file
         test_res = pd.DataFrame(testx, columns=[f'feature{i}' for i in range(len(testx[0]))])
         test_res["True"] = testy
