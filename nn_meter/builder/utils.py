@@ -52,3 +52,7 @@ def save_profiled_results(models, save_path, detail, metrics = ["latency"]):
     from .backend_meta.utils import dump_profiled_results
     with open(save_path, 'w') as fp:
         json.dump(dump_profiled_results(new_models, detail=detail, metrics=metrics), fp, indent=4)
+
+
+def handle_timeout(sig, frame):
+    raise TimeoutError('took too long')

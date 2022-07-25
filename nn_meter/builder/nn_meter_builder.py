@@ -3,9 +3,10 @@
 import os
 import json
 import time
+import signal
 import logging
 from . import builder_config
-from .utils import save_profiled_results, merge_info
+from .utils import save_profiled_results, merge_info, handle_timeout
 from nn_meter.builder.backends import connect_backend
 logging = logging.getLogger("nn-Meter")
 
@@ -68,7 +69,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
     return models
 
 
-def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = "profiled_results.json",
+def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = None,
                    have_converted = False, log_frequency = 50, broken_point_mode = False, **kwargs):
     """ run models with given backend and return latency of testcase models
 
@@ -93,6 +94,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
 
     **kwargs: arguments for profiler, such as `taskset` and `close_xnnpack` in TFLite profiler
     """
+    signal.signal(signal.SIGALRM, handle_timeout)
     if isinstance(models, str):
         with open(models, 'r') as fp:
             models = json.load(fp)
@@ -130,7 +132,9 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
             if have_converted: # the models have been converted for the backend
                 try:
                     model_path = model['converted_model']
+                    signal.alarm(300)
                     profiled_res = backend.profile(model_path, metrics, model['shapes'], **kwargs)
+                    signal.alarm(0)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
                     time.sleep(0.2)
@@ -140,7 +144,9 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
             else: # the models have not been converted
                 try:
                     model_path = model['model']
+                    signal.alarm(300)
                     profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'], metrics, **kwargs)
+                    signal.alarm(0)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
                     time.sleep(0.2)
@@ -231,7 +237,7 @@ def build_predictor_for_kernel(kernel_type, backend, init_sample_num = 1000, fin
 
 
 def build_initial_predictor_by_data(kernel_type, backend = None, init_sample_num = 20, error_threshold = 0.1, mark = '', predict_label = "latency"):
-    return build_predictor_for_kernel(kernel_type, backend, init_sample_num=init_sample_num, iteration=1, error_threshold=error_threshold, predict_label=predict_label, mark=mark)
+    return build_predictor_for_kernel(kernel_type, backend, init_sample_num=init_sample_num, iteration=1, error_threshold=error_threshold, predict_label=predict_label, mark=f'{mark}')
 
 
 def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, finegrained_sample_num = 20, error_threshold = 0.1, mark = '', predict_label = "latency"):
@@ -239,7 +245,6 @@ def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, f
     """
     workspace_path = builder_config.get('WORKSPACE', 'predbuild')
     save_path = os.path.join(workspace_path, "results")
-    mark = 'finegrained' if mark == "" else f"finegrained_{mark}"
 
     from nn_meter.builder.kernel_predictor_builder import build_predictor_by_data, collect_kernel_data
     _, _, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend = backend, error_threshold=error_threshold, save_path=None, predict_label=predict_label)
@@ -247,9 +252,10 @@ def build_adaptive_predictor_by_data(kernel_type, kernel_data, backend = None, f
                                                      sampling_mode='finegrained', configs=error_configs, mark=mark)
 
     # merge finegrained data with previous data and build new regression model
+    mark = mark if mark == "" else "_" + mark
     kernel_data = merge_info(new_info=new_kernel_data, prev_info=collect_kernel_data(kernel_data))
     predictor, acc10, error_configs = build_predictor_by_data(kernel_type, kernel_data, backend, error_threshold=error_threshold,
-                                                              mark=mark, save_path=save_path, predict_label=predict_label)
+                                                              mark=f'finegrained{mark}', save_path=save_path, predict_label=predict_label)
     logging.keyinfo(f'{mark}: acc10 {acc10}, error_configs number: {len(error_configs)}')
     return predictor, kernel_data
 
