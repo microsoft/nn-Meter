@@ -29,7 +29,7 @@ def model_file_to_graph(filename: str, model_type: str, input_shape=(1, 3, 224, 
     
     apply_nni: switch the torch converter used for torch model parsing. If apply_nni==True, NNI-based converter is used for torch model conversion, which requires 
         nni>=2.4 installation and should use nn interface from NNI `import nni.retiarii.nn.pytorch as nn` to define the PyTorch modules. Otherwise Onnx-based torch 
-        converter is used, which requires onnx installation (well tested version is onnx==1.9.0). NNI-based converter is much faster while the conversion is unstable 
+        converter is used, which requires onnx installation (well tested version is onnx>=1.10.0). NNI-based converter is much faster while the conversion is unstable 
         as it could fail in some case. Onnx-based converter is much slower but stable compared to NNI-based converter. This parameter is only accessed when 
         model_type == 'torch'
     """
