@@ -5,7 +5,7 @@ from packaging import version
 logging = logging.getLogger("nn-Meter")
 
 
-def try_import_onnx(require_version = ["1.10.0", "1.9.0"]):
+def try_import_onnx(require_version = ["1.12.0", "1.10.0", "1.9.0"]):
     if isinstance(require_version, str):
         require_version = [require_version]
     try:
