@@ -32,7 +32,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install onnx
+        pip install onnx==1.9.0
         pip install torch==1.9.0
         pip install torchvision==0.10.0
         pip install onnx-simplifier
