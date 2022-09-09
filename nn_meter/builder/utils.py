@@ -55,4 +55,4 @@ def save_profiled_results(models, save_path, detail, metrics = ["latency"]):
 
 
 def handle_timeout(sig, frame):
-    raise TimeoutError('Model profiling took too long (longer than 300s)')
+    raise TimeoutError('Model profiling took too long (longer than the time threshold in the funciton `nn_meter.builder.profile_models`, default to be 300s)')
