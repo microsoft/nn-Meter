@@ -24,7 +24,7 @@ class TFLiteProfiler(BaseProfiler):
         self._num_runs = num_runs
         self._warm_ups = warm_ups
 
-    def profile(self, graph_path, preserve = False, clean = True, taskset = '70', close_xnnpack = False):
+    def profile(self, graph_path, preserve = False, clean = True, taskset = '70', close_xnnpack = False, **kwargs):
         """
         @params:
         preserve: tflite file exists in remote dir. No need to push it again.

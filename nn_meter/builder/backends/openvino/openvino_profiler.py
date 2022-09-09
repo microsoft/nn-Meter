@@ -28,7 +28,7 @@ class OpenVINOProfiler(BaseProfiler):
         self._graph_path = graph_path
         self._dst_graph_path = dst_graph_path
 
-    def profile(self, shapes, retry=2):
+    def profile(self, shapes, retry = 2, **kwargs):
         interpreter_path = os.path.join(self._venv, 'bin/python')
         pyver = get_pyver(interpreter_path)
 
