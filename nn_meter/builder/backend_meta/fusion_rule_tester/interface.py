@@ -6,6 +6,7 @@ import logging
 from ..utils import read_profiled_results
 from nn_meter.builder.utils import merge_info
 from nn_meter.builder.backend_meta.utils import Latency
+logging = logging.getLogger("nn-Meter")
 
 
 class BaseTestCase:
