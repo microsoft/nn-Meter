@@ -79,7 +79,10 @@ def generate_testcases():
             if op1 in d1_required_layers or op2 in d1_required_layers:
                 input_shape = [config['SHAPE_1D']]
             else:
-                input_shape = [config['HW'], config['HW'], config['CIN']]
+                if implement == "tensorflow":
+                    input_shape = [config['HW'], config['HW'], config['CIN']]
+                else:
+                    input_shape = [config['CIN'], config['HW'], config['HW']]
             bf_cls = type(class_name, (BasicFusion,), {
                 'name': name,
                 'cases': cases,
