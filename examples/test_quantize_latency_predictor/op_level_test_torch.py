@@ -8,7 +8,7 @@ from nn_meter.predictor.prediction.utils import latency_metrics_acc20 as latency
 from nn_meter.builder.backends import connect_backend
 from nn_meter.predictor import load_latency_predictor
 from nn_meter.builder import builder_config
-from nn_meter.builder.nn_generator.torch_networks.utils import get_inputs_by_shapes
+from nn_meter.builder.nn_modules.torch_networks.utils import get_inputs_by_shapes
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
 from nas_models.networks.torch.mobilenetv3 import MobileNetV3Net
@@ -62,7 +62,7 @@ def get_feature(kernel_type, config_dict):
     return feature
 
 ## ------------- op level
-from nn_meter.builder.nn_generator.torch_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
+from nn_meter.builder.nn_modules.torch_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
 
 def op_level_test_conv(predictor_name):
     # conv-bn-relu
@@ -71,14 +71,40 @@ def op_level_test_conv(predictor_name):
 
     reals, preds = [], []
     configs = [
-        [224, 3, 16, 3, 2], [56, 48, 24, 1, 1], [56, 24, 144, 1, 1], [56, 144, 24, 1, 1], [56, 24, 96, 1, 1], [56, 96, 24, 1, 1],
-        [28, 144, 40, 1, 1], [28, 40, 240, 1, 1], [28, 240, 40, 1, 1], [28, 40, 160, 1, 1], [28, 160, 40, 1, 1], [28, 40, 120, 1, 1],
-        [28, 120, 40, 1, 1], [14, 160, 80, 1, 1], [14, 80, 320, 1, 1], [14, 320, 80, 1, 1], [14, 80, 480, 1, 1], [14, 480, 112, 1, 1],
-        [14, 112, 672, 1, 1], [14, 672, 112, 1, 1], [14, 112, 448, 1, 1], [7, 448, 160, 1, 1], [7, 160, 640, 1, 1], [7, 640, 160, 1, 1],
-        [7, 160, 960, 1, 1], [1, 960, 1280, 1, 1], [28, 96, 40, 1, 1], [14, 480, 80, 1, 1], [14, 80, 240, 1, 1], [14, 240, 112, 1, 1],
-        [14, 448, 112, 1, 1], [7, 160, 480, 1, 1], [7, 480, 160, 1, 1], [112, 16, 96, 1, 1], [56, 24, 72, 1, 1], [28, 72, 40, 1, 1], 
-        [14, 240, 80, 1, 1], [7, 672, 160, 1, 1], [7, 960, 160, 1, 1], [112, 16, 64, 1, 1], [56, 64, 24, 1, 1], [56, 72, 24, 1, 1], 
-        [14, 120, 80, 1, 1], [14, 320, 112, 1, 1], [14, 112, 336, 1, 1], [14, 336, 112, 1, 1], [7, 336, 160, 1, 1]
+        # # mobilenet v3
+        # [224, 3, 16, 3, 2], [56, 48, 24, 1, 1], [56, 24, 144, 1, 1], [56, 144, 24, 1, 1], [56, 24, 96, 1, 1], [56, 96, 24, 1, 1],
+        # [28, 144, 40, 1, 1], [28, 40, 240, 1, 1], [28, 240, 40, 1, 1], [28, 40, 160, 1, 1], [28, 160, 40, 1, 1], [28, 40, 120, 1, 1],
+        # [28, 120, 40, 1, 1], [14, 160, 80, 1, 1], [14, 80, 320, 1, 1], [14, 320, 80, 1, 1], [14, 80, 480, 1, 1], [14, 480, 112, 1, 1],
+        # [14, 112, 672, 1, 1], [14, 672, 112, 1, 1], [14, 112, 448, 1, 1], [7, 448, 160, 1, 1], [7, 160, 640, 1, 1], [7, 640, 160, 1, 1],
+        # [7, 160, 960, 1, 1], [1, 960, 1280, 1, 1], [28, 96, 40, 1, 1], [14, 480, 80, 1, 1], [14, 80, 240, 1, 1], [14, 240, 112, 1, 1],
+        # [14, 448, 112, 1, 1], [7, 160, 480, 1, 1], [7, 480, 160, 1, 1], [112, 16, 96, 1, 1], [56, 24, 72, 1, 1], [28, 72, 40, 1, 1], 
+        # [14, 240, 80, 1, 1], [7, 672, 160, 1, 1], [7, 960, 160, 1, 1], [112, 16, 64, 1, 1], [56, 64, 24, 1, 1], [56, 72, 24, 1, 1], 
+        # [14, 120, 80, 1, 1], [14, 320, 112, 1, 1], [14, 112, 336, 1, 1], [14, 336, 112, 1, 1], [7, 336, 160, 1, 1]
+
+        # # conv1x1, expand ratio 3 4 5 6 
+        # [56, 16, 48, 1, 1], [56, 32, 96, 1, 1], 
+        # [56, 40, 120, 1, 1], [56, 48, 144, 1, 1], 
+        # [56, 56, 168, 1, 1], [56, 64, 192, 1, 1],
+        # [56, 96, 288, 1, 1], [56, 128, 384, 1, 1], [56, 160, 480, 1, 1], [56, 240, 720, 1, 1], [56, 320, 960, 1, 1], [56, 480, 1440, 1, 1],
+        # [56, 16, 64, 1, 1], [56, 32, 128, 1, 1], 
+        # [56, 40, 160, 1, 1], [56, 48, 192, 1, 1], 
+        # [56, 56, 224, 1, 1], [56, 64, 256, 1, 1],
+        # [56, 96, 384, 1, 1], [56, 128, 512, 1, 1], [56, 160, 640, 1, 1], [56, 240, 960, 1, 1], [56, 320, 1280, 1, 1], [56, 480, 1920, 1, 1],
+        # [56, 16, 80, 1, 1], [56, 32, 160, 1, 1], 
+        # [56, 40, 200, 1, 1], [56, 48, 240, 1, 1], 
+        # [56, 56, 280, 1, 1], [56, 64, 320, 1, 1],
+        # [56, 96, 480, 1, 1], [56, 128, 640, 1, 1], [56, 160, 800, 1, 1], [56, 240, 1200, 1, 1], [56, 320, 1600, 1, 1], [56, 480, 2400, 1, 1],
+        # [56, 16, 96, 1, 1], [56, 32, 192, 1, 1], 
+        # [56, 40, 240, 1, 1], [56, 48, 288, 1, 1], 
+        # [56, 56, 336, 1, 1], [56, 64, 384, 1, 1],
+        # [56, 96, 576, 1, 1], [56, 128, 768, 1, 1], [56, 160, 960, 1, 1], [56, 240, 1440, 1, 1], [56, 320, 1920, 1, 1], [56, 480, 2880, 1, 1]
+        # [56, 560, 1680, 1, 1], [56, 560, 2240, 1, 1], [56, 560, 2800, 1, 1], [56, 560, 3360, 1, 1],
+        # [56, 72, 288, 1, 1], [56, 80, 320, 1, 1]
+        # [28, 16, 64, 1, 1], [28, 32, 128, 1, 1], [28, 40, 160, 1, 1], [28, 48, 192, 1, 1], 
+        [28, 56, 224, 1, 1], [28, 64, 256, 1, 1],
+        [28, 72, 288, 1, 1], [28, 80, 320, 1, 1], 
+        # [28, 96, 384, 1, 1], [28, 128, 512, 1, 1], [28, 160, 640, 1, 1], [28, 240, 960, 1, 1], 
+        # [28, 320, 1280, 1, 1], [28, 480, 1920, 1, 1], [28, 560, 2240, 1, 1]
     ]
     
     # # configs in MobilenetV3Large
@@ -113,11 +139,12 @@ def op_level_test_conv(predictor_name):
         # print(config_in)
         input_shape = [cin, hwin, hwin]
         model = ConvBnRelu(config_in).get_model()
-        real = profile_model(model, input_shape)
+        real = profile_model(model, input_shape, backend)
         pred = predictor.predict([get_feature("conv-bn-relu", config_in)])[0]
         reals.append(real)
         preds.append(pred)
-        print(real, pred)
+        # print(real, pred)
+        print(real)
         # break
 
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
@@ -206,6 +233,38 @@ def op_level_test_hswish(predictor_name):
     #     print(item[0])
     print(f"[Hswish] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}")
 
+
+def op_level_test_swish():
+    # # swish
+    class SwishForParse(nn.Module):
+        
+        def __init__(self):
+            super().__init__()
+            # self.swish = nn.SiLU()
+
+        def forward(self, x):
+            return x * torch.sigmoid(x)
+            # return self.swish(x)
+
+    # configs in MobilenetV3Large
+    # configs = [
+    #     [112, 16], [28, 240], [14, 240], [14, 200], [14, 200], [14, 184], [14, 184], [14, 184],
+    #     [14, 184], [14, 480], [14, 480], [14, 672], [14, 672], [14, 672], [7, 672], [7, 960], [7, 960],
+    #     [7, 960], [7, 960], [1, 1280]
+    # ]
+    configs = [[112, 16]
+            #    , [56, 40], [28, 80], [14, 160], [7, 320]
+               ]
+    for i, config in enumerate(configs):
+        hwin, cin = config
+        config_in = {
+            "HW": hwin,
+            "CIN": cin
+        }
+        input_shape = [cin, hwin, hwin]
+        model = SwishForParse()
+        real = profile_model(model, input_shape, backend=backend)
+        print(real)
 
 def op_level_test_dwconv(predictor_name):
     with open(predictor_name, "rb") as f:
@@ -428,10 +487,10 @@ def op_level_test_cascade_mbv1():
 
     
 if __name__ == '__main__':
-    backend_name = 'ort_cpu_int8'
+    backend_name = 'ort_cpu'
     backend = connect_backend(backend_name)
     
-    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu.pkl")
+    op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu.pkl")
     # op_level_test_conv_group()
 
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_origin.pkl")
@@ -439,7 +498,7 @@ if __name__ == '__main__':
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")
-    op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_refined16.pkl")
+    # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_refined16.pkl")
     
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_original.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
@@ -462,7 +521,7 @@ if __name__ == '__main__':
     # backend_name = 'ort_cpu'
     # backend = connect_backend(backend_name)
     # op_level_test_cascade_mbv1()
-    
+    # op_level_test_swish()
     
     # backend_name = 'ort_cpu_int8'
     # backend = connect_backend(backend_name)

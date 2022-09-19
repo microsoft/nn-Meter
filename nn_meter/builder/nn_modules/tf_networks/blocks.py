@@ -46,6 +46,25 @@ class TFBlock(BaseBlock):
         model = self.get_model()
         keras.models.save_model(model, save_path)
 
+    def build_model(self, ops):
+        ''' convert a list of operators to keras model.
+        '''
+        class Model(keras.Model):
+            def __init__(self, ops):
+                super().__init__()
+                self.ops = keras.Sequential(ops)
+
+            def call(self, inputs):
+                x = self.ops(inputs)
+                return x
+
+        model = Model(ops)
+        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
+        return model
+
+    def get_model(self):
+        raise NotImplementedError
+
 
 class ConvBnRelu(TFBlock):
     def __init__(self, config, batch_size = 1):
@@ -61,21 +80,7 @@ class ConvBnRelu(TFBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, conv_op, bn_op, relu_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-                self.relu = relu_op
-
-            def call(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                x = self.relu(x)
-                return x
-        model = Model(self.conv_op, self.bn_op, self.relu_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.conv_op, self.bn_op, self.relu_op])
 
 
 class ConvBnRelu6(TFBlock):
@@ -121,20 +126,7 @@ class ConvBn(TFBlock):
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, conv_op, bn_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-
-            def call(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                return x
-
-        model = Model(self.conv_op, self.bn_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.conv_op, self.bn_op])
 
 
 class ConvRelu(TFBlock):
@@ -148,20 +140,7 @@ class ConvRelu(TFBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, conv_op, relu_op):
-                super().__init__()
-                self.conv = conv_op
-                self.relu = relu_op
-
-            def call(self, inputs):
-                x = self.conv(inputs)
-                x = self.relu(x)
-                return x
-
-        model = Model(self.conv_op, self.relu_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.conv_op, self.relu_op])
 
 
 class ConvRelu6(TFBlock):
@@ -226,17 +205,7 @@ class ConvBlock(TFBlock):
         self.conv_op = conv_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, conv_op):
-                super().__init__()
-                self.conv = conv_op
-
-            def call(self, inputs):
-                return self.conv(inputs)
-
-        model = Model(self.conv_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.conv_op])
 
 
 class ConvBnHswish(TFBlock):
@@ -288,24 +257,7 @@ class ConvBnReluMaxPool(TFBlock):
         self.maxpool_op = maxpool_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, conv_op, bn_op, relu_op, maxpool_op):
-                super().__init__()
-                self.conv = conv_op
-                self.bn = bn_op
-                self.relu = relu_op
-                self.maxpool = maxpool_op
-
-            def call(self, inputs):
-                x = self.conv(inputs)
-                x = self.bn(x)
-                x = self.relu(x)
-                x = self.maxpool(x)
-                return x
-
-        model = Model(self.conv_op, self.bn_op, self.relu_op, self.maxpool_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.conv_op, self.bn_op, self.relu_op, self.maxpool_op])
 
 
 class DwConvBn(TFBlock):
@@ -319,20 +271,7 @@ class DwConvBn(TFBlock):
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, dwconv_op, bn_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.bn = bn_op      
-
-            def call(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.bn(x)
-                return x
-
-        model = Model(self.dwconv_op, self.bn_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.dwconv_op, self.bn_op])
 
 
 class DwConvRelu(TFBlock):
@@ -346,20 +285,7 @@ class DwConvRelu(TFBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, dwconv_op, relu_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.relu = relu_op
-
-            def call(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.relu(x)
-                return x
-
-        model = Model(self.dwconv_op, self.relu_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.dwconv_op, self.relu_op])
 
 
 class DwConvRelu6(TFBlock):
@@ -403,22 +329,7 @@ class DwConvBnRelu(TFBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, dwconv_op, bn_op, relu_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-                self.bn = bn_op
-                self.relu = relu_op
-
-            def call(self, inputs):
-                x = self.dwconv(inputs)
-                x = self.bn(x)
-                x = self.relu(x)
-                return x
-
-        model = Model(self.dwconv_op, self.bn_op, self.relu_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.dwconv_op, self.bn_op, self.relu_op])
 
 
 class DwConvBnRelu6(TFBlock):
@@ -461,17 +372,7 @@ class DwConvBlock(TFBlock):
         self.dwconv_op = dwconv_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, dwconv_op):
-                super().__init__()
-                self.dwconv = dwconv_op
-
-            def call(self, inputs):
-                return self.dwconv(inputs)
-
-        model = Model(self.dwconv_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.dwconv_op])
 
 
 class ConvBnHswish(TFBlock):
@@ -514,17 +415,7 @@ class MaxPoolBlock(TFBlock):
         self.maxpool_op = maxpool_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, maxpool_op):
-                super().__init__()
-                self.maxpool = maxpool_op
-
-            def call(self, inputs):
-                return self.maxpool(inputs)
-
-        model = Model(self.maxpool_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.maxpool_op])
 
 
 class AvgPoolBlock(TFBlock):
@@ -535,17 +426,7 @@ class AvgPoolBlock(TFBlock):
         self.avgpool_op = avgpool_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, avgpool_op):
-                super().__init__()
-                self.avgpool = avgpool_op
-
-            def call(self, inputs):
-                return self.avgpool(inputs)
-
-        model = Model(self.avgpool_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.avgpool_op])
 
 
 class FCBlock(TFBlock):
@@ -559,17 +440,7 @@ class FCBlock(TFBlock):
         self.fc_op = fc_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, fc_op):
-                super().__init__()
-                self.fc = fc_op
-
-            def call(self, inputs):
-                return self.fc(inputs)
-
-        model = Model(self.fc_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.fc_op])
 
 
 class ConcatBlock(TFBlock):
@@ -648,17 +519,7 @@ class SEBlock(TFBlock):
         self.se_op = se_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, se_op):
-                super().__init__()
-                self.se = se_op
-
-            def call(self, inputs):
-                return self.se(inputs)
-
-        model = Model(self.se_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.se_op])
 
 
 class GlobalAvgPoolBlock(TFBlock):
@@ -669,17 +530,7 @@ class GlobalAvgPoolBlock(TFBlock):
         self.globalavgpool_op = globalavgpool_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, globalavgpool_op):
-                super().__init__()
-                self.globalavgpool = globalavgpool_op
-
-            def call(self, inputs):
-                return self.globalavgpool(inputs)
-
-        model = Model(self.globalavgpool_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.globalavgpool_op])
 
 
 class BnRelu(TFBlock):
@@ -693,20 +544,7 @@ class BnRelu(TFBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, bn_op, relu_op):
-                super().__init__()
-                self.bn = bn_op
-                self.relu = relu_op
-
-            def call(self, inputs):
-                x = self.bn(inputs)
-                x = self.relu(x)
-                return x
-
-        model = Model(self.bn_op, self.relu_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.bn_op, self.relu_op])
 
 
 class BnBlock(TFBlock):
@@ -717,17 +555,7 @@ class BnBlock(TFBlock):
         self.bn_op = bn_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, bn_op):
-                super().__init__()
-                self.bn = bn_op
-
-            def call(self, inputs):
-                return self.bn(inputs)
-
-        model = Model(self.bn_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.bn_op])
 
 
 class HswishBlock(TFBlock):
@@ -780,17 +608,7 @@ class ReluBlock(TFBlock):
         self.relu_op = relu_op.get_model()
 
     def get_model(self):
-        class Model(keras.Model):
-            def __init__(self, relu_op):
-                super().__init__()
-                self.relu = relu_op
-
-            def call(self, inputs):
-                return self.relu(inputs)
-
-        model = Model(self.relu_op)
-        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
-        return model
+        return self.build_model([self.relu_op])
 
 
 class AddRelu(TFBlock):

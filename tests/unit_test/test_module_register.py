@@ -11,7 +11,11 @@ def register_by_meta(module_type, register_meta):
         yaml.dump(register_meta, fp)
     os.system(f"nn-meter register --{module_type} meta_file.yaml")
     os.remove("meta_file.yaml")
-    os.system(f"nn-meter unregister --{module_type} {register_meta['builtin_name']}")
+    if module_type in ["operator", "testcase"]:
+        implement = register_meta['implement']
+    else:
+        implement = ""
+    os.system(f"nn-meter unregister --{module_type} {register_meta['builtin_name']} {implement}")
 
 
 # test register backend

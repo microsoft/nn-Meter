@@ -5,13 +5,13 @@ from .get_block_arch import get_block_arch_by_name
 from .. import load_latency_predictor
 
 class BlockLatencyPredictor:
-    def __init__(self, predictor_name):
+    def __init__(self, predictor_name, predictor_version=1.0):
         self.predictor_name = predictor_name
 
         # declare all existing ops in the predictor
         basic_ops = ["conv-bn-relu", "dwconv-bn-relu", "hswish", "gap", "fc", "add-relu", "add", "se"]
         if predictor_name.startswith("tflite"):
-            self.ops = basic_ops + ["swish"]
+            self.ops = basic_ops
         elif predictor_name.startswith("onnx"):
             self.ops = basic_ops + ["resnet-se"]
 
@@ -21,7 +21,7 @@ class BlockLatencyPredictor:
             with open(os.path.join(base_dir, "onnx_lut.json"), 'r') as fp:
                 self.predictor = json.load(fp)
         else:
-            self.predictor = load_latency_predictor(predictor_name)
+            self.predictor = load_latency_predictor(predictor_name, predictor_version)
 
 
     def get_type(self, name, cin, cout, stride, activation):
@@ -32,8 +32,7 @@ class BlockLatencyPredictor:
         # MobileNetV3Block_[res/nores]_[relu/hswish]
         # MobileNetV1DualBlock_[ds/nods]
         # MobileNetV2ResBlock_[res/forceres]_[relu/hswish] always without se
-        # MobileNetV3ResBlock_[res/forceres]_[relu/swish] always with se
-        # FusedMBConvSEResBlock_[res/forceres]_[relu/hswish] always with se
+        # MobileNetV3ResBlock_[res/forceres]_[relu/hswish] always with se
         # ResNetBlock_[ds/nods]_[relu/hswish]
         # ResNetSEBlock_[ds/nods]_[relu/hswish]
         # ResNetBugBlock_[ds/nods]
@@ -51,7 +50,7 @@ class BlockLatencyPredictor:
         if name == "MobileNetV1DualBlock":
             if cin != cout or stride == 2: return f'{name}_ds'
             else: return f'{name}_nods'
-        elif name.startswith("MobileNet") or name.startswith('FusedMBConv'):
+        elif name.startswith("MobileNet"):
             type_list = [name]
             use_res_connect = stride == 1 and cin == cout
             if "ResBlock" in name:
@@ -100,7 +99,6 @@ class BlockLatencyPredictor:
     def get_single_block_arch(self, name, hw, cin, cout, kernel_size, expand_ratio, 
                     stride, activation):
         type = self.get_type(name, cin, cout, stride, activation)
-        # print(type)
         dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
         return dicts
 
@@ -120,6 +118,9 @@ class BlockLatencyPredictor:
             if ops_config[kernel] == []:
                 continue
             kernelname = get_kernel_name(kernel)
+            # if kernelname == "fc":
+            #     py += 0.168738
+            #     continue
             if kernelname in self.predictor.kernel_predictors:
                 pred = self.predictor.kernel_predictors[kernelname]
                 pys = pred.predict(ops_config[kernel]) # in unit of ms
