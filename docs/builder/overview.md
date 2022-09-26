@@ -20,7 +20,7 @@ nn-meter create --tflite-workspace <path/to/place/workspace/>
 nn-meter create --openvino-workspace <path/to/place/workspace/>
 
 # for customized platform
-nn-meter create --customized-workspace <backend-name> <path/to/place/workspace/>
+nn-meter create --customized-workspace <path/to/place/workspace/> --backend <backend-name>
 ```
 
 After running the command, a workspace folder will be created, and a series of configuration file will be placed in `<workspace-path>/configs/`. Users could open `<workspace-path>/configs/*.yaml` and edit the content to change configuration. 

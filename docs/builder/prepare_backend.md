@@ -177,7 +177,7 @@ class MyParser(BaseParser): ...
 
 ### Step 1: Create a Package for the Customized Backend
 
-After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. This config file will be copied to workspace when running `nn-meter create --customized-workspace`. Users can refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config files in a package with a predefined location. The folder should contain all relevant classes, such as `Parser` and `Profiler`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
+After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. This config file will be copied to workspace when running `nn-meter create --customized-workspace <path/to/place/workspace/> --backend <backend-name>`. Users can refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config files in a package with a predefined location. The folder should contain all relevant classes, such as `Parser` and `Profiler`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
 
 ``` text
 ./customized_backend/
