@@ -38,6 +38,15 @@ class TFLiteCPULatencyParser(BaseParser):
             if re.search(end_regex, line):
                 flag = False
         
+        # import pandas as pd
+        # df = pd.DataFrame(columns=('node_type', 'avg', 'name'))
+        # for node in nodes:
+        #     # import pdb; pdb.set_trace()
+        #     # print({'node_type': node['node_type'], 'avg': node['avg'], 'name': node['name']})
+        #     df.loc[len(df)] = [node['node_type'], node['avg'], node['name']]
+        #     # df = df.append({'node_type': node['node_type'], 'avg': node['avg'], 'name': node['name']}, ignore_index=True)
+        # df.to_csv("/data/jiahang/working/Transformer/tensorflow/model_measurement/models/nasvit.csv", index=False)    
+        
         return nodes
 
     def _parse_total_latency(self, content):

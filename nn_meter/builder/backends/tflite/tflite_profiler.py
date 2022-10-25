@@ -63,7 +63,7 @@ class TFLiteProfiler(BaseProfiler):
             if clean:
                 if self._serial:
                     os.system(f"adb -s {self._serial} shell rm {remote_graph_path}")
-                    os.remove(graph_path)
+                    # os.remove(graph_path)
                 else:
                     os.system(f"adb shell rm {remote_graph_path}")
 
