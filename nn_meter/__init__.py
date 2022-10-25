@@ -12,8 +12,7 @@ from functools import partial, partialmethod
 from .predictor import (
     nnMeterPredictor,
     load_latency_predictor,
-    list_latency_predictors,
-    latency_metrics
+    list_latency_predictors
 )
 from .ir_converter import (
     model_file_to_graph,
@@ -22,7 +21,8 @@ from .ir_converter import (
 from .utils import (
     create_user_configs,
     change_user_data_folder,
-    download_from_url
+    download_from_url,
+    latency_metrics
 )
 from .dataset import bench_dataset
 
