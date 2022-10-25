@@ -34,7 +34,9 @@ Follow [Android Guide](https://developer.android.com/studio) to install adb on y
 The easiest way is to directly download Android Studio from [this page](https://developer.android.com/studio). After installing it, you will find adb at path `$HOME/Android/Sdk/platform-tools/`.
 
 #### 2. Get TFLite Benchmark Model
-The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released two modified version of `benchmark_model` based on `tensorflow==2.1` and `tensorflow==2.7`, respectively. Users could download our modified version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/releases/tag/v2.0-data).
+The `benchmark_model` is a tool provided by [TensorFlow Lite](https://www.tensorflow.org/lite/), which can run a model and output its latency. Because nn-Meter needs to parse the text output of `benchmark_model`, a fixed version is required. For the convenience of users, we have released two modified version of `benchmark_model` based on `tensorflow==2.1` and `tensorflow==2.7`, respectively. Users could download our complied version of `benchmark_model` from [here](https://github.com/microsoft/nn-Meter/releases/tag/v2.0-data).
+
+NOTE: In our tf21 version, we have not specified to use `Aarch64` for benchmark model compiling, which is an optional argument at that moment, and become a default setting with no need to specify by now. As a result, our benchmark model shows larger profiling latency than newly compiled benchmark tool. Users should apply our `benchmark_model_cpu_v2.1` and `benchmark_model_gpu_v2.1` to reproduce the consistent latency with our paper.
 
 NOTE: On a same hardware, the different versions of `benchmark_model` can result in different inference latency for a same model. We recommend users compile and build the `benchmark_model` for latest version. Users could follow [Official Guidance](https://www.tensorflow.org/lite/performance/measurement) to build benchmark tool with new version `TensorFlow Lite`. Meanwhile, the class of `LatencyParser` may need to be refined. We are working to release the source code of this modified version.
 
@@ -177,7 +179,7 @@ class MyParser(BaseParser): ...
 
 ### Step 1: Create a Package for the Customized Backend
 
-After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. This config file will be copied to workspace when running `nn-meter create --customized-workspace`. Users can refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config files in a package with a predefined location. The folder should contain all relevant classes, such as `Parser` and `Profiler`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
+After preparing the backend class, users should also prepare a default config file in yaml format if there is any modifiable configs. This config file will be copied to workspace when running `nn-meter create --customized-workspace <path/to/place/workspace/> --backend <backend-name>`. Users can refer to [the Configuration of TFLite and OpenVINO](#prepare-configuration-file) as a reference. nn-Meter suggests users to gather all code of backend and default config files in a package with a predefined location. The folder should contain all relevant classes, such as `Parser` and `Profiler`. A folder will be treated as a package with a `__init__.py` file added. Here is a demo of folder structure:
 
 ``` text
 ./customized_backend/
