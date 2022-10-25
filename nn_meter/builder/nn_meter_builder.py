@@ -48,7 +48,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
                 continue
             try:
                 model_path = model['model']
-                converted_model = backend.convert_model(model_path, model_save_path, model['shapes'])
+                converted_model = backend.convert_model(model_path, model_save_path, input_shape=model['shapes'])
                 model['converted_model'] = converted_model
                 count += 1
             except Exception as e:
@@ -136,7 +136,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                 try:
                     model_path = model['converted_model']
                     signal.alarm(time_threshold)
-                    profiled_res = backend.profile(model_path, metrics, model['shapes'], **kwargs)
+                    profiled_res = backend.profile(model_path, metrics, input_shape=model['shapes'], **kwargs)
                     signal.alarm(0)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
@@ -148,7 +148,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                 try:
                     model_path = model['model']
                     signal.alarm(time_threshold)
-                    profiled_res = backend.profile_model_file(model_path, model_save_path, model['shapes'], metrics, **kwargs)
+                    profiled_res = backend.profile_model_file(model_path, model_save_path, input_shape=model['shapes'], metrics=metrics, **kwargs)
                     signal.alarm(0)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]
