@@ -41,7 +41,7 @@ class TFLiteCPULatencyParser(BaseParser):
         return nodes
 
     def _parse_total_latency(self, content):
-        total_latency_regex = r'Timings \(microseconds\): count=[\d.e-]+ first=[\d.e-]+ curr=[\d.e-]+ min=[\d.e-]+ max=[\d.e-]+ avg=([\d.e-]+) std=([\d.e-]+)'
+        total_latency_regex = r'Timings \(microseconds\): count=[\d.e-]+ first=[\d.e-]+ curr=[\d.e-]+ min=[\d.e-]+ max=[\d.e-]+ avg=([\d.\+e-]+) std=([\d.\+e-]+)'
 
         total_latency = Latency()
         match = re.search(total_latency_regex, content, re.MULTILINE)
