@@ -3,83 +3,90 @@
 import os, json
 
 class BlockLatencyPredictor:
-    def __init__(self, predictor_name = "pixel6_lut"):
+    def __init__(self, predictor_name = "pixel6_lut", layer_norm = True):
         self.predictor_name = predictor_name
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        with open(os.path.join(base_dir, f"{predictor_name}.json"), 'r') as fp:
+        with open(os.path.join(base_dir, "lut", f"{predictor_name}_ln_v2.json"), 'r') as fp:
             self.predictor = json.load(fp)
+        self.layer_norm = layer_norm
 
     def get_latency(self, block_config):
         '''
-        sample = (
-            176, # 0 input res
-            (0, 0, 0, 1, 1, 1), # 1 block type
-            (24, 32, 64, 128, 208, 272), # 2 channels
-            (2, 3, 2, 2, 3, 4), # 3 depths
-            (6, 6, 6, 6, 6, 4, 4), # 4 conv expansion ratio
-            (3, 3, 3, 3, 3, 5, 5), # 5 conv kr size
-            (2, 2, 4, 4, 4, 4, 4, 4, 4), # 6 trans mlp ratio
-            (14, 14, 24, 24, 24, 40, 40, 40, 40), # 7 trans num heads
-            (1, 1, 1, 1, 1, 1, 1, 1, 1), # 8 windows size
-            (1, 1, 1, 1, 1, 1, 1, 1, 1), # 9 qk scale
-            (2, 2, 2, 2, 2, 2, 2, 2, 2), # 10 v scale
-            (False, True, True, False, False, False) # 11 use_se, only works for conv layer
+        arch = (
+            224, # 0 input res
+            (16, 24, 40, 64, 112, 192, 320), # 1 channels
+            (1, 3, 4, 2, 3, 4, 5), # 2 depths
+            (1, 5, 5, 5, 6, 6, 6, 6), # 3 conv expansion ratio
+            (3, 5, 5, 5, 5, 5, 5, 5), # 4 conv kr size
+            (4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3), # 5 trans mlp ratio
+            (4, 4, 7, 7, 7, 12, 12, 12, 12, 20, 20, 20, 20, 20), # 6 trans num heads
+            (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), # 7 windows size
+            (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), # 8 qk scale
+            (2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4) # 9 v scale
         )
         '''
         py = 0
         act = "hard_swish"
-        strides = (2, 2, 2, 1, 2, 2)
+        strides = (1, 2, 2, 2, 2, 1, 2) # didn't contain the first conv3x3
+        use_se = (False, False, True)
 
         # first_block
         hw = block_config[0]
-        py += self.predictor[f"conv_{hw}_3_16_1_2_{act}_3"]
-        # print(f"conv_{hw}_3_16_1_2_{act}_3")
+        py += self.predictor[f"firstconv_{hw}_3_{block_config[1][0]}_2_3"]
+        print(f"firstconv_{hw}_3_{block_config[1][0]}_2_3")
         hw = hw // 2
         stage_cout = 16
 
         # layer_choice blocks
         conv_count, trans_count = 0, 0
-        for stage_idx, block_type in enumerate(block_config[1]):
-            name = "conv" if block_type == 0 else "transformer"
+        for stage_idx, channel in enumerate(block_config[1]):
+            name = "conv" if stage_idx <= 2 else "transformer"
             stage_stride = strides[stage_idx]
             stage_hwin = hw
-            stage_hwout = hw // stage_stride if hw % stage_stride == 0 else hw // stage_stride + 1
+            # stage_hwout = hw // stage_stride if hw % stage_stride == 0 else hw // stage_stride + 1
+            stage_hwout = hw // stage_stride
             hw = stage_hwout
             stage_cin = stage_cout
-            stage_cout = block_config[2][stage_idx]
-            stage_usese = block_config[11][stage_idx]
+            stage_cout = channel
             if name == "conv":
-                for i in range(block_config[3][stage_idx]):
+                for i in range(block_config[2][stage_idx]):
                     s = stage_stride if i == 0 else 1
                     layer_hw = stage_hwin if i == 0 else stage_hwout
                     cin = stage_cin if i == 0 else stage_cout
                     cout = stage_cout
-                    exp = block_config[4][conv_count]
-                    ks = block_config[5][conv_count]
-                    se = stage_usese
+                    exp = block_config[3][conv_count]
+                    ks = block_config[4][conv_count]
+                    se = use_se[stage_idx]
                     conv_count += 1
 
                     # predict by lut
-                    py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{se}"]
-                    # print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{se}")
+                    py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{'se' if se else 'nose'}"]
+                    print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{'se' if se else 'nose'}")
 
             elif name == "transformer":
-                for i in range(block_config[3][stage_idx]):
+                for i in range(block_config[2][stage_idx]):
                     s = stage_stride if i == 0 else 1
                     ds = "ds" if i == 0 else "nods"
                     layer_hw = stage_hwin if i == 0 else stage_hwout
                     cin = stage_cin if i == 0 else stage_cout
                     cout = stage_cout
-                    exp = block_config[6][trans_count]
-                    v = block_config[10][trans_count]
+                    exp = block_config[5][trans_count]
+                    v = block_config[9][trans_count]
                     trans_count += 1
 
                     # predict by lut
-                    py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}"]
-                    # print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}")
+                    if i == 0:
+                        py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}_6_{'ln' if self.layer_norm else 'bn'}"]
+                        print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}_6_{'ln' if self.layer_norm else 'bn'}")
+                    else:
+                        py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}_{'ln' if self.layer_norm else 'bn'}"]
+                        print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}_{'ln' if self.layer_norm else 'bn'}")
+        # MBPool block
+        py += self.predictor[f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}"]
+        print(f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}")
 
-        assert conv_count == len(block_config[5])
-        assert trans_count == len(block_config[6])
+        assert conv_count == len(block_config[4])
+        assert trans_count == len(block_config[5])
 
         return py
 
@@ -87,8 +94,8 @@ class BlockLatencyPredictor:
     def get_single_block_arch(self, name, hw, cin, cout, kernel_size, expand_ratio, 
                     stride, activation):
         raise NotImplementedError # does not support latency predictor now
-        type = self.get_type(name, cin, cout, stride, activation)
-        dicts = get_block_arch_by_name(type, hw, cin, cout, kernel_size, expand_ratio, stride)
+        block_type = self.get_type(name, cin, cout, stride, activation)
+        dicts = get_block_arch_by_name(block_type, hw, cin, cout, kernel_size, expand_ratio, stride)
         return dicts
 
 
