@@ -82,8 +82,9 @@ class BlockLatencyPredictor:
                         py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}_{'ln' if self.layer_norm else 'bn'}"]
                         print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}_{'ln' if self.layer_norm else 'bn'}")
         # MBPool block
-        py += self.predictor[f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}"]
-        print(f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}")
+        mbpool_hw = layer_hw // stage_stride if i == 0 else layer_hw
+        py += self.predictor[f"mbpool_{mbpool_hw}_{block_config[1][-1]}_1984_6_{act}"]
+        print(f"mbpool_{mbpool_hw}_{block_config[1][-1]}_1984_6_{act}")
 
         assert conv_count == len(block_config[4])
         assert trans_count == len(block_config[5])
