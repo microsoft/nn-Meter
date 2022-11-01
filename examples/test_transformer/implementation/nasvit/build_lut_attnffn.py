@@ -40,32 +40,31 @@ def conv_layer(inputs, channel, expansion_ratio, kernel_size, stride, use_se, ac
     return dsconv(inputs, channel, strides=stride, kernel_size=kernel_size, exp=expansion_ratio, act=act, use_se=use_se)
 
 
-def transformer_layer(inputs, channels, expansion_ratio, ds, v_scale, stride, layer_index, se, layer_norm = True, name = ""):
+def transformer_layer(inputs, channels, expansion_ratio, ds, v_scale, stride, layer_index, se, layer_norm = True, reshape=False, name = ""):
     nn = inputs
-    if len(inputs.shape) == 4:
+    if reshape:
         _, H, W, C = nn.shape
         nn = tf.reshape(inputs, (-1, H*W, C))
-
+    
     if layer_index == 0:
-        print(key, ds and stride == 2)
-        nn = attention_downsampling(nn, channels, ds and stride == 2, dwconv=True, exp=6, use_se=se)
-    # try:
+        # se = True
+        
+        nn = attention_downsampling(nn, channels, ds and stride == 2, dw_downsampling=True, exp=6, use_se=se)
+
     if not layer_norm:
         nn = mhsa_with_multi_head_position_windows(nn, channels, channels//8, 8, 8 * v_scale, 1, nasvit_arch=True, activation=ACT, name=f'stage_layer_channel')
-        for i in range(2):
-            nn = res_mlp_block(nn, expansion_ratio, activation=ACT, name=f'ffn{i}')
+        for _ in range(2):
+            nn = res_mlp_block(nn, expansion_ratio, activation=ACT, name='ffn')
     else:
         nn = mhsa_with_multi_head_position_windows_layer_norm(nn, channels, channels//8, 8, 8 * v_scale, 1, nasvit_arch=True, activation=ACT, name='stage_layer_channel')
-        for i in range(2):
-            nn = res_mlp_block_layer_norm(nn, expansion_ratio, activation=ACT, name=f'ffn{i}')
-    # except:
-    #     import pdb; pdb.set_trace()
+        for _ in range(2):
+            nn = res_mlp_block_layer_norm(nn, expansion_ratio, activation=ACT, name='ffn')
     return nn
 
 
 def build_models(key, name, hw, cin, cout, exp, s, act, ks = None, v = None, ds = None, use_se = None, reshape = False):
     # return
-    # print(key)
+    print(key)
     if os.path.isfile(os.path.join(main_path, "nasvit_lut", f"{key}.tflite")): return
     
     if name == "MBlock": # mobile conv 
@@ -73,13 +72,13 @@ def build_models(key, name, hw, cin, cout, exp, s, act, ks = None, v = None, ds 
         output = conv_layer(inputs, cout, expansion_ratio=exp, stride=s, kernel_size=ks, act=act, use_se=use_se)
         
     else: # transformer
-        if ds: # the first transformer layer in the transformer block
+        if reshape: # the first transformer layer in the first transformer block
             inputs = keras.Input(shape=[hw, hw, cin], batch_size=1)
             layer_index = 0
         else:
             inputs = keras.Input(shape=[hw * hw, cin], batch_size=1)
             layer_index = 1
-        output = transformer_layer(inputs, cout, expansion_ratio=exp, ds=ds, v_scale=v, stride=s, layer_index=layer_index, se=True, name=name, layer_norm=layer_norm)
+        output = transformer_layer(inputs, cout, expansion_ratio=exp, ds=ds, v_scale=v, stride=s, layer_index=layer_index, se=True, name=name, layer_norm=layer_norm, reshape=reshape)
 
     model = keras.Model(inputs=inputs, outputs=output)
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
@@ -100,9 +99,9 @@ nasvit_config = [
     ("MBlock",   [3, 4, 5],          [24, 32],               [4, 5, 6],      [3, 5],     2,      False,      np.unique([item // 2 for item in [192, 224, 256, 288]])), # 112
     ("MBlock",   [3, 4, 5, 6],       [32, 40],               [4, 5, 6],      [3, 5],     2,      True,       np.unique([item // 4 for item in [192, 224, 256, 288]])), # 56
     ("Trans",    [3, 4, 5, 6],       [64, 72],               [1, 2],         [None],     2,      False,      np.unique([item // 8 for item in [192, 224, 256, 288]])), # 28
-    ("Trans",    [3, 4, 5, 6, 7, 8], [112, 120, 128],        [1, 2],         [None],     2,      True,       np.unique([item // 16 for item in [192, 224, 256, 288]])), # 14
-    ("Trans",    [3, 4, 5, 6, 7, 8], [160, 168, 176, 184],   [1, 2],         [None],     1,      True,       np.unique([item // 32 for item in [192, 224, 256, 288]])), # 7
-    ("Trans",    [3, 4, 5, 6],       [208, 216, 224],        [1, 2],         [None],     2,      True,       np.unique([item // 32 for item in [192, 224, 256, 288]])), # 7
+    ("Trans",    [3, 4, 5, 6, 7, 8], [112, 120, 128],        [1, 2],         [None],     2,      False,      np.unique([item // 16 for item in [192, 224, 256, 288]])), # 14
+    ("Trans",    [3, 4, 5, 6, 7, 8], [160, 168, 176, 184],   [1, 2],         [None],     1,      False,      np.unique([item // 32 for item in [192, 224, 256, 288]])), # 7
+    ("Trans",    [3, 4, 5, 6],       [208, 216, 224],        [1, 2],         [None],     2,      False,      np.unique([item // 32 for item in [192, 224, 256, 288]])), # 7
     ("Conv",     [1],                [1792, 1984],           [6],            [None],     1,      False,      np.unique([item // 64 for item in [192, 224, 256, 288]])) # 3
 ]
 
@@ -132,12 +131,6 @@ for supernet_config in [nasvit_config]:
                                     # for nasvit, v_scale = 4, ds_exp = 6, norm = ln
                                     key = f'{name}_{hw}_{cin}_{cout}_{exp}_{stride}_{act}_{4}_ds_{6}_ln'
                                     # key = f'{name}_{hw}_{cin}_{cout}_{exp}_1_{act}_{v}_{ds}_ln'
-                                    if key not in lut_result:
-                                        # try:
-                                            build_models(key, name, hw, cin, cout, exp, stride, act, ks=ks, v=4, ds=True, use_se=se)
-                                            lut_result[key] = [[hw, hw, cin]]
-                                        # except:
-                                        #     import pdb; pdb.set_trace()
                                     
         # layer_index > 0
         for hw in hw_outs:
@@ -156,7 +149,7 @@ for supernet_config in [nasvit_config]:
                             else:
                                 key = f'{name}_{hw}_{cin}_{cout}_{exp}_1_{act}_{4}_nods_ln'
                                 if key not in lut_result:
-                                    build_models(key, name, hw, cin, cout, exp, 1, act, ks=ks, v=4, use_se=se)
+                                    build_models(key, name, hw, cin, cout, exp, 1, act, ks=ks, use_se=se)
                                     lut_result[key] = [[hw, hw, cin]]
 
 print(len(lut_result))
@@ -176,4 +169,4 @@ with open(os.path.join(main_path, "results_pixel6", f"nasvit_lut_v1.json"), 'w')
 
 
 # nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/implementation/nasvit/build_lut.py > nasvit_lut_log.txt 2>&1 &
-# [1] 4625
+# [1] 30909

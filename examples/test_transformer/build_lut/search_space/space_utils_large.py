@@ -12,12 +12,23 @@ def channel_list(start, end, step=8):
     ``channel`` is the ***output channel***
     ``hw`` is the ***input resolution***
 '''
+reproduce_nasvit = True
+if reproduce_nasvit:
+    extend_width = [
+        [72],
+        [120],
+        [168, 184],
+        [216],
+        [1792]
+    ]
+else:
+    extend_width = [[], [], [], [], []]
 
 ACT = 'hard_swish'
 configs = [
     {
         'name': 'first_conv',
-        'block_type': 0,
+        'block_type': -1,
         'cin': [3],
         'channel': [16, 24],
         'depth': [1],
@@ -70,7 +81,7 @@ configs = [
         'name': 'stage_3', 
         'block_type': 1,  
         'cin': channel_list(start=16, end=40, step=8),
-        'channel': channel_list(start=32, end=96, step=16),  
+        'channel': channel_list(start=32, end=96, step=16) + extend_width[0],  
         'depth': [1, 2, 3, 4, 5, 6],  
         'expansion_ratio': [1, 2, 3, 4],
         'downsample_expansion_ratio': [4, 6],
@@ -82,8 +93,8 @@ configs = [
     {
         'name': 'stage_4', 
         'block_type': 1,  
-        'cin': channel_list(start=32, end=96, step=16),
-        'channel': channel_list(start=48, end=160, step=16),
+        'cin': channel_list(start=32, end=96, step=16) + extend_width[0],
+        'channel': channel_list(start=48, end=160, step=16) + extend_width[1],
         'depth': [1, 2, 3, 4, 5, 6, 7, 8],  
         'expansion_ratio': [1, 2, 3, 4],  
         'downsample_expansion_ratio': [4, 6],
@@ -95,8 +106,8 @@ configs = [
     {
         'name': 'stage_5',
         'block_type': 1,
-        'cin': channel_list(start=48, end=160, step=16),
-        'channel': channel_list(start=96, end=256, step=16),
+        'cin': channel_list(start=48, end=160, step=16) + extend_width[1],
+        'channel': channel_list(start=96, end=256, step=16) + extend_width[2],
         'depth': [1, 2, 3, 4, 5, 6, 7, 8],
         'expansion_ratio': [1, 2, 3, 4],
         'downsample_expansion_ratio': [4, 6],
@@ -108,8 +119,8 @@ configs = [
     {
         'name': 'stage_6',
         'block_type': 1,
-        'cin': channel_list(start=96, end=256, step=16),
-        'channel': channel_list(start=144, end=320, step=16),
+        'cin': channel_list(start=96, end=256, step=16) + extend_width[2],
+        'channel': channel_list(start=144, end=320, step=16) + extend_width[3],
         'depth': [1, 2, 3, 4, 5, 6],
         'expansion_ratio': [1, 2, 3, 4],
         'downsample_expansion_ratio': [4, 6],
@@ -117,5 +128,18 @@ configs = [
         'stride': 2,
         'hw': [4, 5, 6, 7, 8, 9],
         'hw_out': [2, 3, 4]
+    },
+    {
+        'name': 'mb_pool',
+        'block_type': 2,
+        'cin': channel_list(start=144, end=320, step=16) + extend_width[3],
+        'channel': [1984] + extend_width[4],
+        'depth': None,
+        'expansion_ratio': [6],
+        'downsample_expansion_ratio': None,
+        'v_scale': None,
+        'stride': None,
+        'hw': [2, 3, 4],
+        'hw_out': None
     }
 ]
