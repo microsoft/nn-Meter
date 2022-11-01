@@ -1,4 +1,4 @@
-sample = (
+sample1 = (
     224, # 0 input res
     (16, 24, 40, 64, 112, 192, 320), # 1 channels
     (1, 3, 4, 2, 3, 4, 5), # 2 depths
@@ -11,7 +11,7 @@ sample = (
     (2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4) # 9 v scale
 )
 
-sample = [
+sample2 = [
     160, 
     (24, 24, 40, 48, 64, 160, 320), 
     (1, 2, 3, 1, 6, 3, 1), 
@@ -25,9 +25,25 @@ sample = [
 ]
 
 
-from nn_meter.predictor.transformer_predictor.interface_dev import BlockLatencyPredictor
-predictor = BlockLatencyPredictor("pixel6_lut")
-print(predictor.get_nasvit_latency(sample))
+NASVIT_A0 = (
+    192, # res
+    (16, 24, 32, 64, 112, 160, 208), # channels, 
+    (1, 3, 3, 2, 2, 2, 2), # depths, 
+    (1, 4, 4, 4, 4, 4, 4), # conv_ratio, 
+    (3, 3, 3, 3, 3, 3, 3), # kr_size, 
+    (1, 1, 1, 1, 1, 1, 1, 1), # mlp_ratio, 
+    (8, 8, 14, 14, 20, 20, 26, 26), # num_heads, 
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), # window_size, 
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), # qk_scale, 
+    (4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4) # v_scale
+)
 
-# predictor = BlockLatencyPredictor("pixel4_lut")
-# print(predictor.get_latency(sample))
+from nn_meter.predictor.transformer_predictor import BlockLatencyPredictor
+
+# predict latency with nasvit arch
+predictor = BlockLatencyPredictor("pixel6_lut")
+print(predictor.get_nasvit_latency(NASVIT_A0))
+
+# # predict latency with our hybrid arch
+# predictor = BlockLatencyPredictor("pixel6_lut")
+# print(predictor.get_latency(NASVIT_A0))
