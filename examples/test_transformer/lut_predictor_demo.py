@@ -11,9 +11,23 @@ sample = (
     (2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4) # 9 v scale
 )
 
-from nn_meter.predictor.transformer_predictor import BlockLatencyPredictor
+sample = [
+    160, 
+    (24, 24, 40, 48, 64, 160, 320), 
+    (1, 2, 3, 1, 6, 3, 1), 
+    (1, 2, 2, 4, 4, 4), 
+    (3, 3, 3, 3, 3, 3), 
+    (4, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1), 
+    (3, 4, 4, 4, 4, 4, 4, 10, 10, 10, 20), 
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), 
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), 
+    (2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 4)
+]
+
+
+from nn_meter.predictor.transformer_predictor.interface_dev import BlockLatencyPredictor
 predictor = BlockLatencyPredictor("pixel6_lut")
-print(predictor.get_latency(sample))
+print(predictor.get_nasvit_latency(sample))
 
 # predictor = BlockLatencyPredictor("pixel4_lut")
 # print(predictor.get_latency(sample))
