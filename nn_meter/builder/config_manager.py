@@ -17,8 +17,9 @@ def copy_to_workspace(backend_type, workspace_path, backendConfigFile = None):
     os.makedirs(os.path.join(workspace_path, 'configs'), exist_ok=True)
 
     # backend config
-    if backend_type == 'customized' and backendConfigFile:
-        copyfile(backendConfigFile, os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
+    if backend_type == 'customized':
+        if backendConfigFile:
+            copyfile(backendConfigFile, os.path.join(workspace_path, 'configs', 'backend_config.yaml'))
     else:
         if backend_type == 'tflite':
             config_name = __backend_tflite_cfg_filename__

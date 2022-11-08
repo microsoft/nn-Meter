@@ -1,8 +1,5 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
-import numpy as np
-from sklearn.metrics import mean_squared_error
-
 
 def get_kernel_name(optype):
     """
@@ -33,37 +30,3 @@ def get_kernel_name(optype):
         optype = "se"
 
     return optype
-
-
-def get_accuracy(y_pred, y_true, threshold=0.01):
-    a = (y_true - y_pred) / y_true
-    b = np.where(abs(a) <= threshold)
-    return len(b[0]) / len(y_true)
-
-
-def latency_metrics(y_pred, y_true):
-    """
-    evaluation metrics for prediction performance
-    """
-    y_true=np.array(y_true)
-    y_pred=np.array(y_pred)
-    rmspe = (np.sqrt(np.mean(np.square((y_true - y_pred) / y_true)))) * 100
-    rmse = np.sqrt(mean_squared_error(y_pred, y_true))
-    acc5 = get_accuracy(y_pred, y_true, threshold=0.05)
-    acc10 = get_accuracy(y_pred, y_true, threshold=0.10)
-    acc15 = get_accuracy(y_pred, y_true, threshold=0.15)
-    return rmse, rmspe, rmse / np.mean(y_true), acc5, acc10, acc15
-
-
-def latency_metrics_acc20(y_pred, y_true):
-    """
-    evaluation metrics for prediction performance
-    """
-    y_true=np.array(y_true)
-    y_pred=np.array(y_pred)
-    rmspe = (np.sqrt(np.mean(np.square((y_true - y_pred) / y_true)))) * 100
-    rmse = np.sqrt(mean_squared_error(y_pred, y_true))
-    acc10 = get_accuracy(y_pred, y_true, threshold=0.10)
-    acc15 = get_accuracy(y_pred, y_true, threshold=0.15)
-    acc20 = get_accuracy(y_pred, y_true, threshold=0.20)
-    return rmse, rmspe, rmse / np.mean(y_true), acc10, acc15, acc20

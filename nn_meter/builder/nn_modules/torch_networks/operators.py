@@ -164,13 +164,13 @@ class SE(BaseOperator):
 
 class FC(BaseOperator):
     def get_model(self):
-        cin = self.input_shape[0]
-        cout = self.input_shape[0] if "COUT" not in self.config else self.config["COUT"]
+        cin = self.input_shape[-1]
+        cout = self.input_shape[-1] if "COUT" not in self.config else self.config["COUT"]
         return nn.Linear(cin, cout)
 
     def get_output_shape(self):
-        cout = self.input_shape[0] if "COUT" not in self.config else self.config["COUT"]
-        return [cout] + self.input_shape[1:]
+        cout = self.input_shape[-1] if "COUT" not in self.config else self.config["COUT"]
+        return self.input_shape[:-1] + [cout]
 
 #-------------------- activation function --------------------#
 

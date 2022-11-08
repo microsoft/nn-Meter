@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 import random
 import numpy as np
+from nn_meter.utils import get_conv_flop_params, get_dwconv_flop_params, get_fc_flop_params
 from .prior_config_lib.utils import *
 from nn_meter.builder.utils import make_divisible
 
@@ -81,6 +82,7 @@ def sampling_conv(count):
     random.shuffle(new_kernel_sizes)
 
     ncfgs = []
+    nparams = [] # calculate the number of parameters for configs sort
     for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
         c = {
             'HW': hw,
@@ -90,6 +92,12 @@ def sampling_conv(count):
             'STRIDES': stride,
         }
         ncfgs.append(c)
+        nparams.append(get_conv_flop_params(hw, cin, cout, kernel_size, stride))
+
+    # sort all sampling configs by number of parameters, from the smallest to the largest
+    # the procedure is for better profiling
+    ncfgs = [x for x, _ in sorted(zip(ncfgs, nparams), key=lambda x: x[1])]
+
     return ncfgs
 
 
@@ -191,6 +199,7 @@ def sampling_conv_random(count):
     random.shuffle(new_couts)
 
     ncfgs = []
+    nparams = [] # calculate the number of parameters for configs sort
     for hw, cin, cout, kernel_size, stride in zip(new_hws, new_cins, new_couts, new_kernel_sizes, new_strides):
         c = {
             'HW': hw,
@@ -200,6 +209,12 @@ def sampling_conv_random(count):
             'STRIDES': stride,
         }
         ncfgs.append(c)
+        nparams.append(get_conv_flop_params(hw, cin, cout, kernel_size, stride))
+
+    # sort all sampling configs by number of parameters, from the smallest to the largest
+    # the procedure is for better profiling
+    ncfgs = [x for x, _ in sorted(zip(ncfgs, nparams), key=lambda x: x[1])]
+
     return ncfgs
 
 
@@ -229,6 +244,7 @@ def sampling_dwconv(count):
     random.shuffle(new_strides)
 
     ncfgs = []
+    nparams = [] # calculate the number of parameters for configs sort
     for hw, cin, kernel_size, stride in zip(new_hws, new_cins, new_kernel_sizes, new_strides):
         c = {
             'HW': hw,
@@ -237,6 +253,12 @@ def sampling_dwconv(count):
             'STRIDES': stride,
         }
         ncfgs.append(c)
+        nparams.append(get_dwconv_flop_params(hw, cin, kernel_size, stride))
+
+    # sort all sampling configs by number of parameters, from the smallest to the largest
+    # the procedure is for better profiling
+    ncfgs = [x for x, _ in sorted(zip(ncfgs, nparams), key=lambda x: x[1])]
+
     return ncfgs
 
 
@@ -300,13 +322,21 @@ def sampling_fc(count, fix_cout = 1000):
         new_couts = sample_based_on_distribution(couts, count)
     else:
         new_couts = [fix_cout] * count
+
     ncfgs = []
+    nparams = [] # calculate the number of parameters for configs sort
     for cin, cout in zip(new_cins, new_couts):
         c = {
             'CIN': cin,
             'COUT': cout,
         }
         ncfgs.append(c)
+        nparams.append(get_fc_flop_params(cin, cout))
+
+    # sort all sampling configs by number of parameters, from the smallest to the largest
+    # the procedure is for better profiling
+    ncfgs = [x for x, _ in sorted(zip(ncfgs, nparams), key=lambda x: x[1])]
+
     return ncfgs
 
 

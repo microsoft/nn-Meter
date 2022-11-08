@@ -60,3 +60,7 @@ def make_divisible(v):
     if new_v < 0.9 * v:
         new_v += 8
     return new_v
+
+
+def handle_timeout(sig, frame):
+    raise TimeoutError('Model profiling took too long (longer than the time threshold in the funciton `nn_meter.builder.profile_models`, default to be 300s)')
