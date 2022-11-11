@@ -4,7 +4,8 @@ import time
 import torch
 import pickle
 from torch import nn
-from nn_meter.predictor.prediction.utils import latency_metrics_acc20 as latency_metrics
+from nn_meter.utils import latency_metrics
+# from nn_meter.predictor.prediction.utils import latency_metrics_acc20 as latency_metrics
 from nn_meter.builder.backends import connect_backend
 from nn_meter.predictor import load_latency_predictor
 from nn_meter.builder import builder_config
@@ -64,10 +65,11 @@ def get_feature(kernel_type, config_dict):
 ## ------------- op level
 from nn_meter.builder.nn_modules.torch_networks.blocks import ConvBnRelu, DwConvBnRelu, HswishBlock, SEBlock
 
-def op_level_test_conv(predictor_name):
+def op_level_test_conv(predictor_name = None):
     # conv-bn-relu
-    with open(predictor_name, "rb") as f:
-        predictor = pickle.load(f)
+    if predictor_name:
+        with open(predictor_name, "rb") as f:
+            predictor = pickle.load(f)
 
     reals, preds = [], []
     configs = [
@@ -101,10 +103,11 @@ def op_level_test_conv(predictor_name):
         # [56, 560, 1680, 1, 1], [56, 560, 2240, 1, 1], [56, 560, 2800, 1, 1], [56, 560, 3360, 1, 1],
         # [56, 72, 288, 1, 1], [56, 80, 320, 1, 1]
         # [28, 16, 64, 1, 1], [28, 32, 128, 1, 1], [28, 40, 160, 1, 1], [28, 48, 192, 1, 1], 
-        [28, 56, 224, 1, 1], [28, 64, 256, 1, 1],
-        [28, 72, 288, 1, 1], [28, 80, 320, 1, 1], 
+        # [28, 56, 224, 1, 1], [28, 64, 256, 1, 1],
+        # [28, 72, 288, 1, 1], [28, 80, 320, 1, 1], 
         # [28, 96, 384, 1, 1], [28, 128, 512, 1, 1], [28, 160, 640, 1, 1], [28, 240, 960, 1, 1], 
         # [28, 320, 1280, 1, 1], [28, 480, 1920, 1, 1], [28, 560, 2240, 1, 1]
+        [14, 240, 80, 1, 1]
     ]
     
     # # configs in MobilenetV3Large
@@ -140,7 +143,7 @@ def op_level_test_conv(predictor_name):
         input_shape = [cin, hwin, hwin]
         model = ConvBnRelu(config_in).get_model()
         real = profile_model(model, input_shape, backend)
-        pred = predictor.predict([get_feature("conv-bn-relu", config_in)])[0]
+        pred = predictor.predict([get_feature("conv-bn-relu", config_in)])[0] if predictor_name else 0
         reals.append(real)
         preds.append(pred)
         # print(real, pred)
@@ -186,9 +189,10 @@ def op_level_test_conv_group():
             print(f'{ks}, {group}, {real}')
 
 
-def op_level_test_hswish(predictor_name):
-    with open(predictor_name, "rb") as f:
-        predictor = pickle.load(f)
+def op_level_test_hswish(predictor_name = None):
+    if predictor_name:
+        with open(predictor_name, "rb") as f:
+            predictor = pickle.load(f)
     # # hswish
     # class HSwishForParse(nn.Module):
         
@@ -201,9 +205,10 @@ def op_level_test_hswish(predictor_name):
 
     reals, preds = [], []
     configs = [
-        [112, 16], [28, 120], [14, 120], [14, 480], [14, 480], [14, 240], [14, 240], [14, 320],
-        [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
-        [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960], [1, 1280],
+        # [112, 16], [28, 120], [14, 120], [14, 480], [14, 480], [14, 240], [14, 240], [14, 320],
+        # [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
+        # [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960], [1, 1280],
+        [14, 480]
     ]
 
     # # configs in MobilenetV3Large
@@ -220,8 +225,8 @@ def op_level_test_hswish(predictor_name):
         }
         input_shape = [cin, hwin, hwin]
         model = HswishBlock(config_in).get_model()
-        real = profile_model(model, input_shape)
-        pred = predictor.predict([get_feature("hswish", config_in)])[0]
+        real = profile_model(model, input_shape, backend=backend)
+        pred = predictor.predict([get_feature("hswish", config_in)])[0] if predictor_name else 0
         reals.append(real)
         preds.append(pred)
         print(real, pred)
@@ -252,7 +257,7 @@ def op_level_test_swish():
     #     [14, 184], [14, 480], [14, 480], [14, 672], [14, 672], [14, 672], [7, 672], [7, 960], [7, 960],
     #     [7, 960], [7, 960], [1, 1280]
     # ]
-    configs = [[112, 16]
+    configs = [[14, 180]
             #    , [56, 40], [28, 80], [14, 160], [7, 320]
                ]
     for i, config in enumerate(configs):
@@ -266,24 +271,27 @@ def op_level_test_swish():
         real = profile_model(model, input_shape, backend=backend)
         print(real)
 
-def op_level_test_dwconv(predictor_name):
-    with open(predictor_name, "rb") as f:
-        predictor = pickle.load(f)
+def op_level_test_dwconv(predictor_name = None):
+    if predictor_name:
+        with open(predictor_name, "rb") as f:
+            predictor = pickle.load(f)
+    
     # dwconv-bn-relu
     reals, preds = [], []
     configs = [
-        [112, 16, 3, 1], [112, 48, 3, 2], [56, 144, 3, 1], [56, 96, 5, 1], [56, 144, 5, 2], [28, 240, 3, 1], [28, 160, 7, 1],
-        [28, 120, 3, 1], [28, 160, 3, 2], [14, 320, 5, 1], [14, 480, 3, 1], [14, 672, 3, 1], [14, 448, 3, 2], [7, 640, 7, 1],
-        [7, 640, 3, 1], [7, 640, 5, 1], [56, 96, 7, 2], [28, 240, 7, 1], [28, 160, 5, 2], [14, 240, 5, 1], [14, 448, 7, 1],
-        [14, 448, 7, 2], [7, 480, 5, 1], [112, 96, 3, 2], [56, 144, 5, 1], [56, 72, 3, 2], [28, 240, 5, 1], [28, 160, 5, 1],
-        [28, 240, 7, 2], [14, 480, 7, 1], [14, 320, 7, 1], [7, 480, 7, 1], [28, 120, 7, 1], [14, 240, 7, 1], [14, 448, 5, 1],
-        [14, 672, 3, 2], [7, 960, 5, 1], [7, 480, 3, 1], [112, 64, 3, 2], [56, 72, 5, 1], [56, 144, 7, 1], [56, 96, 3, 1],
-        [56, 144, 3, 2], [28, 120, 5, 2], [14, 320, 3, 1], [14, 448, 3, 1], [14, 672, 7, 2], [7, 960, 3, 1], [56, 96, 7, 1],
-        [56, 72, 7, 1], [56, 72, 7, 2], [28, 120, 5, 1], [28, 160, 7, 2], [14, 672, 5, 1], [14, 672, 5, 2], [7, 960, 7, 1],
-        [28, 120, 7, 2], [14, 240, 3, 1], [14, 480, 5, 1], [14, 336, 5, 1], [112, 48, 5, 2], [28, 160, 3, 1], [14, 336, 7, 2],
-        [56, 72, 3, 1], [56, 72, 5, 2], [28, 240, 3, 2], [14, 336, 7, 1], [56, 96, 3, 2], [56, 96, 5, 2], [14, 336, 5, 2],
-        [56, 144, 7, 2], [112, 96, 5, 2], [14, 448, 5, 2], [14, 336, 3, 1], [112, 64, 5, 2], [28, 240, 5, 2], [14, 336, 3, 2],
-        [28, 120, 3, 2], [112, 48, 7, 2], [14, 672, 7, 1], [112, 64, 7, 2], [112, 96, 7, 2]
+        # [112, 16, 3, 1], [112, 48, 3, 2], [56, 144, 3, 1], [56, 96, 5, 1], [56, 144, 5, 2], [28, 240, 3, 1], [28, 160, 7, 1],
+        # [28, 120, 3, 1], [28, 160, 3, 2], [14, 320, 5, 1], [14, 480, 3, 1], [14, 672, 3, 1], [14, 448, 3, 2], [7, 640, 7, 1],
+        # [7, 640, 3, 1], [7, 640, 5, 1], [56, 96, 7, 2], [28, 240, 7, 1], [28, 160, 5, 2], [14, 240, 5, 1], [14, 448, 7, 1],
+        # [14, 448, 7, 2], [7, 480, 5, 1], [112, 96, 3, 2], [56, 144, 5, 1], [56, 72, 3, 2], [28, 240, 5, 1], [28, 160, 5, 1],
+        # [28, 240, 7, 2], [14, 480, 7, 1], [14, 320, 7, 1], [7, 480, 7, 1], [28, 120, 7, 1], [14, 240, 7, 1], [14, 448, 5, 1],
+        # [14, 672, 3, 2], [7, 960, 5, 1], [7, 480, 3, 1], [112, 64, 3, 2], [56, 72, 5, 1], [56, 144, 7, 1], [56, 96, 3, 1],
+        # [56, 144, 3, 2], [28, 120, 5, 2], [14, 320, 3, 1], [14, 448, 3, 1], [14, 672, 7, 2], [7, 960, 3, 1], [56, 96, 7, 1],
+        # [56, 72, 7, 1], [56, 72, 7, 2], [28, 120, 5, 1], [28, 160, 7, 2], [14, 672, 5, 1], [14, 672, 5, 2], [7, 960, 7, 1],
+        # [28, 120, 7, 2], [14, 240, 3, 1], [14, 480, 5, 1], [14, 336, 5, 1], [112, 48, 5, 2], [28, 160, 3, 1], [14, 336, 7, 2],
+        # [56, 72, 3, 1], [56, 72, 5, 2], [28, 240, 3, 2], [14, 336, 7, 1], [56, 96, 3, 2], [56, 96, 5, 2], [14, 336, 5, 2],
+        # [56, 144, 7, 2], [112, 96, 5, 2], [14, 448, 5, 2], [14, 336, 3, 1], [112, 64, 5, 2], [28, 240, 5, 2], [14, 336, 3, 2],
+        # [28, 120, 3, 2], [112, 48, 7, 2], [14, 672, 7, 1], [112, 64, 7, 2], [112, 96, 7, 2]
+        [28, 240, 3, 2]
     ]
     # # configs in MobilenetV3Large
     # configs = [
@@ -308,8 +316,8 @@ def op_level_test_dwconv(predictor_name):
         }
         input_shape = [cin, hwin, hwin]
         model = DwConvBnRelu(config_in).get_model()
-        real = profile_model(model, input_shape)
-        pred = predictor.predict([get_feature("dwconv-bn-relu", config_in)])[0]
+        real = profile_model(model, input_shape, backend)
+        pred = predictor.predict([get_feature("dwconv-bn-relu", config_in)])[0] if predictor_name else 0
         reals.append(real)
         preds.append(pred)
         print(real, pred)
@@ -327,18 +335,19 @@ def op_level_test_dwconv(predictor_name):
 
 
 
-def op_level_test_se(predictor_name):
+def op_level_test_se(predictor_name = None):
     # from op_code_torch import SE_xudong
-    from nn_meter.builder.nn_generator.torch_networks.blocks import SEBlock
-    with open(predictor_name, "rb") as f:
-        predictor = pickle.load(f)
+    if predictor_name:
+        with open(predictor_name, "rb") as f:
+            predictor = pickle.load(f)
 
     reals, preds = [], []
     configs = [
-        [28, 72], [28, 160], [14, 320], [14, 672], [14, 448], [14, 336], 
-        [7, 672], [7, 640], [7, 480], [112, 16], [28, 120], [14, 120], [14, 480], [14, 480], [14, 240], [14, 240], [14, 320],
-        [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
-        [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960]
+        # [28, 72], [28, 160], [14, 320], [14, 672], [14, 448], [14, 336], 
+        # [7, 672], [7, 640], [7, 480], [112, 16], [28, 120], [14, 120], [14, 480], [14, 480], [14, 240], [14, 240], [14, 320],
+        # [14, 320], [14, 672], [14, 672], [14, 448], [14, 448], [14, 336], [14, 336], [14, 672],
+        # [7, 672], [7, 640], [7, 640], [7, 480], [7, 480], [7, 960]
+        [28, 72]
     ]
     # # configs in MobilenetV3Large
     # configs = [
@@ -354,8 +363,8 @@ def op_level_test_se(predictor_name):
         }
         input_shape = [cin, hwin, hwin]
         model = SEBlock(config_in).get_model()
-        real = profile_model(model, input_shape)
-        pred = predictor.predict([get_feature("se", config_in)])[0]
+        real = profile_model(model, input_shape, backend)
+        pred = predictor.predict([get_feature("se", config_in)])[0] if predictor_name else 0
         reals.append(real)
         preds.append(pred)
         # break
@@ -487,12 +496,15 @@ def op_level_test_cascade_mbv1():
 
     
 if __name__ == '__main__':
-    backend_name = 'ort_cpu'
+    backend_name = 'ort_cpu_int8'
     backend = connect_backend(backend_name)
+    print(backend_name)
     
-    op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu.pkl")
+    # op_level_test_conv()
+    # op_level_test_conv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/conv-bn-relu.pkl")
     # op_level_test_conv_group()
 
+    # op_level_test_dwconv()
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_origin.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
@@ -500,11 +512,13 @@ if __name__ == '__main__':
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_finegrained1_filt8.pkl")
     # op_level_test_dwconv("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_refined16.pkl")
     
+    # op_level_test_hswish()
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_original.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish_ofa.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/hswish.pkl")
     # op_level_test_hswish("/sdc/jiahang/working/ort_mobilenetv3_workspace/predictor/hswish.pkl")
     
+    # op_level_test_se()
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_original.pkl")
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se_ofa.pkl")
     # op_level_test_se("/sdc/jiahang/working/ort_int8_workspace/predictor_build/results/predictors/se.pkl")
@@ -521,7 +535,7 @@ if __name__ == '__main__':
     # backend_name = 'ort_cpu'
     # backend = connect_backend(backend_name)
     # op_level_test_cascade_mbv1()
-    # op_level_test_swish()
+    op_level_test_swish()
     
     # backend_name = 'ort_cpu_int8'
     # backend = connect_backend(backend_name)
