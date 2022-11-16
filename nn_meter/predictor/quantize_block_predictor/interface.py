@@ -18,7 +18,7 @@ class BlockLatencyPredictor:
         if self.predictor_name.endswith("lut"): # suppored lut: onnx_lut, pixel6_lut
             import os, json
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            with open(os.path.join(base_dir, self.predictor_name), 'r') as fp:
+            with open(os.path.join(base_dir, f"{self.predictor_name}.json"), 'r') as fp:
                 self.predictor = json.load(fp)
         else:
             self.predictor = load_latency_predictor(predictor_name, predictor_version)
