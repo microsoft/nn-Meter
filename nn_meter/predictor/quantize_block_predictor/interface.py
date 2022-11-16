@@ -82,7 +82,7 @@ class BlockLatencyPredictor:
         stride (int)
         activation: choose from ["relu", "hswish"]
         '''
-        if self.predictor_name == "onnx_lut":
+        if self.predictor_name == "onnx_lut" or self.predictor_name == "pixel6_lut":
             return self.get_latency_by_lut(block_list)
         else:
             return self.get_latency_by_predictor(block_list)
