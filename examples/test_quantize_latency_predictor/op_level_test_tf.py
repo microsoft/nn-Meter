@@ -6,7 +6,7 @@ from nn_meter.predictor import load_latency_predictor
 from nn_meter.builder.backends import connect_backend
 from nn_meter.builder import builder_config
 from nn_meter.builder.nn_modules.tf_networks.utils import get_inputs_by_shapes
-from nn_meter.predictor.prediction.utils import latency_metrics_acc20 as latency_metrics
+from nn_meter.utils import latency_metrics
 from nn_meter.builder.kernel_predictor_builder.predictor_builder.utils import get_flops_params
 
 from nas_models.blocks.tf.mobilenetv3_block import HSigmoid
@@ -15,7 +15,7 @@ from op_code_tf import SE_NNMETER, SE_OFA, SE_xudong, HSwish_NNMETER, HSwish_OFA
 
 workspace = "/data1/jiahang/working/pixel4_mobilenetv3_workspace"
 builder_config.init(workspace)
-backend_name='tflite_cpu_int8'
+backend_name='tflite_cpu'
 backend = connect_backend(backend_name)
 
 output_path = "/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor"
@@ -264,11 +264,11 @@ def op_level_test_dwconv(predictor_name = None):
                     1.25432, 0.264163, 0.0251118, 0.0358999, 1.79139, 1.13197, 2.25581, 3.38345]
     assert len(configs) == len(real_latency)
 
-    for i, config in enumerate(configs):
-    # for i, cin in enumerate(range(600, 681)):
+    # for i, config in enumerate(configs):
+    for i, cin in enumerate(range(600, 681)):
     # for i, ks in enumerate([1, 3, 5, 7]):
-        hwin, cin, k, strides = config
-        # hwin, cin, k, strides = 28, cin, 3, 1
+        # hwin, cin, k, strides = config
+        hwin, cin, k, strides = 28, cin, 3, 1
         # hwin, cin, k, strides = 14, 320, ks, 1
         # hwin, cin, k, strides = 56, 32, ks, 1
         # hwin, cin, k, strides = 56, 96, ks, 1
@@ -289,13 +289,13 @@ def op_level_test_dwconv(predictor_name = None):
         open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"{real}, {pred}\n")
             
     rmse, rmspe, error, acc10, acc15, acc20 = latency_metrics(preds, reals)
-    # for cin, res in zip(range(600, 681), reals):
-    #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
+    for cin, res in zip(range(320, 369), reals):
+        open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"cin: {cin}; profiled results: {res}\n")
     # for item in zip(reals, preds):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f'{item}\n')
     # for ks, res in zip([1, 3, 5, 7], reals):
     #     open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"ks: {ks}; profiled results: {res}\n")
-    open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
+    # open("/data/jiahang/working/nn-Meter/examples/test_quantize_latency_predictor/op_result_dwconv.txt", "a").write(f"[Dwconv-bn-relu] rmse: {rmse}, rmspe: {rmspe}, error: {error}, acc10: {acc10}, acc15: {acc15}, acc20: {acc20}\n")
 
 
 def op_level_test_hswish(predictor_name = None):
@@ -522,7 +522,7 @@ if __name__ == '__main__':
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_only.pkl")
     # op_level_test_conv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/conv-bn-relu_ofa_filt8.pkl")
     
-    # op_level_test_dwconv()
+    op_level_test_dwconv()
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_original.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa.pkl")
     # op_level_test_dwconv("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/dwconv-bn-relu_ofa_only.pkl")
@@ -535,7 +535,7 @@ if __name__ == '__main__':
     
     # op_level_test_se("/data1/jiahang/working/pixel4_int8_workspace/predictor_build/results/predictors/se_ofa_filt8.pkl")
     # op_level_test_swish()
-    op_level_test_se()
+    # op_level_test_se()
     # op_level_test_mobilenetv3_large()
     
     # op_level_test_cascade_mbv1()
