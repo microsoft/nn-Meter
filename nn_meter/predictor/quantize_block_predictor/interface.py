@@ -5,23 +5,23 @@ from .get_block_arch import get_block_arch_by_name
 from .. import load_latency_predictor
 
 class BlockLatencyPredictor:
-    def __init__(self, predictor_name):
+    def __init__(self, predictor_name, predictor_version=1.0):
         self.predictor_name = predictor_name
 
         # declare all existing ops in the predictor
-        basic_ops = ["conv-bn-relu", "dwconv-bn-relu", "hswish", "gap", "fc", "add-relu", "add", "se"]
+        basic_ops = ["conv-bn-relu", "dwconv-bn-relu", "hswish", "gap", "fc", "add-relu", "add", "se", "swish"]
         if predictor_name.startswith("tflite"):
-            self.ops = basic_ops + ["swish"]
+            self.ops = basic_ops
         elif predictor_name.startswith("onnx"):
             self.ops = basic_ops + ["resnet-se"]
 
-        if self.predictor_name == "onnx_lut":
+        if self.predictor_name.endswith("lut"): # suppored lut: onnx_lut, pixel6_lut
             import os, json
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            with open(os.path.join(base_dir, "onnx_lut.json"), 'r') as fp:
+            with open(os.path.join(base_dir, self.predictor_name), 'r') as fp:
                 self.predictor = json.load(fp)
         else:
-            self.predictor = load_latency_predictor(predictor_name)
+            self.predictor = load_latency_predictor(predictor_name, predictor_version)
 
 
     def get_type(self, name, cin, cout, stride, activation):
@@ -33,10 +33,10 @@ class BlockLatencyPredictor:
         # MobileNetV1DualBlock_[ds/nods]
         # MobileNetV2ResBlock_[res/forceres]_[relu/hswish] always without se
         # MobileNetV3ResBlock_[res/forceres]_[relu/swish] always with se
-        # FusedMBConvSEResBlock_[res/forceres]_[relu/hswish] always with se
+        # FusedMBConvSEResBlock_[res/forceres]_[swish] always with se
         # ResNetBlock_[ds/nods]_[relu/hswish]
         # ResNetSEBlock_[ds/nods]_[relu/hswish]
-        # ResNetBugBlock_[ds/nods]
+        # ResNetBugBlock_[ds/nods]        
 
         [simple block]
         # FirstConvBlock_[relu/hswish]

@@ -70,6 +70,15 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
                 [hw // stride, cout]
             ]
         }
+    elif block == "FinalExpandBlock_swish":
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, cout, kernel_size, stride]
+            ],
+            'swish': [
+                [hw // stride, cout]
+            ]
+        }
     elif block == "FinalExpandBlock_relu":
         res = {
             'conv-bn-relu': [
@@ -89,6 +98,15 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
             ]
         }
     elif block == "FeatureMixBlock_relu":
+        res = {
+            'gap': [
+                [hw, cin]
+            ],
+            'conv-bn-relu': [
+                [1, cin, cout, kernel_size, stride]
+            ]
+        }
+    elif block == "FeatureMixBlock_swish":
         res = {
             'gap': [
                 [hw, cin]
@@ -609,6 +627,43 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
         for _ in range(num_dwconv - 1):
             res['dwconv-bn-relu'].append([hw // stride, feature_size, feature_size, 3, 1])
 
+    elif block == "MobileNetV2K3ResBlock_res_relu":
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw, feature_size, cin, 1, 1]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, 3, stride]
+            ],
+            'add': [
+                [hw, cout, cout]
+            ]
+        }
+        num_dwconv = {3:1, 5:2, 7:3}[kernel_size]
+        for _ in range(num_dwconv - 1):
+            res['dwconv-bn-relu'].append([hw // stride, feature_size, feature_size, 3, 1])
+        
+    elif block == "MobileNetV2K3ResBlock_forceres_relu":
+        feature_size = make_divisible(cin * expand_ratio)
+        res = {
+            'conv-bn-relu': [
+                [hw, cin, feature_size, 1, 1],
+                [hw // stride, feature_size, cout, 1, 1],
+                [hw, cin, cout, 1, stride]
+            ],
+            'dwconv-bn-relu': [
+                [hw, feature_size, feature_size, 3, stride]
+            ],
+            'add': [
+                [hw // stride, cout, cout]
+            ]
+        }
+        num_dwconv = {3:1, 5:2, 7:3}[kernel_size]
+        for _ in range(num_dwconv - 1):
+            res['dwconv-bn-relu'].append([hw // stride, feature_size, feature_size, 3, 1])
+
     elif block == "MobileNetV2ResBlock_res_relu":
         '''
         ############ conv-bn-relu 30.729888468749948
@@ -1015,7 +1070,8 @@ def get_block_arch_by_name(block, hw, cin, cout, kernel_size, expand_ratio, stri
                 [hw, cin, cout, 1, stride], 
             ],
         }
-        
+    else:
+        raise ValueError(block)
     res = add_flops_param(res)
     # print(res)
     return res
