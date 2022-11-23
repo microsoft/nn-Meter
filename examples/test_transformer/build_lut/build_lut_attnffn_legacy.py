@@ -15,6 +15,8 @@ layer_norm = True if mark == 'ln' or mark == 'nasvit' else False
 nasvit_arch = True if mark == 'nasvit' else False
 ACT = 'swish' if nasvit_arch else ACT
 main_path = "/data/data0/jiahang/tflite_space/predictor_build/"
+
+lut_mode = sys.argv[2] # lut_model: block_mode or layer_mode
 # print(mark, layer_norm)
 
 
