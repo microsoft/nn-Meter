@@ -143,18 +143,18 @@ class BlockLatencyPredictor:
 
         # first_block
         hw = block_config[0]
-        py += self.predictor[f"firstconv_{hw}_3_{block_config[1][0]}_2_3_{act}"]
-        # print(f"firstconv_{hw}_3_{block_config[1][0]}_2_3_{act}", self.predictor[f"firstconv_{hw}_3_{block_config[1][0]}_2_3_{act}"])
+        key = f"firstconv_{hw}_3_{block_config[1][0]}_2_3_{act}"
+        py += self.predictor[key]
+        if not self.silence: print(key)
         hw = hw // 2
-        stage_cout = 16
+        stage_cout = block_config[1][0]
 
         # layer_choice blocks
         conv_count, trans_count = 0, 0
-        for stage_idx, channel in enumerate(block_config[1]):
+        for stage_idx, channel in enumerate(block_config[1][1:-1]):
             name = "conv" if stage_idx <= 2 else "transformer"
             stage_stride = strides[stage_idx]
             stage_hwin = hw
-            # stage_hwout = hw // stage_stride if hw % stage_stride == 0 else hw // stage_stride + 1
             stage_hwout = hw // stage_stride
             hw = stage_hwout
             stage_cin = stage_cout
@@ -171,9 +171,9 @@ class BlockLatencyPredictor:
                     conv_count += 1
 
                     # predict by lut
-                    py += self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{'se' if se else 'nose'}"]
-                    # print(f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{'se' if se else 'nose'}",
-                    #       self.predictor[f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{'se' if se else 'nose'}"])
+                    key = f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{'se' if se else 'nose'}"
+                    py += self.predictor[key]
+                    if not self.silence: print(key)
 
             elif name == "transformer":
                 for i in range(block_config[2][stage_idx]):
@@ -186,28 +186,43 @@ class BlockLatencyPredictor:
                     v = block_config[9][trans_count] if len(block_config) > 9 else 4
                     se = use_se[stage_idx]
                     trans_count += 1
+                    
+                    if self.mode == "layerwise": # predict by lut
+                        ds_exp_mark = "_6" if i == 0 else ""
+                        key = f"nasvit_{'se' if se else 'nose'}_transformer_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}{ds_exp_mark}_{'ln' if self.layer_norm else 'bn'}"
+                        lpy = self.predictor[key]
+                        if not self.silence: print(key)
 
-                    # predict by attn/ffn lut
-                    tpy = 0
-                    if ds == "ds":
-                        tpy += self.predictor[f"nasvit_{'se' if se else 'nose'}_transds_{layer_hw}_{cin}_{cout}_{s}_6"]
-                        # print(f"nasvit_{'se' if se else 'nose'}_transds_{layer_hw}_{cin}_{cout}_{s}_6",
-                        #       self.predictor[f"nasvit_{'se' if se else 'nose'}_transds_{layer_hw}_{cin}_{cout}_{s}_6"])
-                        layer_hw = stage_hwout
-                    tpy += self.predictor[f'nasvit_transattn_{layer_hw}_{cout}_{act}_{v}_{"ln" if self.layer_norm else "bn"}']
-                    # print(f'nasvit_transattn_{layer_hw}_{cout}_{act}_{v}_{"ln" if self.layer_norm else "bn"}',
-                    #       self.predictor[f'nasvit_transattn_{layer_hw}_{cout}_{act}_{v}_{"ln" if self.layer_norm else "bn"}'])
-                    tpy += self.predictor[f'nasvit_transffn_{layer_hw}_{cout}_{exp}_{act}_{"ln" if self.layer_norm else "bn"}']
-                    # print(f'nasvit_transffn_{layer_hw}_{cout}_{exp}_{act}_{"ln" if self.layer_norm else "bn"}',
-                    #       self.predictor[f'nasvit_transffn_{layer_hw}_{cout}_{exp}_{act}_{"ln" if self.layer_norm else "bn"}'])
+                        py += lpy
 
-                    py += tpy
+                    else: # predict by attn/ffn lut
+                        tpy = 0
+
+                        # downsample
+                        if ds == "ds":
+                            key = f"nasvit_{'se' if se else 'nose'}_transds_{layer_hw}_{cin}_{cout}_{s}_6"
+                            tpy += self.predictor[key]
+                            if not self.silence: print(key)
+                            layer_hw = stage_hwout
+
+                        # attn
+                        key = f'nasvit_transattn_{layer_hw}_{cout}_{act}_{v}_{"ln" if self.layer_norm else "bn"}'
+                        tpy += self.predictor[key]
+                        if not self.silence: print(key)
+
+                        # ffn
+                        key = f'nasvit_transffn_{layer_hw}_{cout}_{exp}_{act}_{"ln" if self.layer_norm else "bn"}'
+                        tpy += self.predictor[key]
+                        if not self.silence: print(key)
+
+                        py += tpy
+
+            layer_hw = stage_hwout
 
         # MBPool block
-        # mbpool_hw = layer_hw // stage_stride if i == 0 else layer_hw
-        py += self.predictor[f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}"]
-        # print(f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}",
-        #       self.predictor[f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}"])
+        key = f"mbpool_{layer_hw}_{block_config[1][-2]}_{block_config[1][-1]}_6_{act}"
+        py += self.predictor[key]
+        if not self.silence: print(key)
 
         assert conv_count == len(block_config[4])
         assert trans_count == len(block_config[5])
