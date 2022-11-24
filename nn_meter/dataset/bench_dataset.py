@@ -4,8 +4,8 @@ import os
 import logging
 import jsonlines
 from glob import glob
-from nn_meter.predictor import latency_metrics, list_latency_predictors, load_latency_predictor
-from nn_meter.utils import download_from_url, get_user_data_folder
+from nn_meter.predictor import list_latency_predictors, load_latency_predictor
+from nn_meter.utils import download_from_url, get_user_data_folder, latency_metrics
 logging = logging.getLogger("nn-Meter")
 
 

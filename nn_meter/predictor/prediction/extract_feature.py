@@ -1,36 +1,15 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 import logging
-import numpy as np
-from sklearn.metrics import mean_squared_error
+from nn_meter.utils import get_conv_flop_params, get_dwconv_flop_params, get_fc_flop_params
 
-
-def get_flop(input_channel, output_channel, k, H, W, stride):
-    paras = output_channel * (k * k * input_channel + 1)
-    flops = 2 * H / stride * W / stride * paras
-    return flops, paras
-
-
-def get_conv_mem(input_channel, output_channel, k, H, W, stride):
-    paras = output_channel * (k * k * input_channel + 1)
-    mem = paras + output_channel * H / stride * W / stride + input_channel * H * W
-    return mem
-
-
-def get_depthwise_flop(input_channel, output_channel, k, H, W, stride):
-    paras = output_channel * (k * k + 1)
-    flops = 2 * H / stride * W / stride * paras
-    return flops, paras
-
-
-def get_flops_params(blocktype, hw, cin, cout, kernelsize, stride):
-    if "dwconv" in blocktype:
-        return get_depthwise_flop(cin, cout, kernelsize, hw, hw, stride)
-    elif "conv" in blocktype:
-        return get_flop(cin, cout, kernelsize, hw, hw, stride)
-    elif "fc" in blocktype:
-        flop = (2 * cin + 1) * cout
-        return flop, flop
+def get_flops_params(kernel_type, hw, cin, cout, kernelsize, stride):
+    if "dwconv" in kernel_type:
+        return get_dwconv_flop_params(hw, cout, kernelsize, stride)
+    elif "conv" in kernel_type:
+        return get_conv_flop_params(hw, cin, cout, kernelsize, stride)
+    elif "fc" in kernel_type:
+        return get_fc_flop_params(cin, cout)
 
 
 def get_predict_features(config):
@@ -120,20 +99,3 @@ def get_predict_features(config):
         mdicts[layer][op] = features
         layer += 1
     return mdicts
-
-
-def read_model_latency(latency_file):
-    """
-    read model latency csv files. It can provide the benchmarked latency, and compare with the predicted latency
-    """
-    f = open(latency_file, "r")
-    dicts = {}
-    while True:
-        line = f.readline()
-        if not line:
-            break
-        content = line.strip().split(",")
-        model = content[1]
-        latency = float(content[2])
-        dicts[model] = latency
-    return dicts

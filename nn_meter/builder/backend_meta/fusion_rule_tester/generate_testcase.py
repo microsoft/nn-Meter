@@ -81,8 +81,11 @@ def generate_testcases():
             else:
                 if "INPUT_SHAPE" in config:
                     input_shape = config["INPUT_SHAPE"]
-                else:
+                elif implement == "tensorflow":
                     input_shape = [config['HW'], config['HW'], config['CIN']]
+                else:
+                    input_shape = [config['CIN'], config['HW'], config['HW']]
+
             bf_cls = type(class_name, (BasicFusion,), {
                 'name': name,
                 'cases': cases,

@@ -4,7 +4,8 @@ import os
 import pandas as pd
 import logging
 from sklearn.model_selection import train_test_split
-from .utils import collect_kernel_data, latency_metrics
+from nn_meter.utils import latency_metrics
+from .utils import collect_kernel_data
 from .predictor_lib import init_predictor
 from .extract_feature import get_feature_parser, get_data_by_profiled_results
 logging = logging.getLogger("nn-Meter")

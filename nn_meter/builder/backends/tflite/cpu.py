@@ -37,11 +37,17 @@ class TFLiteCPULatencyParser(BaseParser):
                 flag = True
             if re.search(end_regex, line):
                 flag = False
-        
+
+        # import pandas as pd
+        # df = pd.DataFrame(columns=('node_type', 'avg', 'name'))
+        # for node in nodes:
+        #     # print({'node_type': node['node_type'], 'avg': node['avg'], 'name': node['name']})
+        #     df.loc[len(df)] = [node['node_type'], node['avg'], node['name']]
+
         return nodes
 
     def _parse_total_latency(self, content):
-        total_latency_regex = r'Timings \(microseconds\): count=[\d.e-]+ first=[\d.e-]+ curr=[\d.e-]+ min=[\d.e-]+ max=[\d.e-]+ avg=([\d.e-]+) std=([\d.e-]+)'
+        total_latency_regex = r'Timings \(microseconds\): count=[\d.e-]+ first=[\d.e-]+ curr=[\d.e-]+ min=[\d.e-]+ max=[\d.e-]+ avg=([\d.\+e-]+) std=([\d.\+e-]+)'
 
         total_latency = Latency()
         match = re.search(total_latency_regex, content, re.MULTILINE)

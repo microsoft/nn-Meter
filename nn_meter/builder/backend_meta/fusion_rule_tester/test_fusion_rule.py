@@ -53,6 +53,6 @@ class FusionRuleTester:
                     latency = {key: str(value) for key, value in rule.latency.items()}
                     result[name]['latency'] = latency
 
-            result[name]['obey'] = obey
+            result[name]['obey'] = bool(obey)
 
         return result

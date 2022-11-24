@@ -49,7 +49,7 @@ As introduced, nn-Meter will perform a pre-processing step to convert the above 
 
 A *model* is consisting of *nodes*. The following is an example of conv *node*  of AlexNet model
 
-<img src="imgs/irgraph.png" alt="drawing" width="400"/>
+<img src="../imgs/irgraph.png" alt="drawing" width="400"/>
 
 For a *node*, we use the identical node name ("conv1.conv/Conv2D") as the node key. A *node* consists of:
 
