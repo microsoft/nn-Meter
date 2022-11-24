@@ -227,25 +227,38 @@ def tf2tflite(saved_model_path: str, output_path: str, is_keras=False, quantizat
     print(f'Successfully convert tflite model to {output_path}.')
 
 
+arch_nasvit_300 = (192,
+    (16, 24, 40, 64, 120, 176, 208),
+    (1, 3, 5, 2, 3, 5, 3),
+    (1, 4, 4, 4, 5, 5, 5, 5, 5),
+    (3, 3, 3, 3, 3, 3, 3, 3, 3),
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+    (8, 8, 15, 15, 15, 22, 22, 22, 22, 22, 26, 26, 26),
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+    (4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4))
 
 def export_nasvit_arch():
     from config import NASVIT_SMALLEST, NASVIT_A1_L, NASVIT_A2_L, NASVIT_A3_L, NASVIT_A4_L, NASVIT_SMALLEST_RAT2
     STAGE = ['C', 'C', 'T', 'T', 'T', 'T']
+    use_se = (False, False, True,       # first three for MBlock stage,
+              False, True, True, True)  # and the last for Trans downsample layer
     
     # for a, name in zip([NASVIT_SMALLEST, NASVIT_A1_L, NASVIT_A2_L, NASVIT_A3_L, NASVIT_A4_L], ['a0', 'a1', 'a2', 'a3', 'a4']):
-    for a, name in zip([NASVIT_SMALLEST_RAT2], ['a0_rat2']):
-        res, channels, depths, conv_ratio, kr_size, mlp_ratio, num_heads, window_size, qk_scale, v_scale, use_se = a
+    # for a, name in zip([NASVIT_SMALLEST_RAT2], ['a0_rat2']):
+    for a, name in zip([arch_nasvit_300], ["arch_nasvit_300"]):
+        res, channels, depths, conv_ratio, kr_size, mlp_ratio, num_heads, window_size, qk_scale, v_scale = a
         inputs = tf.keras.layers.Input((res, res, 3))
         ds = [True, True, True, True, False, True]
         model = build_model(inputs, channels, depths, conv_ratio, kr_size, mlp_ratio, num_heads, window_size, qk_scale, v_scale, nasvit_arch=True, ds=ds, se=use_se, stage=STAGE, num_mlp=2, reproduce_nasvit=True)
         # model = build_model(inputs, channels, depths, conv_ratio, kr_size, mlp_ratio, num_heads, window_size, qk_scale, v_scale, nasvit_arch=True, ds=ds, se=use_se, stage=STAGE, num_mlp=1, reproduce_nasvit=True)
         model(tf.random.normal((1, res, res, 3)))
-        tf_path = f'/data/data0/jiahang/nn-Meter/examples/test_transformer/implementation/nasvit/models/{name}_test2'
+        tf_path = f'/data/data0/jiahang/nn-Meter/examples/test_transformer/implementation/nasvit/{name}_test2'
         model.save(tf_path)
         
         norm_mark = "ln" if LAYER_NORM else "bn"
         talking_head_mark = "_woth" if not TALKING_HEAD else ""
-        tflite_fp32_path = f'/data/data0/jiahang/nn-Meter/examples/test_transformer/implementation/nasvit/models/{name}_jiahang_{norm_mark}{talking_head_mark}.tflite'
+        tflite_fp32_path = f'/data/data0/jiahang/nn-Meter/examples/test_transformer/implementation/nasvit/{name}_jiahang_{norm_mark}{talking_head_mark}.tflite'
         tf2tflite(tf_path, tflite_fp32_path)
         
 
