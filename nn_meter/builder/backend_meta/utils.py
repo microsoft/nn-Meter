@@ -117,7 +117,8 @@ def dump_profiled_results(results, detail = False, metrics = ["latency"]):
 def read_profiled_results(results):
     results_copy = copy.deepcopy(results)
     for item in results_copy.values():
-        for model in item.values():
-            if 'latency' in model:
-                model['latency'] = Latency(model['latency'])
+        if isinstance(item, dict):
+            for model in item.values():
+                if 'latency' in model:
+                    model['latency'] = Latency(model['latency'])
     return results_copy
