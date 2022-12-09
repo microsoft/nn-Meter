@@ -1,22 +1,30 @@
 import sys
 import os, json
+import argparse
 import tensorflow as tf
 import tensorflow.keras as keras
-# from search_space.space_utils_large import configs as search_space_config
-# from search_space.space_utils_large import ACT as ACT
-from search_space.space_utils_nasvit import configs as search_space_config
-from search_space.space_utils_nasvit import ACT as ACT
+from search_space.space_utils_large_v2 import configs as search_space_config
+from search_space.space_utils_large_v2 import ACT as ACT
+# from search_space.space_utils_nasvit import configs as search_space_config
+# from search_space.space_utils_nasvit import ACT as ACT
 from build_lut_modules import (conv_layer, first_conv_layer, mbpool_layer, 
                                transformer_ds, transformer_attn, transformer_ffn, transformer_layer,
                                nasvit_transformer_ds, nasvit_transformer_attn, nasvit_transformer_ffn, nasvit_transformer_layer)
 
-mark = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--mark', default='ln', type=str)
+parser.add_argument('--lut-mode', default='layer_mode', type=str)
+# parser.add_argument('--build-model', type=str, nargs='+')
+parser.add_argument('--lut-refer', default=None, type=str)
+args = parser.parse_args()
+
+mark = args.mark
 layer_norm = True if mark == 'ln' or mark == 'nasvit' else False
 nasvit_arch = True if mark == 'nasvit' else False
 ACT = 'swish' if nasvit_arch else ACT
 main_path = "/data/data0/jiahang/tflite_space/predictor_build/"
 
-lut_mode = sys.argv[2] # lut_model: block_mode or layer_mode
+lut_mode = args.lut_mode # lut_model: block_mode or layer_mode
 # print(mark, layer_norm)
 
 
@@ -28,6 +36,8 @@ def build_models(key, name, hw, cin, cout, exp, s, act, ks = None, v = None, ds 
     if os.path.isfile(os.path.join(main_path, "trans_blocks", f"{key}.tflite")):
         return
     if os.path.isfile(os.path.join(main_path, "nasvit_layer", f"{key}.tflite")):
+        return
+    if os.path.isfile(os.path.join(main_path, "trans_layer", f"{key}.tflite")):
         return
 
     if name == "firstconv":
@@ -77,7 +87,7 @@ def build_models(key, name, hw, cin, cout, exp, s, act, ks = None, v = None, ds 
         tf.lite.OpsSet.SELECT_TF_OPS # enable TensorFlow ops.
     ]
     tflite_model = converter.convert()
-    dir_name = "nasvit_layer" if nasvit_arch else "trans_layer"
+    dir_name = "nasvit_layer" if nasvit_arch else "trans_block_new"
     converted_model = os.path.join(main_path, dir_name, f"{key}.tflite")
     open(converted_model, 'wb').write(tflite_model)
 
@@ -320,18 +330,18 @@ def main_for_build_lut():
         for i in range(9):
             if configs[i]["block_type"] == -1:
                 lut_result = add_lut_key_firstconv(lut_result, configs[i],
-                                            lut_result_ref=None, act=ACT)
+                                            lut_result_ref=args.lut_refer, act=ACT)
             elif configs[i]["block_type"] == 0:
                 lut_result = add_lut_key_conv(lut_result, configs[i],
-                                            lut_result_ref=None, act=ACT)
+                                            lut_result_ref=args.lut_refer, act=ACT)
             elif configs[i]["block_type"] == 1:
                 stage_ds_se = False if i == 4 and nasvit_arch else True
-                configs[i]['downsample_expansion_ratio'] = [6]
+                configs[i]['downsample_expansion_ratio'] = [4, 6]
                 lut_result = add_lut_key_transformer(lut_result, configs[i],
-                                                    lut_result_ref=None, stage_ds_se=stage_ds_se)
+                                                    lut_result_ref=args.lut_refer, stage_ds_se=stage_ds_se)
             elif configs[i]["block_type"] == 2:
                 lut_result = add_lut_key_mbpool(lut_result, configs[i],
-                                                    lut_result_ref=None, act=ACT)
+                                                    lut_result_ref=args.lut_refer, act=ACT)
 
     print(len(lut_result))
 
@@ -351,7 +361,7 @@ def main_for_build_lut():
         }
         # res[key] = 1
 
-    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_v5.json")
+    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_v6.json")
     with open(output_path, 'w') as fp:
         json.dump({"lut": res}, fp, indent=4)
         # json.dump(res, fp, indent=4)
@@ -416,8 +426,8 @@ if __name__ == '__main__':
     # main_for_build_model()
     
 
-# nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py nasvit layer_mode > nasvit_layer_lut_log.txt 2>&1 &
-# 
+# nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py --mark ln --lut-mode block_mode --lut-refer /data/data0/jiahang/nn-Meter/nn_meter/predictor/transformer_predictor/lut/pixel6_lut_ln_v2.json > our_space_v2_lut_log.txt 2>&1 &
+# 5233
 # nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py nasvit block_mode > nasvit_block_lut_log.txt 2>&1 &
 # 
 
