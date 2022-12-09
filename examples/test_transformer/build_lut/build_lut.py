@@ -177,9 +177,9 @@ def add_lut_key_transformer(lut_result, config, hw_lis = None, lut_result_ref = 
                             if new_key not in lut_result:
                                 if lut_result_ref and new_key in lut_result_ref:
                                     print(new_key)
-                                    continue
+                                    pass
                                 elif cin != cout:
-                                    continue
+                                    pass
                                 else:
                                     build_models(new_key, name, hw, cin, cout, exp, 1, act, v=v, ds=ds)
                                     lut_result[new_key] = [[hw * hw, cin]]
@@ -192,7 +192,7 @@ def add_lut_key_transformer(lut_result, config, hw_lis = None, lut_result_ref = 
                             if new_key not in lut_result:
                                 if lut_result_ref and new_key in lut_result_ref:
                                     print(new_key)
-                                    continue
+                                    pass
                                 else:
                                     build_models(new_key, "transattn", hw, cin, cout, exp, s, act, v=v, ds=ds, ds_exp=ds_exp)
                                     lut_result[new_key] = [[hw, hw, cin]]
@@ -203,7 +203,7 @@ def add_lut_key_transformer(lut_result, config, hw_lis = None, lut_result_ref = 
                             if new_key not in lut_result:
                                 if lut_result_ref and new_key in lut_result_ref:
                                     print(new_key)
-                                    continue
+                                    pass
                                 else:
                                     build_models(new_key, "transffn", hw, cin, cout, exp, s, act, v=v, ds=ds, ds_exp=ds_exp)
                                     lut_result[new_key] = [[hw, hw, cin]]
@@ -424,7 +424,7 @@ def main_for_build_model():
 if __name__ == '__main__':
     main_for_build_lut()
     # main_for_build_model()
-    
+
 
 # nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py --mark ln --lut-mode block_mode --lut-refer /data/data0/jiahang/nn-Meter/nn_meter/predictor/transformer_predictor/lut/pixel6_lut_ln_v2.json > our_space_v2_lut_log.txt 2>&1 &
 # 5233
