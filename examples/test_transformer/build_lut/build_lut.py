@@ -137,7 +137,7 @@ def add_lut_key_transformer(lut_result, config, hw_lis = None, lut_result_ref = 
                                         if new_key not in lut_result:
                                             if lut_result_ref and new_key in lut_result_ref:
                                                 print(new_key)
-                                                continue
+                                                pass
                                             else:
                                                 build_models(new_key, "transds", hw, cin, cout, exp, s, act, use_se=stage_ds_se, v=v, ds=ds, ds_exp=ds_exp)
                                                 lut_result[new_key] = [[hw, hw, cin]]
@@ -148,7 +148,7 @@ def add_lut_key_transformer(lut_result, config, hw_lis = None, lut_result_ref = 
                                         if new_key not in lut_result:
                                             if lut_result_ref and new_key in lut_result_ref:
                                                 print(new_key)
-                                                continue
+                                                pass
                                             else:
                                                 build_models(new_key, "transattn", hw, cout, cout, exp, s, act, v=v, ds=ds, ds_exp=ds_exp)
                                                 lut_result[new_key] = [[hw, hw, cin]]
@@ -159,7 +159,7 @@ def add_lut_key_transformer(lut_result, config, hw_lis = None, lut_result_ref = 
                                         if new_key not in lut_result:
                                             if lut_result_ref and new_key in lut_result_ref:
                                                 print(new_key)
-                                                continue
+                                                pass
                                             else:
                                                 build_models(new_key, "transffn", hw, cout, cout, exp, s, act, v=v, ds=ds, ds_exp=ds_exp)
                                                 lut_result[new_key] = [[hw, hw, cin]]
@@ -361,7 +361,7 @@ def main_for_build_lut():
         }
         # res[key] = 1
 
-    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_v6.json")
+    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_v7.json")
     with open(output_path, 'w') as fp:
         json.dump({"lut": res}, fp, indent=4)
         # json.dump(res, fp, indent=4)
