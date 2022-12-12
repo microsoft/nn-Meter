@@ -361,7 +361,7 @@ def main_for_build_lut():
         }
         # res[key] = 1
 
-    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_v7.json")
+    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_v8.json")
     with open(output_path, 'w') as fp:
         json.dump({"lut": res}, fp, indent=4)
         # json.dump(res, fp, indent=4)
@@ -390,22 +390,33 @@ def build_model_by_config(inputs, channels, depths, conv_ratio, kr_size, mlp_rat
     return model
 
 
-def main_for_build_model():
+def build_nasvit_model_by_config(inputs, channels, depths, conv_ratio, kr_size, mlp_ratio,
+                          num_heads, window_size, qk_scale, v_scale, downsampling,
+                          nasvit_arch=False, se=None, stage=['C', 'C', 'C', 'T', 'T', 'T', 'T'],
+                          num_mlp=1, reproduce_nasvit=False):
+    num_C = stage.count('C')
+    
+    nn = first_conv_layer(inputs, 16, act = ACT)
+
+    for stage in range(len(channels)):
+        for layer in range(depths[stage]):
+            if stage < num_C:
+                kr_exp_idx = sum([depths[i] for i in range(stage)]) + layer
+                nn = conv_layer(nn, channels[stage], conv_ratio[kr_exp_idx], kr_size[kr_exp_idx], 2 if layer == 0 and downsampling[stage] else 1, se[stage], act = ACT)
+            
+            if stage >= num_C:
+                tranformer_idx = sum([depths[i] for i in range(num_C, stage)]) + layer
+                nn = transformer_layer(nn, channels[stage], mlp_ratio[tranformer_idx], 6, v_scale[tranformer_idx], 2 if layer == 0 and downsampling[stage] else 1, layer, f"trans{stage}{layer}", layer_norm = layer_norm)
+
+    nn = mbpool_layer(nn, 1984, 6, act = ACT)
+    model = tf.keras.models.Model(inputs, nn)
+    return model
+
+
+def main_for_build_model(sample, mode = "ours"):
     downsampling = (False, True, True, True, True, False, True) # didn't contain the first conv3x3
     use_se = (False, False, True)
 
-    sample = [
-        160, 
-        (24, 24, 40, 48, 64, 160, 320), 
-        (1, 2, 3, 1, 6, 3, 1), 
-        (1, 2, 2, 4, 4, 4), 
-        (3, 3, 3, 3, 3, 3), 
-        (4, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1), 
-        (3, 4, 4, 4, 4, 4, 4, 10, 10, 10, 20), 
-        (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), 
-        (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), 
-        (2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 4)
-    ]
     res, channels, depths, conv_ratio, kr_size, mlp_ratio, num_heads, window_size, qk_scale, v_scale = sample
     inputs = tf.keras.layers.Input((res, res, 3))
     model = build_model_by_config(inputs, channels, depths, conv_ratio, kr_size, mlp_ratio,
@@ -427,7 +438,7 @@ if __name__ == '__main__':
 
 
 # nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py --mark ln --lut-mode block_mode --lut-refer /data/data0/jiahang/nn-Meter/nn_meter/predictor/transformer_predictor/lut/pixel6_lut_ln_v2.json > our_space_v2_lut_log.txt 2>&1 &
-# 5233
+# 46498
 # nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py nasvit block_mode > nasvit_block_lut_log.txt 2>&1 &
 # 
 
