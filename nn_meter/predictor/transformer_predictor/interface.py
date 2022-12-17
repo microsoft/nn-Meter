@@ -12,7 +12,7 @@ class BlockLatencyPredictor:
         self.mode = mode
         self.silence = silence
 
-    def get_latency(self, block_config):
+    def get_latency(self, block_config, strides = (1, 2, 2, 2, 1, 2, 2)):
         '''
         arch = (
             224, # 0 input res
@@ -29,7 +29,7 @@ class BlockLatencyPredictor:
         '''
         py = 0
         act = "hard_swish"
-        strides = (1, 2, 2, 2, 2, 1, 2) # didn't contain the first conv3x3
+        # strides = (1, 2, 2, 2, 2, 1, 2) # didn't contain the first conv3x3
         use_se = (False, False, True)
 
         # first_block
