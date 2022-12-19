@@ -28,6 +28,9 @@ class ModelGraph:
                 self.graph[node]["outbounds"].append(name)
 
     def refresh(self):
+        if len(self.graph) <= 1:
+            return
+
         last_remove_nodes_cnt = -1
         while True:
             for name in self.graph.keys():
