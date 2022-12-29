@@ -81,7 +81,7 @@ configs = [
         'name': 'stage_3', 
         'block_type': 1,  
         'cin': channel_list(start=16, end=48, step=8),
-        'channel': channel_list(start=64, end=96, step=8) + extend_width[0],  
+        'channel': channel_list(start=48, end=96, step=8) + extend_width[0],  
         'depth': [1, 2, 3, 4, 5],  
         'expansion_ratio': [2, 3, 4, 5],
         'downsample_expansion_ratio': [4, 6],
@@ -93,15 +93,15 @@ configs = [
     {
         'name': 'stage_4', 
         'block_type': 1,  
-        'cin': channel_list(start=64, end=96, step=8) + extend_width[0],
+        'cin': channel_list(start=48, end=96, step=8) + extend_width[0],
         'channel': channel_list(start=80, end=160, step=8) + extend_width[1],
         'depth': [1, 2, 3, 4, 5, 6],  
         'expansion_ratio': [2, 3, 4, 5],  
         'downsample_expansion_ratio': [4, 6],
         'v_scale': [2, 3, 4],
-        'stride': 2,          
+        'stride': 1,          
         'hw': [8, 10, 11, 12, 14, 16],
-        'hw_out': [4, 5, 6, 7, 8]
+        'hw_out': [8, 10, 11, 12, 14, 16]
     },
     {
         'name': 'stage_5',
@@ -112,8 +112,8 @@ configs = [
         'expansion_ratio': [2, 3, 4, 5],
         'downsample_expansion_ratio': [4, 6],
         'v_scale': [2, 3, 4],
-        'stride': 1,
-        'hw': [4, 5, 6, 7, 8],
+        'stride': 2,
+        'hw': [8, 10, 11, 12, 14, 16],
         'hw_out': [4, 5, 6, 7, 8]
     },
     {

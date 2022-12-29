@@ -13,6 +13,7 @@ from build_lut_modules import (conv_layer, first_conv_layer, mbpool_layer,
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--mark', default='ln', type=str)
+parser.add_argument('--output-mark', default='v11', type=str)
 parser.add_argument('--lut-mode', default='layer_mode', type=str)
 # parser.add_argument('--build-model', type=str, nargs='+')
 parser.add_argument('--lut-refer', default=None, type=str)
@@ -29,7 +30,7 @@ lut_mode = args.lut_mode # lut_model: block_mode or layer_mode
 
 
 def build_models(key, name, hw, cin, cout, exp, s, act, ks = None, v = None, ds = None, use_se = None, ds_exp = None):
-    # return
+    return
     
     if os.path.isfile(os.path.join(main_path, "common_layer", f"{key}.tflite")):
         return
@@ -361,7 +362,7 @@ def main_for_build_lut():
         }
         # res[key] = 1
 
-    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_v8.json")
+    output_path = os.path.join(main_path, "results_pixel6", f"{'nasvit_' if nasvit_arch else ''}lut_{'ln' if layer_norm else 'bn'}_{lut_mode}_{args.output_mark}.json")
     with open(output_path, 'w') as fp:
         json.dump({"lut": res}, fp, indent=4)
         # json.dump(res, fp, indent=4)
@@ -437,10 +438,7 @@ if __name__ == '__main__':
     # main_for_build_model()
 
 
-# nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py --mark ln --lut-mode block_mode --lut-refer /data/data0/jiahang/nn-Meter/nn_meter/predictor/transformer_predictor/lut/pixel6_lut_ln_v2.json > our_space_v2_lut_log.txt 2>&1 &
-# 46498
-# nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py nasvit block_mode > nasvit_block_lut_log.txt 2>&1 &
-# 
+# nohup python /data/data0/jiahang/nn-Meter/examples/test_transformer/build_lut/build_lut.py --mark ln --lut-mode block_mode --lut-refer /data/data0/jiahang/nn-Meter/nn_meter/predictor/transformer_predictor/lut/pixel6_lut_ln_v2.json --output-mark v11 > our_space_v2_lut_log.txt 2>&1 &
 
 
 # scp -r /data/data0/jiahang/tflite_space/predictor_build/nasvit_layer jiahang@10.172.141.68:/data1/jiahang/working/pixel6_supernet_workspace/predictor_build/models/
