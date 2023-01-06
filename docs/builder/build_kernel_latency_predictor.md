@@ -97,8 +97,6 @@ The generated models are saved in `<workspace-path>/predictor_build/kernels`, an
 
 Note: sometimes the number of sampling kernel data is smaller than the value of `sample_num`. It is natural since nn-Meter will remove duplicates sample when generating kernel data.
 
-<!-- Note: sometimes the number of sampling kernel data is smaller than the value of `sample_num`. It is natural since nn-Meter will remove duplicates sample when generating kernel data. -->
-
 The method `sample_and_profile_kernel_data` is composed by three main steps, `generate_config_sample`, `convert_models`, and `profile_models`. Here is an example as a decomposition of `sample_and_profile_kernel_data`. Users could choose the decomposed interfaces if needed.
 
 ``` python
