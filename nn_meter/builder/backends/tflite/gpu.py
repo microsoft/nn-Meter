@@ -19,9 +19,23 @@ class TFLiteGPULatencyParser(BaseParser):
 
     def parse(self, content):
         self.comp_avg, self.comp_std = self._parse_comp_time(content)
+        if self.comp_avg == 0:
+            self.comp_avg, self.comp_std = self._parse_total_latency(content)
         self.comp_kernel_latency = Latency(self.comp_avg, self.comp_std)
-
+        # import pdb; pdb.set_trace()
         return self
+
+    def _parse_total_latency(self, content):
+        total_latency_regex = r'count=[\d.e-]+ first=[\d.e-]+ curr=[\d.e-]+ min=[\d.e-]+ max=[\d.e-]+ avg=([\d.\+e-]+) std=([\d.\+e-]+)'
+        total_avg, total_std = 0, 0
+
+        for line in content.splitlines():
+            match = re.search(total_latency_regex, line)
+            if match:
+                total_avg = float(match[1])
+                total_std = float(match[2])
+
+        return total_avg / 1000, total_std / 1000
 
     @staticmethod
     def resolve_name(name):

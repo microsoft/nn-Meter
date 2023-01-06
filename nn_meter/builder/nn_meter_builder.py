@@ -5,6 +5,7 @@ import json
 import time
 import signal
 import logging
+import subprocess
 from . import builder_config
 from .utils import save_profiled_results, merge_info, handle_timeout
 from nn_meter.builder.backends import connect_backend
@@ -70,7 +71,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
 
 
 def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = "profiled_results.json",
-                   have_converted = False, log_frequency = 50, broken_point_mode = False, time_threshold = 300, **kwargs):
+                   have_converted = False, log_frequency = 50, broken_point_mode = False, time_threshold = 300, is_pixel6 = None, **kwargs):
     """ run models with given backend and return latency of testcase models
 
     @params:
@@ -159,8 +160,20 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
 
             # save information to json file for per 50 models
             if count > 0 and count % log_frequency == 0:
+                freq = None
                 save_profiled_results(models, info_save_path, detail, metrics)
                 logging.keyinfo(f"{count} models complete. Still profiling... Save the intermediate results to {info_save_path} ")
+                if is_pixel6 != None:
+                    freq = subprocess.check_output(
+                        ["adb", "-s", "1B261FDF6009KS", "shell", "cat", "/sys/devices/system/cpu/cpu6/cpufreq/scaling_cur_freq"])
+                    # import pdb; pdb.set_trace()
+                    loop = 0
+                    while freq != is_pixel6 and loop < 100:
+                        time.sleep(2)
+                        freq = subprocess.check_output(
+                            ["adb", "-s", "1B261FDF6009KS", "shell", "cat", "/sys/devices/system/cpu/cpu6/cpufreq/scaling_cur_freq"])
+                        loop += 1
+                        print(f"[freq: {freq}] loop {loop}")
 
     # save information to json file
     save_profiled_results(models, info_save_path, detail, metrics)    

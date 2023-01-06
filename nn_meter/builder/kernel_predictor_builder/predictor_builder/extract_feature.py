@@ -166,7 +166,7 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
     paths, features, labs = [], [], []
     for id in labs_dict.keys():
         try:
-            path = cfgs_dict[id]["model"]
+            path = cfgs_dict[id]["converted_model"] if "converted_model" in cfgs_dict[id] else cfgs_dict[id]["model"]
             configs = cfgs_dict[id]["config"]
             feature = feature_parser.get_feature_by_config(configs)
             if predict_label == "latency":
