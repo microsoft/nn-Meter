@@ -3,7 +3,7 @@ resnet18, torch, cortexA76cpu_tflite21, 1.0, 216.1971
 alexnet, torch, cortexA76cpu_tflite21, 1.0, 96.5713
 vgg16, torch, cortexA76cpu_tflite21, 1.0, 1668.5085
 squeezenet, torch, cortexA76cpu_tflite21, 1.0, 98.3766
-densenet161, torch, cortexA76cpu_tflite21, 1.0, 917.2059
+densenet161, torch, cortexA76cpu_tflite21, 1.0, 917.0045
 inception_v3, torch, cortexA76cpu_tflite21, 1.0, 586.2565
 googlenet, torch, cortexA76cpu_tflite21, 1.0, 167.5816
 shufflenet_v2, torch, cortexA76cpu_tflite21, 1.0, 21.3181
@@ -15,7 +15,7 @@ resnet18, torch, adreno640gpu_tflite21, 1.0, 39.3235
 alexnet, torch, adreno640gpu_tflite21, 1.0, 13.1267
 vgg16, torch, adreno640gpu_tflite21, 1.0, 219.2648
 squeezenet, torch, adreno640gpu_tflite21, 1.0, 18.6742
-densenet161, torch, adreno640gpu_tflite21, 1.0, 186.5604
+densenet161, torch, adreno640gpu_tflite21, 1.0, 186.4237
 inception_v3, torch, adreno640gpu_tflite21, 1.0, 127.9842
 googlenet, torch, adreno640gpu_tflite21, 1.0, 32.7581
 shufflenet_v2, torch, adreno640gpu_tflite21, 1.0, 5.4239
@@ -27,7 +27,7 @@ resnet18, torch, adreno630gpu_tflite21, 1.0, 49.4287
 alexnet, torch, adreno630gpu_tflite21, 1.0, 16.8673
 vgg16, torch, adreno630gpu_tflite21, 1.0, 286.5998
 squeezenet, torch, adreno630gpu_tflite21, 1.0, 21.095
-densenet161, torch, adreno630gpu_tflite21, 1.0, 193.0796
+densenet161, torch, adreno630gpu_tflite21, 1.0, 192.9225
 inception_v3, torch, adreno630gpu_tflite21, 1.0, 161.3187
 googlenet, torch, adreno630gpu_tflite21, 1.0, 37.9612
 shufflenet_v2, torch, adreno630gpu_tflite21, 1.0, 5.5792

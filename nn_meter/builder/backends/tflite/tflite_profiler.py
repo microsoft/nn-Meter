@@ -50,7 +50,6 @@ class TFLiteProfiler(BaseProfiler):
             kernel_cmd = f'--kernel_path={self._dst_kernel_path}' if self._dst_kernel_path else ''
             close_xnnpack_cmd = f'--use_xnnpack=false' if close_xnnpack else ''
             res = device.shell(f' {taskset_cmd} {self._benchmark_model_path} {kernel_cmd} {close_xnnpack_cmd}' \
-                               f' {close_xnnpack_cmd}' \
                                f' --num_threads={self._num_threads}' \
                                f' --num_runs={self._num_runs}' \
                                f' --warmup_runs={self._warm_ups}' \

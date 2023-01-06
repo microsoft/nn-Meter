@@ -18,27 +18,8 @@ class TFLiteGPULatencyParser(BaseParser):
         self.after_fused_graph = ''
 
     def parse(self, content):
-        result = self._parse_time(content)
-        kernel_operation_map = self._parse_kernel_name(content)
-        work_size = self._parse_work_size(content)
-        self.realtime, self.block_name = self._parse_block(content)
-        self.kernel_sum = sum(value[0] for key, value in result.items())
-        self.kernels = [{}] * len(result)
-        self.before_fused_graph, self.after_fused_graph = self._parse_graph(content)
         self.comp_avg, self.comp_std = self._parse_comp_time(content)
-        self.nodes = self._parse_node_cpu_time(content)
-        self.errors = self._parse_error(content)
-        for key, value in result.items():
-            self.kernels[key] = {
-                'avg': value[0],
-                'std': value[1],
-                'work_size': work_size[key],
-                'name': kernel_operation_map[key],
-            }
-
-        self.comp_kernel_latency = sum((Latency(kernel['avg'], kernel['std']) for kernel in self.kernels if kernel['name'] != 'to/from tensor'), Latency())
-
-        self.raw_content = content
+        self.comp_kernel_latency = Latency(self.comp_avg, self.comp_std)
 
         return self
 
@@ -134,7 +115,7 @@ class TFLiteGPULatencyParser(BaseParser):
         return before_fused_graph, after_fused_graph
 
     def _parse_comp_time(self, content):
-        comp_time_regex = r'comp_avg_ms=([\d.e-]+) comp_std_ms=([\d.e-]+)'
+        comp_time_regex = r'comp_avg_ms=([\d.\+e-]+) comp_std_ms=([\d.\+e-]+)'
         comp_avg, comp_std = 0, 0
 
         for line in content.splitlines():
