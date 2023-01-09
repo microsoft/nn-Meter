@@ -10,7 +10,7 @@ Next, we introduce our hardware-aware NAS framework[[1]](https://openaccess.thec
 
 ## Hardware-aware Neural Architecture Search
 
-<img src="imgs/hw-nas.png" alt="drawing" width="800"/>
+<img src="../imgs/hw-nas.png" alt="drawing" width="800"/>
 
 **Hardware-aware Search Space Generation.** As formulated in many works, the search space is one of the three key aspects of a NAS process (the other two are the search strategy and the evaluation methodology) and matters a lot to the final results.
 
