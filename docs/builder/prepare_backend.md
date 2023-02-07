@@ -7,7 +7,7 @@ Users could list all the supported backends by running
 nn-meter --list-backends
 ```
 
-Besides of the current backends, users can implement a customized backend via nn-Meter to build latency predictors for your own devices. We  allow users to install the customized backend as a builtin algorithm, so that users can easily use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](./build_customized_backend.md). 
+Besides of the current backends, users can implement a customized backend via nn-Meter to build latency predictors for your own devices. We  allow users to install the customized backend as a builtin algorithm, so that users can easily use the backend in the same way as nn-Meter builtin backends. To use the customized backend, users can follow the [customize backend guidance](#build-customized-backend).
 
 Next, we will introduce how to build the customized backend. The process is to setup the device and get connection to the backend.
 
