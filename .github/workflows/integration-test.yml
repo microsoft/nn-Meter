@@ -32,7 +32,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install tensorflow==1.15.0
+        pip install tensorflow==2.6.0
         pip install onnx==1.9.0
         pip install torch==1.9.0
         pip install torchvision==0.10.0
