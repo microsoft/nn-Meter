@@ -16,7 +16,7 @@ class OnnxConverter:
         self.graph = inferred_model.graph
 
         self.tensors = {}
-        for tensor in chain(self.graph.input, self.graph.value_info, self.graph.output):
+        for tensor in chain(self.graph.input, self.graph.value_info, self.graph.initializer, self.graph.output):
             self.tensors[tensor.name] = {
                 "shape": get_tensor_shape(tensor),
                 "inputs": [],

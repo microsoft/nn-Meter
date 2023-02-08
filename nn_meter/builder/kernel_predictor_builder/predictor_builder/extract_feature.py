@@ -180,6 +180,10 @@ def get_data_by_profiled_results(kernel_type, feature_parser, cfgs_path, labs_pa
         except:
             pass
 
+    if len(features) == 0:
+        raise ValueError(f"Didn't find any data of {kernel_type} for predictor training. There maybe some error about model profiling. Please check the profiling error in " \
+            "`<workspace>/predictor_build/results/profile_error.log`")
+
     # save features and latency information to `save_path`
     if save_path:
        import pandas as pd
