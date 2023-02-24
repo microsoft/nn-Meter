@@ -6,7 +6,7 @@ class BlockLatencyPredictor:
     def __init__(self, predictor_name = "pixel6_lut", layer_norm = True, mode = "layerwise", silence = True):
         self.predictor_name = predictor_name
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        with open(os.path.join(base_dir, "lut", f"{predictor_name}_ln_v2.json"), 'r') as fp:
+        with open(os.path.join(base_dir, "lut", f"{predictor_name}_ln_v3.json"), 'r') as fp:
             self.predictor = json.load(fp)
         self.layer_norm = layer_norm
         self.mode = mode
@@ -36,7 +36,7 @@ class BlockLatencyPredictor:
         hw = block_config[0]
         key = f"firstconv_{hw}_3_{block_config[1][0]}_2_3"
         py += self.predictor[key]
-        if not self.silence: print(key)
+        if not self.silence: print(key, self.predictor[key])
         hw = hw // 2
         stage_cout = 16
 
@@ -64,7 +64,7 @@ class BlockLatencyPredictor:
                     # predict by lut
                     key = f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{ks}_{'se' if se else 'nose'}"
                     py += self.predictor[key]
-                    if not self.silence: print(key)
+                    if not self.silence: print(key, self.predictor[key])
 
             elif name == "transformer":
                 for i in range(block_config[2][stage_idx]):
@@ -81,7 +81,7 @@ class BlockLatencyPredictor:
                         ds_exp_mark = "_6" if i == 0 else ""
                         key = f"{name}_{layer_hw}_{cin}_{cout}_{exp}_{s}_{act}_{v}_{ds}{ds_exp_mark}_{'ln' if self.layer_norm else 'bn'}"
                         lpy = self.predictor[key]
-                        if not self.silence: print(key)
+                        if not self.silence: print(key, self.predictor[key])
 
                         py += lpy
 
@@ -92,18 +92,18 @@ class BlockLatencyPredictor:
                         if ds == "ds":
                             key = f"transds_{layer_hw}_{cin}_{cout}_{s}_6"
                             tpy += self.predictor[key]
-                            if not self.silence: print(key)
+                            if not self.silence: print(key, self.predictor[key])
                             layer_hw = stage_hwout
 
                         # attn
                         key = f'transattn_{layer_hw}_{cout}_{act}_{v}_{"ln" if self.layer_norm else "bn"}'
                         tpy += self.predictor[key]
-                        if not self.silence: print(key)
+                        if not self.silence: print(key, self.predictor[key])
 
                         # ffn
                         key = f'transffn_{layer_hw}_{cout}_{exp}_{act}_{"ln" if self.layer_norm else "bn"}'
                         tpy += self.predictor[key]
-                        if not self.silence: print(key)
+                        if not self.silence: print(key, self.predictor[key])
 
                         py += tpy
 
@@ -112,7 +112,7 @@ class BlockLatencyPredictor:
         # MBPool block
         key = f"mbpool_{layer_hw}_{block_config[1][-1]}_1984_6_{act}"
         py += self.predictor[key]
-        if not self.silence: print(key)
+        if not self.silence: print(key, self.predictor[key])
 
         assert conv_count == len(block_config[4])
         assert trans_count == len(block_config[5])
