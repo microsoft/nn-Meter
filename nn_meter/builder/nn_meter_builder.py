@@ -12,7 +12,7 @@ from nn_meter.builder.backends import connect_backend
 logging = logging.getLogger("nn-Meter")
 
 
-def convert_models(backend, models, mode = 'predbuild', broken_point_mode = False):
+def convert_models(backend, models, mode = 'predbuild', broken_point_mode = False, model_save_path = None):
     """ convert the model to the needed format by backend, in order to increase efficiency when profiling on device.
 
     @params:
@@ -25,6 +25,8 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
 
     broken_point_mode (boolean): broken_point_mode will skip all models have attributes "converted_model"
 
+    model_save_path (str or None): path to save converted models, if not set, the converted model will be placed in
+        the same directory as the original model.
     """
     if isinstance(models, str):
         save_name = os.path.basename(models)
@@ -34,8 +36,6 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
         save_name = "converted_results.json"
 
     workspace_path = builder_config.get('WORKSPACE', mode)
-    model_save_path = os.path.join(workspace_path, 'testcases' if mode == 'ruletest' else 'kernels')
-    os.makedirs(model_save_path, exist_ok=True)
     res_save_path = os.path.join(workspace_path, "results")
     os.makedirs(res_save_path, exist_ok=True)
 
@@ -49,7 +49,7 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
                 continue
             try:
                 model_path = model['model']
-                converted_model = backend.convert_model(model_path, model_save_path, input_shape=model['shapes'])
+                converted_model = backend.convert_model(model_path, model_save_path or os.path.dirname(model_path), input_shape=model['shapes'])
                 model['converted_model'] = converted_model
                 count += 1
             except Exception as e:
@@ -70,8 +70,8 @@ def convert_models(backend, models, mode = 'predbuild', broken_point_mode = Fals
     return models
 
 
-def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = "profiled_results.json",
-                   have_converted = False, log_frequency = 50, broken_point_mode = False, time_threshold = 300, is_pixel6 = None, **kwargs):
+def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], save_name = "profiled_results.json", have_converted = False,
+                   log_frequency = 50, broken_point_mode = False, time_threshold = 300, is_pixel6 = None, model_save_path = None, **kwargs):
     """ run models with given backend and return latency of testcase models
 
     @params:
@@ -96,6 +96,9 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
     time_threshold (int): the time threshold for profiling one single model. If the total profiling time of a model is longger than the
          `time_threshold` (second), nn-Meter will log a profiling timeout error for this model and step to profile the next model.
 
+    model_save_path (str or None): path to save converted models, if not set, the converted model will be placed in
+        the same directory as the original model.
+
     **kwargs: arguments for profiler, such as `taskset` and `close_xnnpack` in TFLite profiler
     """
     signal.signal(signal.SIGALRM, handle_timeout)
@@ -104,8 +107,6 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
             models = json.load(fp)
 
     workspace_path = builder_config.get('WORKSPACE', mode)
-    model_save_path = os.path.join(workspace_path, 'testcases' if mode == 'ruletest' else 'kernels')
-    os.makedirs(model_save_path, exist_ok=True)
     res_save_path = os.path.join(workspace_path, "results")
     os.makedirs(res_save_path, exist_ok=True)
     info_save_path = os.path.join(res_save_path, save_name)
@@ -149,7 +150,7 @@ def profile_models(backend, models, mode = 'ruletest', metrics = ["latency"], sa
                 try:
                     model_path = model['model']
                     signal.alarm(time_threshold)
-                    profiled_res = backend.profile_model_file(model_path, model_save_path, input_shape=model['shapes'], metrics=metrics, **kwargs)
+                    profiled_res = backend.profile_model_file(model_path, model_save_path or os.path.dirname(model_path), input_shape=model['shapes'], metrics=metrics, **kwargs)
                     signal.alarm(0)
                     for metric in metrics:
                         model[metric] = profiled_res[metric]

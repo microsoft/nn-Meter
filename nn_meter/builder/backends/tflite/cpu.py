@@ -12,12 +12,14 @@ class TFLiteCPULatencyParser(BaseParser):
         self.nodes = []
         self.total_latency = Latency()
 
-    def parse(self, content):
-        self.nodes = self._parse_nodes(content)
+    def parse(self, content, model_path=None):
+        self.nodes = self._parse_nodes(content, model_path)
         self.total_latency = self._parse_total_latency(content)
+        if model_path:
+            open(model_path.replace(".tflite", ".txt"), "w").write(content)
         return self
 
-    def _parse_nodes(self, content):
+    def _parse_nodes(self, content, model_path):
         start_regex = r'[= ]*Run Order[= ]*'
         end_regex = r'[= ]*Top by Computation Time[= ]*'
         node_regex = r'\s*(\w+)\s*[\d.e-]+\s*[\d.e-]+\s*([\d.e-]+)\s*[\d.e-]+%\s*[\d.e-]+%\s*[\d.e-]+\s*1\s*(\S*)'
@@ -38,11 +40,13 @@ class TFLiteCPULatencyParser(BaseParser):
             if re.search(end_regex, line):
                 flag = False
 
-        # import pandas as pd
-        # df = pd.DataFrame(columns=('node_type', 'avg', 'name'))
-        # for node in nodes:
-        #     # print({'node_type': node['node_type'], 'avg': node['avg'], 'name': node['name']})
-        #     df.loc[len(df)] = [node['node_type'], node['avg'], node['name']]
+        import pandas as pd
+        df = pd.DataFrame(columns=('node_type', 'avg', 'name'))
+        for node in nodes:
+            # print({'node_type': node['node_type'], 'avg': node['avg'], 'name': node['name']})
+            df.loc[len(df)] = [node['node_type'], node['avg'], node['name']]
+        if model_path:
+            df.to_csv(model_path.replace(".tflite", ".csv"), index=False)
 
         return nodes
 
@@ -74,3 +78,9 @@ class TFLiteCPUProfiler(TFLiteProfiler):
 class TFLiteCPUBackend(TFLiteBackend):
     parser_class = TFLiteCPULatencyParser
     profiler_class = TFLiteCPUProfiler
+    
+    def profile(self, converted_model, metrics = ['latency'], **kwargs):
+        """ debug mode, output TFLite message to model path.
+        """
+        return self.parser.parse(self.profiler.profile(converted_model, **kwargs), converted_model).results.get(metrics)
+
