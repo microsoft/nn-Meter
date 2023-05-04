@@ -73,6 +73,39 @@ class ConvBnRelu(TorchBlock):
         return self.build_model([self.conv_op, self.bn_op, self.relu_op])
 
 
+
+class ConvSwish(TorchBlock):
+    def __init__(self, config, batch_size):
+        super().__init__(config, batch_size)
+        conv_op = Conv(self.input_shape, config)
+        self.conv_op, out_shape = conv_op.get_model(), conv_op.get_output_shape()
+        
+        bn_op = BN(out_shape, config)
+        self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
+        
+        swish_op = Swish(out_shape, config)
+        self.swish_op = swish_op.get_model()
+
+    def get_model(self):
+        return self.build_model([self.conv_op, self.bn_op, self.swish_op])
+
+
+class DWConvSwish(nn.Module):
+    def __init__(self, config, batch_size):
+        super().__init__(config, batch_size)
+        dwconv_op = DwConv(self.input_shape, config)
+        self.dwconv_op, out_shape = dwconv_op.get_model(), dwconv_op.get_output_shape()
+        
+        bn_op = BN(out_shape, config)
+        self.bn_op, out_shape = bn_op.get_model(), bn_op.get_output_shape()
+        
+        swish_op = Swish(out_shape, config)
+        self.swish_op = swish_op.get_model()
+
+    def get_model(self):
+        return self.build_model([self.dwconv_op, self.bn_op, self.swish_op])
+
+
 class ConvBnRelu6(TorchBlock):
     def __init__(self, config, batch_size = 1):
         super().__init__(config, batch_size)
@@ -281,7 +314,7 @@ class DwConvBlock(TorchBlock):
         return self.build_model([self.dwconv_op])
 
 
-class ConvBnHswish(TorchBlock):
+class DwConvBnHswish(TorchBlock):
     def __init__(self, config, batch_size = 1):
         super().__init__(config, batch_size)
 
@@ -407,6 +440,17 @@ class SEBlock(TorchBlock):
         return self.build_model([self.se_op])
 
 
+class SESwishBlock(TorchBlock):
+    def __init__(self, config, batch_size = 1):
+        super().__init__(config, batch_size)
+
+        se_op = SE_swish(self.input_shape, config)
+        self.se_op = se_op.get_model()
+
+    def get_model(self):
+        return self.build_model([self.se_op])
+
+
 class GlobalAvgPoolBlock(TorchBlock):
     def __init__(self, config, batch_size = 1):
         self.config = config
@@ -455,6 +499,17 @@ class HswishBlock(TorchBlock):
 
     def get_model(self):
         return self.build_model([self.hswish_op])
+
+
+class SwishBlock(TorchBlock):
+    def __init__(self, config, batch_size = 1):
+        super().__init__(config, batch_size)
+
+        swish_op = Swish(self.input_shape, config)
+        self.swish_op = swish_op.get_model()
+
+    def get_model(self):
+        return self.build_model([self.swish_op])
 
 
 class ReluBlock(TorchBlock):

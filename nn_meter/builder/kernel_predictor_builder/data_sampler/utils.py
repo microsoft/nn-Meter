@@ -26,7 +26,7 @@ __BUILTIN_KERNELS__ = {
     "dwconv-bn-relu": ["DwConvBnRelu", "DwConvSampler"],
     "dwconv-bn-relu6": ["DwConvBnRelu6", "DwConvSampler"],
     "dwconv-block": ["DwConvBlock", "DwConvSampler"],
-    "dwconv-bn-hswish": ["ConvBnHswish", "DwConvSampler"],
+    "dwconv-bn-hswish": ["DwConvBnHswish", "DwConvSampler"],
     # others
     "maxpool": ["MaxPoolBlock", "PoolingSampler"],
     "avgpool": ["AvgPoolBlock", "PoolingSampler"],
@@ -39,6 +39,7 @@ __BUILTIN_KERNELS__ = {
     "bnrelu": ["BnRelu", "HwCinSampler"],
     "bn": ["BnBlock", "HwCinSampler"],
     "hswish": ["HswishBlock", "HwCinSampler"],
+    "swish": ["SwishBlock", "HwCinSampler"],
     "relu": ["ReluBlock", "HwCinSampler"],
     "addrelu": ["AddRelu", "HwCinSampler"],
     "add": ["AddBlock", "HwCinSampler"],

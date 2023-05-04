@@ -579,6 +579,27 @@ class HswishBlock(TFBlock):
         return model
 
 
+class SwishBlock(TFBlock):
+    def __init__(self, config, batch_size = 1):
+        super().__init__(config, batch_size)
+
+        swish_op = Swish(self.input_shape, config)
+        self.swish_op = swish_op.get_model()
+
+    def get_model(self):
+        class Model(keras.Model):
+            def __init__(self, swish_op):
+                super().__init__()
+                self.swish = swish_op
+
+            def call(self, inputs):
+                return self.swish(inputs)
+
+        model = Model(self.swish_op)
+        model(get_inputs_by_shapes(self.input_tensor_shape, self.batch_size))
+        return model
+
+
 class ReluBlock(TFBlock):
     def __init__(self, config, batch_size = 1):
         super().__init__(config, batch_size)
