@@ -17,8 +17,8 @@ def get_inputs_by_shapes(shapes, batch_size = 1):
 def get_padding(ks, s, hw):
     """ choose padding value to make sure:
     if s = 1, out_hw = in_hw;
-    if s = 2, out_hw = ceil(in_hw // 2);
-    if s = 4, out_hw = ceil(in_hw // 4);
+    if s = 2, out_hw = ceil(in_hw / 2);
+    if s = 4, out_hw = ceil(in_hw / 4);
     """
     if hw % s == 0:
         pad = max(ks - s, 0)
