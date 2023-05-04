@@ -39,6 +39,7 @@ __BUILTIN_KERNELS__ = {
     "bnrelu": ["BnRelu", "HwCinSampler"],
     "bn": ["BnBlock", "HwCinSampler"],
     "hswish": ["HswishBlock", "HwCinSampler"],
+    "swish": ["SwishBlock", "HwCinSampler"],
     "relu": ["ReluBlock", "HwCinSampler"],
     "addrelu": ["AddRelu", "HwCinSampler"],
     "add": ["AddBlock", "HwCinSampler"],

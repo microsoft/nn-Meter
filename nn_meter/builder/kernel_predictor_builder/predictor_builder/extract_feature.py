@@ -20,6 +20,7 @@ feature_for_kernel = {
     "conv-hswish":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     "conv-block":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     "conv-bn-hswish":       ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "conv-swish":           ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     # dwconv ("COUT" will always be the same as "CIN")
     "dwconv-bn":            ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     "dwconv-relu":          ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
@@ -28,6 +29,7 @@ feature_for_kernel = {
     "dwconv-bn-relu6":      ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     "dwconv-block":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     "dwconv-bn-hswish":     ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
+    "dwconv-swish":         ["HW", "CIN", "COUT", "KERNEL_SIZE", "STRIDES"],
     # pooling ("COUT" will always be the same as "CIN")
     "maxpool":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
     "avgpool":              ["HW", "CIN", "COUT", "KERNEL_SIZE", "POOL_STRIDES"],
@@ -41,6 +43,7 @@ feature_for_kernel = {
     "bnrelu":               ["HW", "CIN"],
     "bn":                   ["HW", "CIN"],
     "hswish":               ["HW", "CIN"],
+    "swish":                ["HW", "CIN"],
     "relu":                 ["HW", "CIN"],
     # In "addrelu" block and "add" block, the second feature "CIN" will always be the same as
     # the third feature
