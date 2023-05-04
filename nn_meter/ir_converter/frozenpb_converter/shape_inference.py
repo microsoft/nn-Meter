@@ -149,7 +149,7 @@ class ShapeInference:
                 (ph.get_h(input_shape) - ph.get_h(k_size) + 1) / ph.get_h(strides)
             )
             outw = math.ceil(
-                (ph.get_h(input_shape) - ph.get_h(k_size) + 1) / ph.get_w(strides)
+                (ph.get_w(input_shape) - ph.get_w(k_size) + 1) / ph.get_w(strides)
             )
 
             pad_size = [0, 0, 0, 0]
