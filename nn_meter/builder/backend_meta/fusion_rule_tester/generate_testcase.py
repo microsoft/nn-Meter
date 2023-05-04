@@ -17,7 +17,7 @@ class BasicFusion(BaseTestCase):
         self.eps = self.config['EMP_ALPHA']
 
     def test(self):
-        secondary_op_lat = min(lat for op, lat in self.latency.items() if op != 'block' or op != self.false_case)
+        secondary_op_lat = min(lat for op, lat in self.latency.items() if op != 'block' and op != self.false_case)
         return self.latency[self.false_case].avg - self.latency['block'].avg > self.eps * secondary_op_lat.avg
 
     def load_latency(self, testcase):
