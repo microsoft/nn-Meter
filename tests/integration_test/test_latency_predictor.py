@@ -88,10 +88,6 @@ def integration_test(model_type, url, ppath, output_name = "tests/integration_te
         #     logging.error(f"Meets ERROR when checking --{model_type} {ppath} --predictor {pred_name} --predictor-version {pred_version}")
 
         latency_list = parse_latency_info(result.decode('utf-8'))
-        print(model_type)
-        print(latency_list)
-        print("-----")
-        os.system("cat tests/integration_test/test_result.txt")
         for model, latency in latency_list:
             item = f'{model}, {model_type}, {pred_name}, {pred_version}, {round(float(latency), 4)}\n'
             # print(item)
