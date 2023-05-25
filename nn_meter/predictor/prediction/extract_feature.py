@@ -59,7 +59,6 @@ def get_predict_features(config):
             #features = [inputh, len(itensors)]
             features = [inputh]
             for it in itensors:
-                #co = it[-1]
                 co = it[-2]
                 features.append(co)
             if len(features) < 5:
