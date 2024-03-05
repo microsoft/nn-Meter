@@ -7,7 +7,7 @@ networkx
 requests
 protobuf
 PyYAML
-scikit_learn==0.24.2
+scikit_learn==1.0.1
 flake8
 packaging
 jsonlines
