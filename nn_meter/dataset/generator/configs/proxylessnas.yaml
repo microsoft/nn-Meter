@@ -1,0 +1,13 @@
+model_family: proxylessnas
+sample_count: 2000
+checkpoint_dir: ./data
+submodule_level: 2
+n_classes: 1000
+input_shape: [3, 224, 224]
+sample_space:
+    channel:
+       start: 0.2
+       end: 1.8
+       step: 0.1
+    kernelsize: [3, 5, 7]
+    es: [3, 6]
